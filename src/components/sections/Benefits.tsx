@@ -61,7 +61,7 @@ export function Benefits() {
         <div className="section-header">
           <span className="section-label">Why Choose Us</span>
           <h2 className="section-title">
-            Benefits for <span className="text-turquoise">Everyone</span>
+            Benefits for <span className="text-gold">Everyone</span>
           </h2>
           <p className="section-description">
             Xpert Connect creates value for both individuals seeking help and
@@ -72,11 +72,11 @@ export function Benefits() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* For Individuals */}
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-turquoise/5 to-transparent rounded-3xl" />
+            <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent rounded-3xl" />
             <div className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl border border-gray-100">
               {/* Header */}
               <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-turquoise to-turquoise-dark shadow-lg shadow-turquoise/25">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-navy to-navy-dark shadow-lg shadow-navy/25">
                   <User className="h-7 w-7 text-white" />
                 </div>
                 <div>
@@ -90,8 +90,8 @@ export function Benefits() {
                 {individualBenefits.map((benefit) => (
                   <div key={benefit.title} className="flex gap-4 group">
                     <div className="flex-shrink-0">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-turquoise/10 transition-colors group-hover:bg-turquoise">
-                        <benefit.icon className="h-5 w-5 text-turquoise transition-colors group-hover:text-white" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-navy/10 transition-colors group-hover:bg-navy">
+                        <benefit.icon className="h-5 w-5 text-navy transition-colors group-hover:text-white" />
                       </div>
                     </div>
                     <div>

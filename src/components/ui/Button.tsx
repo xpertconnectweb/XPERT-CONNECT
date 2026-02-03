@@ -18,10 +18,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary: `
-        bg-turquoise text-white
-        hover:bg-turquoise-dark hover:-translate-y-0.5
-        shadow-lg shadow-turquoise/25 hover:shadow-xl hover:shadow-turquoise/30
-        focus:ring-turquoise
+        bg-gold text-white
+        hover:bg-gold-dark hover:-translate-y-0.5
+        shadow-lg shadow-gold/25 hover:shadow-xl hover:shadow-gold/30
+        focus:ring-gold
       `,
       secondary: `
         bg-navy text-white

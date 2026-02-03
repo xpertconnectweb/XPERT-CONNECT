@@ -78,11 +78,11 @@ export function Footer() {
 
             {/* Contact Info */}
             <div className="space-y-3">
-              <a href="tel:+18449737866" className="flex items-center gap-3 text-white/80 hover:text-turquoise transition-colors">
+              <a href="tel:+18449737866" className="flex items-center gap-3 text-white/80 hover:text-gold transition-colors">
                 <Phone className="h-4 w-4" />
                 <span>1-844-XPERT-NOW</span>
               </a>
-              <a href="mailto:info@xpertconnect.com" className="flex items-center gap-3 text-white/80 hover:text-turquoise transition-colors">
+              <a href="mailto:info@xpertconnect.com" className="flex items-center gap-3 text-white/80 hover:text-gold transition-colors">
                 <Mail className="h-4 w-4" />
                 <span>info@xpertconnect.com</span>
               </a>
@@ -99,7 +99,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-turquoise transition-colors"
+                    className="text-white/60 hover:text-gold transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -118,7 +118,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-turquoise transition-colors"
+                    className="text-white/60 hover:text-gold transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -145,12 +145,12 @@ export function Footer() {
                 id="newsletter-email"
                 placeholder="Enter your email"
                 required
-                className="w-full rounded-xl border-0 bg-white/10 px-5 py-4 text-white placeholder-white/50 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-turquoise/50"
+                className="w-full rounded-xl border-0 bg-white/10 px-5 py-4 text-white placeholder-white/50 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-gold/50"
               />
               <button
                 type="submit"
                 disabled={newsletterStatus === 'loading'}
-                className="w-full rounded-xl bg-turquoise px-5 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-turquoise-dark"
+                className="w-full rounded-xl bg-gold px-5 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark"
               >
                 {newsletterStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
               </button>
@@ -167,7 +167,7 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white transition-all hover:bg-turquoise hover:scale-110"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white transition-all hover:bg-gold hover:scale-110"
                 >
                   <social.icon className="h-5 w-5" />
                 </Link>
@@ -197,13 +197,13 @@ export function Footer() {
               &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
-              <Link href="#" className="text-sm text-white/50 hover:text-turquoise transition-colors">
+              <Link href="#" className="text-sm text-white/50 hover:text-gold transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-sm text-white/50 hover:text-turquoise transition-colors">
+              <Link href="#" className="text-sm text-white/50 hover:text-gold transition-colors">
                 Terms of Service
               </Link>
-              <Link href="#" className="text-sm text-white/50 hover:text-turquoise transition-colors">
+              <Link href="#" className="text-sm text-white/50 hover:text-gold transition-colors">
                 Disclaimer
               </Link>
             </div>

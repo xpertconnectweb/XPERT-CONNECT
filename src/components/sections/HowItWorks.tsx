@@ -7,7 +7,7 @@ const steps = [
     title: 'Verify',
     description:
       'We thoroughly verify all professionals in our network, checking credentials, licenses, and track records.',
-    color: 'turquoise',
+    color: 'navy',
   },
   {
     number: '02',
@@ -31,7 +31,7 @@ const steps = [
     title: 'Connect',
     description:
       'We facilitate the introduction and ensure a smooth connection between you and your matched expert.',
-    color: 'turquoise',
+    color: 'gold',
   },
 ]
 
@@ -50,9 +50,9 @@ export function HowItWorks() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="section-header">
-          <span className="section-label !bg-white/10 !text-turquoise">Our Process</span>
+          <span className="section-label !bg-white/10 !text-gold">Our Process</span>
           <h2 className="section-title !text-white">
-            How It <span className="text-turquoise">Works</span>
+            How It <span className="text-gold">Works</span>
           </h2>
           <p className="section-description !text-white/60">
             Our proven 4-step process ensures you get matched with the right professional
@@ -77,8 +77,8 @@ export function HowItWorks() {
 
                 {/* Icon */}
                 <div className="relative mb-6">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-turquoise/20">
-                    <step.icon className="h-8 w-8 text-turquoise" />
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10">
+                    <step.icon className="h-8 w-8 text-gold" />
                   </div>
                   {/* Number Badge */}
                   <span className="absolute -top-2 -left-2 flex h-7 w-7 items-center justify-center rounded-full bg-gold font-heading text-xs font-bold text-white">
@@ -103,7 +103,7 @@ export function HowItWorks() {
           <p className="text-white/60 mb-6">Ready to get connected with a professional?</p>
           <a
             href="#contact"
-            className="inline-flex items-center gap-2 rounded-full bg-turquoise px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-turquoise-dark hover:shadow-lg hover:shadow-turquoise/25"
+            className="inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark hover:shadow-lg hover:shadow-gold/25"
           >
             Start Your Free Consultation
           </a>

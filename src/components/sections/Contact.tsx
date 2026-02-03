@@ -60,7 +60,7 @@ export function Contact() {
             <span className="section-label">Contact Us</span>
             <h2 className="section-title text-left">
               Been in an Accident?
-              <span className="block text-turquoise">Let's Connect.</span>
+              <span className="block text-gold">Let's Connect.</span>
             </h2>
             <p className="text-gray-600 mb-8 leading-relaxed">
               Don't navigate this alone. Our team connects you with experienced professionals
@@ -74,13 +74,13 @@ export function Contact() {
                   key={item.label}
                   className="flex items-center gap-4 p-4 rounded-xl bg-white shadow-sm border border-gray-100 transition-all hover:shadow-md"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-turquoise/10">
-                    <item.icon className="h-5 w-5 text-turquoise" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10">
+                    <item.icon className="h-5 w-5 text-gold" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wide">{item.label}</p>
                     {item.href ? (
-                      <a href={item.href} className="font-heading font-bold text-navy hover:text-turquoise transition-colors">
+                      <a href={item.href} className="font-heading font-bold text-navy hover:text-gold transition-colors">
                         {item.value}
                       </a>
                     ) : (
@@ -92,7 +92,7 @@ export function Contact() {
             </div>
 
             {/* Disclaimer */}
-            <div className="p-4 bg-navy/5 rounded-xl border-l-4 border-navy">
+            <div className="p-4 bg-navy/5 rounded-xl border-l-4 border-gold">
               <p className="text-sm text-gray-500 italic">
                 <strong className="text-navy not-italic">Important:</strong> We are not attorneys
                 and do not provide legal advice. We connect you with licensed professionals.
@@ -103,10 +103,10 @@ export function Contact() {
           {/* Right Column - Form */}
           <div className="relative">
             {/* Form Card */}
-            <div className="relative bg-gradient-to-br from-turquoise to-turquoise-dark rounded-3xl p-8 lg:p-10 shadow-2xl shadow-turquoise/20">
+            <div className="relative bg-gradient-to-br from-navy to-navy-dark rounded-3xl p-8 lg:p-10 shadow-2xl shadow-navy/25">
               {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-navy/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gold/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl" />
 
               <div className="relative z-10">
                 <h3 className="font-heading text-2xl font-bold text-white mb-2">
@@ -223,7 +223,7 @@ export function Contact() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-navy px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-navy-dark disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>

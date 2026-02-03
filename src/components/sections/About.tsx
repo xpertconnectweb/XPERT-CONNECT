@@ -39,8 +39,8 @@ export function About() {
             {/* Floating Stats Card */}
             <div className="absolute -bottom-8 -right-8 bg-white rounded-2xl shadow-xl p-6 hidden lg:block">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-turquoise/10">
-                  <span className="text-2xl font-bold text-turquoise">20+</span>
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold/10">
+                  <span className="text-2xl font-bold text-gold">20+</span>
                 </div>
                 <div>
                   <p className="font-heading font-bold text-navy">Years</p>
@@ -50,7 +50,7 @@ export function About() {
             </div>
 
             {/* Accent Element */}
-            <div className="absolute -top-4 -left-4 w-24 h-24 bg-turquoise/10 rounded-2xl -z-10" />
+            <div className="absolute -top-4 -left-4 w-24 h-24 bg-gold/10 rounded-2xl -z-10" />
             <div className="absolute -bottom-4 -left-4 w-32 h-32 border-2 border-gold/30 rounded-2xl -z-10" />
           </div>
 
@@ -59,7 +59,7 @@ export function About() {
             <span className="section-label">Who We Are</span>
             <h2 className="section-title text-left">
               Your Trusted Bridge to
-              <span className="text-turquoise"> Professional Help</span>
+              <span className="text-gold"> Professional Help</span>
             </h2>
 
             <p className="text-lg text-gray-600 mb-6 leading-relaxed">
@@ -77,14 +77,14 @@ export function About() {
             <div className="grid sm:grid-cols-2 gap-4 mb-8">
               {highlights.map((item) => (
                 <div key={item} className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-turquoise flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700">{item}</span>
                 </div>
               ))}
             </div>
 
             {/* Disclaimer */}
-            <div className="p-4 bg-gray-50 rounded-xl border-l-4 border-turquoise">
+            <div className="p-4 bg-gray-50 rounded-xl border-l-4 border-gold">
               <p className="text-sm text-gray-500 italic">
                 <strong className="text-gray-700 not-italic">Note:</strong> We are not attorneys and do not provide legal advice.
                 We connect you with licensed professionals in our network.
@@ -100,7 +100,7 @@ export function About() {
               key={stat.label}
               className="text-center p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-100"
             >
-              <span className="block font-heading text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-turquoise to-navy mb-2">
+              <span className="block font-heading text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold to-navy mb-2">
                 <CountUp
                   value={stat.value}
                   suffix={stat.suffix}

@@ -16,7 +16,7 @@ const services = [
       'Slip & Fall Cases',
     ],
     cta: 'Find an Attorney',
-    color: 'turquoise',
+    color: 'navy',
     featured: true,
   },
   {
@@ -32,7 +32,7 @@ const services = [
       'Diagnostic Imaging',
     ],
     cta: 'Find a Clinic',
-    color: 'navy',
+    color: 'gold',
     featured: false,
   },
   {
@@ -48,7 +48,7 @@ const services = [
       'Property Management',
     ],
     cta: 'Find a Realtor',
-    color: 'gold',
+    color: 'navy',
     featured: false,
   },
 ]
@@ -61,7 +61,7 @@ export function Services() {
           <span className="section-label">Our Services</span>
           <h2 className="section-title">
             Expert Connections in
-            <span className="text-turquoise"> Three Key Areas</span>
+            <span className="text-gold"> Three Key Areas</span>
           </h2>
           <p className="section-description">
             We specialize in connecting you with thoroughly vetted professionals
@@ -77,14 +77,14 @@ export function Services() {
                 'group relative rounded-3xl bg-white p-8 lg:p-10 transition-all duration-500',
                 'hover:-translate-y-2 hover:shadow-2xl',
                 service.featured
-                  ? 'shadow-xl ring-2 ring-turquoise/20'
+                  ? 'shadow-xl ring-2 ring-gold/25'
                   : 'shadow-lg hover:shadow-xl'
               )}
             >
               {/* Featured Badge */}
               {service.featured && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-turquoise to-turquoise-dark px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-gold to-gold-dark px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg">
                     Most Requested
                   </span>
                 </div>
@@ -94,7 +94,6 @@ export function Services() {
               <div
                 className={cn(
                   'mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300',
-                  service.color === 'turquoise' && 'bg-turquoise/10 group-hover:bg-turquoise',
                   service.color === 'navy' && 'bg-navy/10 group-hover:bg-navy',
                   service.color === 'gold' && 'bg-gold/10 group-hover:bg-gold'
                 )}
@@ -102,7 +101,6 @@ export function Services() {
                 <service.icon
                   className={cn(
                     'h-8 w-8 transition-colors duration-300 group-hover:text-white',
-                    service.color === 'turquoise' && 'text-turquoise',
                     service.color === 'navy' && 'text-navy',
                     service.color === 'gold' && 'text-gold'
                   )}
@@ -129,7 +127,6 @@ export function Services() {
                     <span
                       className={cn(
                         'flex h-6 w-6 items-center justify-center rounded-full text-white text-xs',
-                        service.color === 'turquoise' && 'bg-turquoise/20 text-turquoise',
                         service.color === 'navy' && 'bg-navy/20 text-navy',
                         service.color === 'gold' && 'bg-gold/20 text-gold'
                       )}
@@ -147,7 +144,6 @@ export function Services() {
                 className={cn(
                   'inline-flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wide transition-all',
                   'group-hover:gap-3',
-                  service.color === 'turquoise' && 'text-turquoise',
                   service.color === 'navy' && 'text-navy',
                   service.color === 'gold' && 'text-gold'
                 )}

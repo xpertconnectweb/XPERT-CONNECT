@@ -71,7 +71,7 @@ export function Header() {
                     className={cn(
                       'px-4 py-2 font-heading text-sm font-medium transition-all duration-300 rounded-lg',
                       isScrolled
-                        ? 'text-gray-700 hover:text-turquoise hover:bg-turquoise/5'
+                        ? 'text-gray-700 hover:text-gold hover:bg-gold/5'
                         : 'text-white/90 hover:text-white hover:bg-white/10'
                     )}
                   >
@@ -89,7 +89,7 @@ export function Header() {
               className={cn(
                 'hidden md:flex items-center gap-2.5 rounded-full px-6 py-3 font-heading text-sm font-bold transition-all duration-300',
                 isScrolled
-                  ? 'bg-turquoise text-white hover:bg-turquoise-dark shadow-lg shadow-turquoise/25'
+                  ? 'bg-gold text-white hover:bg-gold-dark shadow-lg shadow-gold/25'
                   : 'bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20'
               )}
             >
@@ -135,7 +135,7 @@ export function Header() {
                 <Link
                   href={link.href}
                   onClick={closeMobileMenu}
-                  className="block rounded-xl px-4 py-3 text-center font-heading text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-turquoise"
+                  className="block rounded-xl px-4 py-3 text-center font-heading text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gold"
                 >
                   {link.label}
                 </Link>
@@ -145,7 +145,7 @@ export function Header() {
               <Link
                 href="tel:+18449737866"
                 onClick={closeMobileMenu}
-                className="flex items-center justify-center gap-2 rounded-xl bg-turquoise px-4 py-4 font-heading text-sm font-bold text-white shadow-lg shadow-turquoise/25"
+                className="flex items-center justify-center gap-2 rounded-xl bg-gold px-4 py-4 font-heading text-sm font-bold text-white shadow-lg shadow-gold/25"
               >
                 <Phone className="h-4 w-4" />
                 <span>1-844-XPERT-NOW</span>
