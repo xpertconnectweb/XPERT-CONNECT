@@ -183,6 +183,9 @@ export function Footer() {
           <p className="text-center text-sm text-white/40 italic">
             We are not attorneys and do not provide legal advice. We connect you with licensed professionals in our network.
           </p>
+          <p className="mt-2 text-center text-xs text-white/40">
+            Locations: Florida and Minnesota
+          </p>
         </div>
       </div>
 
