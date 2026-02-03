@@ -30,9 +30,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${montserrat.variable} ${openSans.variable}`}>
-      <body>
+      <body className="bg-white text-gray-700">
         <Header />
-        <main>{children}</main>
+        <main id="main-content" className="min-h-screen">
+          {children}
+        </main>
         <Footer />
         <FloatingButton />
       </body>

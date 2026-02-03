@@ -1,16 +1,19 @@
-'use client'
-
 import Link from 'next/link'
-import { MessageSquare } from 'lucide-react'
+import { Phone } from 'lucide-react'
 
 export function FloatingButton() {
   return (
     <Link
-      href="#contact"
-      className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-turquoise text-white shadow-lg transition-all duration-300 hover:bg-turquoise-dark hover:scale-110"
-      aria-label="Contact us"
+      href="tel:+18449737866"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full bg-turquoise pl-5 pr-6 py-4 text-white shadow-2xl shadow-turquoise/30 transition-all duration-300 hover:bg-turquoise-dark hover:scale-105 hover:shadow-turquoise/40 group"
+      aria-label="Call us"
     >
-      <MessageSquare className="h-6 w-6" />
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+        <Phone className="h-5 w-5 animate-pulse" />
+      </span>
+      <span className="font-heading text-sm font-bold uppercase tracking-wide hidden sm:block">
+        Call Now
+      </span>
     </Link>
   )
 }

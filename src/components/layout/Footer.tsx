@@ -1,9 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Facebook, Instagram, Youtube, Linkedin } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Facebook, Instagram, Youtube, Linkedin, Phone, Mail } from 'lucide-react'
 
 const quickLinks = [
   { href: '#about', label: 'About Us' },
@@ -28,46 +28,70 @@ const socialLinks = [
 ]
 
 export function Footer() {
-  const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+
+  const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Handle newsletter subscription
-    alert('Thank you for subscribing!')
-    ;(e.target as HTMLFormElement).reset()
+    setNewsletterStatus('loading')
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        body: JSON.stringify({ email: formData.get('email') }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (!response.ok) {
+        throw new Error('Request failed')
+      }
+
+      setNewsletterStatus('success')
+      form.reset()
+    } catch {
+      setNewsletterStatus('error')
+    }
   }
 
   return (
-    <footer className="bg-gray-100 pt-16 lg:pt-20">
-      <div className="container mx-auto px-4">
-        <div className="grid gap-10 pb-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-8 lg:pb-16">
-          {/* Brand */}
-          <div className="md:col-span-2 lg:col-span-1">
-            <Link href="/" className="mb-5 inline-block">
+    <footer className="bg-navy text-white">
+      {/* Main Footer */}
+      <div className="container mx-auto px-4 py-16 lg:py-20">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-12">
+          {/* Brand Column */}
+          <div className="lg:col-span-4">
+            <Link href="/" className="inline-block mb-6">
               <Image
                 src="/images/logo.png"
                 alt="Xpert Connect"
                 width={160}
                 height={45}
-                className="h-14 w-auto"
+                className="h-12 w-auto brightness-0 invert"
               />
             </Link>
-            <p className="mb-4 text-sm leading-relaxed text-gray-600">
-              We don't sell contacts.
-              <br />
-              We create connections that work.
+            <p className="text-white/60 mb-6 leading-relaxed">
+              We don't sell contacts. We create trusted connections.
+              Connecting clients with verified professionals since 2004.
             </p>
-            <p className="mb-6 text-xs italic text-gray-500">
-              We are not attorneys and do not provide legal advice.
-            </p>
-            <Link href="#contact">
-              <Button variant="primary" size="sm">
-                Free Consultation
-              </Button>
-            </Link>
+
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <a href="tel:+18449737866" className="flex items-center gap-3 text-white/80 hover:text-turquoise transition-colors">
+                <Phone className="h-4 w-4" />
+                <span>1-844-XPERT-NOW</span>
+              </a>
+              <a href="mailto:info@xpertconnect.com" className="flex items-center gap-3 text-white/80 hover:text-turquoise transition-colors">
+                <Mail className="h-4 w-4" />
+                <span>info@xpertconnect.com</span>
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="mb-5 font-heading text-sm font-bold uppercase tracking-wider text-navy">
+          <div className="lg:col-span-2">
+            <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white mb-6">
               Quick Links
             </h4>
             <ul className="space-y-3">
@@ -75,7 +99,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-600 transition-colors hover:text-turquoise"
+                    className="text-white/60 hover:text-turquoise transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -85,8 +109,8 @@ export function Footer() {
           </div>
 
           {/* Services */}
-          <div>
-            <h4 className="mb-5 font-heading text-sm font-bold uppercase tracking-wider text-navy">
+          <div className="lg:col-span-2">
+            <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white mb-6">
               Services
             </h4>
             <ul className="space-y-3">
@@ -94,7 +118,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-600 transition-colors hover:text-turquoise"
+                    className="text-white/60 hover:text-turquoise transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -104,38 +128,46 @@ export function Footer() {
           </div>
 
           {/* Newsletter */}
-          <div>
-            <h4 className="mb-5 font-heading text-sm font-bold uppercase tracking-wider text-navy">
-              Subscribe
+          <div className="lg:col-span-4">
+            <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white mb-6">
+              Stay Updated
             </h4>
-            <p className="mb-4 text-sm text-gray-600">
-              Get updates on new professionals and services in your area.
+            <p className="text-white/60 mb-6">
+              Subscribe for updates, resources, and client success insights.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+              <label htmlFor="newsletter-email" className="sr-only">
+                Email address
+              </label>
               <input
                 type="email"
-                placeholder="Enter Your Email Address"
+                name="email"
+                id="newsletter-email"
+                placeholder="Enter your email"
                 required
-                className="w-full rounded border border-gray-300 px-4 py-3 text-sm transition-colors focus:border-turquoise focus:outline-none"
+                className="w-full rounded-xl border-0 bg-white/10 px-5 py-4 text-white placeholder-white/50 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-turquoise/50"
               />
-              <Button type="submit" variant="primary" className="w-full">
-                Subscribe
-              </Button>
+              <button
+                type="submit"
+                disabled={newsletterStatus === 'loading'}
+                className="w-full rounded-xl bg-turquoise px-5 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-turquoise-dark"
+              >
+                {newsletterStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
+              </button>
             </form>
-          </div>
+            <p className="text-xs text-white/50 mt-3" aria-live="polite">
+              {newsletterStatus === 'success' && 'You are subscribed. Welcome to Xpert Connect.'}
+              {newsletterStatus === 'error' && 'Something went wrong. Please try again in a moment.'}
+            </p>
 
-          {/* Social */}
-          <div>
-            <h4 className="mb-5 font-heading text-sm font-bold uppercase tracking-wider text-navy">
-              Connect With Us
-            </h4>
-            <div className="flex gap-3">
+            {/* Social Links */}
+            <div className="flex gap-3 mt-8">
               {socialLinks.map((social) => (
                 <Link
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-navy transition-all hover:bg-turquoise hover:text-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white transition-all hover:bg-turquoise hover:scale-110"
                 >
                   <social.icon className="h-5 w-5" />
                 </Link>
@@ -145,22 +177,33 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="bg-navy py-5">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 text-center md:flex-row md:text-left">
-          <p className="text-sm text-white/70">
-            &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved.
+      {/* Disclaimer Bar */}
+      <div className="border-t border-white/10">
+        <div className="container mx-auto px-4 py-6">
+          <p className="text-center text-sm text-white/40 italic">
+            We are not attorneys and do not provide legal advice. We connect you with licensed professionals in our network.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <Link href="#" className="text-sm text-white/70 transition-colors hover:text-turquoise">
-              Privacy Policy
-            </Link>
-            <Link href="#" className="text-sm text-white/70 transition-colors hover:text-turquoise">
-              Terms of Service
-            </Link>
-            <Link href="#" className="text-sm text-white/70 transition-colors hover:text-turquoise">
-              Disclaimer
-            </Link>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="bg-navy-dark">
+        <div className="container mx-auto px-4 py-5">
+          <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+            <p className="text-sm text-white/50">
+              &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved.
+            </p>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link href="#" className="text-sm text-white/50 hover:text-turquoise transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="#" className="text-sm text-white/50 hover:text-turquoise transition-colors">
+                Terms of Service
+              </Link>
+              <Link href="#" className="text-sm text-white/50 hover:text-turquoise transition-colors">
+                Disclaimer
+              </Link>
+            </div>
           </div>
         </div>
       </div>

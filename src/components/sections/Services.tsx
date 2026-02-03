@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { Scale, Hospital, Home } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Scale, Hospital, Home, ArrowRight, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const services = [
   {
     icon: Scale,
     title: 'Legal Services',
+    subtitle: 'Personal Injury Attorneys',
     description:
       'Connect with experienced personal injury attorneys who fight for your rights. Our legal partners specialize in accident cases and have decades of courtroom success.',
     features: [
@@ -16,12 +16,13 @@ const services = [
       'Slip & Fall Cases',
     ],
     cta: 'Find an Attorney',
+    color: 'turquoise',
     featured: true,
-    badge: 'Most Requested',
   },
   {
     icon: Hospital,
     title: 'Medical Clinics',
+    subtitle: 'Injury Treatment Centers',
     description:
       'Access top-rated medical clinics specializing in accident injuries. Get the treatment you need and proper documentation for your case.',
     features: [
@@ -31,11 +32,13 @@ const services = [
       'Diagnostic Imaging',
     ],
     cta: 'Find a Clinic',
+    color: 'navy',
     featured: false,
   },
   {
     icon: Home,
     title: 'Real Estate',
+    subtitle: 'Trusted Realtors',
     description:
       'Work with seasoned realtors who know the market inside and out. Whether buying, selling, or investing, our real estate professionals deliver results.',
     features: [
@@ -45,6 +48,7 @@ const services = [
       'Property Management',
     ],
     cta: 'Find a Realtor',
+    color: 'gold',
     featured: false,
   },
 ]
@@ -55,58 +59,101 @@ export function Services() {
       <div className="container mx-auto px-4">
         <div className="section-header">
           <span className="section-label">Our Services</span>
-          <h2 className="section-title">Expert Connections in Three Key Areas</h2>
+          <h2 className="section-title">
+            Expert Connections in
+            <span className="text-turquoise"> Three Key Areas</span>
+          </h2>
           <p className="section-description">
-            We specialize in connecting you with thoroughly vetted professionals who have
-            proven track records.
+            We specialize in connecting you with thoroughly vetted professionals
+            who have proven track records of success.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-3">
           {services.map((service) => (
             <div
               key={service.title}
               className={cn(
-                'group relative rounded-lg bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl',
-                service.featured && 'border-2 border-turquoise'
+                'group relative rounded-3xl bg-white p-8 lg:p-10 transition-all duration-500',
+                'hover:-translate-y-2 hover:shadow-2xl',
+                service.featured
+                  ? 'shadow-xl ring-2 ring-turquoise/20'
+                  : 'shadow-lg hover:shadow-xl'
               )}
             >
-              {service.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gold px-4 py-1 font-heading text-xs font-semibold uppercase tracking-wide text-white">
-                  {service.badge}
-                </span>
+              {/* Featured Badge */}
+              {service.featured && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-turquoise to-turquoise-dark px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg">
+                    Most Requested
+                  </span>
+                </div>
               )}
 
               {/* Icon */}
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 transition-colors group-hover:bg-turquoise">
-                <service.icon className="h-10 w-10 text-turquoise transition-colors group-hover:text-white" />
+              <div
+                className={cn(
+                  'mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300',
+                  service.color === 'turquoise' && 'bg-turquoise/10 group-hover:bg-turquoise',
+                  service.color === 'navy' && 'bg-navy/10 group-hover:bg-navy',
+                  service.color === 'gold' && 'bg-gold/10 group-hover:bg-gold'
+                )}
+              >
+                <service.icon
+                  className={cn(
+                    'h-8 w-8 transition-colors duration-300 group-hover:text-white',
+                    service.color === 'turquoise' && 'text-turquoise',
+                    service.color === 'navy' && 'text-navy',
+                    service.color === 'gold' && 'text-gold'
+                  )}
+                />
               </div>
 
-              <h3 className="mb-4 text-center font-heading text-2xl font-bold">
-                {service.title}
-              </h3>
-              <p className="mb-5 text-center text-sm text-gray-600">{service.description}</p>
+              {/* Content */}
+              <div className="mb-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  {service.subtitle}
+                </p>
+                <h3 className="font-heading text-2xl font-bold text-navy mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {service.description}
+                </p>
+              </div>
 
               {/* Features */}
-              <ul className="mb-6 space-y-2">
+              <ul className="mb-8 space-y-3">
                 {service.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-3 border-b border-gray-100 py-2 text-sm text-gray-700"
-                  >
-                    <span className="h-2 w-2 flex-shrink-0 rounded-full bg-turquoise" />
-                    {feature}
+                  <li key={feature} className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        'flex h-6 w-6 items-center justify-center rounded-full text-white text-xs',
+                        service.color === 'turquoise' && 'bg-turquoise/20 text-turquoise',
+                        service.color === 'navy' && 'bg-navy/20 text-navy',
+                        service.color === 'gold' && 'bg-gold/20 text-gold'
+                      )}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="text-sm text-gray-700">{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link href="#contact" className="block">
-                <Button
-                  variant={service.featured ? 'primary' : 'secondary'}
-                  className="w-full"
-                >
-                  {service.cta}
-                </Button>
+              {/* CTA */}
+              <Link
+                href="#contact"
+                className={cn(
+                  'inline-flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wide transition-all',
+                  'group-hover:gap-3',
+                  service.color === 'turquoise' && 'text-turquoise',
+                  service.color === 'navy' && 'text-navy',
+                  service.color === 'gold' && 'text-gold'
+                )}
+              >
+                {service.cta}
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           ))}
@@ -115,3 +162,4 @@ export function Services() {
     </section>
   )
 }
+
