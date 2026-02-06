@@ -54,7 +54,7 @@ export function HowItWorks() {
           <h2 className="section-title !text-white">
             How It <span className="text-gold">Works</span>
           </h2>
-          <p className="section-description !text-white/60">
+          <p className="section-description !text-white/75">
             Our proven 4-step process ensures you get matched with the right professional
             for your specific needs.
           </p>
@@ -90,7 +90,7 @@ export function HowItWorks() {
                 <h3 className="font-heading text-xl font-bold text-white mb-3">
                   {step.title}
                 </h3>
-                <p className="text-white/60 text-sm leading-relaxed">
+                <p className="text-white/75 text-sm leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -100,7 +100,7 @@ export function HowItWorks() {
 
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
-          <p className="text-white/60 mb-6">Ready to get connected with a professional?</p>
+          <p className="text-white/75 mb-6">Ready to get connected with a professional?</p>
           <a
             href="#contact"
             className="inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark hover:shadow-lg hover:shadow-gold/25"

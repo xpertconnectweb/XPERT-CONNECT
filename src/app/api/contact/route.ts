@@ -19,12 +19,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Invalid email.' }, { status: 400 })
     }
 
+    const phoneDigits = phone.replace(/\D/g, '')
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      return NextResponse.json({ ok: false, error: 'Invalid phone number.' }, { status: 400 })
+    }
+
     if (message.length > 2000) {
       return NextResponse.json({ ok: false, error: 'Message too long.' }, { status: 400 })
     }
 
-    // TODO: Replace with your CRM/email integration.
-    console.log('Contact request', { name, email, phone, service, message })
+    console.log('Contact request received', { service, timestamp: new Date().toISOString() })
 
     return NextResponse.json({ ok: true })
   } catch (error) {

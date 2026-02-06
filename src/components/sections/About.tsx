@@ -30,6 +30,9 @@ export function About() {
                 alt="Professional team meeting"
                 width={600}
                 height={450}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWEyYTRhIi8+PC9zdmc+"
                 className="w-full h-auto object-cover"
               />
               {/* Overlay gradient */}

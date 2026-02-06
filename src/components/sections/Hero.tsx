@@ -20,8 +20,9 @@ export function Hero() {
       <div className="absolute inset-0">
         <Image
           src="/images/Office.png"
-          alt="Professional office"
+          alt=""
           fill
+          sizes="100vw"
           className="object-cover"
           priority
         />
@@ -55,7 +56,7 @@ export function Hero() {
           </p>
 
           {/* Disclaimer */}
-          <p className="text-sm text-white/50 mb-10 max-w-xl mx-auto italic border-t-2 border-gold/50 pt-4">
+          <p className="text-sm text-white/70 mb-10 max-w-xl mx-auto italic border-t-2 border-gold/50 pt-4">
             We are not attorneys and do not provide legal advice. We connect you with licensed professionals in our network.
           </p>
 
@@ -95,7 +96,7 @@ export function Hero() {
 
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2">
-        <span className="text-xs text-white/50 uppercase tracking-widest">Scroll</span>
+        <span className="text-xs text-white/70 uppercase tracking-widest">Scroll</span>
         <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
           <div className="w-1 h-2 bg-white/50 rounded-full animate-bounce" />
         </div>

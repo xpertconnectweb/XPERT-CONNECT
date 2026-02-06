@@ -26,6 +26,13 @@ export function Contact() {
     setIsSubmitting(true)
     setStatus('idle')
 
+    const phoneDigits = formData.phone.replace(/\D/g, '')
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      setStatus('error')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -162,6 +169,8 @@ export function Contact() {
                         onChange={handleChange}
                         autoComplete="tel"
                         placeholder="Phone Number"
+                        pattern="[\d\s\-\+\(\)]{7,20}"
+                        title="Please enter a valid phone number (7-15 digits)"
                         required
                         className="w-full rounded-xl border-0 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                       />

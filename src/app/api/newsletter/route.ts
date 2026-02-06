@@ -15,8 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Invalid email.' }, { status: 400 })
     }
 
-    // TODO: Replace with your email marketing provider.
-    console.log('Newsletter signup', { email })
+    console.log('Newsletter signup received', { timestamp: new Date().toISOString() })
 
     return NextResponse.json({ ok: true })
   } catch (error) {

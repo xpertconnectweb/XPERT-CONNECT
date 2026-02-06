@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Facebook, Instagram, Youtube, Linkedin, Phone, Mail } from 'lucide-react'
+import { Phone, Mail } from 'lucide-react'
 
 const quickLinks = [
   { href: '#about', label: 'About Us' },
@@ -20,12 +20,6 @@ const serviceLinks = [
   { href: '#contact', label: 'Free Consultation' },
 ]
 
-const socialLinks = [
-  { href: '#', icon: Facebook, label: 'Facebook' },
-  { href: '#', icon: Instagram, label: 'Instagram' },
-  { href: '#', icon: Youtube, label: 'YouTube' },
-  { href: '#', icon: Linkedin, label: 'LinkedIn' },
-]
 
 export function Footer() {
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -71,7 +65,7 @@ export function Footer() {
                 className="h-12 w-auto brightness-0 invert"
               />
             </Link>
-            <p className="text-white/60 mb-6 leading-relaxed">
+            <p className="text-white/75 mb-6 leading-relaxed">
               We don't sell contacts. We create trusted connections.
               Connecting clients with verified professionals since 2004.
             </p>
@@ -99,7 +93,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-gold transition-colors"
+                    className="text-white/75 hover:text-gold transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -118,7 +112,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-gold transition-colors"
+                    className="text-white/75 hover:text-gold transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -132,7 +126,7 @@ export function Footer() {
             <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white mb-6">
               Stay Updated
             </h4>
-            <p className="text-white/60 mb-6">
+            <p className="text-white/75 mb-6">
               Subscribe for updates, resources, and client success insights.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-3">
@@ -155,24 +149,11 @@ export function Footer() {
                 {newsletterStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
               </button>
             </form>
-            <p className="text-xs text-white/50 mt-3" aria-live="polite">
+            <p className="text-xs text-white/70 mt-3" aria-live="polite">
               {newsletterStatus === 'success' && 'You are subscribed. Welcome to Xpert Connect.'}
               {newsletterStatus === 'error' && 'Something went wrong. Please try again in a moment.'}
             </p>
 
-            {/* Social Links */}
-            <div className="flex gap-3 mt-8">
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white transition-all hover:bg-gold hover:scale-110"
-                >
-                  <social.icon className="h-5 w-5" />
-                </Link>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -180,10 +161,10 @@ export function Footer() {
       {/* Disclaimer Bar */}
       <div className="border-t border-white/10">
         <div className="container mx-auto px-4 py-6">
-          <p className="text-center text-sm text-white/40 italic">
+          <p className="text-center text-sm text-white/70 italic">
             We are not attorneys and do not provide legal advice. We connect you with licensed professionals in our network.
           </p>
-          <p className="mt-2 text-center text-xs text-white/40">
+          <p className="mt-2 text-center text-xs text-white/70">
             Locations: Florida and Minnesota
           </p>
         </div>
@@ -193,17 +174,17 @@ export function Footer() {
       <div className="bg-navy-dark">
         <div className="container mx-auto px-4 py-5">
           <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
-            <p className="text-sm text-white/50">
+            <p className="text-sm text-white/70">
               &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
-              <Link href="#" className="text-sm text-white/50 hover:text-gold transition-colors">
+              <Link href="#" className="text-sm text-white/70 hover:text-gold transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-sm text-white/50 hover:text-gold transition-colors">
+              <Link href="#" className="text-sm text-white/70 hover:text-gold transition-colors">
                 Terms of Service
               </Link>
-              <Link href="#" className="text-sm text-white/50 hover:text-gold transition-colors">
+              <Link href="#" className="text-sm text-white/70 hover:text-gold transition-colors">
                 Disclaimer
               </Link>
             </div>

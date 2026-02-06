@@ -1,0 +1,21 @@
+{
+  "name": "Xpert Connect",
+  "short_name": "Xpert Connect",
+  "description": "Connect with experienced attorneys and medical clinics after an accident.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0a1628",
+  "theme_color": "#c8a02a",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
