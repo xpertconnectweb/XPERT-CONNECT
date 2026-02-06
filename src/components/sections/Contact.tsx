@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
 
 const contactInfo = [
@@ -52,8 +51,8 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="relative bg-gray-50 overflow-hidden">
-      <div className="container mx-auto px-4 py-24 lg:py-32">
+    <section id="contact" className="section relative bg-gray-50 overflow-hidden">
+      <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Column - Info */}
           <div>

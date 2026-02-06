@@ -19,7 +19,7 @@ export function Hero() {
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop"
+          src="/images/Office.png"
           alt="Professional office"
           fill
           className="object-cover"
