@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { getUserByUsername } from './data'
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: 'Credentials',

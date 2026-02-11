@@ -7,14 +7,26 @@ const DATA_DIR = path.join(process.cwd(), 'data')
 // In-memory cache for read-heavy data (clinics, users rarely change)
 const cache = new Map<string, { data: unknown[]; mtime: number }>()
 
+// In-memory fallback for writes when filesystem is read-only (Vercel)
+const memoryStore = new Map<string, unknown[]>()
+
 function readJson<T>(filename: string, useCache = false): T[] {
+  // Check in-memory store first (used after writes on read-only filesystems)
+  if (memoryStore.has(filename)) {
+    return memoryStore.get(filename) as T[]
+  }
+
   const filePath = path.join(DATA_DIR, filename)
 
   if (useCache) {
-    const stat = fs.statSync(filePath)
-    const cached = cache.get(filename)
-    if (cached && cached.mtime === stat.mtimeMs) {
-      return cached.data as T[]
+    try {
+      const stat = fs.statSync(filePath)
+      const cached = cache.get(filename)
+      if (cached && cached.mtime === stat.mtimeMs) {
+        return cached.data as T[]
+      }
+    } catch {
+      // statSync failed - file may not exist, continue to readFileSync
     }
   }
 
@@ -23,8 +35,13 @@ function readJson<T>(filename: string, useCache = false): T[] {
     const data = JSON.parse(raw) as T[]
 
     if (useCache) {
-      const stat = fs.statSync(filePath)
-      cache.set(filename, { data, mtime: stat.mtimeMs })
+      try {
+        const stat = fs.statSync(filePath)
+        cache.set(filename, { data, mtime: stat.mtimeMs })
+      } catch {
+        // Cache without mtime tracking
+        cache.set(filename, { data, mtime: 0 })
+      }
     }
 
     return data
@@ -36,9 +53,17 @@ function readJson<T>(filename: string, useCache = false): T[] {
 
 function writeJson<T>(filename: string, data: T[]): void {
   const filePath = path.join(DATA_DIR, filename)
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8')
-  // Invalidate cache on write
-  cache.delete(filename)
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8')
+    // Invalidate cache on write
+    cache.delete(filename)
+    memoryStore.delete(filename)
+  } catch {
+    // Filesystem is read-only (Vercel) - store in memory
+    console.warn(`Cannot write to ${filename} (read-only filesystem). Using in-memory storage.`)
+    memoryStore.set(filename, data)
+    cache.delete(filename)
+  }
 }
 
 // Users (cached - rarely change)
