@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ref-001",
+    "lawyerId": "lawyer-001",
+    "lawyerName": "Carlos Martinez",
+    "lawyerFirm": "Martinez & Associates",
+    "clinicId": "c-001",
+    "clinicName": "Miami Spine & Rehab",
+    "patientName": "John Doe",
+    "patientPhone": "(305) 555-9001",
+    "caseType": "Auto Accident",
+    "notes": "Patient needs spine evaluation after rear-end collision.",
+    "status": "attended",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "updatedAt": "2026-02-10T18:59:07.152Z"
+  },
+  {
+    "id": "ref-002",
+    "lawyerId": "lawyer-001",
+    "lawyerName": "Carlos Martinez",
+    "lawyerFirm": "Martinez & Associates",
+    "clinicId": "c-002",
+    "clinicName": "Coral Gables Medical Center",
+    "patientName": "Maria Garcia",
+    "patientPhone": "(305) 555-9002",
+    "caseType": "Slip and Fall",
+    "notes": "Knee injury from slip at grocery store. Needs orthopedic consult.",
+    "status": "received",
+    "createdAt": "2025-01-20T14:00:00Z",
+    "updatedAt": "2025-01-20T14:00:00Z"
+  },
+  {
+    "id": "ref-003",
+    "lawyerId": "lawyer-002",
+    "lawyerName": "Sarah Johnson",
+    "lawyerFirm": "Johnson Legal Group",
+    "clinicId": "c-001",
+    "clinicName": "Miami Spine & Rehab",
+    "patientName": "Robert Smith",
+    "patientPhone": "(305) 555-9003",
+    "caseType": "Workplace Injury",
+    "notes": "Back pain from heavy lifting at construction site.",
+    "status": "attended",
+    "createdAt": "2025-01-10T08:15:00Z",
+    "updatedAt": "2025-01-22T16:30:00Z"
+  },
+  {
+    "id": "ref-236609a3-4a22-4f92-9a5a-907d35dd97aa",
+    "lawyerId": "lawyer-001",
+    "lawyerName": "Carlos Martinez",
+    "lawyerFirm": "Martinez & Associates",
+    "clinicId": "c-156",
+    "clinicName": "Complete Care Lakeland",
+    "patientName": "aaa",
+    "patientPhone": "305 505 0000",
+    "caseType": "Auto Accident",
+    "notes": "fergeg",
+    "status": "received",
+    "createdAt": "2026-02-10T18:36:51.608Z",
+    "updatedAt": "2026-02-10T18:36:51.608Z"
+  }
+]

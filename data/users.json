@@ -1,0 +1,38 @@
+[
+  {
+    "id": "lawyer-001",
+    "username": "martinez_law",
+    "password": "$2b$10$iIyVibJxde2Usb5dfYf.NuRi5Y47kaHW5ySubu/KXyDXculUlYSLe",
+    "name": "Carlos Martinez",
+    "role": "lawyer",
+    "firmName": "Martinez & Associates",
+    "email": "martinez@example.com"
+  },
+  {
+    "id": "lawyer-002",
+    "username": "johnson_legal",
+    "password": "$2b$10$iIyVibJxde2Usb5dfYf.NuRi5Y47kaHW5ySubu/KXyDXculUlYSLe",
+    "name": "Sarah Johnson",
+    "role": "lawyer",
+    "firmName": "Johnson Legal Group",
+    "email": "johnson@example.com"
+  },
+  {
+    "id": "clinic-001",
+    "username": "miami_spine",
+    "password": "$2b$10$iIyVibJxde2Usb5dfYf.NuRi5Y47kaHW5ySubu/KXyDXculUlYSLe",
+    "name": "Miami Spine & Rehab",
+    "role": "clinic",
+    "clinicId": "c-001",
+    "email": "admin@miamispine.example.com"
+  },
+  {
+    "id": "clinic-002",
+    "username": "coral_medical",
+    "password": "$2b$10$iIyVibJxde2Usb5dfYf.NuRi5Y47kaHW5ySubu/KXyDXculUlYSLe",
+    "name": "Coral Gables Medical Center",
+    "role": "clinic",
+    "clinicId": "c-002",
+    "email": "admin@coralgablesmed.example.com"
+  }
+]

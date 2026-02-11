@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
 import { Montserrat, Open_Sans } from 'next/font/google'
 import './globals.css'
-import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
-import { FloatingButton } from '@/components/ui/FloatingButton'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -52,12 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable} ${openSans.variable}`}>
       <body className="bg-white text-gray-700">
-        <Header />
-        <main id="main-content" className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
-        <FloatingButton />
+        {children}
       </body>
     </html>
   )

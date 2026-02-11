@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, Menu, X } from 'lucide-react'
+import { Phone, Menu, X, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
@@ -29,6 +29,9 @@ export function Header() {
       }
     }
 
+    // Check initial scroll position on mount
+    handleScroll()
+
     window.addEventListener('scroll', handleScroll)
     window.addEventListener('keydown', handleKeyDown)
     return () => {
@@ -44,7 +47,7 @@ export function Header() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled
-          ? 'bg-white/95 backdrop-blur-lg shadow-lg shadow-black/5'
+          ? 'bg-white shadow-lg shadow-black/5'
           : 'bg-transparent'
       )}
     >
@@ -93,6 +96,20 @@ export function Header() {
           </nav>
 
           <div className="flex items-center justify-self-end gap-3">
+            {/* Professionals Link */}
+            <Link
+              href="/professionals/login"
+              className={cn(
+                'hidden md:flex items-center gap-2 rounded-full px-4 py-2.5 font-heading text-sm font-medium transition-all duration-300',
+                isScrolled
+                  ? 'text-navy hover:text-gold hover:bg-gold/5'
+                  : 'text-white/90 hover:text-white hover:bg-white/10'
+              )}
+            >
+              <UserCircle className="h-4 w-4" />
+              <span>Professionals</span>
+            </Link>
+
             {/* Phone CTA */}
             <Link
               href="tel:+18449737866"
@@ -151,6 +168,16 @@ export function Header() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                href="/professionals/login"
+                onClick={closeMobileMenu}
+                className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-heading text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gold"
+              >
+                <UserCircle className="h-4 w-4" />
+                <span>Professionals</span>
+              </Link>
+            </li>
             <li className="pt-4">
               <Link
                 href="tel:+18449737866"
