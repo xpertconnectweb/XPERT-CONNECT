@@ -1,6 +1,11 @@
-import { User, Briefcase, Check, Star, Shield, Zap, TrendingUp, Award } from 'lucide-react'
+import { User, Briefcase, Star, Shield, Zap, TrendingUp, Award } from 'lucide-react'
+import type { BenefitsData } from '@/lib/sanity-types'
 
-const individualBenefits = [
+const iconMap: Record<string, typeof Shield> = {
+  Shield, Zap, Star, User, TrendingUp, Briefcase, Award,
+}
+
+const defaultIndividualBenefits = [
   {
     icon: Shield,
     title: 'Verified Experts Only',
@@ -27,7 +32,7 @@ const individualBenefits = [
   },
 ]
 
-const professionalBenefits = [
+const defaultProfessionalBenefits = [
   {
     icon: TrendingUp,
     title: 'Quality Referrals',
@@ -54,18 +59,42 @@ const professionalBenefits = [
   },
 ]
 
-export function Benefits() {
+interface BenefitsProps {
+  data?: BenefitsData | null
+}
+
+export function Benefits({ data }: BenefitsProps) {
+  const label = data?.label ?? 'Why Choose Us'
+  const titleLine1 = data?.titleLine1 ?? 'Benefits for '
+  const titleAccent = data?.titleAccent ?? 'Everyone'
+  const description = data?.description ?? 'Xpert Connect creates value for both individuals seeking help and professionals looking to grow their practice.'
+
+  const individualBenefits = data?.individualBenefits
+    ? data.individualBenefits.map((b) => ({
+        icon: iconMap[b.iconName] ?? Shield,
+        title: b.title,
+        description: b.description,
+      }))
+    : defaultIndividualBenefits
+
+  const professionalBenefits = data?.professionalBenefits
+    ? data.professionalBenefits.map((b) => ({
+        icon: iconMap[b.iconName] ?? Shield,
+        title: b.title,
+        description: b.description,
+      }))
+    : defaultProfessionalBenefits
+
   return (
     <section id="benefits" className="section bg-white pattern-bg">
       <div className="container mx-auto px-4">
         <div className="section-header">
-          <span className="section-label">Why Choose Us</span>
+          <span className="section-label">{label}</span>
           <h2 className="section-title">
-            Benefits for <span className="text-gold">Everyone</span>
+            {titleLine1}<span className="text-gold">{titleAccent}</span>
           </h2>
           <p className="section-description">
-            Xpert Connect creates value for both individuals seeking help and
-            professionals looking to grow their practice.
+            {description}
           </p>
         </div>
 

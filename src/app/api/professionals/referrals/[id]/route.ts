@@ -20,7 +20,7 @@ export async function PATCH(
   }
 
   // Verify clinic owns this referral
-  const referral = getReferralById(params.id)
+  const referral = await getReferralById(params.id)
   if (!referral) {
     return NextResponse.json({ error: 'Referral not found' }, { status: 404 })
   }
@@ -36,6 +36,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
-  const updated = updateReferralStatus(params.id, status)
+  const updated = await updateReferralStatus(params.id, status)
   return NextResponse.json(updated)
 }

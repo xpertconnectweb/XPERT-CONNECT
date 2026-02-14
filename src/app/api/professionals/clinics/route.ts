@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const clinics = getClinics()
+  const clinics = await getClinics()
   return NextResponse.json(clinics, {
     headers: { 'Cache-Control': 'private, max-age=300' }, // 5 min cache
   })

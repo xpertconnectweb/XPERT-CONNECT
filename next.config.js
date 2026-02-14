@@ -1,16 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/**': ['./data/**'],
-      '/professionals/**': ['./data/**'],
-    },
-  },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
       },
     ],
   },
@@ -30,8 +28,8 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' https://images.unsplash.com https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
-              "connect-src 'self' https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org",
+              "img-src 'self' https://images.unsplash.com https://cdn.sanity.io https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
+              "connect-src 'self' https://*.supabase.co https://cdn.sanity.io https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org",
             ].join('; '),
           },
         ],

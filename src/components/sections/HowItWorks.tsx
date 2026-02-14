@@ -1,13 +1,17 @@
 import { ShieldCheck, ClipboardList, UserCheck, Handshake } from 'lucide-react'
+import type { HowItWorksData } from '@/lib/sanity-types'
 
-const steps = [
+const iconMap: Record<string, typeof ShieldCheck> = {
+  ShieldCheck, ClipboardList, UserCheck, Handshake,
+}
+
+const defaultSteps = [
   {
     number: '01',
     icon: ShieldCheck,
     title: 'Verify',
     description:
       'We thoroughly verify all professionals in our network, checking credentials, licenses, and track records.',
-    color: 'navy',
   },
   {
     number: '02',
@@ -15,7 +19,6 @@ const steps = [
     title: 'Qualify',
     description:
       'We assess your specific situation and requirements to understand exactly what kind of expert you need.',
-    color: 'navy',
   },
   {
     number: '03',
@@ -23,7 +26,6 @@ const steps = [
     title: 'Match',
     description:
       'Using our proprietary system, we match you with professionals best suited to handle your case.',
-    color: 'gold',
   },
   {
     number: '04',
@@ -31,11 +33,29 @@ const steps = [
     title: 'Connect',
     description:
       'We facilitate the introduction and ensure a smooth connection between you and your matched expert.',
-    color: 'gold',
   },
 ]
 
-export function HowItWorks() {
+interface HowItWorksProps {
+  data?: HowItWorksData | null
+}
+
+export function HowItWorks({ data }: HowItWorksProps) {
+  const label = data?.label ?? 'Our Process'
+  const titleLine1 = data?.titleLine1 ?? 'How It '
+  const titleAccent = data?.titleAccent ?? 'Works'
+  const description = data?.description ?? 'Our proven 4-step process ensures you get matched with the right professional for your specific needs.'
+  const ctaText = data?.ctaText ?? 'Start Your Free Consultation'
+
+  const steps = data?.steps
+    ? data.steps.map((s, i) => ({
+        number: s.number,
+        icon: iconMap[s.iconName] ?? ShieldCheck,
+        title: s.title,
+        description: s.description,
+      }))
+    : defaultSteps
+
   return (
     <section id="how-it-works" className="section bg-navy relative overflow-hidden">
       {/* Background Pattern */}
@@ -50,13 +70,12 @@ export function HowItWorks() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="section-header">
-          <span className="section-label !bg-white/10 !text-gold">Our Process</span>
+          <span className="section-label !bg-white/10 !text-gold">{label}</span>
           <h2 className="section-title !text-white">
-            How It <span className="text-gold">Works</span>
+            {titleLine1}<span className="text-gold">{titleAccent}</span>
           </h2>
           <p className="section-description !text-white/75">
-            Our proven 4-step process ensures you get matched with the right professional
-            for your specific needs.
+            {description}
           </p>
         </div>
 
@@ -105,7 +124,7 @@ export function HowItWorks() {
             href="#contact"
             className="inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark hover:shadow-lg hover:shadow-gold/25"
           >
-            Start Your Free Consultation
+            {ctaText}
           </a>
         </div>
       </div>

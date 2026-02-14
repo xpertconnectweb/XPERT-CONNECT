@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import { Scale, Hospital, Home, ArrowRight, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { ServicesData } from '@/lib/sanity-types'
 
-const services = [
+const iconMap: Record<string, typeof Scale> = { Scale, Hospital, Home }
+
+const defaultServices = [
   {
     icon: Scale,
     title: 'Legal Services',
@@ -16,7 +19,7 @@ const services = [
       'Slip & Fall Cases',
     ],
     cta: 'Find an Attorney',
-    color: 'navy',
+    color: 'navy' as const,
     featured: true,
   },
   {
@@ -32,7 +35,7 @@ const services = [
       'Diagnostic Imaging',
     ],
     cta: 'Find a Clinic',
-    color: 'gold',
+    color: 'gold' as const,
     featured: false,
   },
   {
@@ -48,24 +51,45 @@ const services = [
       'Property Management',
     ],
     cta: 'Find a Realtor',
-    color: 'navy',
+    color: 'navy' as const,
     featured: false,
   },
 ]
 
-export function Services() {
+interface ServicesProps {
+  data?: ServicesData | null
+}
+
+export function Services({ data }: ServicesProps) {
+  const label = data?.label ?? 'Our Services'
+  const titleLine1 = data?.titleLine1 ?? 'Expert Connections in'
+  const titleAccent = data?.titleAccent ?? ' Three Key Areas'
+  const description = data?.description ?? 'We specialize in connecting you with thoroughly vetted professionals who have proven track records of success.'
+
+  const services = data?.services
+    ? data.services.map((s) => ({
+        icon: iconMap[s.iconName] ?? Scale,
+        title: s.title,
+        subtitle: s.subtitle,
+        description: s.description,
+        features: s.features,
+        cta: s.cta,
+        color: s.color as 'navy' | 'gold',
+        featured: s.featured,
+      }))
+    : defaultServices
+
   return (
     <section id="services" className="section bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="section-header">
-          <span className="section-label">Our Services</span>
+          <span className="section-label">{label}</span>
           <h2 className="section-title">
-            Expert Connections in
-            <span className="text-gold"> Three Key Areas</span>
+            {titleLine1}
+            <span className="text-gold">{titleAccent}</span>
           </h2>
           <p className="section-description">
-            We specialize in connecting you with thoroughly vetted professionals
-            who have proven track records of success.
+            {description}
           </p>
         </div>
 
@@ -158,4 +182,3 @@ export function Services() {
     </section>
   )
 }
-

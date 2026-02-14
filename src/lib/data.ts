@@ -1,122 +1,133 @@
-import fs from 'fs'
-import path from 'path'
+import { supabaseAdmin } from './supabase'
+import { rowToModel, rowsToModels, modelToRow } from './mappers'
 import type { User, Clinic, Referral } from '@/types/professionals'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-
-// In-memory cache for read-heavy data (clinics, users rarely change)
-const cache = new Map<string, { data: unknown[]; mtime: number }>()
-
-// In-memory fallback for writes when filesystem is read-only (Vercel)
-const memoryStore = new Map<string, unknown[]>()
-
-function readJson<T>(filename: string, useCache = false): T[] {
-  // Check in-memory store first (used after writes on read-only filesystems)
-  if (memoryStore.has(filename)) {
-    return memoryStore.get(filename) as T[]
-  }
-
-  const filePath = path.join(DATA_DIR, filename)
-
-  if (useCache) {
-    try {
-      const stat = fs.statSync(filePath)
-      const cached = cache.get(filename)
-      if (cached && cached.mtime === stat.mtimeMs) {
-        return cached.data as T[]
-      }
-    } catch {
-      // statSync failed - file may not exist, continue to readFileSync
-    }
-  }
-
-  try {
-    const raw = fs.readFileSync(filePath, 'utf-8')
-    const data = JSON.parse(raw) as T[]
-
-    if (useCache) {
-      try {
-        const stat = fs.statSync(filePath)
-        cache.set(filename, { data, mtime: stat.mtimeMs })
-      } catch {
-        // Cache without mtime tracking
-        cache.set(filename, { data, mtime: 0 })
-      }
-    }
-
-    return data
-  } catch (err) {
-    console.error(`Failed to read ${filename}:`, err)
+// Users
+export async function getUsers(): Promise<User[]> {
+  const { data, error } = await supabaseAdmin.from('users').select('*')
+  if (error) {
+    console.error('getUsers error:', error)
     return []
   }
+  return rowsToModels<User>(data)
 }
 
-function writeJson<T>(filename: string, data: T[]): void {
-  const filePath = path.join(DATA_DIR, filename)
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8')
-    // Invalidate cache on write
-    cache.delete(filename)
-    memoryStore.delete(filename)
-  } catch {
-    // Filesystem is read-only (Vercel) - store in memory
-    console.warn(`Cannot write to ${filename} (read-only filesystem). Using in-memory storage.`)
-    memoryStore.set(filename, data)
-    cache.delete(filename)
+export async function getUserByUsername(
+  username: string
+): Promise<User | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('*')
+    .eq('username', username)
+    .single()
+  if (error || !data) return undefined
+  return rowToModel<User>(data)
+}
+
+// Clinics
+export async function getClinics(): Promise<Clinic[]> {
+  const { data, error } = await supabaseAdmin.from('clinics').select('*')
+  if (error) {
+    console.error('getClinics error:', error)
+    return []
   }
+  return rowsToModels<Clinic>(data)
 }
 
-// Users (cached - rarely change)
-export function getUsers(): User[] {
-  return readJson<User>('users.json', true)
+export async function getClinicById(
+  id: string
+): Promise<Clinic | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('clinics')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error || !data) return undefined
+  return rowToModel<Clinic>(data)
 }
 
-export function getUserByUsername(username: string): User | undefined {
-  return getUsers().find((u) => u.username === username)
+// Referrals
+export async function getReferrals(): Promise<Referral[]> {
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('getReferrals error:', error)
+    return []
+  }
+  return rowsToModels<Referral>(data)
 }
 
-// Clinics (cached - rarely change)
-export function getClinics(): Clinic[] {
-  return readJson<Clinic>('clinics.json', true)
+export async function getReferralsByLawyer(
+  lawyerId: string
+): Promise<Referral[]> {
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .select('*')
+    .eq('lawyer_id', lawyerId)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('getReferralsByLawyer error:', error)
+    return []
+  }
+  return rowsToModels<Referral>(data)
 }
 
-export function getClinicById(id: string): Clinic | undefined {
-  return getClinics().find((c) => c.id === id)
+export async function getReferralsByClinic(
+  clinicId: string
+): Promise<Referral[]> {
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .select('*')
+    .eq('clinic_id', clinicId)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('getReferralsByClinic error:', error)
+    return []
+  }
+  return rowsToModels<Referral>(data)
 }
 
-// Referrals (not cached - changes frequently)
-export function getReferrals(): Referral[] {
-  return readJson<Referral>('referrals.json')
+export async function getReferralById(
+  id: string
+): Promise<Referral | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error || !data) return undefined
+  return rowToModel<Referral>(data)
 }
 
-export function getReferralsByLawyer(lawyerId: string): Referral[] {
-  return getReferrals().filter((r) => r.lawyerId === lawyerId)
+export async function createReferral(referral: Referral): Promise<Referral> {
+  const row = modelToRow(referral)
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .insert(row)
+    .select()
+    .single()
+  if (error) {
+    console.error('createReferral error:', error)
+    throw new Error('Failed to create referral')
+  }
+  return rowToModel<Referral>(data)
 }
 
-export function getReferralsByClinic(clinicId: string): Referral[] {
-  return getReferrals().filter((r) => r.clinicId === clinicId)
-}
-
-export function getReferralById(id: string): Referral | undefined {
-  return getReferrals().find((r) => r.id === id)
-}
-
-export function createReferral(referral: Referral): Referral {
-  const referrals = getReferrals()
-  referrals.push(referral)
-  writeJson('referrals.json', referrals)
-  return referral
-}
-
-export function updateReferralStatus(
+export async function updateReferralStatus(
   id: string,
   status: Referral['status']
-): Referral | null {
-  const referrals = getReferrals()
-  const index = referrals.findIndex((r) => r.id === id)
-  if (index === -1) return null
-  referrals[index].status = status
-  referrals[index].updatedAt = new Date().toISOString()
-  writeJson('referrals.json', referrals)
-  return referrals[index]
+): Promise<Referral | null> {
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) {
+    console.error('updateReferralStatus error:', error)
+    return null
+  }
+  return rowToModel<Referral>(data)
 }

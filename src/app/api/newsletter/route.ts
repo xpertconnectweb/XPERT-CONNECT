@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -15,7 +16,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Invalid email.' }, { status: 400 })
     }
 
-    console.log('Newsletter signup received', { timestamp: new Date().toISOString() })
+    const { error } = await supabaseAdmin
+      .from('newsletter_subscribers')
+      .upsert({ email }, { onConflict: 'email' })
+
+    if (error) {
+      console.error('Failed to save newsletter subscriber:', error)
+      return NextResponse.json({ ok: false, error: 'Failed to subscribe.' }, { status: 500 })
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {

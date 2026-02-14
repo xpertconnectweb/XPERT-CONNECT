@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -28,7 +29,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Message too long.' }, { status: 400 })
     }
 
-    console.log('Contact request received', { service, timestamp: new Date().toISOString() })
+    const { error } = await supabaseAdmin.from('contacts').insert({
+      name,
+      email,
+      phone,
+      service,
+      message,
+    })
+
+    if (error) {
+      console.error('Failed to save contact:', error)
+      return NextResponse.json({ ok: false, error: 'Failed to save contact.' }, { status: 500 })
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {

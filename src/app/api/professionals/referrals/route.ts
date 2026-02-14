@@ -20,11 +20,11 @@ export async function GET() {
   const { role, id, clinicId } = session.user
 
   if (role === 'lawyer') {
-    return NextResponse.json(getReferralsByLawyer(id))
+    return NextResponse.json(await getReferralsByLawyer(id))
   }
 
   if (role === 'clinic' && clinicId) {
-    return NextResponse.json(getReferralsByClinic(clinicId))
+    return NextResponse.json(await getReferralsByClinic(clinicId))
   }
 
   return NextResponse.json([])
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 })
   }
 
-  const clinic = getClinicById(clinicId)
+  const clinic = await getClinicById(clinicId)
   if (!clinic) {
     return NextResponse.json({ error: 'Clinic not found' }, { status: 404 })
   }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
   const lawyerName = session.user.name || 'Unknown'
   const lawyerFirm = session.user.firmName || ''
 
-  const referral = createReferral({
+  const referral = await createReferral({
     id: `ref-${uuidv4()}`,
     lawyerId: session.user.id,
     lawyerName,

@@ -2,15 +2,22 @@
 
 import { useState } from 'react'
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
+import type { ContactData } from '@/lib/sanity-types'
 
-const contactInfo = [
+const iconMap: Record<string, typeof Phone> = { Phone, Mail, MapPin, Clock }
+
+const defaultContactInfo = [
   { icon: Phone, label: 'Call Us', value: '1-844-XPERT-NOW', href: 'tel:+18449737866' },
   { icon: Mail, label: 'Email', value: 'info@xpertconnect.com', href: 'mailto:info@xpertconnect.com' },
   { icon: Clock, label: 'Available', value: '24/7 Support', href: null },
   { icon: MapPin, label: 'Locations', value: 'Florida & Minnesota', href: null },
 ]
 
-export function Contact() {
+interface ContactProps {
+  data?: ContactData | null
+}
+
+export function Contact({ data }: ContactProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [formData, setFormData] = useState({
@@ -20,6 +27,23 @@ export function Contact() {
     service: '',
     message: '',
   })
+
+  const label = data?.label ?? 'Contact Us'
+  const titleLine1 = data?.titleLine1 ?? 'Been in an Accident?'
+  const titleAccent = data?.titleAccent ?? "Let's Connect."
+  const description = data?.description ?? "Don't navigate this alone. Our team connects you with experienced professionals who can help with your case. Request a free consultation today."
+  const disclaimer = data?.disclaimer ?? 'We are not attorneys and do not provide legal advice. We connect you with licensed professionals.'
+  const formTitle = data?.formTitle ?? 'Free Consultation'
+  const formDescription = data?.formDescription ?? "Fill out the form and we'll connect you with the right professional."
+
+  const contactInfo = data?.contactInfo
+    ? data.contactInfo.map((c) => ({
+        icon: iconMap[c.iconName] ?? Phone,
+        label: c.label,
+        value: c.value,
+        href: c.href || null,
+      }))
+    : defaultContactInfo
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -63,14 +87,13 @@ export function Contact() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Column - Info */}
           <div>
-            <span className="section-label">Contact Us</span>
+            <span className="section-label">{label}</span>
             <h2 className="section-title text-left">
-              Been in an Accident?
-              <span className="block text-gold">Let's Connect.</span>
+              {titleLine1}
+              <span className="block text-gold">{titleAccent}</span>
             </h2>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              Don't navigate this alone. Our team connects you with experienced professionals
-              who can help with your case. Request a free consultation today.
+              {description}
             </p>
 
             {/* Contact Info Cards */}
@@ -100,8 +123,7 @@ export function Contact() {
             {/* Disclaimer */}
             <div className="p-4 bg-navy/5 rounded-xl border-l-4 border-gold">
               <p className="text-sm text-gray-500 italic">
-                <strong className="text-navy not-italic">Important:</strong> We are not attorneys
-                and do not provide legal advice. We connect you with licensed professionals.
+                <strong className="text-navy not-italic">Important:</strong> {disclaimer}
               </p>
             </div>
           </div>
@@ -116,10 +138,10 @@ export function Contact() {
 
               <div className="relative z-10">
                 <h3 className="font-heading text-2xl font-bold text-white mb-2">
-                  Free Consultation
+                  {formTitle}
                 </h3>
                 <p className="text-white/80 mb-8 text-sm">
-                  Fill out the form and we'll connect you with the right professional.
+                  {formDescription}
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
