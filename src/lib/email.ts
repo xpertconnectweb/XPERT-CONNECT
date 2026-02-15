@@ -50,7 +50,9 @@ export function referralCreatedEmail(
   lawyerName: string,
   lawyerFirm: string,
   patientName: string,
-  caseType: string
+  caseType: string,
+  coverage: string,
+  pip: string
 ) {
   const safe = {
     clinicName: escapeHtml(clinicName),
@@ -58,6 +60,8 @@ export function referralCreatedEmail(
     lawyerFirm: escapeHtml(lawyerFirm),
     patientName: escapeHtml(patientName),
     caseType: escapeHtml(caseType),
+    coverage: escapeHtml(coverage),
+    pip: escapeHtml(pip),
   }
 
   const firmLine = safe.lawyerFirm
@@ -74,6 +78,8 @@ export function referralCreatedEmail(
       <ul>
         <li><strong>Patient:</strong> ${safe.patientName}</li>
         <li><strong>Case Type:</strong> ${safe.caseType}</li>
+        <li><strong>Coverage:</strong> ${safe.coverage}</li>
+        <li><strong>PIP:</strong> ${safe.pip}</li>
       </ul>
       <p>Please log in to your Xpert Connect dashboard to view the full details.</p>
       <p>Best regards,<br>Xpert Connect</p>
@@ -88,6 +94,8 @@ export function internalNotificationEmail(
   clinicName: string,
   patientName: string,
   caseType: string,
+  coverage: string,
+  pip: string,
   createdAt: string
 ) {
   const safe = {
@@ -96,6 +104,8 @@ export function internalNotificationEmail(
     clinicName: escapeHtml(clinicName),
     patientName: escapeHtml(patientName),
     caseType: escapeHtml(caseType),
+    coverage: escapeHtml(coverage),
+    pip: escapeHtml(pip),
   }
 
   const dateStr = formatDateTime(createdAt)
@@ -111,6 +121,8 @@ export function internalNotificationEmail(
         <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Clinic</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.clinicName}</td></tr>
         <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Patient</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.patientName}</td></tr>
         <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Case Type</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.caseType}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Coverage</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.coverage}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">PIP</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.pip}</td></tr>
         <tr><td style="padding:8px;font-weight:bold;">Date / Time</td><td style="padding:8px;">${dateStr} (ET)</td></tr>
       </table>
       <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>

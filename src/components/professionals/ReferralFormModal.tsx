@@ -12,6 +12,17 @@ const CASE_TYPES = [
   'Other',
 ]
 
+const COVERAGE_OPTIONS = [
+  '10/20k',
+  '25/50k',
+  '50/100k',
+  '100/300k',
+  '250/500k',
+  '1M+',
+]
+
+const PIP_OPTIONS = ['Yes', 'No', 'N/A']
+
 interface ReferralFormModalProps {
   clinic: Clinic
   onClose: () => void
@@ -22,6 +33,8 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
     patientName: '',
     patientPhone: '',
     caseType: '',
+    coverage: '',
+    pip: '',
     notes: '',
   })
   const [loading, setLoading] = useState(false)
@@ -183,6 +196,44 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="coverage" className="block text-sm font-medium text-gray-700 mb-1">
+                    Coverage *
+                  </label>
+                  <select
+                    id="coverage"
+                    required
+                    value={form.coverage}
+                    onChange={(e) => updateField('coverage', e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
+                  >
+                    <option value="">Select coverage</option>
+                    {COVERAGE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="pip" className="block text-sm font-medium text-gray-700 mb-1">
+                    PIP *
+                  </label>
+                  <select
+                    id="pip"
+                    required
+                    value={form.pip}
+                    onChange={(e) => updateField('pip', e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
+                  >
+                    <option value="">Select PIP</option>
+                    {PIP_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>

@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS referrals (
   patient_name   TEXT NOT NULL,
   patient_phone  TEXT NOT NULL,
   case_type      TEXT NOT NULL,
+  coverage       TEXT NOT NULL DEFAULT '',
+  pip            TEXT NOT NULL DEFAULT '',
   notes          TEXT NOT NULL DEFAULT '',
   status         TEXT NOT NULL CHECK (status IN ('received', 'in_process', 'attended')) DEFAULT 'received',
   created_at     TIMESTAMPTZ DEFAULT now(),

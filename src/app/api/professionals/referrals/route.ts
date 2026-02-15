@@ -41,15 +41,17 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { clinicId, patientName, patientPhone, caseType, notes } = body
+  const { clinicId, patientName, patientPhone, caseType, coverage, pip, notes } = body
 
-  if (!clinicId || !patientName || !patientPhone || !caseType) {
+  if (!clinicId || !patientName || !patientPhone || !caseType || !coverage || !pip) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
   const cleanName = sanitize(patientName)
   const cleanPhone = sanitize(patientPhone)
   const cleanCase = sanitize(caseType)
+  const cleanCoverage = sanitize(coverage)
+  const cleanPip = sanitize(pip)
   const cleanNotes = sanitize(notes || '')
 
   if (cleanName.length < 2 || cleanName.length > 100) {
@@ -79,6 +81,8 @@ export async function POST(request: NextRequest) {
     patientName: cleanName,
     patientPhone: cleanPhone,
     caseType: cleanCase,
+    coverage: cleanCoverage,
+    pip: cleanPip,
     notes: cleanNotes,
     status: 'received',
     createdAt: now,
@@ -92,7 +96,9 @@ export async function POST(request: NextRequest) {
     lawyerName,
     lawyerFirm,
     cleanName,
-    cleanCase
+    cleanCase,
+    cleanCoverage,
+    cleanPip
   ).catch((err) => console.error('Clinic email failed:', err))
 
   // Send internal team notification (non-blocking)
@@ -102,6 +108,8 @@ export async function POST(request: NextRequest) {
     clinic.name,
     cleanName,
     cleanCase,
+    cleanCoverage,
+    cleanPip,
     now
   ).catch((err) => console.error('Internal email failed:', err))
 

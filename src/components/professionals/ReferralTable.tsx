@@ -56,6 +56,7 @@ export function ReferralTable({ referrals, onStatusChange }: ReferralTableProps)
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Patient</th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Lawyer</th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Case Type</th>
+              <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Notes</th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
@@ -78,6 +79,13 @@ export function ReferralTable({ referrals, onStatusChange }: ReferralTableProps)
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-gray-700">{ref.caseType}</td>
+                  <td className="px-4 py-3.5 text-gray-500 text-xs max-w-[200px]">
+                    {ref.notes ? (
+                      <span className="line-clamp-2" title={ref.notes}>{ref.notes}</span>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3.5 text-gray-500 whitespace-nowrap">{formatDate(ref.createdAt)}</td>
                   <td className="px-4 py-3.5">
                     <StatusBadge status={ref.status} />

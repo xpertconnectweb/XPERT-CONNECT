@@ -38,6 +38,8 @@ export interface Referral {
   patientName: string
   patientPhone: string
   caseType: string
+  coverage: string
+  pip: string
   notes: string
   status: ReferralStatus
   createdAt: string
