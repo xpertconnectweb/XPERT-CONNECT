@@ -21,18 +21,18 @@
     "id": "clinic-001",
     "username": "miami_spine",
     "password": "$2b$10$iIyVibJxde2Usb5dfYf.NuRi5Y47kaHW5ySubu/KXyDXculUlYSLe",
-    "name": "Miami Spine & Rehab",
+    "name": "Miami Spine & Injury",
     "role": "clinic",
-    "clinicId": "c-001",
+    "clinicId": "c-161",
     "email": "admin@miamispine.example.com"
   },
   {
     "id": "clinic-002",
     "username": "coral_medical",
     "password": "$2b$10$iIyVibJxde2Usb5dfYf.NuRi5Y47kaHW5ySubu/KXyDXculUlYSLe",
-    "name": "Coral Gables Medical Center",
+    "name": "Injury Care Medical Center – Miami",
     "role": "clinic",
-    "clinicId": "c-002",
+    "clinicId": "c-160",
     "email": "admin@coralgablesmed.example.com"
   }
 ]

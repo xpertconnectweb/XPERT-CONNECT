@@ -319,6 +319,23 @@
   },
   {
     "id": "c-019",
+    "name": "Integrity Chiropractic",
+    "address": "431 Hollywood Blvd E, Mary Esther, FL 32569",
+    "lat": 30.4134616,
+    "lng": -86.653293,
+    "phone": "(850) 864-5300",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://integritychiro.com",
+    "region": "North Florida / Panhandle",
+    "county": "Okaloosa",
+    "available": true
+  },
+  {
+    "id": "c-020",
     "name": "Emerald Coast Chiropractic",
     "address": "655 Grand Blvd Ste D103, Miramar Beach, FL 32550",
     "lat": 30.3840896,
@@ -334,7 +351,7 @@
     "available": true
   },
   {
-    "id": "c-020",
+    "id": "c-021",
     "name": "Tillman Family Chiropractic",
     "address": "13295 Business 331 Unit A300, Freeport, FL 32439",
     "lat": 30.4790796,
@@ -351,7 +368,7 @@
     "available": true
   },
   {
-    "id": "c-021",
+    "id": "c-022",
     "name": "Hutchison Chiropractic Center",
     "address": "151 Mary Esther Blvd Unit 301–302, Mary Esther, FL 32569",
     "lat": 30.4129406,
@@ -368,7 +385,7 @@
     "available": true
   },
   {
-    "id": "c-022",
+    "id": "c-023",
     "name": "Florida Injury Centers – Freeport",
     "address": "1245 Old Jolly Bay Rd Ste A, Freeport, FL 32439",
     "lat": 30.4790796,
@@ -385,7 +402,7 @@
     "available": true
   },
   {
-    "id": "c-023",
+    "id": "c-024",
     "name": "Balance Chiropractic – BPR Method",
     "address": "3214 Fordham Pkwy, Gulf Breeze, FL 32563",
     "lat": 30.3990539,
@@ -403,7 +420,7 @@
     "available": true
   },
   {
-    "id": "c-024",
+    "id": "c-025",
     "name": "Moore’s Chiropractic Health Clinic",
     "address": "502 S Ferdon Blvd Ste A, Crestview, FL 32536",
     "lat": 30.7545212,
@@ -420,7 +437,7 @@
     "available": true
   },
   {
-    "id": "c-025",
+    "id": "c-026",
     "name": "Navarre Chiropractic Center (Dr. Llaird Likens)",
     "address": "1816 Alpine Dr, Navarre, FL 32566",
     "lat": 30.4005917,
@@ -437,7 +454,7 @@
     "available": true
   },
   {
-    "id": "c-026",
+    "id": "c-027",
     "name": "Pickett Chiropractic",
     "address": "1816 Alpine Dr, Navarre, FL 32566",
     "lat": 30.4005917,
@@ -453,7 +470,7 @@
     "available": true
   },
   {
-    "id": "c-027",
+    "id": "c-028",
     "name": "Chiropractic Worx – PCB",
     "address": "8406 Panama City Beach Pkwy Ste D, Panama City Beach, FL 32407",
     "lat": 30.1918096,
@@ -470,7 +487,7 @@
     "available": true
   },
   {
-    "id": "c-028",
+    "id": "c-029",
     "name": "Bay Clinic of Chiropractic",
     "address": "520 N MacArthur Ave, Panama City, FL 32401",
     "lat": 30.1646,
@@ -487,7 +504,7 @@
     "available": true
   },
   {
-    "id": "c-029",
+    "id": "c-030",
     "name": "Beach Chiropractic Clinic",
     "address": "2421 Thomas Dr, Panama City, FL 32408",
     "lat": 30.1601083,
@@ -505,7 +522,7 @@
     "available": true
   },
   {
-    "id": "c-030",
+    "id": "c-031",
     "name": "Balanced Chiropractic",
     "address": "2431 MLK Jr Blvd Ste L, Panama City, FL 32405",
     "lat": 30.1933075,
@@ -521,7 +538,7 @@
     "available": true
   },
   {
-    "id": "c-031",
+    "id": "c-032",
     "name": "Bauman Chiropractic",
     "address": "3613 N Highway 231, Panama City, FL 32404",
     "lat": 30.1459946,
@@ -538,7 +555,7 @@
     "available": true
   },
   {
-    "id": "c-032",
+    "id": "c-033",
     "name": "Emerald Shores Chiropractic",
     "address": "1101 Ohio Ave, Lynn Haven, FL 32444",
     "lat": 30.242088,
@@ -555,7 +572,7 @@
     "available": true
   },
   {
-    "id": "c-033",
+    "id": "c-034",
     "name": "Shores Chiropractic & Wellness",
     "address": "2424 Lisenby Ave, Panama City, FL 32405",
     "lat": 30.193123,
@@ -572,7 +589,7 @@
     "available": true
   },
   {
-    "id": "c-034",
+    "id": "c-035",
     "name": "Clearway Pain Solutions – Panama City",
     "address": "2507 Harrison Ave Unit 200, Panama City, FL 32405",
     "lat": 30.1933075,
@@ -588,7 +605,7 @@
     "available": true
   },
   {
-    "id": "c-035",
+    "id": "c-036",
     "name": "Pain Clinic of Northwest Florida",
     "address": "2250 Harrison Ave, Panama City, FL 32405",
     "lat": 30.189207,
@@ -605,7 +622,7 @@
     "available": true
   },
   {
-    "id": "c-036",
+    "id": "c-037",
     "name": "Spine Care Plus Wellness Center",
     "address": "714 E 4th St, Panama City, FL 32401",
     "lat": 30.154857,
@@ -623,7 +640,7 @@
     "available": true
   },
   {
-    "id": "c-037",
+    "id": "c-038",
     "name": "Tallahassee Accident & Rehab",
     "address": "1711 S Gadsden St, Tallahassee, FL 32301",
     "lat": 30.4259047,
@@ -641,7 +658,7 @@
     "available": true
   },
   {
-    "id": "c-038",
+    "id": "c-039",
     "name": "Auto Accident Chiropractor Tallahassee – Dr. Pragle",
     "address": "300 W Pensacola St, Tallahassee, FL 32301",
     "lat": 30.4390202,
@@ -660,7 +677,7 @@
     "available": true
   },
   {
-    "id": "c-039",
+    "id": "c-040",
     "name": "University Physical Medicine",
     "address": "1224 Ocala Rd, Tallahassee, FL 32304",
     "lat": 30.4574129,
@@ -678,7 +695,7 @@
     "available": true
   },
   {
-    "id": "c-040",
+    "id": "c-041",
     "name": "Fiorini Chiropractic Center, P.A.",
     "address": "2619 N Blair Stone Rd, Tallahassee, FL 32301",
     "lat": 30.4629525,
@@ -695,7 +712,7 @@
     "available": true
   },
   {
-    "id": "c-041",
+    "id": "c-042",
     "name": "Pragle Chiropractic – Accident & Injury Clinic",
     "address": "227 N Bronough St Ste 1010, Tallahassee, FL 32301",
     "lat": 30.4354447,
@@ -712,7 +729,7 @@
     "available": true
   },
   {
-    "id": "c-042",
+    "id": "c-043",
     "name": "Accident Doctor Group",
     "address": "2339 N Monroe St, Tallahassee, FL 32303",
     "lat": 30.4713259,
@@ -729,7 +746,43 @@
     "available": true
   },
   {
-    "id": "c-043",
+    "id": "c-044",
+    "name": "University Physical Medicine",
+    "address": "1224 Ocala Rd, Tallahassee, FL 32304",
+    "lat": 30.4574129,
+    "lng": -84.3178189,
+    "phone": "(850) 576-2129",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://www.chiropractictallahassee.com/",
+    "region": "North Florida / Panhandle",
+    "county": "Gadsden",
+    "available": true
+  },
+  {
+    "id": "c-045",
+    "name": "Tallahassee Accident & Rehab",
+    "address": "1711 S Gadsden St, Tallahassee, FL 32301",
+    "lat": 30.4259047,
+    "lng": -84.2781402,
+    "phone": "(850) 222-9051",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "",
+    "region": "North Florida / Panhandle",
+    "county": "Gadsden",
+    "available": true
+  },
+  {
+    "id": "c-046",
     "name": "Athletic & Family Chiropractic",
     "address": "2309 Wednesday St, Tallahassee, FL 32308",
     "lat": 30.4792043,
@@ -747,7 +800,7 @@
     "available": true
   },
   {
-    "id": "c-044",
+    "id": "c-047",
     "name": "Marianna Health and Wellness, P.A.",
     "address": "4439 Jackson St Ste A, Marianna, FL 32448",
     "lat": 30.7110112,
@@ -763,7 +816,7 @@
     "available": true
   },
   {
-    "id": "c-045",
+    "id": "c-048",
     "name": "Marianna Health & Wellness",
     "address": "4439 Jackson St Ste 71, Marianna, FL 32448",
     "lat": 30.7110112,
@@ -779,7 +832,7 @@
     "available": true
   },
   {
-    "id": "c-046",
+    "id": "c-049",
     "name": "Waller Chiropractic",
     "address": "2525 Commercial Park Dr, Marianna, FL 32448",
     "lat": 30.7110112,
@@ -797,7 +850,7 @@
     "available": true
   },
   {
-    "id": "c-047",
+    "id": "c-050",
     "name": "Lambe Chiropractic Center",
     "address": "3894 US-90, Marianna, FL 32446",
     "lat": 30.7855015,
@@ -813,7 +866,7 @@
     "available": true
   },
   {
-    "id": "c-048",
+    "id": "c-051",
     "name": "John Kurpa, DC",
     "address": "4261 Lafayette St, Marianna, FL 32446",
     "lat": 30.7804673,
@@ -829,7 +882,7 @@
     "available": true
   },
   {
-    "id": "c-049",
+    "id": "c-052",
     "name": "Taylor Chiropractic",
     "address": "691 7th St, Chipley, FL 32428",
     "lat": 30.7811693,
@@ -846,7 +899,7 @@
     "available": true
   },
   {
-    "id": "c-050",
+    "id": "c-053",
     "name": "McClellan Chiropractic Center",
     "address": "17390 Main St N, Blountstown, FL 32424",
     "lat": 30.4482083,
@@ -862,7 +915,24 @@
     "available": true
   },
   {
-    "id": "c-051",
+    "id": "c-054",
+    "name": "McClellan Chiropractic Center",
+    "address": "17390 Main St N, Blountstown, FL 32424",
+    "lat": 30.4482083,
+    "lng": -85.045785,
+    "phone": "(850) 674-2555",
+    "specialties": [
+      "Chiropractic",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "https://www.mcclellanchiropracticcenter.com",
+    "region": "North Florida / Panhandle",
+    "county": "Calhoun",
+    "available": true
+  },
+  {
+    "id": "c-055",
     "name": "Calhoun Liberty Hospital – Physical Therapy",
     "address": "16257 SR-71 S, Blountstown, FL 32424",
     "lat": 30.443339,
@@ -879,7 +949,7 @@
     "available": true
   },
   {
-    "id": "c-052",
+    "id": "c-056",
     "name": "Coastal Chiropractic",
     "address": "213 US-98, Eastpoint, FL 32328",
     "lat": 29.736174,
@@ -896,7 +966,7 @@
     "available": true
   },
   {
-    "id": "c-053",
+    "id": "c-057",
     "name": "Dr. Zoe Segree Chiropractic",
     "address": "661 US-98, Eastpoint, FL 32328",
     "lat": 29.7366968,
@@ -913,7 +983,7 @@
     "available": true
   },
   {
-    "id": "c-054",
+    "id": "c-058",
     "name": "Apalachicola Physical Therapy",
     "address": "111 Ave E, Apalachicola, FL 32320",
     "lat": 29.7203232,
@@ -929,7 +999,7 @@
     "available": true
   },
   {
-    "id": "c-055",
+    "id": "c-059",
     "name": "Gulf County Chiropractic",
     "address": "223 9th St, Port St Joe, FL 32456",
     "lat": 29.8075443,
@@ -946,7 +1016,7 @@
     "available": true
   },
   {
-    "id": "c-056",
+    "id": "c-060",
     "name": "Owens Chiropractic Clinic",
     "address": "1604 S Waukesha St, Bonifay, FL 32425",
     "lat": 30.7783227,
@@ -963,7 +1033,7 @@
     "available": true
   },
   {
-    "id": "c-057",
+    "id": "c-061",
     "name": "Doctors Memorial Hospital – Physical Therapy",
     "address": "2600 Hospital Dr, Bonifay, FL 32425",
     "lat": 30.8183051,
@@ -980,7 +1050,7 @@
     "available": true
   },
   {
-    "id": "c-058",
+    "id": "c-062",
     "name": "Donna Singletary, DC",
     "address": "11033 NW State Rd 20, Bristol, FL 32321",
     "lat": 30.3878455,
@@ -997,7 +1067,7 @@
     "available": true
   },
   {
-    "id": "c-059",
+    "id": "c-063",
     "name": "Madison ChiroTherapy",
     "address": "126 SW Sumatra Ave Unit C, Madison, FL 32340",
     "lat": 30.4643665,
@@ -1015,7 +1085,7 @@
     "available": true
   },
   {
-    "id": "c-060",
+    "id": "c-064",
     "name": "Gulf Coast Chiropractic",
     "address": "217 E Green St, Perry, FL 32347",
     "lat": 30.1170496,
@@ -1032,7 +1102,7 @@
     "available": true
   },
   {
-    "id": "c-061",
+    "id": "c-065",
     "name": "Perry Chiropractic Clinic",
     "address": "305 N Orange St, Perry, FL 32347",
     "lat": 30.1189611,
@@ -1048,7 +1118,7 @@
     "available": true
   },
   {
-    "id": "c-062",
+    "id": "c-066",
     "name": "Crawfordville Chiropractic Clinic",
     "address": "2887 S Hwy 319, Crawfordville, FL 32327",
     "lat": 30.1942129,
@@ -1065,7 +1135,7 @@
     "available": true
   },
   {
-    "id": "c-063",
+    "id": "c-067",
     "name": "Tallahassee Orthopedic Clinic – PT",
     "address": "2887 Crawfordville Hwy, Crawfordville, FL 32327",
     "lat": 30.1830769,
@@ -1082,7 +1152,7 @@
     "available": true
   },
   {
-    "id": "c-064",
+    "id": "c-068",
     "name": "Taylor Chiropractic Corporation",
     "address": "691 7th St, Chipley, FL 32428",
     "lat": 30.7811693,
@@ -1099,7 +1169,7 @@
     "available": true
   },
   {
-    "id": "c-065",
+    "id": "c-069",
     "name": "Florida Injury Centers – Gainesville",
     "address": "3320 SW 34th St Ste 18, Gainesville, FL 32608",
     "lat": 29.6140777,
@@ -1117,7 +1187,7 @@
     "available": true
   },
   {
-    "id": "c-066",
+    "id": "c-070",
     "name": "Select Physical Therapy – Gainesville",
     "address": "3200 SW 34th St Ste 500, Gainesville, FL 32608",
     "lat": 29.6140777,
@@ -1135,7 +1205,7 @@
     "available": true
   },
   {
-    "id": "c-067",
+    "id": "c-071",
     "name": "Tioga Chiropractic & Rehabilitation",
     "address": "11804 SW 26th Ave, Newberry, FL 32669",
     "lat": 29.6548468,
@@ -1152,7 +1222,7 @@
     "available": true
   },
   {
-    "id": "c-068",
+    "id": "c-072",
     "name": "Advanced Chiropractic & Wellness",
     "address": "913 NW 13th St, Gainesville, FL 32601",
     "lat": 29.6605009,
@@ -1169,7 +1239,7 @@
     "available": true
   },
   {
-    "id": "c-069",
+    "id": "c-073",
     "name": "Gainesville Chiropractic",
     "address": "913 NW 6th St, Gainesville, FL 32601",
     "lat": 29.6606553,
@@ -1186,7 +1256,7 @@
     "available": true
   },
   {
-    "id": "c-070",
+    "id": "c-074",
     "name": "Living Well Chiropractic",
     "address": "2410 NW 43rd St Ste 2A, Gainesville, FL 32606",
     "lat": 29.6804191,
@@ -1204,7 +1274,7 @@
     "available": true
   },
   {
-    "id": "c-071",
+    "id": "c-075",
     "name": "Performance Physical Therapy",
     "address": "3911 NW 13th St, Gainesville, FL 32609",
     "lat": 29.6887338,
@@ -1221,7 +1291,7 @@
     "available": true
   },
   {
-    "id": "c-072",
+    "id": "c-076",
     "name": "UF Health – Physical Therapy",
     "address": "3450 Hull Rd, Gainesville, FL 32607",
     "lat": 29.6383366,
@@ -1237,7 +1307,7 @@
     "available": true
   },
   {
-    "id": "c-073",
+    "id": "c-077",
     "name": "Active Health Chiropractic",
     "address": "118 N Temple Ave, Starke, FL 32091",
     "lat": 29.934349,
@@ -1253,7 +1323,7 @@
     "available": true
   },
   {
-    "id": "c-074",
+    "id": "c-078",
     "name": "Bradford County Physical Therapy",
     "address": "14596 US-301, Starke, FL 32091",
     "lat": 29.9186472,
@@ -1270,7 +1340,7 @@
     "available": true
   },
   {
-    "id": "c-075",
+    "id": "c-079",
     "name": "Lake City Spine & Rehab",
     "address": "278 SW Main Blvd, Lake City, FL 32025",
     "lat": 30.1565227,
@@ -1289,7 +1359,7 @@
     "available": true
   },
   {
-    "id": "c-076",
+    "id": "c-080",
     "name": "Back to Health Chiropractic",
     "address": "183 SW Stonegate Ter, Lake City, FL 32024",
     "lat": 30.1820946,
@@ -1306,7 +1376,7 @@
     "available": true
   },
   {
-    "id": "c-077",
+    "id": "c-081",
     "name": "Select Physical Therapy – Lake City",
     "address": "236 SW Columbia Ave, Lake City, FL 32025",
     "lat": 30.1874565,
@@ -1323,7 +1393,7 @@
     "available": true
   },
   {
-    "id": "c-078",
+    "id": "c-082",
     "name": "Lake City Medical Center – PT",
     "address": "340 NW Commerce Dr, Lake City, FL 32055",
     "lat": 30.1837366,
@@ -1339,7 +1409,7 @@
     "available": true
   },
   {
-    "id": "c-079",
+    "id": "c-083",
     "name": "Coastal Chiropractic",
     "address": "190 NE 73rd St, Cross City, FL 32628",
     "lat": 29.634521,
@@ -1356,7 +1426,7 @@
     "available": true
   },
   {
-    "id": "c-080",
+    "id": "c-084",
     "name": "Trenton Chiropractic",
     "address": "15480 NW US-19, Trenton, FL 32693",
     "lat": 29.6183159,
@@ -1372,7 +1442,7 @@
     "available": true
   },
   {
-    "id": "c-081",
+    "id": "c-085",
     "name": "Hamilton Family Chiropractic",
     "address": "117 Hatley St, Jasper, FL 32052",
     "lat": 30.5180451,
@@ -1389,7 +1459,7 @@
     "available": true
   },
   {
-    "id": "c-082",
+    "id": "c-086",
     "name": "Mayo Chiropractic",
     "address": "108 NE Pine St, Mayo, FL 32066",
     "lat": 30.0495624,
@@ -1405,7 +1475,7 @@
     "available": true
   },
   {
-    "id": "c-083",
+    "id": "c-087",
     "name": "Bronson Chiropractic Center",
     "address": "350 E Hathaway Ave, Bronson, FL 32621",
     "lat": 29.4497994,
@@ -1421,7 +1491,7 @@
     "available": true
   },
   {
-    "id": "c-084",
+    "id": "c-088",
     "name": "Chiefland Chiropractic",
     "address": "115 NE 1st St, Chiefland, FL 32626",
     "lat": 29.4797567,
@@ -1438,7 +1508,7 @@
     "available": true
   },
   {
-    "id": "c-085",
+    "id": "c-089",
     "name": "Nature Coast Regional Hospital – PT",
     "address": "955 SE 7th Ave, Williston, FL 32696",
     "lat": 29.3801978,
@@ -1454,7 +1524,7 @@
     "available": true
   },
   {
-    "id": "c-086",
+    "id": "c-090",
     "name": "Live Oak Chiropractic",
     "address": "1525 Ohio Ave S, Live Oak, FL 32064",
     "lat": 30.2861828,
@@ -1471,7 +1541,7 @@
     "available": true
   },
   {
-    "id": "c-087",
+    "id": "c-091",
     "name": "Shands Live Oak – Physical Therapy",
     "address": "1100 11th St SW, Live Oak, FL 32064",
     "lat": 30.290018,
@@ -1487,7 +1557,7 @@
     "available": true
   },
   {
-    "id": "c-088",
+    "id": "c-092",
     "name": "Florida Injury Centers – Ocala",
     "address": "303 SE 17th St Ste 309, Ocala, FL 34471",
     "lat": 29.1640896,
@@ -1505,7 +1575,7 @@
     "available": true
   },
   {
-    "id": "c-089",
+    "id": "c-093",
     "name": "Ocala Spine & Rehab",
     "address": "2403 SE 17th St, Ocala, FL 34471",
     "lat": 29.1714983,
@@ -1524,7 +1594,7 @@
     "available": true
   },
   {
-    "id": "c-090",
+    "id": "c-094",
     "name": "Advanced Chiropractic & Wellness",
     "address": "1130 SE 17th St, Ocala, FL 34471",
     "lat": 29.1716656,
@@ -1541,7 +1611,7 @@
     "available": true
   },
   {
-    "id": "c-091",
+    "id": "c-095",
     "name": "Back & Neck Center of Ocala",
     "address": "2910 SE 3rd Ct, Ocala, FL 34471",
     "lat": 29.1595074,
@@ -1558,7 +1628,7 @@
     "available": true
   },
   {
-    "id": "c-092",
+    "id": "c-096",
     "name": "Ocala Regional Medical Center – PT",
     "address": "1431 SW 1st Ave, Ocala, FL 34471",
     "lat": 29.1749816,
@@ -1574,7 +1644,7 @@
     "available": true
   },
   {
-    "id": "c-093",
+    "id": "c-097",
     "name": "Florida Injury Centers – Leesburg",
     "address": "1403 S 14th St Ste 100, Leesburg, FL 34748",
     "lat": 28.7873201,
@@ -1591,7 +1661,7 @@
     "available": true
   },
   {
-    "id": "c-094",
+    "id": "c-098",
     "name": "Advanced Chiropractic of Clermont",
     "address": "2660 East Hwy 50 Ste B, Clermont, FL 34711",
     "lat": 28.5301389,
@@ -1608,7 +1678,7 @@
     "available": true
   },
   {
-    "id": "c-095",
+    "id": "c-099",
     "name": "Lake Family Chiropractic",
     "address": "704 W Main St, Leesburg, FL 34748",
     "lat": 28.8112174,
@@ -1625,7 +1695,7 @@
     "available": true
   },
   {
-    "id": "c-096",
+    "id": "c-100",
     "name": "South Lake Chiropractic",
     "address": "133 E Hwy 50 Ste 102, Clermont, FL 34711",
     "lat": 28.5301389,
@@ -1642,7 +1712,7 @@
     "available": true
   },
   {
-    "id": "c-097",
+    "id": "c-101",
     "name": "Select Physical Therapy – Clermont",
     "address": "1900 Don Wickham Dr, Clermont, FL 34711",
     "lat": 28.5524621,
@@ -1659,7 +1729,7 @@
     "available": true
   },
   {
-    "id": "c-098",
+    "id": "c-102",
     "name": "Florida Injury Centers – The Villages",
     "address": "13535 NE 86th Dr, Lady Lake, FL 32159",
     "lat": 28.9278841,
@@ -1676,7 +1746,7 @@
     "available": true
   },
   {
-    "id": "c-099",
+    "id": "c-103",
     "name": "Brown Chiropractic",
     "address": "1324 W Main St, Bushnell, FL 33513",
     "lat": 28.6584395,
@@ -1692,7 +1762,7 @@
     "available": true
   },
   {
-    "id": "c-100",
+    "id": "c-104",
     "name": "Villages Chiropractic Center",
     "address": "1400 US-441 Ste 921, Lady Lake, FL 32159",
     "lat": 28.9278841,
@@ -1709,7 +1779,7 @@
     "available": true
   },
   {
-    "id": "c-101",
+    "id": "c-105",
     "name": "Florida Injury Centers – Orlando",
     "address": "6131 Edgewater Dr Ste 200, Orlando, FL 32810",
     "lat": 28.6231534,
@@ -1727,7 +1797,7 @@
     "available": true
   },
   {
-    "id": "c-102",
+    "id": "c-106",
     "name": "Orlando Spine Center",
     "address": "6200 S Orange Ave Ste 201, Orlando, FL 32809",
     "lat": 28.4638196,
@@ -1745,7 +1815,7 @@
     "available": true
   },
   {
-    "id": "c-103",
+    "id": "c-107",
     "name": "Injury Care Medical Center",
     "address": "5760 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746",
     "lat": 28.3320506,
@@ -1761,7 +1831,7 @@
     "available": true
   },
   {
-    "id": "c-104",
+    "id": "c-108",
     "name": "Central Florida Chiropractic",
     "address": "1600 N Mills Ave, Orlando, FL 32803",
     "lat": 28.565696,
@@ -1778,7 +1848,7 @@
     "available": true
   },
   {
-    "id": "c-105",
+    "id": "c-109",
     "name": "Select Physical Therapy – Orlando",
     "address": "1800 Mercy Dr, Orlando, FL 32808",
     "lat": 28.5674937,
@@ -1795,7 +1865,7 @@
     "available": true
   },
   {
-    "id": "c-106",
+    "id": "c-110",
     "name": "Florida Injury Centers – Kissimmee",
     "address": "2600 W Vine St Ste 200, Kissimmee, FL 34741",
     "lat": 28.3063391,
@@ -1812,7 +1882,7 @@
     "available": true
   },
   {
-    "id": "c-107",
+    "id": "c-111",
     "name": "Kissimmee Spine & Rehab",
     "address": "3150 W Vine St, Kissimmee, FL 34741",
     "lat": 28.304329,
@@ -1831,7 +1901,7 @@
     "available": true
   },
   {
-    "id": "c-108",
+    "id": "c-112",
     "name": "Injury Care Medical Center – Osceola",
     "address": "2450 N Orange Blossom Trl, Kissimmee, FL 34744",
     "lat": 28.3168748,
@@ -1848,7 +1918,7 @@
     "available": true
   },
   {
-    "id": "c-109",
+    "id": "c-113",
     "name": "Florida Injury Centers – Sanford",
     "address": "225 Waymont Ct Ste 110, Lake Mary, FL 32746",
     "lat": 28.7651585,
@@ -1865,7 +1935,7 @@
     "available": true
   },
   {
-    "id": "c-110",
+    "id": "c-114",
     "name": "Sanford Spine & Rehab",
     "address": "103 Commerce St, Lake Mary, FL 32746",
     "lat": 28.74005,
@@ -1884,7 +1954,7 @@
     "available": true
   },
   {
-    "id": "c-111",
+    "id": "c-115",
     "name": "Select Physical Therapy – Lake Mary",
     "address": "105 Commerce Way, Lake Mary, FL 32746",
     "lat": 28.7651585,
@@ -1901,7 +1971,7 @@
     "available": true
   },
   {
-    "id": "c-112",
+    "id": "c-116",
     "name": "Florida Injury Centers – Daytona Beach",
     "address": "1437 N Clyde Morris Blvd Ste 200, Daytona Beach, FL 32117",
     "lat": 29.236853,
@@ -1918,7 +1988,7 @@
     "available": true
   },
   {
-    "id": "c-113",
+    "id": "c-117",
     "name": "Daytona Spine Center",
     "address": "307 N Clyde Morris Blvd, Daytona Beach, FL 32114",
     "lat": 29.199567,
@@ -1936,7 +2006,7 @@
     "available": true
   },
   {
-    "id": "c-114",
+    "id": "c-118",
     "name": "Injury Care Medical Center – Volusia",
     "address": "600 W Granada Blvd, Ormond Beach, FL 32174",
     "lat": 29.2787975,
@@ -1953,7 +2023,7 @@
     "available": true
   },
   {
-    "id": "c-115",
+    "id": "c-119",
     "name": "Florida Injury Centers – Tampa",
     "address": "610 E Zack St Ste 200, Tampa, FL 33602",
     "lat": 27.958082,
@@ -1971,7 +2041,7 @@
     "available": true
   },
   {
-    "id": "c-116",
+    "id": "c-120",
     "name": "Injury Care Medical Center – Tampa",
     "address": "4005 N Armenia Ave Ste 200, Tampa, FL 33607",
     "lat": 27.9596579,
@@ -1987,7 +2057,7 @@
     "available": true
   },
   {
-    "id": "c-117",
+    "id": "c-121",
     "name": "Tampa Spine & Injury",
     "address": "4010 N Armenia Ave, Tampa, FL 33607",
     "lat": 27.974355,
@@ -2005,7 +2075,7 @@
     "available": true
   },
   {
-    "id": "c-118",
+    "id": "c-122",
     "name": "Clearway Pain Solutions – Tampa",
     "address": "5001 N Habana Ave Ste 300, Tampa, FL 33614",
     "lat": 28.011336,
@@ -2021,7 +2091,7 @@
     "available": true
   },
   {
-    "id": "c-119",
+    "id": "c-123",
     "name": "Select Physical Therapy – Tampa",
     "address": "3515 E Fletcher Ave, Tampa, FL 33613",
     "lat": 28.0690464,
@@ -2038,7 +2108,7 @@
     "available": true
   },
   {
-    "id": "c-120",
+    "id": "c-124",
     "name": "Florida Medical Center – PT",
     "address": "4801 N Howard Ave, Tampa, FL 33603",
     "lat": 27.9896906,
@@ -2054,7 +2124,7 @@
     "available": true
   },
   {
-    "id": "c-121",
+    "id": "c-125",
     "name": "Florida Injury Centers – Clearwater",
     "address": "13575 58th St N Ste 200, Clearwater, FL 33760",
     "lat": 27.9095236,
@@ -2071,7 +2141,7 @@
     "available": true
   },
   {
-    "id": "c-122",
+    "id": "c-126",
     "name": "Injury Care Medical Center – Clearwater",
     "address": "2175 Drew St, Clearwater, FL 33765",
     "lat": 27.967873,
@@ -2088,7 +2158,7 @@
     "available": true
   },
   {
-    "id": "c-123",
+    "id": "c-127",
     "name": "Clearwater Spine Center",
     "address": "1413 Court St, Clearwater, FL 33756",
     "lat": 27.9606765,
@@ -2106,7 +2176,7 @@
     "available": true
   },
   {
-    "id": "c-124",
+    "id": "c-128",
     "name": "Select Physical Therapy – St. Petersburg",
     "address": "3601 4th St N, St. Petersburg, FL 33704",
     "lat": 27.804981,
@@ -2123,7 +2193,7 @@
     "available": true
   },
   {
-    "id": "c-125",
+    "id": "c-129",
     "name": "BayCare Outpatient Rehab",
     "address": "4040 49th St N, St. Petersburg, FL 33709",
     "lat": 27.8079424,
@@ -2140,7 +2210,7 @@
     "available": true
   },
   {
-    "id": "c-126",
+    "id": "c-130",
     "name": "Florida Injury Centers – New Port Richey",
     "address": "5139 Little Rd Ste 105, New Port Richey, FL 34655",
     "lat": 28.2044826,
@@ -2157,7 +2227,7 @@
     "available": true
   },
   {
-    "id": "c-127",
+    "id": "c-131",
     "name": "Injury Care Medical Center – Pasco",
     "address": "8600 Trouble Creek Rd, New Port Richey, FL 34653",
     "lat": 28.2245273,
@@ -2174,7 +2244,7 @@
     "available": true
   },
   {
-    "id": "c-128",
+    "id": "c-132",
     "name": "Pasco Spine & Rehab",
     "address": "7826 US-19, Port Richey, FL 34668",
     "lat": 28.2850694,
@@ -2193,7 +2263,7 @@
     "available": true
   },
   {
-    "id": "c-129",
+    "id": "c-133",
     "name": "Florida Injury Centers – Spring Hill",
     "address": "12961 Cortez Blvd Ste 100, Spring Hill, FL 34613",
     "lat": 28.5470471,
@@ -2210,7 +2280,7 @@
     "available": true
   },
   {
-    "id": "c-130",
+    "id": "c-134",
     "name": "Spring Hill Spine Center",
     "address": "11345 Cortez Blvd, Spring Hill, FL 34613",
     "lat": 28.5334092,
@@ -2228,7 +2298,7 @@
     "available": true
   },
   {
-    "id": "c-131",
+    "id": "c-135",
     "name": "Select Physical Therapy – Spring Hill",
     "address": "4042 Commercial Way, Spring Hill, FL 34606",
     "lat": 28.4880532,
@@ -2245,7 +2315,7 @@
     "available": true
   },
   {
-    "id": "c-132",
+    "id": "c-136",
     "name": "Florida Injury Centers – Inverness",
     "address": "2312 E Norvell Bryant Hwy, Inverness, FL 34453",
     "lat": 28.8691443,
@@ -2262,7 +2332,7 @@
     "available": true
   },
   {
-    "id": "c-133",
+    "id": "c-137",
     "name": "Citrus Spine Institute",
     "address": "2244 Hwy 44 W, Inverness, FL 34453",
     "lat": 28.8691443,
@@ -2280,7 +2350,7 @@
     "available": true
   },
   {
-    "id": "c-134",
+    "id": "c-138",
     "name": "Florida Injury Centers – Lakeland",
     "address": "2625 S Florida Ave Ste 100, Lakeland, FL 33803",
     "lat": 28.0117854,
@@ -2298,7 +2368,7 @@
     "available": true
   },
   {
-    "id": "c-135",
+    "id": "c-139",
     "name": "Injury Care Medical Center – Lakeland",
     "address": "1323 Ariana St, Lakeland, FL 33803",
     "lat": 28.025965,
@@ -2315,7 +2385,7 @@
     "available": true
   },
   {
-    "id": "c-136",
+    "id": "c-140",
     "name": "Lakeland Spine & Injury",
     "address": "5121 S Lakeland Dr, Lakeland, FL 33813",
     "lat": 27.9763656,
@@ -2333,7 +2403,7 @@
     "available": true
   },
   {
-    "id": "c-137",
+    "id": "c-141",
     "name": "Florida Injury Centers – Bradenton",
     "address": "600 53rd Ave E Ste 300, Bradenton, FL 34203",
     "lat": 27.4455776,
@@ -2351,7 +2421,7 @@
     "available": true
   },
   {
-    "id": "c-138",
+    "id": "c-142",
     "name": "Injury Care Medical Center – Bradenton",
     "address": "3801 Manatee Ave W, Bradenton, FL 34205",
     "lat": 27.4954312,
@@ -2367,7 +2437,7 @@
     "available": true
   },
   {
-    "id": "c-139",
+    "id": "c-143",
     "name": "Bradenton Spine & Injury",
     "address": "1115 Manatee Ave W, Bradenton, FL 34205",
     "lat": 27.4953423,
@@ -2385,7 +2455,7 @@
     "available": true
   },
   {
-    "id": "c-140",
+    "id": "c-144",
     "name": "Select Physical Therapy – Bradenton",
     "address": "3500 9th St W, Bradenton, FL 34205",
     "lat": 27.4700467,
@@ -2402,7 +2472,7 @@
     "available": true
   },
   {
-    "id": "c-141",
+    "id": "c-145",
     "name": "Florida Injury Centers – Sarasota",
     "address": "6151 Lake Osprey Dr Ste 300, Sarasota, FL 34240",
     "lat": 27.3274466,
@@ -2419,7 +2489,7 @@
     "available": true
   },
   {
-    "id": "c-142",
+    "id": "c-146",
     "name": "Injury Care Medical Center – Sarasota",
     "address": "2400 Bee Ridge Rd, Sarasota, FL 34239",
     "lat": 27.298757,
@@ -2436,7 +2506,7 @@
     "available": true
   },
   {
-    "id": "c-143",
+    "id": "c-147",
     "name": "Sarasota Spine & Injury",
     "address": "2250 Ringling Blvd, Sarasota, FL 34237",
     "lat": 27.3356762,
@@ -2454,7 +2524,7 @@
     "available": true
   },
   {
-    "id": "c-144",
+    "id": "c-148",
     "name": "Select Physical Therapy – Sarasota",
     "address": "1250 S Tamiami Trl, Sarasota, FL 34239",
     "lat": 27.3223632,
@@ -2471,7 +2541,7 @@
     "available": true
   },
   {
-    "id": "c-145",
+    "id": "c-149",
     "name": "Florida Injury Centers – Port Charlotte",
     "address": "3391 Tamiami Trl Ste 201, Port Charlotte, FL 33952",
     "lat": 26.9855819,
@@ -2488,7 +2558,7 @@
     "available": true
   },
   {
-    "id": "c-146",
+    "id": "c-150",
     "name": "Injury Care Medical Center – Port Charlotte",
     "address": "19400 Cochran Blvd, Port Charlotte, FL 33948",
     "lat": 27.0088301,
@@ -2505,7 +2575,7 @@
     "available": true
   },
   {
-    "id": "c-147",
+    "id": "c-151",
     "name": "Port Charlotte Spine & Rehab",
     "address": "23001 Harborview Rd, Port Charlotte, FL 33980",
     "lat": 26.9860178,
@@ -2524,7 +2594,7 @@
     "available": true
   },
   {
-    "id": "c-148",
+    "id": "c-152",
     "name": "Florida Injury Centers – Fort Myers",
     "address": "4041 Colonial Blvd Ste 200, Fort Myers, FL 33966",
     "lat": 26.5938678,
@@ -2541,7 +2611,7 @@
     "available": true
   },
   {
-    "id": "c-149",
+    "id": "c-153",
     "name": "Injury Care Medical Center – Fort Myers",
     "address": "4900 Cleveland Ave, Fort Myers, FL 33907",
     "lat": 26.589451,
@@ -2558,7 +2628,7 @@
     "available": true
   },
   {
-    "id": "c-150",
+    "id": "c-154",
     "name": "Fort Myers Spine & Injury",
     "address": "1530 Royal Palm Square Blvd, Fort Myers, FL 33919",
     "lat": 26.5941176,
@@ -2576,7 +2646,7 @@
     "available": true
   },
   {
-    "id": "c-151",
+    "id": "c-155",
     "name": "Select Physical Therapy – Fort Myers",
     "address": "12381 S Cleveland Ave, Fort Myers, FL 33907",
     "lat": 26.58076,
@@ -2593,7 +2663,7 @@
     "available": true
   },
   {
-    "id": "c-152",
+    "id": "c-156",
     "name": "Florida Injury Centers – Naples",
     "address": "5320 Airport Pulling Rd N Ste 101, Naples, FL 34109",
     "lat": 26.240936,
@@ -2610,7 +2680,7 @@
     "available": true
   },
   {
-    "id": "c-153",
+    "id": "c-157",
     "name": "Injury Care Medical Center – Naples",
     "address": "3360 Tamiami Trl N, Naples, FL 34103",
     "lat": 26.1768811,
@@ -2627,7 +2697,7 @@
     "available": true
   },
   {
-    "id": "c-154",
+    "id": "c-158",
     "name": "Naples Spine & Injury",
     "address": "1100 9th St N, Naples, FL 34102",
     "lat": 26.1534065,
@@ -2645,7 +2715,7 @@
     "available": true
   },
   {
-    "id": "c-155",
+    "id": "c-159",
     "name": "Florida Injury Centers – Miami",
     "address": "3199 Coral Way Ste 402, Miami, FL 33145",
     "lat": 25.7532713,
@@ -2663,7 +2733,7 @@
     "available": true
   },
   {
-    "id": "c-156",
+    "id": "c-160",
     "name": "Injury Care Medical Center – Miami",
     "address": "837 SW 8th St, Miami, FL 33130",
     "lat": 25.766241,
@@ -2679,7 +2749,7 @@
     "available": true
   },
   {
-    "id": "c-157",
+    "id": "c-161",
     "name": "Miami Spine & Injury",
     "address": "8200 SW 8th St, Miami, FL 33144",
     "lat": 25.7616803,
@@ -2697,7 +2767,7 @@
     "available": true
   },
   {
-    "id": "c-158",
+    "id": "c-162",
     "name": "Hialeah Spine & Rehab",
     "address": "1625 W 49th St, Hialeah, FL 33012",
     "lat": 25.8683667,
@@ -2716,7 +2786,7 @@
     "available": true
   },
   {
-    "id": "c-159",
+    "id": "c-163",
     "name": "Select Physical Therapy – Doral",
     "address": "8191 NW 36th St Ste 11, Doral, FL 33166",
     "lat": 25.8228763,
@@ -2733,7 +2803,7 @@
     "available": true
   },
   {
-    "id": "c-160",
+    "id": "c-164",
     "name": "Clearway Pain Solutions – Miami",
     "address": "10200 SW 56th St Ste C101, Miami, FL 33165",
     "lat": 25.7345898,
@@ -2749,7 +2819,7 @@
     "available": true
   },
   {
-    "id": "c-161",
+    "id": "c-165",
     "name": "Florida Injury Centers – Fort Lauderdale",
     "address": "2500 E Commercial Blvd Ste 101, Fort Lauderdale, FL 33308",
     "lat": 26.1880935,
@@ -2766,7 +2836,7 @@
     "available": true
   },
   {
-    "id": "c-162",
+    "id": "c-166",
     "name": "Injury Care Medical Center – Broward",
     "address": "5300 Powerline Rd Ste 200, Fort Lauderdale, FL 33309",
     "lat": 26.1862851,
@@ -2783,7 +2853,7 @@
     "available": true
   },
   {
-    "id": "c-163",
+    "id": "c-167",
     "name": "Broward Spine & Injury",
     "address": "3100 N Federal Hwy, Fort Lauderdale, FL 33306",
     "lat": 26.1582841,
@@ -2801,7 +2871,7 @@
     "available": true
   },
   {
-    "id": "c-164",
+    "id": "c-168",
     "name": "Select Physical Therapy – Plantation",
     "address": "7421 W Broward Blvd, Plantation, FL 33317",
     "lat": 26.120707,
@@ -2818,7 +2888,7 @@
     "available": true
   },
   {
-    "id": "c-165",
+    "id": "c-169",
     "name": "Hollywood Spine & Rehab",
     "address": "1901 Harrison St, Hollywood, FL 33020",
     "lat": 26.010612,
@@ -2837,7 +2907,7 @@
     "available": true
   },
   {
-    "id": "c-166",
+    "id": "c-170",
     "name": "Florida Injury Centers – West Palm Beach",
     "address": "1645 Palm Beach Lakes Blvd Ste 100, West Palm Beach, FL 33401",
     "lat": 26.7138876,
@@ -2854,7 +2924,7 @@
     "available": true
   },
   {
-    "id": "c-167",
+    "id": "c-171",
     "name": "Injury Care Medical Center – Palm Beach",
     "address": "1615 S Congress Ave, Delray Beach, FL 33445",
     "lat": 26.4378282,
@@ -2871,7 +2941,7 @@
     "available": true
   },
   {
-    "id": "c-168",
+    "id": "c-172",
     "name": "Palm Beach Spine & Injury",
     "address": "600 S Dixie Hwy Ste 202, West Palm Beach, FL 33401",
     "lat": 26.7138876,
@@ -2889,7 +2959,7 @@
     "available": true
   },
   {
-    "id": "c-169",
+    "id": "c-173",
     "name": "Select Physical Therapy – Boca Raton",
     "address": "1905 Clint Moore Rd, Boca Raton, FL 33496",
     "lat": 26.4087502,
@@ -2906,7 +2976,7 @@
     "available": true
   },
   {
-    "id": "c-170",
+    "id": "c-174",
     "name": "Keys Injury & Wellness Center",
     "address": "3436 N Roosevelt Blvd, Key West, FL 33040",
     "lat": 24.5714224,
@@ -2922,7 +2992,7 @@
     "available": true
   },
   {
-    "id": "c-171",
+    "id": "c-175",
     "name": "Select Physical Therapy – Key West",
     "address": "3428 N Roosevelt Blvd, Key West, FL 33040",
     "lat": 24.5713315,
@@ -2939,7 +3009,7 @@
     "available": true
   },
   {
-    "id": "c-172",
+    "id": "c-176",
     "name": "Marathon Spine & Rehab",
     "address": "5795 Overseas Hwy, Marathon, FL 33050",
     "lat": 24.7172481,
@@ -2955,6 +3025,4691 @@
     "website": "",
     "region": "Florida Keys",
     "county": "Monroe",
+    "available": true
+  },
+  {
+    "id": "c-177",
+    "name": "Hutchison Chiropractic Center",
+    "address": "151 Mary Esther Blvd, Unit 301 & 302, Mary Esther, FL 32569",
+    "lat": 30.4137584,
+    "lng": -86.7073966,
+    "phone": "(850) 243-2723",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "http://hutchisonchiro.com",
+    "region": "NORTH FLORIDA / PANHANDLE",
+    "county": "Escambia",
+    "available": true
+  },
+  {
+    "id": "c-178",
+    "name": "Balanced Chiropractic – Panama City",
+    "address": "2431 Martin Luther King Jr Blvd Suite L, Panama City, FL 32405",
+    "lat": 30.193295,
+    "lng": -85.6768394,
+    "phone": "(850) 879-2593",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.bcipanhandle.com/",
+    "region": "NORTH FLORIDA / PANHANDLE",
+    "county": "Escambia",
+    "available": true
+  },
+  {
+    "id": "c-179",
+    "name": "Florida Injury Centers",
+    "address": "2341 NW 41st St STE A, Gainesville, FL 32606",
+    "lat": 29.6807568,
+    "lng": -82.4232246,
+    "phone": "(866) 402-4250",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.floridainjurycenters.com/car-accident-injury-clinics/gainesville-medical-injury-center/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-180",
+    "name": "Dr Leone’s Chiropractic Accident & Injury Center",
+    "address": "7003 NW 11th Pl #5, Gainesville, FL 32605",
+    "lat": 29.6519684,
+    "lng": -82.3249846,
+    "phone": "(352) 374-0909",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://gainesvilleinjurycare.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-181",
+    "name": "Sainz Chiropractic",
+    "address": "4131 NW 28th Ln #3B, Gainesville, FL 32606",
+    "lat": 29.6519684,
+    "lng": -82.3249846,
+    "phone": "(352) 225-3203",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.sainzchiropractic.com/appointment",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-182",
+    "name": "Absolute Health Chiropractic",
+    "address": "4110 NW 37th Pl, Ste D, Gainesville, FL 32606",
+    "lat": 29.6807568,
+    "lng": -82.4232246,
+    "phone": "(352) 377-7373",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Attorney Lien",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.chiropractorgainesvillefl.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-183",
+    "name": "Chiropractic Associates of Gainesville",
+    "address": "3703 SW 13th St, Gainesville, FL 32608",
+    "lat": 29.6185691,
+    "lng": -82.3403925,
+    "phone": "(352) 372-4110",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.chirosofgainesville.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-184",
+    "name": "University Spine & Injury",
+    "address": "4907 NW 43rd St STE B, Gainesville, FL 32606",
+    "lat": 29.6807568,
+    "lng": -82.4232246,
+    "phone": "(352) 451-4162",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://universityspinecare.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-185",
+    "name": "Chance Chiropractic Center",
+    "address": "1240 NW 11th Ave, Ste A, Gainesville, FL 32601",
+    "lat": 29.6612831,
+    "lng": -82.3375532,
+    "phone": "(352) 375-6972",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://chancechiro.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-186",
+    "name": "Gardner Chiropractic & Injury",
+    "address": "4741 NW 8th Ave Suite B, Gainesville, FL 32605",
+    "lat": 29.6784233,
+    "lng": -82.3689361,
+    "phone": "(352) 727-4438",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://gainesvillechiropractor.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-187",
+    "name": "West Family Chiropractic",
+    "address": "2234 NW 40th Ter, Gainesville, FL 32605",
+    "lat": 29.6730598,
+    "lng": -82.3845441,
+    "phone": "(352) 332-1992",
+    "specialties": [
+      "Chiropractic",
+      "Physical Therapy",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.chiro352.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-188",
+    "name": "Chiropractic Associates of Alachua",
+    "address": "15043 Bob Hitchcock’s Main St, Alachua, FL 32615",
+    "lat": 29.7882991,
+    "lng": -82.4827968,
+    "phone": "(386) 462-5886",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "http://www.alachuachiropractic.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-189",
+    "name": "Florida Spine and Injury - Lake City Chiropractor",
+    "address": "2057 SW Main Blvd, Lake City, FL 32025",
+    "lat": 30.1610205,
+    "lng": -82.6418719,
+    "phone": "(352) 430-0898",
+    "specialties": [
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.flspineandinjury.com/locations/lake-city",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-190",
+    "name": "Columbia County Chiropractic Center",
+    "address": "279 SW Main Blvd, Lake City, FL 32025",
+    "lat": 30.1565225,
+    "lng": -82.643511,
+    "phone": "(386) 752-4313",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "http://www.columbiachiro.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-191",
+    "name": "Morse Chiropractic",
+    "address": "444 SW Alachua Ave, Lake City, FL 32025",
+    "lat": 30.1843595,
+    "lng": -82.6388062,
+    "phone": "(386) 719-5656",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "http://morsechiropractic.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-192",
+    "name": "Lake City Chiropractic & Massage Center",
+    "address": "1680 SW Newland Way, Ste 105, Lake City, FL 32025",
+    "lat": 30.1464131,
+    "lng": -82.6197592,
+    "phone": "(386) 752-3877",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "http://www.lakecitychiropracticcenter.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-193",
+    "name": "Olympic Health Chiropractic",
+    "address": "618 S Marion Ave, Ste 103, Lake City, FL 32025",
+    "lat": 30.1464131,
+    "lng": -82.6197592,
+    "phone": "(386) 319-7909",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "http://www.olympichealthchiropractic.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-194",
+    "name": "Stephens Chiropractic Center",
+    "address": "935 SW Baya Dr, Lake City, FL 32025",
+    "lat": 30.187577,
+    "lng": -82.6494575,
+    "phone": "(386) 755-4310",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-195",
+    "name": "Register Chiropractic",
+    "address": "Highway 47 S, Lake City, FL 32024",
+    "lat": 30.110994,
+    "lng": -82.7057953,
+    "phone": "(386) 752-4379",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-196",
+    "name": "North Florida Chiropractic",
+    "address": "2086 SW Main Blvd, Lake City, FL 32025",
+    "lat": 30.1606315,
+    "lng": -82.643449,
+    "phone": "(386) 754-2821",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-197",
+    "name": "Radke Chiropractic Center",
+    "address": "430 SW Columbia Ave, Lake City, FL 32025",
+    "lat": 30.1845755,
+    "lng": -82.637975,
+    "phone": "(386) 752-2252",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-198",
+    "name": "Ocala Spine & Injury",
+    "address": "1531 SE 17th St Unit 101/102, Ocala, FL 34471",
+    "lat": 29.1640896,
+    "lng": -82.0949838,
+    "phone": "(352) 433-0898",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.flspineandinjury.com/locations/ocala",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-199",
+    "name": "Ocala Injury Center",
+    "address": "3300 SW 34th Ave Ste 132, Ocala, FL 34474",
+    "lat": 29.1496652,
+    "lng": -82.1909453,
+    "phone": "(352) 644-7707",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://ocalainjurycenter.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-200",
+    "name": "Complete Care Ocala",
+    "address": "316 SE 12th St Unit 100, Ocala, FL 34471",
+    "lat": 29.1640896,
+    "lng": -82.0949838,
+    "phone": "(352) 619-4467",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-ocala/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-201",
+    "name": "Atlas Injury to Health - Ocala",
+    "address": "9401 SW State Rd 200 Suite 6002, Ocala, FL 34481",
+    "lat": 29.0906451,
+    "lng": -82.2909827,
+    "phone": "(352) 820-4111",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://chiropractorocalafl.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-202",
+    "name": "Bruce Chiropractic & Comprehensive Care",
+    "address": "351 NE 8th Ave, Ocala, FL 34470",
+    "lat": 29.1902934,
+    "lng": -82.129813,
+    "phone": "(352) 401-0060",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://brucechiro.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-203",
+    "name": "Mack Chiropractic & Injury",
+    "address": "255 SE 17th St, Ocala, FL 34471",
+    "lat": 29.1717903,
+    "lng": -82.1345168,
+    "phone": "(352) 622-1136",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.mackinjurycare.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-204",
+    "name": "Integrative Healthcare & Physical Medicine",
+    "address": "3256 S Pine Ave Suite 301/302, Ocala, FL 34471",
+    "lat": 29.1640896,
+    "lng": -82.0949838,
+    "phone": "(352) 369-6325",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.livepainfreeocala.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-205",
+    "name": "Chiropractic Centers of Ocala: Chris Pell, D.C",
+    "address": "901 E Silver Springs Blvd, Ocala, FL 34470",
+    "lat": 29.1871725,
+    "lng": -82.1297209,
+    "phone": "(352) 618-2451",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "http://www.chiropracticcentersofocala.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-206",
+    "name": "John A Williams, DC",
+    "address": "1551 NE 14th St, Ocala, FL 34470",
+    "lat": 29.200482,
+    "lng": -82.1173868,
+    "phone": "(352) 351-9696",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.ocaladoc.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-207",
+    "name": "Integrated Injury Care",
+    "address": "1306 E Silver Springs Blvd #101, Ocala, FL 34470",
+    "lat": 29.1871986,
+    "lng": -82.1400923,
+    "phone": "(352) 622-6622",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.integratedinjury.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-208",
+    "name": "Downtown Chiropractic & Wellness Center",
+    "address": "1007 SW 1st Ave, Ocala, FL 34471",
+    "lat": 29.1790719,
+    "lng": -82.1377756,
+    "phone": "(352) 732-2745",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "http://www.downtownchiropractic.us/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-209",
+    "name": "Putnam County Chiropractic Clinic",
+    "address": "3800 St Johns Ave, Palatka, FL 32177",
+    "lat": 29.648199,
+    "lng": -81.6704146,
+    "phone": "(386) 325-8305",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.palatkachiropractor.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-210",
+    "name": "Pain Relief Centre – Palatka",
+    "address": "727 St Johns Ave, Palatka, FL 32177",
+    "lat": 29.6473087,
+    "lng": -81.6359626,
+    "phone": "(386) 328-4043",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management"
+    ],
+    "email": "",
+    "website": "https://chiropractorsstaugustine.com/chiropractor-in-palatka-fl/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-211",
+    "name": "FYZICAL Therapy & Balance Center – East Palatka",
+    "address": "195 US-17 South, Suite 1, East Palatka, FL 32131",
+    "lat": 29.6686438,
+    "lng": -81.5932987,
+    "phone": "(386) 385-3598",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.fyzical.com/east-palatka-fl",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-212",
+    "name": "FYZICAL Therapy & Balance Center – Interlachen",
+    "address": "885 State Rd 20, Interlachen, FL 32148",
+    "lat": 29.6341518,
+    "lng": -81.8790283,
+    "phone": "(386) 684-9110",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.fyzical.com/interlachen",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-213",
+    "name": "Lake Area Physical Therapy – Palatka",
+    "address": "800 Zeagler Dr, Suite 610, Palatka, FL 32177",
+    "lat": 29.6580601,
+    "lng": -81.6714679,
+    "phone": "(386) 518-0846",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.lakeareapt.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-214",
+    "name": "Lake Area Physical Therapy – Crescent City",
+    "address": "101 Eucalyptus Ave, Crescent City, FL 32112",
+    "lat": 29.432663,
+    "lng": -81.507157,
+    "phone": "(386) 698-0841",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.lakeareapt.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-215",
+    "name": "St Germain Chiropractic Pain and Injury",
+    "address": "3990 FL-44, Wildwood, FL 34785",
+    "lat": 28.8469935,
+    "lng": -82.0382464,
+    "phone": "(352) 775-4221",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.stgermainchiropractic.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-216",
+    "name": "Legacy Clinic of Chiropractic",
+    "address": "1950 Laurel Manor Dr #204, The Villages, FL 32162",
+    "lat": 28.9247641,
+    "lng": -82.0021918,
+    "phone": "(352) 259-0024",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://legacyclinicofchiropractic.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-217",
+    "name": "Etheredge Chiropractic",
+    "address": "910 Old Camp Rd Bldg 110, The Villages, FL 32162",
+    "lat": 28.9185625,
+    "lng": -81.9856411,
+    "phone": "(352) 750-1200",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://ecdoctors.com",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-218",
+    "name": "Colony Chiropractic",
+    "address": "369 Colony Blvd, The Villages, FL 32162",
+    "lat": 28.8665634,
+    "lng": -81.9568465,
+    "phone": "(352) 430-3355",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.colony-chiropractic.com/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-219",
+    "name": "Complete Care Lady Lake | The Villages",
+    "address": "1501 US-441 Building 1000 Suite #1001, Lady Lake, FL 32159",
+    "lat": 28.9174855,
+    "lng": -81.9228604,
+    "phone": "(352) 484-0109",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-the-villages/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-220",
+    "name": "Jeffrey Lincoln, D.C.",
+    "address": "1400 US-441, The Villages, FL 32159",
+    "lat": 28.9503214,
+    "lng": -81.9571264,
+    "phone": "(352) 430-1890",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-221",
+    "name": "Bushnell Chiropractic Life Center",
+    "address": "114 N Beville St, Bushnell, FL 33513",
+    "lat": 28.6623627,
+    "lng": -82.1118625,
+    "phone": "(352) 793-4944",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-222",
+    "name": "Hensley Scott DC",
+    "address": "406 Tompkins St, Inverness, FL 34450",
+    "lat": 28.8371222,
+    "lng": -82.3341881,
+    "phone": "(352) 726-1557",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-223",
+    "name": "AlignLife - Chiropractic & Natural Health Center",
+    "address": "3614 Wedgewood Ln, The Villages, FL 32162",
+    "lat": 28.9278789,
+    "lng": -82.0179893,
+    "phone": "(352) 259-2225",
+    "specialties": [
+      "Chiropractic",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://alignlife.com/locations/the-villages-fl-chiropractor/",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-224",
+    "name": "Advanced Chiropractic and Wellness",
+    "address": "15151 US-441 #200, Summerfield, FL 34491",
+    "lat": 29.0085924,
+    "lng": -82.0348092,
+    "phone": "(352) 307-0033",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-225",
+    "name": "Bradford Family Chiropractic",
+    "address": "Starke, FL 32091",
+    "lat": 29.9443549,
+    "lng": -82.1101114,
+    "phone": "(904) 964-3333",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-226",
+    "name": "Dixie Chiropractic Center",
+    "address": "Cross City, FL 32628",
+    "lat": 29.6343977,
+    "lng": -83.1251306,
+    "phone": "(352) 498-0005",
+    "specialties": [
+      "Chiropractic",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-227",
+    "name": "Trenton Chiropractic",
+    "address": "Trenton, FL 32693",
+    "lat": 29.6132942,
+    "lng": -82.8176203,
+    "phone": "(352) 463-1888",
+    "specialties": [
+      "Chiropractic",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-228",
+    "name": "Hamilton Chiropractic Clinic",
+    "address": "Jasper, FL 32052",
+    "lat": 30.5182727,
+    "lng": -82.94819,
+    "phone": "(386) 792-1222",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-229",
+    "name": "Lafayette Chiropractic",
+    "address": "Mayo, FL 32066",
+    "lat": 30.053001,
+    "lng": -83.1748578,
+    "phone": "(386) 294-1222",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-230",
+    "name": "Bronson Chiropractic Clinic",
+    "address": "Bronson, FL 32621",
+    "lat": 29.4477445,
+    "lng": -82.6423336,
+    "phone": "(352) 486-2000",
+    "specialties": [
+      "Chiropractic",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-231",
+    "name": "Live Oak Chiropractic Center",
+    "address": "Live Oak, FL 32064",
+    "lat": 30.2961892,
+    "lng": -82.9842885,
+    "phone": "(386) 362-4400",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-232",
+    "name": "Lake Butler Chiropractic",
+    "address": "Lake Butler, FL 32054",
+    "lat": 30.0227391,
+    "lng": -82.3395574,
+    "phone": "(386) 496-1212",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "NORTH CENTRAL FLORIDA",
+    "county": "Alachua",
+    "available": true
+  },
+  {
+    "id": "c-233",
+    "name": "Paladin Chiropractic",
+    "address": "4063 N Goldenrod Rd, Ste 1, Winter Park, FL 32792",
+    "lat": 28.5942413,
+    "lng": -81.3192837,
+    "phone": "(321) 219-9592",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.paladinchiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-234",
+    "name": "South Orange Wellness",
+    "address": "4170 Town Center Blvd #100, Orlando, FL 32837",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 857-6166",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Whiplash Treatment"
+    ],
+    "email": "",
+    "website": "https://www.orangewellness.com/location/orange-wellness-south-orlando-location/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-235",
+    "name": "Kaizen Chiropractic Solutions",
+    "address": "3097 Curry Ford Rd, Unit B, Orlando, FL 32806",
+    "lat": 28.5042554,
+    "lng": -81.3658416,
+    "phone": "(407) 613-5800",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://kaizenchiropracticsolutions.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-236",
+    "name": "Complete Care Maitland",
+    "address": "7984 Forest City Rd #106, Orlando, FL 32810",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 502-3545",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-maitland/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-237",
+    "name": "The Injury Docs - Auto Accident Doctors",
+    "address": "3208 E Colonial Dr, Ste 205, Orlando, FL 32803",
+    "lat": 28.5565286,
+    "lng": -81.3588685,
+    "phone": "(407) 654-1100",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.theinjurydocs.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-238",
+    "name": "South Orlando Chiropractic & Injury Center",
+    "address": "5833 S Goldenrod Rd Ste F, Orlando, FL 32822",
+    "lat": 28.4880158,
+    "lng": -81.2927138,
+    "phone": "(407) 704-6705",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.southorlandochiro.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-239",
+    "name": "Bracero Chiropractic",
+    "address": "12315 Lake Underhill Rd, Orlando, FL 32828",
+    "lat": 28.5391224,
+    "lng": -81.2927793,
+    "phone": "(407) 408-2004",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.bracerochiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-240",
+    "name": "Complete Care Casselberry",
+    "address": "1008 FL-436, Casselberry, FL 32707",
+    "lat": 28.6399376,
+    "lng": -81.3225081,
+    "phone": "(407) 676-4662",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/injury-care-and-rehab-in-casselberry/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-241",
+    "name": "Complete Care MetroWest",
+    "address": "1743 Park Center Dr Suite 200, Orlando, FL 32835",
+    "lat": 28.5155227,
+    "lng": -81.4797704,
+    "phone": "(407) 604-1420",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-metrowest/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-242",
+    "name": "Complete Care Hunter’s Creek",
+    "address": "4118 Town Center Blvd, Orlando, FL 32837",
+    "lat": 28.3754223,
+    "lng": -81.4106642,
+    "phone": "(321) 900-0605",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-hunters-creek/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-243",
+    "name": "East Orlando Wellness",
+    "address": "3020 Lamberton Blvd, Ste 105, Orlando, FL 32825",
+    "lat": 28.5411677,
+    "lng": -81.2446872,
+    "phone": "(407) 382-2425",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.eastorlandowellness.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-244",
+    "name": "Kirkman Chiropractic",
+    "address": "110 N Kirkman Rd, Orlando, FL 32811",
+    "lat": 28.5120564,
+    "lng": -81.4591923,
+    "phone": "(407) 291-1000",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.kirkmanchiro.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-245",
+    "name": "Rudoni Family Chiropractic Center",
+    "address": "2200 Winter Springs Blvd, Ste 101, Oviedo, FL 32765",
+    "lat": 28.6518518,
+    "lng": -81.2152622,
+    "phone": "(407) 359-7246",
+    "specialties": [
+      "Chiropractic",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://rudonifamilychiropracticcenter.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-246",
+    "name": "Orlando Spine Studio",
+    "address": "11500 University Blvd #103, Orlando, FL 32817",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 658-6500",
+    "specialties": [
+      "Auto Injuries",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://orlandospinestudio.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-247",
+    "name": "Momentum Medical – Kissimmee",
+    "address": "207 W Cypress St, Kissimmee, FL 34741",
+    "lat": 28.3058073,
+    "lng": -81.4059145,
+    "phone": "(407) 900-7246",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://momentuminjury.com/momentum-medical-of-kissimmee/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-248",
+    "name": "Florida Medical & Injury Center (FMIC) – Kissimmee",
+    "address": "322 N John Young Pkwy, Kissimmee, FL 34741",
+    "lat": 28.2873198,
+    "lng": -81.4161809,
+    "phone": "(407) 944-9355",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.my-fmic.com/home.html",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-249",
+    "name": "Florida Medical & Injury Center (FMIC) – Poinciana",
+    "address": "339 Cypress Pkwy #260, Kissimmee, FL 34759",
+    "lat": 28.2918995,
+    "lng": -81.4075838,
+    "phone": "(407) 944-9355 (mismo número central en su web)",
+    "specialties": [
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.my-fmic.com/home.html",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-250",
+    "name": "Grasso Chiropractic",
+    "address": "335 West Oak Street, Kissimmee, FL 34741",
+    "lat": 28.3009657,
+    "lng": -81.4070114,
+    "phone": "(407) 870-1959",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Whiplash Treatment"
+    ],
+    "email": "",
+    "website": "https://www.grassochiropractic.com/auto-accident-injury-care",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-251",
+    "name": "Arias Chiropractic",
+    "address": "103 W Oak St #C, Kissimmee, FL 34741",
+    "lat": 28.2918995,
+    "lng": -81.4075838,
+    "phone": "(407) 847-8070",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.ariaschiropractic.com/car-accident/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-252",
+    "name": "UrgentMed Care – Kissimmee (Auto Injury / EMC para PIP)",
+    "address": "910 W Emmett St, Kissimmee, FL 34741",
+    "lat": 28.2917479,
+    "lng": -81.415665,
+    "phone": "(407) 584-2807",
+    "specialties": [
+      "Auto Injuries",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "https://www.walkinclinicorlando.com/personal-auto-injury-care/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-253",
+    "name": "East Lake Chiropractic & Medical Center (St. Cloud)",
+    "address": "4044 13th St, St. Cloud, FL 34769",
+    "lat": 28.2478906,
+    "lng": -81.3076977,
+    "phone": "(407) 957-9995",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.eastlakehealth.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-254",
+    "name": "Living Well Chiropractic (St. Cloud)",
+    "address": "4039 13th St, St. Cloud, FL 34769",
+    "lat": 28.2478906,
+    "lng": -81.3076977,
+    "phone": "(407) 957-1337",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://livingwellcfl.com/auto-accidents/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-255",
+    "name": "Joint Maneuvers Chiropractic Center – St. Cloud",
+    "address": "4797 Old Canoe Creek Rd, St. Cloud, FL 34769",
+    "lat": 28.2576436,
+    "lng": -81.3158946,
+    "phone": "(407) 498-0222",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.jointmaneuverschiropractic.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-256",
+    "name": "Cloud Chiropractic (St. Cloud)",
+    "address": "125 E 13th St., Saint Cloud, FL 34769",
+    "lat": 28.2457476,
+    "lng": -81.2667401,
+    "phone": "(407) 891-8744",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.cloudchiropractic.com/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-257",
+    "name": "Lucha Chiropractic (St. Cloud)",
+    "address": "1320 Louisiana Avenue, Suite D, St. Cloud, FL 34769",
+    "lat": 28.2528902,
+    "lng": -81.3022654,
+    "phone": "(407) 593-8052 (Fax también aparece en su página)",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "https://luchachiropractic.care/automobile-accidents/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-258",
+    "name": "South Seminole Chiropractic & Rehab",
+    "address": "240 W State Rd 436, Altamonte Springs, FL 32714",
+    "lat": 28.6678551,
+    "lng": -81.4107757,
+    "phone": "(407) 774-6226",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://southseminolechiro.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-259",
+    "name": "Orlando Chiropractic Center – Altamonte Springs",
+    "address": "270 N Ronald Reagan Blvd, Ste 102, Longwood, FL 32750",
+    "lat": 28.7042355,
+    "lng": -81.3488756,
+    "phone": "(407) 339-3838",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://orlandochiropracticcenter.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-260",
+    "name": "Vitality Whole Health & Injury Clinic",
+    "address": "1340 W State Rd 434, Ste 203, Longwood, FL 32750",
+    "lat": 28.7042355,
+    "lng": -81.3488756,
+    "phone": "(407) 951-8610",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://vitalitywholehealth.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-261",
+    "name": "Complete Care Winter Springs",
+    "address": "1131 Rinehart Rd, Winter Springs, FL 32708",
+    "lat": 28.6888251,
+    "lng": -81.2736494,
+    "phone": "(407) 757-6147",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-winter-springs/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-262",
+    "name": "Complete Care Sanford",
+    "address": "3300 S Orlando Dr Suite 105, Sanford, FL 32773",
+    "lat": 28.7673399,
+    "lng": -81.2691422,
+    "phone": "(407) 328-0684",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-sanford/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-263",
+    "name": "Orlando Spine & Injury – Winter Park / Seminole",
+    "address": "1400 Tuskawilla Rd, Unit C-104, Winter Springs, FL 32708",
+    "lat": 28.6888251,
+    "lng": -81.2736494,
+    "phone": "(407) 962-2770",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.flspineandinjury.com/locations/winter-springs",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-264",
+    "name": "Sports & Family Injury Specialists – Altamonte Springs",
+    "address": "120 W State Rd 436, Ste 300, Altamonte Springs, FL 32714",
+    "lat": 28.6678551,
+    "lng": -81.4107757,
+    "phone": "(407) 774-9500",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Sports Medicine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.sportsandfamilyinjury.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-265",
+    "name": "Back To Basics Chiropractic",
+    "address": "426 W State Rd 434, Longwood, FL 32750",
+    "lat": 28.6977068,
+    "lng": -81.3481481,
+    "phone": "(407) 332-4555",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://backtobasischiropracticfl.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-266",
+    "name": "MaxWell Chiropractic",
+    "address": "837 W 1st St, Sanford, FL 32771",
+    "lat": 28.8115959,
+    "lng": -81.2756395,
+    "phone": "(407) 321-9597",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.maxwellchiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-267",
+    "name": "PACE Injury & Wellness Center",
+    "address": "949 S Orlando Ave #107, Winter Park, FL 32789",
+    "lat": 28.5977707,
+    "lng": -81.3510264,
+    "phone": "(407) 960-2086",
+    "specialties": [
+      "Auto Injuries",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "https://www.paceinjurycenter.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-268",
+    "name": "Freeman Family Chiropractic",
+    "address": "325 W S R 434, Ste 112, Longwood, FL 32750",
+    "lat": 28.7042355,
+    "lng": -81.3488756,
+    "phone": "(407) 951-1900",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://freemanchiropracticfl.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-269",
+    "name": "Lake Mary Chiropractic & Wellness",
+    "address": "241 N Country Club Rd, Lake Mary, FL 32746",
+    "lat": 28.7656727,
+    "lng": -81.3221291,
+    "phone": "(407) 330-1663",
+    "specialties": [
+      "Chiropractic",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://lakemarychiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-270",
+    "name": "Axial Health & Rehab – Longwood",
+    "address": "506 E Church Ave, Ste 210, Longwood, FL 32750",
+    "lat": 28.7042355,
+    "lng": -81.3488756,
+    "phone": "(407) 636-4443",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://axialhealthrehab.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-271",
+    "name": "Seminole Chiropractic Clinic",
+    "address": "101 N Horatio Ave #200, Maitland, FL 32751 (cerca de border con Orange Co)",
+    "lat": 0,
+    "lng": 0,
+    "phone": "(407) 644-8888",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Spine"
+    ],
+    "email": "",
+    "website": "",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-272",
+    "name": "Acute Injury Doctors (Sanford)",
+    "address": "946 S Orlando Ave, Sanford, FL 32773",
+    "lat": 28.7631936,
+    "lng": -81.2646419,
+    "phone": "(407) 323-1977",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://acutedoctorsofflorida.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-273",
+    "name": "Florida Injury & Rehabilitation Centers – Lakeland",
+    "address": "1625 Lakeland Hills Blvd, Lakeland, FL 33805",
+    "lat": 28.066918,
+    "lng": -81.953191,
+    "phone": "(863) 940-6260",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.floridainjurycenters.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-274",
+    "name": "Injury Doctors of Winter Haven",
+    "address": "118 Avenue A NW, Winter Haven, FL 33881",
+    "lat": 28.0229345,
+    "lng": -81.7280428,
+    "phone": "(863) 293-7400",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://www.theinjurydocs.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-275",
+    "name": "Lakeland Chiropractic & Massage",
+    "address": "4028 S Florida Ave, Lakeland, FL 33813",
+    "lat": 27.9920428,
+    "lng": -81.957066,
+    "phone": "(863) 647-7777",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.lakelandchiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-276",
+    "name": "Butler Chiropractic",
+    "address": "2601 Harden Blvd, Lakeland, FL 33803",
+    "lat": 28.0157656,
+    "lng": -81.9749303,
+    "phone": "(863) 687-2929",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://butlerchiro.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-277",
+    "name": "The Injury & Rehab Center – Lakeland",
+    "address": "516 S Florida Ave, Lakeland, FL 33801",
+    "lat": 28.0389698,
+    "lng": -81.9570703,
+    "phone": "(863) 816-1950",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.injuryrehabcenter.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-278",
+    "name": "Polk Spine & Injury Center",
+    "address": "1230 Winter Lake Rd, Winter Haven, FL 33880",
+    "lat": 28.0012382,
+    "lng": -81.7523622,
+    "phone": "(863) 293-7400 (suele compartir número con Injury Docs)",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.theinjurydocs.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-279",
+    "name": "Complete Care Lakeland",
+    "address": "1701 S Florida Ave, Lakeland, FL 33803",
+    "lat": 28.0244451,
+    "lng": -81.9570021,
+    "phone": "(863) 701-1916",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-lakeland/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-280",
+    "name": "Complete Care Winter Haven",
+    "address": "310 Cypress Gardens Blvd, Winter Haven, FL 33884",
+    "lat": 28.0041466,
+    "lng": -81.7220176,
+    "phone": "(863) 551-3330",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.complete-care.com/locations/complete-care-winter-haven/",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-281",
+    "name": "SunLife Chiropractic – Lakeland",
+    "address": "3325 S Florida Ave #100, Lakeland, FL 33803",
+    "lat": 28.0005457,
+    "lng": -81.9569047,
+    "phone": "(863) 647-0137",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://sunlifechiro.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-282",
+    "name": "Haines City Chiropractic Center",
+    "address": "612 E Hinson Ave, Haines City, FL 33844",
+    "lat": 28.1067503,
+    "lng": -81.6263916,
+    "phone": "(863) 421-6445",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.hainescitychiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-283",
+    "name": "Harmony Chiropractic & Wellness – Bartow",
+    "address": "115 E Main St, Bartow, FL 33830",
+    "lat": 27.8964281,
+    "lng": -81.8428479,
+    "phone": "(863) 533-2020",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.harmonychirobartow.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-284",
+    "name": "Back in Action Chiropractic – Bartow",
+    "address": "1300 E Van Fleet Dr, Bartow, FL 33830",
+    "lat": 27.9039195,
+    "lng": -81.843013,
+    "phone": "(863) 533-8989",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://www.backinactionbartow.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-285",
+    "name": "Sudz Chiropractic – Winter Haven",
+    "address": "301 Avenue C NW, Winter Haven, FL 33881",
+    "lat": 28.0248724,
+    "lng": -81.729473,
+    "phone": "(863) 294-9300",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.sudzchiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-286",
+    "name": "Bartow Chiropractic Center",
+    "address": "300 E Main St, Bartow, FL 33830",
+    "lat": 27.8964281,
+    "lng": -81.8428479,
+    "phone": "(863) 533-1815",
+    "specialties": [
+      "Chiropractic",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.bartowchiropracticcenter.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-287",
+    "name": "Spine Fit Chiropractic – Haines City",
+    "address": "450 Hinson Ave E Suite 108, Haines City, FL 33844",
+    "lat": 28.0957633,
+    "lng": -81.6031642,
+    "phone": "(863) 422-2255",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.spinefitchiropractic.com",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-288",
+    "name": "Brevard Accident & Injury Center",
+    "address": "Melbourne, FL",
+    "lat": 28.0785034,
+    "lng": -80.6077908,
+    "phone": "(321) 722-2225",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-289",
+    "name": "Palm Coast Injury Center",
+    "address": "Palm Coast, FL 32164",
+    "lat": 29.5541432,
+    "lng": -81.2207673,
+    "phone": "(386) 445-2225",
+    "specialties": [
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-290",
+    "name": "Daytona Accident Injury Center",
+    "address": "Daytona Beach, FL",
+    "lat": 29.2108147,
+    "lng": -81.0228331,
+    "phone": "(386) 255-0000",
+    "specialties": [
+      "Auto Injuries",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-291",
+    "name": "Hardee Chiropractic Clinic",
+    "address": "Wauchula, FL 33873",
+    "lat": 27.5472589,
+    "lng": -81.8114715,
+    "phone": "(863) 773-3333",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-292",
+    "name": "Sebring Injury & Rehab",
+    "address": "Sebring, FL",
+    "lat": 27.4957453,
+    "lng": -81.4410425,
+    "phone": "(863) 385-1111",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "CENTRAL FLORIDA",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-293",
+    "name": "Gulf Coast Injury Center",
+    "address": "6963 E Fowler Ave, Tampa, FL 33617",
+    "lat": 28.054349,
+    "lng": -82.3983289,
+    "phone": "(813) 253-3111",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.gulfcoastinjurycenter.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-294",
+    "name": "Swann Medical Injury Chiropractic",
+    "address": "2525 E Hillsborough Ave Suite 111, Tampa, FL 33610",
+    "lat": 27.9928075,
+    "lng": -82.4006676,
+    "phone": "(813) 253-5969",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://swannmedical.com/tampa-florida-auto-accident-doctors/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-295",
+    "name": "Accident Injury Doctors",
+    "address": "502 S MacDill Ave, Tampa, FL 33609",
+    "lat": 27.9397541,
+    "lng": -82.49324,
+    "phone": "(813) 874-0444",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.accidentinjurydrs.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-296",
+    "name": "Family Doctors Auto Injury Center",
+    "address": "13250 N 56th St, Tampa, FL 33617",
+    "lat": 28.06733,
+    "lng": -82.3935879,
+    "phone": "(813) 985-7070",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.familydoctorsautoinjurycenter.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-297",
+    "name": "Bay City Rehab & Wellness",
+    "address": "4624 N Armenia Ave, Tampa, FL 33603",
+    "lat": 27.9858134,
+    "lng": -82.4847068,
+    "phone": "(813) 874-2646",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "http://baycityrehab.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-298",
+    "name": "Advanced Spine & Injury Center",
+    "address": "10205 Wilsky Blvd, Tampa, FL 33625",
+    "lat": 28.0655702,
+    "lng": -82.5591561,
+    "phone": "(813) 265-8555",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.advancedspinechiropractic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-299",
+    "name": "Acute Care Chiropractic Clinic",
+    "address": "113 W Robertson St, Brandon, FL 33511",
+    "lat": 27.9357051,
+    "lng": -82.286077,
+    "phone": "(813) 685-4222",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "http://chiropracticbrandon.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-300",
+    "name": "Rogovin Chiropractic & Acupuncture",
+    "address": "506 Westbrook Ave, Brandon, FL 33511",
+    "lat": 27.9354797,
+    "lng": -82.2789616,
+    "phone": "(813) 689-6359",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "http://www.BrandonsChiropractor.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-301",
+    "name": "Tampa Injury and Wellness Center",
+    "address": "4150 N Armenia Ave #102, Tampa, FL 33607",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 508-7515",
+    "specialties": [
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://tampainjuryandwellness.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-302",
+    "name": "Anna Health Chiropractic",
+    "address": "9724 N Armenia Ave, Ste 401, Tampa, FL 33612",
+    "lat": 28.0495011,
+    "lng": -82.4519403,
+    "phone": "(813) 530-9300",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "http://www.annahealthchiropractic.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-303",
+    "name": "New Wave Medical",
+    "address": "13039 Summerfield Square Dr, Riverview, FL 33578",
+    "lat": 27.8548486,
+    "lng": -82.3352357,
+    "phone": "(813) 497-5299",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://newwavemedical.net",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-304",
+    "name": "Prodigy Health",
+    "address": "11146 Winthrop Market St, Riverview, FL 33578",
+    "lat": 27.8918753,
+    "lng": -82.3174663,
+    "phone": "(813) 492-0370",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "http://Www.prodigyhealthfl.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-305",
+    "name": "The Joint Chiropractic",
+    "address": "2948 Providence Lake Blvd, Unit 5, Brandon, FL 33511",
+    "lat": 27.9138501,
+    "lng": -82.2979267,
+    "phone": "(813) 437-9907",
+    "specialties": [
+      "Chiropractic",
+      "Pain Management"
+    ],
+    "email": "",
+    "website": "https://www.thejoint.com/florida/brandon/brandon-27030",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-306",
+    "name": "RejuvenX St Petersburg - Car Accident Injury Clinic",
+    "address": "5880 49th Street N Suite N105 & 107, St. Petersburg, FL 33709",
+    "lat": 27.8134191,
+    "lng": -82.73016,
+    "phone": "(727) 610-6840",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/st-petersburg/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-307",
+    "name": "DrFirst Injury Centers",
+    "address": "2600 66th St N, St. Petersburg, FL 33710",
+    "lat": 27.795538,
+    "lng": -82.728581,
+    "phone": "(727) 381-3600",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://drfirstinjury.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-308",
+    "name": "Nguyen Accident Injury & Wellness Clinic",
+    "address": "7101 49th Street N, Pinellas Park, FL 33781",
+    "lat": 27.836588,
+    "lng": -82.699834,
+    "phone": "(727) 290-9820",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.nguyenclinic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-309",
+    "name": "East Bay Chiropractic",
+    "address": "4445 East Bay Dr, Ste 302, Clearwater, FL 33764",
+    "lat": 27.910764,
+    "lng": -82.7397816,
+    "phone": "(727) 239-3549",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://drfanyang.janeapp.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-310",
+    "name": "Dr. Ian Rainey Chiropractic & Car Injury Clinic",
+    "address": "7331 9th St N, St. Petersburg, FL 33702",
+    "lat": 27.8378888,
+    "lng": -82.6468564,
+    "phone": "(727) 537-9447",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.raineychiropractic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-311",
+    "name": "Gulf Coast Rehabilitation & Wellness | Federal Injury Center",
+    "address": "6250 Park Blvd, Pinellas Park, FL 33781",
+    "lat": 27.839076,
+    "lng": -82.72126,
+    "phone": "(727) 541-2520",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Sports Medicine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.gulfcoastrehabwellness.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-312",
+    "name": "Largo Injury Pain Relief Center",
+    "address": "13002 Seminole Blvd #4, Largo, FL 33778",
+    "lat": 27.8914674,
+    "lng": -82.7878088,
+    "phone": "(727) 585-8888",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.drcarlo-painrelief-largo.net/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-313",
+    "name": "Advanced Medical of Florida",
+    "address": "1528 Lakeview Rd, Ste 150, Clearwater, FL 33756",
+    "lat": 27.9472693,
+    "lng": -82.7897686,
+    "phone": "(727) 408-5222",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.AMFHealthcare.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-314",
+    "name": "Nietzold Chiropractic",
+    "address": "1745 S Highland Ave, Ste 2, Clearwater, FL 33756",
+    "lat": 27.9472693,
+    "lng": -82.7897686,
+    "phone": "(727) 585-4488",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Sports Medicine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://Nietzoldchiropractic.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-315",
+    "name": "Northeast Chiropractic Center",
+    "address": "4200 4th St N, St. Petersburg, FL 33703",
+    "lat": 27.810679,
+    "lng": -82.638941,
+    "phone": "(727) 521-0236",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "PIP Claims",
+      "Attorney Lien",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.northeastchiropractor.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-316",
+    "name": "Chiropractic Injury Solutions",
+    "address": "510 Pasadena Ave S, St. Petersburg, FL 33707",
+    "lat": 27.7657554,
+    "lng": -82.7337217,
+    "phone": "(727) 343-3959",
+    "specialties": [
+      "Chiropractic",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.chiroinjurysolutions.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-317",
+    "name": "Byrne Chiropractic Clinic",
+    "address": "8831 49th Street N, Pinellas Park, FL 33782",
+    "lat": 27.8525701,
+    "lng": -82.7000214,
+    "phone": "(727) 541-1111",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.byrnechiro.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-318",
+    "name": "Back Pain Relief Clinics",
+    "address": "3962 5th Ave N, St. Petersburg, FL 33713",
+    "lat": 27.7771749,
+    "lng": -82.6871652,
+    "phone": "(727) 327-1717",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Whiplash Treatment"
+    ],
+    "email": "",
+    "website": "http://www.backpainreliefclinics.com",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-319",
+    "name": "Wesley Chapel Medical Injury Center (Augustine Chiropractic)",
+    "address": "Wesley Chapel, FL (Pasco County)",
+    "lat": 28.1866014,
+    "lng": -82.366121,
+    "phone": "Main: (866) 402-4250 | Office: (386) 402-4250",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Whiplash Treatment",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://floridainjurycenters.com/wesley-chapel-medical-injury-center-augustine-chiropractic/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-320",
+    "name": "New Port Richey Medical Injury Center (Dr. Tellier / Florida Injury Centers)",
+    "address": "7322 Little Road, New Port Richey, FL 34654",
+    "lat": 28.3066009,
+    "lng": -82.6318785,
+    "phone": "(866) 402-4250",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://floridainjurycenters.com/car-accident-injury-clinics/new-port-richey-medical-injury-center/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-321",
+    "name": "Hands-On Health Care & Chiropractic (New Port Richey)",
+    "address": "9782 Little Rd, New Port Richey, FL 34654",
+    "lat": 28.3066009,
+    "lng": -82.6318785,
+    "phone": "(727) 992-9969",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.handsonchiropractic.com/new-port-richey/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-322",
+    "name": "Core Chiropractic & Wellness (New Port Richey)",
+    "address": "5323 Main Street, New Port Richey, FL 34652",
+    "lat": 28.2502947,
+    "lng": -82.7261679,
+    "phone": "(727) 807-7020",
+    "specialties": [
+      "Chiropractic",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.pascowellness.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-323",
+    "name": "Pelosi Chiropractic & Wellness Center (New Port Richey)",
+    "address": "8614 Little Road, New Port Richey, FL 34654",
+    "lat": 28.3066009,
+    "lng": -82.6318785,
+    "phone": "(727) 841-8488",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.pelosichiropractic.com/chiropractic-treatment-for-car-accidents/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-324",
+    "name": "Fisher Chiropractic Wellness and Injury (Dade City)",
+    "address": "12251 US-301, Dade City, FL 33525",
+    "lat": 28.3362982,
+    "lng": -82.1872662,
+    "phone": "(813) 563-6352",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "https://www.fisherchiropracticwellnessinjury.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-325",
+    "name": "Snyder Chiropractic Centers (Dade City)",
+    "address": "14028 5th Street, Dade City, FL 33525",
+    "lat": 28.3623062,
+    "lng": -82.187431,
+    "phone": "(352) 600-2232",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://snyderchiropracticcenters.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-326",
+    "name": "AllVitae Health & Chiropractic (Lutz – sirve Pasco County)",
+    "address": "17841 Hunting Bow Cir Suite #101, Lutz, FL 33558",
+    "lat": 28.1511243,
+    "lng": -82.4614831,
+    "phone": "(813) 738-3888",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "PIP Claims",
+      "Attorney Lien"
+    ],
+    "email": "",
+    "website": "https://www.allvitaehealth.com/car-accident-lp/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-327",
+    "name": "Accident & Injury Clinic – Spring Hill",
+    "address": "13395 Spring Hill Dr, Spring Hill, FL 34609",
+    "lat": 28.4695823,
+    "lng": -82.5011111,
+    "phone": "(727) 209-7300",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://accidentinjuryclinics.com/spring-hill/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-328",
+    "name": "Florida Injury Centers – Weeki Wachee / Spring Hill",
+    "address": "11349 Cortez Blvd, Brooksville, FL 34613",
+    "lat": 28.5413169,
+    "lng": -82.4435073,
+    "phone": "(866) 402-4250",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://floridainjurycenters.com/locations/florida-injury-center-weeki-wachee/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-329",
+    "name": "Back in Motion Chiropractic & Therapy",
+    "address": "12467 Cortez Blvd, Brooksville, FL 34613",
+    "lat": 28.5413169,
+    "lng": -82.4435073,
+    "phone": "(352) 799-1977",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.backinmotionchiro.org/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-330",
+    "name": "Spring Hill Chiropractic & Wellness",
+    "address": "5431 Commercial Way, Spring Hill, FL 34606",
+    "lat": 28.507529,
+    "lng": -82.5830589,
+    "phone": "(352) 683-2733",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.springhillchiropractic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-331",
+    "name": "Hernandez Chiropractic Clinic",
+    "address": "2468 Deltona Blvd, Spring Hill, FL 34606",
+    "lat": 28.470891,
+    "lng": -82.582653,
+    "phone": "(352) 684-2273",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.hernandezcchiropracticclinic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-332",
+    "name": "BayCare Sports/Spine Rehab – Spring Hill",
+    "address": "10370 Hernando Ave #200, Spring Hill, FL 34608",
+    "lat": 28.4635266,
+    "lng": -82.5363557,
+    "phone": "(352) 688-6139",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Spine",
+      "Orthopedics",
+      "Sports Medicine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://baycare.org/locations/10370-hernando-ave-spring-hill-fl-sports-spine-rehab",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-333",
+    "name": "A Better You Chiropractic – Spring Hill",
+    "address": "10403 Cortez Blvd, Spring Hill, FL 34608",
+    "lat": 28.5265578,
+    "lng": -82.5531853,
+    "phone": "(352) 666-0086",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.abetteryourchiropractic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-334",
+    "name": "Hernando Chiropractic Clinic – Brooksville",
+    "address": "13637 Cortez Blvd #2, Brooksville, FL 34613",
+    "lat": 28.5552719,
+    "lng": -82.3878709,
+    "phone": "(352) 796-6135",
+    "specialties": [
+      "Chiropractic",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "http://hernandochiropracticclinic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-335",
+    "name": "Citizen-Cares Chiropractic – Spring Hill",
+    "address": "13070 Cortez Blvd, Spring Hill, FL 34609",
+    "lat": 28.533438,
+    "lng": -82.512427,
+    "phone": "(352) 683-9161",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://citizencareschiropractic.com/",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-336",
+    "name": "Hernando Rehab & Wellness – Spring Hill",
+    "address": "Janet Ct / Spring Hill area (consultar ubicación exacta por llamada)",
+    "lat": 0,
+    "lng": 0,
+    "phone": "(352) 560-0036",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "Sin web publicada",
+    "region": "WEST CENTRAL FLORIDA (TAMPA BAY)",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-337",
+    "name": "RejuvenX Bradenton - Car Accident Injury Clinic",
+    "address": "3021 Manatee Ave W Suite 1 & 2, Bradenton, FL 34205",
+    "lat": 27.4831544,
+    "lng": -82.5826495,
+    "phone": "(941) 352-2032",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/bradenton/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-338",
+    "name": "Manasota Accident and Injury Center | Car Accidents",
+    "address": "6703 14th St W Suite 101, Bradenton, FL 34207",
+    "lat": 27.4399605,
+    "lng": -82.5771836,
+    "phone": "(941) 751-0223",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://manasotaaccidentcenter.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-339",
+    "name": "Kessler Spine & Rehab : Auto Injury Care",
+    "address": "3633 Cortez Rd W a9, Bradenton, FL 34210",
+    "lat": 27.4520035,
+    "lng": -82.622314,
+    "phone": "(941) 877-0317",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.fl-accidentdocs.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-340",
+    "name": "Florida Injury Centers",
+    "address": "3633 Cortez Rd W a9-1, Bradenton, FL 34210",
+    "lat": 27.4520035,
+    "lng": -82.622314,
+    "phone": "(866) 402-4250",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Attorney Lien",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.floridainjurycenters.com/car-accident-injury-clinics/bradenton-medical-injury-center/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-341",
+    "name": "Accident Rehabilitation Center of Palmetto",
+    "address": "449 10th Ave W, Palmetto, FL 34221",
+    "lat": 27.5145876,
+    "lng": -82.5757094,
+    "phone": "(941) 729-5727",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.palmettoautoinjury.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-342",
+    "name": "South Florida Injury and Convenient Care",
+    "address": "2601 Manatee Ave W E, Bradenton, FL 34205",
+    "lat": 27.4831544,
+    "lng": -82.5826495,
+    "phone": "(941) 744-0040",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://southflorida-injury.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-343",
+    "name": "Grappin Clinic Bradenton: Auto Accident Injury Medical Doctors, Chiropractors & Physical Therapy",
+    "address": "347 6th Ave W, Bradenton, FL 34205",
+    "lat": 27.4941588,
+    "lng": -82.5716001,
+    "phone": "(941) 426-9551",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.grappinclinic.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-344",
+    "name": "Cullen Chiropractic & Wellness",
+    "address": "7150 S Beneva Rd, Sarasota, FL 34238",
+    "lat": 27.3340329,
+    "lng": -82.4975139,
+    "phone": "(941) 927-2161",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.ecullenchiropractic.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-345",
+    "name": "Balance 4 Life Chiropractic",
+    "address": "5204 Paylor Ln, Sarasota, FL 34240",
+    "lat": 27.3771281,
+    "lng": -82.4227111,
+    "phone": "(941) 355-0299",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Attorney Lien",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.balance4lifechiropractic.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-346",
+    "name": "Natural Healing Arts Medical Center",
+    "address": "2215 59th St W, Bradenton, FL 34209",
+    "lat": 27.4803907,
+    "lng": -82.6199077,
+    "phone": "(941) 761-4994",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.myofficeinfo.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-347",
+    "name": "RejuvenX Sarasota – Car Accident Injury Clinic",
+    "address": "1910 S Tuttle Ave #103, Sarasota, FL 34239",
+    "lat": 27.3365805,
+    "lng": -82.5308545,
+    "phone": "(941) 352-2032",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/sarasota/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-348",
+    "name": "Accident Injury Center of Sarasota",
+    "address": "7156 S Tamiami Trail, Sarasota, FL 34231",
+    "lat": 27.2526529,
+    "lng": -82.5151834,
+    "phone": "(941) 923-7425",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://injurycenterofsarasota.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-349",
+    "name": "Sarasota Injury & Whiplash Center",
+    "address": "1005 S Tamiami Trail, Sarasota, FL 34239",
+    "lat": 27.3261338,
+    "lng": -82.5296928,
+    "phone": "(941) 388-6800",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://sarasotainjuryandwhiplashcenter.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-350",
+    "name": "Center for Personalized Chiropractic",
+    "address": "1400 Malvern Dr, Sarasota, FL 34236",
+    "lat": 27.0567243,
+    "lng": -82.3796449,
+    "phone": "(941) 923-2078",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://personalizedchiro.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-351",
+    "name": "Sarasota Car Accident Center – Injury & Rehab",
+    "address": "4320 S Tamiami Trail, Sarasota, FL 34231",
+    "lat": 27.2917232,
+    "lng": -82.5307399,
+    "phone": "(941) 923-3230",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://sarasotacaraccidentcenter.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-352",
+    "name": "Sarasota Family Chiropractic & Wellness",
+    "address": "6141 S Tamiami Trail, Sarasota, FL 34231",
+    "lat": 27.2650465,
+    "lng": -82.5270597,
+    "phone": "(941) 924-9400",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.sarasotafamilychiro.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-353",
+    "name": "Back in Motion Chiropractic & Rehab – Sarasota",
+    "address": "6566 Eland Blvd, Sarasota, FL 34240",
+    "lat": 27.3274466,
+    "lng": -82.4005959,
+    "phone": "(941) 924-4774",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "https://www.backinmotionsarasota.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-354",
+    "name": "Axial Health & Rehab – Sarasota",
+    "address": "2873 Bahia Vista St Suite 2, Sarasota, FL 34239",
+    "lat": 27.311627,
+    "lng": -82.5210117,
+    "phone": "(941) 951-1135",
+    "specialties": [
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://axialhealthrehab.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-355",
+    "name": "Snyder Chiropractic Centers – Sarasota/Rhonda Clinic",
+    "address": "2073 Cattlemen Rd #324, Sarasota, FL 34232",
+    "lat": 27.3365805,
+    "lng": -82.5308545,
+    "phone": "(941) 600-2232",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://snyderchiropracticcenters.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-356",
+    "name": "Physiotherapy Associates of Sarasota",
+    "address": "3656 Bahia Vista St, Sarasota, FL 34232",
+    "lat": 27.3227693,
+    "lng": -82.4961911,
+    "phone": "(941) 350-2931",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.physiotherapyassociates.com/clinic/sarasota-fl/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-357",
+    "name": "Sarasota Health and Rehab Center",
+    "address": "3841 Clark Rd, Sarasota, FL 34233",
+    "lat": 27.2691361,
+    "lng": -82.4932048,
+    "phone": "(941) 955-4108",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://sarasotahealthandrehab.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-358",
+    "name": "Premier Chiropractic Care",
+    "address": "9776 S Tamiami Trail Suite 102, Sarasota, FL 34238",
+    "lat": 27.2411909,
+    "lng": -82.4792425,
+    "phone": "(941) 556-6088",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.premierchiropracticcare.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-359",
+    "name": "Bay Area Chiropractic Health Center",
+    "address": "1580 37th St, Sarasota, FL 34234",
+    "lat": 27.3661732,
+    "lng": -82.533504,
+    "phone": "(941) 955-4051",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.bayareachirofl.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-360",
+    "name": "Southwest Florida Injury Centers – Auto Accident Specialists (Punta Gorda)",
+    "address": "2130 Tamiami Trail, Punta Gorda, FL 33950",
+    "lat": 26.9444508,
+    "lng": -82.0584789,
+    "phone": "(941) 915-2663",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://floridainjurycenters.com/southwest-florida-injury-center/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-361",
+    "name": "RejuvenX Punta Gorda – Car Accident Injury Clinic",
+    "address": "2111 Tamiami Trail, Punta Gorda, FL 33950",
+    "lat": 26.9444508,
+    "lng": -82.0584789,
+    "phone": "(941) 352-2032",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/punta-gorda/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-362",
+    "name": "Bayfront Health Chiropractic & Rehabilitation (Punta Gorda)",
+    "address": "2500 Harbor Blvd, Ste 105, Punta Gorda, FL 33950",
+    "lat": 26.9123403,
+    "lng": -82.0469601,
+    "phone": "(941) 639-5455",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.bayfrontchiropracticrehab.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-363",
+    "name": "Charlotte Pain & Spine Clinic (Punta Gorda)",
+    "address": "205 Tamiami Trail #201, Punta Gorda, FL 33950",
+    "lat": 26.9351529,
+    "lng": -82.0512058,
+    "phone": "(941) 639-6600",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "http://www.charlottepainclinic.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-364",
+    "name": "A Better You Chiropractic – Punta Gorda",
+    "address": "3140 Tamiami Trail, Punta Gorda, FL 33950",
+    "lat": 26.9104991,
+    "lng": -82.0423367,
+    "phone": "(941) 639-2273",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management"
+    ],
+    "email": "",
+    "website": "https://www.abetteryourchiropractic.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-365",
+    "name": "Gulf Coast Wellness Center – Port Charlotte",
+    "address": "4132 Tamiami Trail, Port Charlotte, FL 33980",
+    "lat": 26.9688059,
+    "lng": -82.0800568,
+    "phone": "(941) 625-5960",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Pain Management"
+    ],
+    "email": "",
+    "website": "https://gulfcoastwellnesscenter.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-366",
+    "name": "Alliance Injury Medical Clinic – Port Charlotte",
+    "address": "2289 Tamiami Trail, Port Charlotte, FL 33952",
+    "lat": 26.9987403,
+    "lng": -82.1219602,
+    "phone": "(941) 255-1903",
+    "specialties": [
+      "Auto Injuries",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "Sin sitio web público",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-367",
+    "name": "Premier Chiropractic & Rehab – Port Charlotte",
+    "address": "2055 Tamiami Trail, Port Charlotte, FL 33952",
+    "lat": 27.0025924,
+    "lng": -82.1268206,
+    "phone": "(941) 474-2181",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "https://www.premierchiroandrehab.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-368",
+    "name": "Spine & Injury Specialists – Port Charlotte",
+    "address": "2221 Tamiami Trail, Port Charlotte, FL 33952",
+    "lat": 26.9992072,
+    "lng": -82.1219998,
+    "phone": "(941) 255-0633",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.spine-injury.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-369",
+    "name": "Advanced Chiropractic & Injury Care – Port Charlotte",
+    "address": "1988 Tamiami Trail, Port Charlotte, FL 33952",
+    "lat": 27.0037718,
+    "lng": -82.1285053,
+    "phone": "(941) 627-9777",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "PIP Claims",
+      "Attorney Lien",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-370",
+    "name": "RejuvenX Fort Myers - Car Accident Injury Clinic",
+    "address": "6315 Presidential Ct Ste 140, Fort Myers, FL 33919",
+    "lat": 26.5508134,
+    "lng": -81.8995014,
+    "phone": "(239) 323-9532",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/fort-myers/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-371",
+    "name": "Florida Injury Centers",
+    "address": "12701 World Plaza Ln Building 80, Suite A, Fort Myers, FL 33907",
+    "lat": 26.574984,
+    "lng": -81.8725761,
+    "phone": "(866) 402-4250",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.floridainjurycenters.com/car-accident-injury-clinics/fort-myers-medical-injury-center/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-372",
+    "name": "The Injury Clinic of Fort Myers",
+    "address": "12640 World Plaza Ln Building 71, Fort Myers, FL 33907",
+    "lat": 26.574984,
+    "lng": -81.8725761,
+    "phone": "(239) 245-8702",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-373",
+    "name": "Accident Clinic of SWFL",
+    "address": "1611 Santa Barbara Blvd suite 120, Cape Coral, FL 33991",
+    "lat": 26.64036,
+    "lng": -82.0229538,
+    "phone": "(239) 945-1717",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.accidentclinicofswfl.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-374",
+    "name": "Car Accident Doctor Fort Myers Alpha Medicine and Rehab",
+    "address": "2915 Colonial Blvd Unit 220, Fort Myers, FL 33966",
+    "lat": 26.5938678,
+    "lng": -81.8217447,
+    "phone": "(877) 219-2088",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.alphamedicinerehab.com/fort-myers",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-375",
+    "name": "Neck Pain Back Pain & Headache Relief Center",
+    "address": "38 Barkley Cir, Ste 1, Fort Myers, FL 33907",
+    "lat": 26.574984,
+    "lng": -81.8725761,
+    "phone": "(239) 939-9796",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.ftmyerschiro.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-376",
+    "name": "Kuhn Family Chiropractic",
+    "address": "7181 College Pkwy, Ste 6, Fort Myers, FL 33907",
+    "lat": 26.574984,
+    "lng": -81.8725761,
+    "phone": "(239) 400-2000",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Spine",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.healthyfortmyers.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-377",
+    "name": "Barnes Family Chiropractic",
+    "address": "4302 Del Prado Blvd S, Cape Coral, FL 33904",
+    "lat": 26.5721605,
+    "lng": -81.944003,
+    "phone": "(239) 541-3434",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.barneschiropractic.net",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-378",
+    "name": "Jeter Chiropractic Health Centers of",
+    "address": "615 Cape Coral Pkwy W, Ste 106, Cape Coral, FL 33914",
+    "lat": 26.5778728,
+    "lng": -82.0073775,
+    "phone": "(239) 549-2225",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "http://www.drmarkjeter.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-379",
+    "name": "Halsey Chiropractic and Acupuncture",
+    "address": "20301 Grande Oak Shoppes Blvd, Ste 114, Estero, FL 33928",
+    "lat": 26.4305658,
+    "lng": -81.7887171,
+    "phone": "(239) 949-6811",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine"
+    ],
+    "email": "",
+    "website": "http://HalseyChiropractic.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-380",
+    "name": "Midpoint Chiropractic Center",
+    "address": "3013 Del Prado Blvd S, Ste 8, Cape Coral, FL 33904",
+    "lat": 26.5831316,
+    "lng": -81.9520491,
+    "phone": "(239) 542-7000",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Pain Management"
+    ],
+    "email": "",
+    "website": "https://www.midpointchiropractic.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-381",
+    "name": "Bartz Chiropractic",
+    "address": "1316 SW 4th Ter, Ste 102, Cape Coral, FL 33991",
+    "lat": 26.64036,
+    "lng": -82.0229538,
+    "phone": "(239) 772-5582",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.bartzchiropractorcapecoral.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-382",
+    "name": "RejuvenX Naples - Car Accident Injury Clinic",
+    "address": "3200 Bailey Ln Suite 106, Naples, FL 34105",
+    "lat": 26.1981076,
+    "lng": -81.7624644,
+    "phone": "(239) 251-0250",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/naples/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-383",
+    "name": "Chiropractic of Naples",
+    "address": "3940 Radio Rd, Ste 105, Naples, FL 34104",
+    "lat": 26.1530346,
+    "lng": -81.7421608,
+    "phone": "(239) 315-4805",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.chiropracticofnaples.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-384",
+    "name": "Florida Accident Doctors Naples",
+    "address": "12975 Collier Blvd #107, Naples, FL 34116",
+    "lat": 26.1421976,
+    "lng": -81.7942944,
+    "phone": "(239) 842-2350",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://floridaaccidentdoctors.com/naples-fl-accident-doctors/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-385",
+    "name": "Total Health of Naples",
+    "address": "10661 Airport Pulling Rd, Ste 11, Naples, FL 34109",
+    "lat": 26.240936,
+    "lng": -81.7711035,
+    "phone": "(239) 260-1426",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://totalhealthnaples.com/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-386",
+    "name": "Naples Injury Center (USIC Naples)",
+    "address": "671 Goodlette Rd N #150, Naples, FL 34102",
+    "lat": 26.1557573,
+    "lng": -81.7915203,
+    "phone": "(239) 643-7199",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-387",
+    "name": "Accident Doctor Group, LLC",
+    "address": "2180 Immokalee Rd STE 201, Naples, FL 34110",
+    "lat": 26.2915663,
+    "lng": -81.7880915,
+    "phone": "(239) 203-2977",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://accidentdoctor.org/accident-doctor/florida/naples/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-388",
+    "name": "iChiropractic and Wellness",
+    "address": "3200 Bailey Ln Suite 225, Naples, FL 34105",
+    "lat": 26.1981076,
+    "lng": -81.7624644,
+    "phone": "(239) 300-1756",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.ichiropractic.net/",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-389",
+    "name": "Neck Pain Back Pain & Headache Relief Center of Bonita Springs",
+    "address": "3440 Renaissance Blvd, Ste 1, Bonita Springs, FL 34134",
+    "lat": 26.3573063,
+    "lng": -81.8229929,
+    "phone": "(239) 908-4700",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "Sports Medicine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.bonitaspringschiro.com",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-390",
+    "name": "Citrus Injury & Rehab Center",
+    "address": "Inverness, FL",
+    "lat": 28.8358176,
+    "lng": -82.3303715,
+    "phone": "(352) 726-2225",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-391",
+    "name": "DeSoto Chiropractic",
+    "address": "Arcadia, FL",
+    "lat": 27.2158826,
+    "lng": -81.8584164,
+    "phone": "(863) 494-0005",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-392",
+    "name": "Moore Haven Chiropractic",
+    "address": "Moore Haven, FL",
+    "lat": 26.8331174,
+    "lng": -81.0931234,
+    "phone": "(863) 946-2222",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTHWEST FLORIDA",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-393",
+    "name": "Accident Clinic Miami (varias sedes en Miami-Dade)",
+    "address": "13501 SW 136 St, Suite 207, Miami, FL 33186",
+    "lat": 25.6592091,
+    "lng": -80.4077264,
+    "phone": "(786) 796-8707",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "Website: accidentclinic.miami",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-394",
+    "name": "Accident Clinic Miami (varias sedes en Miami-Dade)",
+    "address": "1125 NE 125th St, Unit 303, North Miami, FL 33161",
+    "lat": 25.8935189,
+    "lng": -80.1824055,
+    "phone": "(786) 796-8707",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "Website: accidentclinic.miami",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-395",
+    "name": "Accident Clinic Miami (varias sedes en Miami-Dade)",
+    "address": "2794 NW 79th Ave, Miami, FL 33122",
+    "lat": 25.8000423,
+    "lng": -80.3258014,
+    "phone": "(786) 796-8707",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "Website: accidentclinic.miami",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-396",
+    "name": "Doral Medical Center (Accident Clinic – Doral & Miami Lakes/Hialeah área)",
+    "address": "1500 NW 89 Ct, Suite 207, Doral, FL 33172",
+    "lat": 25.7850506,
+    "lng": -80.3632194,
+    "phone": "(786) 464-1397",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "doralmedicalcenter.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-397",
+    "name": "Doral Medical Center (Accident Clinic – Doral & Miami Lakes/Hialeah área)",
+    "address": "14100 Palmetto Frontage Rd, Suite 106, Miami Lakes, FL 33016",
+    "lat": 25.8923551,
+    "lng": -80.3328982,
+    "phone": "(786) 464-1397",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "doralmedicalcenter.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-398",
+    "name": "County Line Chiropractic (Accident & Injury Treatment – Miami Gardens / North Miami Beach)",
+    "address": "21309 NW 2nd Ave, Miami, FL 33169",
+    "lat": 25.9706198,
+    "lng": -80.2059627,
+    "phone": "(305) 654-9797 / (305) 652-1792",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "countylinechiro.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-399",
+    "name": "County Line Chiropractic (Accident & Injury Treatment – Miami Gardens / North Miami Beach)",
+    "address": "1857 NE Miami Gardens Dr, North Miami Beach, FL 33179",
+    "lat": 25.9425451,
+    "lng": -80.1815586,
+    "phone": "(305) 654-9797 / (305) 652-1792",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "countylinechiro.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-400",
+    "name": "CDL Rehabilitation Center (Doral) – PIP / auto accident rehab",
+    "address": "3901 NW 79th Ave, STE 223, Doral, FL 33166",
+    "lat": 25.8228763,
+    "lng": -80.3047347,
+    "phone": "(305) 456-2406",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "PIP Claims"
+    ],
+    "email": "",
+    "website": "cdlrehab.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-401",
+    "name": "CALAMA Accident Care Center LLC (Doral)",
+    "address": "9300 NW 25th St, STE 206, Doral, FL 33172",
+    "lat": 25.7850445,
+    "lng": -80.3632135,
+    "phone": "(786) 890-0428",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "Fuente oficial tipo registro (FloridaHealthFinder):",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-402",
+    "name": "YL Injury Clinic Inc (Hialeah)",
+    "address": "1490 W 49th Pl, STE 402, Hialeah, FL 33012",
+    "lat": 25.8653786,
+    "lng": -80.3006597,
+    "phone": "(305) 465-4190",
+    "specialties": [
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "Fuente oficial tipo registro (FloridaHealthFinder):",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-403",
+    "name": "Silverman Chiropractic – Miami Accident Clinic (Miami)",
+    "address": "946 SW 82 Ave, Miami, FL 33144",
+    "lat": 25.7632236,
+    "lng": -80.3092657,
+    "phone": "(305) 680-3069",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "silvermancare.com/miami",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-404",
+    "name": "The Family Medical Group (Miami-Dade) – Personal Injury care (red de sedes)",
+    "address": "(HQ) 12391 SW 130th St, Miami, FL 33186",
+    "lat": 25.6592277,
+    "lng": -80.407714,
+    "phone": "(305) 900-2154 / 1-877-804-4FMG",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "thefamilymedgroup.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-405",
+    "name": "RejuvenX West Palm Beach - Car Accident Injury Clinic",
+    "address": "4 Harvard Cir, Ste 700, West Palm Beach, FL 33409",
+    "lat": 26.7139949,
+    "lng": -80.0932531,
+    "phone": "(561) 422-1819",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/west-palm-beach/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-406",
+    "name": "RejuvenX Boynton Beach - Car Accident Injury Clinic",
+    "address": "3200 S Congress Ave, Ste 102, Boynton Beach, FL 33426",
+    "lat": 26.5459444,
+    "lng": -80.0859108,
+    "phone": "(561) 823-1994",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Whiplash Treatment",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://rejuvenxfl.com/boynton-beach/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-407",
+    "name": "Injury Clinic & Rehab Center",
+    "address": "1225 N Military Trl Suite 6 & 7, West Palm Beach, FL 33409",
+    "lat": 26.7139949,
+    "lng": -80.0932531,
+    "phone": "(561) 687-5150",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.injuryclinic.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-408",
+    "name": "Sal Pilato, DC",
+    "address": "1309 S Flagler Dr, Ste 1, West Palm Beach, FL 33401",
+    "lat": 26.7139325,
+    "lng": -80.0661126,
+    "phone": "(561) 969-3232",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.chiropractorpalmbeach.co",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-409",
+    "name": "Chiropractic Clinics of South Florida",
+    "address": "2247 Palm Beach Lakes Blvd STE 101, West Palm Beach, FL 33409",
+    "lat": 26.7139949,
+    "lng": -80.0932531,
+    "phone": "(561) 556-5836",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://soflochiro.com/west-palm-beach-car-accidents/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-410",
+    "name": "Village Chiropractic & Healing Arts Center",
+    "address": "931 Village Blvd, Ste 903, West Palm Beach, FL 33409",
+    "lat": 26.7139949,
+    "lng": -80.0932531,
+    "phone": "(561) 640-9090",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.villagechiro.net",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-411",
+    "name": "Midtown Clinic of Chiropractic",
+    "address": "3208 Lantana Rd, Lake Worth, FL 33462",
+    "lat": 26.5863693,
+    "lng": -80.0737121,
+    "phone": "(561) 533-3884",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "https://www.mymidtownclinic.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-412",
+    "name": "South Florida Spine & Joint Center",
+    "address": "4414 Northlake Blvd, Palm Beach Gardens, FL 33410",
+    "lat": 26.8088529,
+    "lng": -80.1040898,
+    "phone": "(561) 686-3201",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Pain Management",
+      "Spine",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.sflspinejoint.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-413",
+    "name": "Mote Wellness & Rehab",
+    "address": "3111 W Boynton Beach Blvd, Ste 200, Boynton Beach, FL 33436",
+    "lat": 26.5382369,
+    "lng": -80.1059012,
+    "phone": "(561) 742-3283",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.docmote.com",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-414",
+    "name": "Viva Health Centers",
+    "address": "1441 Forest Hill Blvd STE 100, West Palm Beach, FL 33406",
+    "lat": 26.6607739,
+    "lng": -80.0852253,
+    "phone": "(561) 867-2823",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.vivahealthcenters.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-415",
+    "name": "Auto Accident Injury Specialists",
+    "address": "16244 S Military Tr, Ste 150, Delray Beach, FL 33484",
+    "lat": 26.4526446,
+    "lng": -80.1302768,
+    "phone": "(561) 638-8872",
+    "specialties": [
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-416",
+    "name": "Auto Accident Doctors Delray Beach",
+    "address": "801 SE 6th Ave #102, Delray Beach, FL 33483",
+    "lat": 26.4614625,
+    "lng": -80.0728201,
+    "phone": "(561) 264-5005",
+    "specialties": [
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://accidentdoctor.org/accident-doctor/florida/delray-beach-fl/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-417",
+    "name": "Hendry Chiropractic Center",
+    "address": "Clewiston, FL",
+    "lat": 26.7542264,
+    "lng": -80.9342307,
+    "phone": "(863) 983-3333",
+    "specialties": [
+      "Chiropractic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-418",
+    "name": "Martin Accident Injury Center",
+    "address": "Stuart, FL",
+    "lat": 27.197983,
+    "lng": -80.2519175,
+    "phone": "(772) 286-2225",
+    "specialties": [
+      "Auto Injuries",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-419",
+    "name": "Okeechobee Chiropractic",
+    "address": "Okeechobee, FL",
+    "lat": 27.3923408,
+    "lng": -80.8873655,
+    "phone": "(863) 763-0001",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-420",
+    "name": "St Lucie Injury & Rehab",
+    "address": "Port St Lucie, FL",
+    "lat": 27.2939333,
+    "lng": -80.3503283,
+    "phone": "(772) 335-2225",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-421",
+    "name": "Vero Beach Injury Center",
+    "address": "Vero Beach, FL",
+    "lat": 27.6387163,
+    "lng": -80.3975399,
+    "phone": "(772) 567-2225",
+    "specialties": [
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-422",
+    "name": "Key West Accident & Injury Care",
+    "address": "2212 N Roosevelt Blvd, Key West, FL 33040",
+    "lat": 24.5606005,
+    "lng": -81.7798303,
+    "phone": "(305) 294-8600",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.keywestaccidentandinjury.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-423",
+    "name": "Frias Chiropractic – Key West",
+    "address": "1014 Truman Ave #2, Key West, FL 33040",
+    "lat": 24.5548262,
+    "lng": -81.8020722,
+    "phone": "(305) 294-1881",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://friaschiropractic.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-424",
+    "name": "Keys Chiropractic – Key West",
+    "address": "2365 N Roosevelt Blvd, Key West, FL 33040",
+    "lat": 24.5621687,
+    "lng": -81.7776104,
+    "phone": "(305) 294-0810",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.keyschiropractic.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-425",
+    "name": "Florida Medical & Injury Center – Marathon",
+    "address": "5115 Overseas Hwy Suite 101, Marathon, FL 33050",
+    "lat": 24.7272441,
+    "lng": -81.0414333,
+    "phone": "(305) 289-2245",
+    "specialties": [
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.my-fmic.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-426",
+    "name": "Chiropractic & Rehab – Marathon",
+    "address": "5501 Overseas Hwy Suite 110, Marathon, FL 33050",
+    "lat": 24.7272441,
+    "lng": -81.0414333,
+    "phone": "(305) 743-3700",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.chiroandrehabmarathon.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-427",
+    "name": "Island Chiropractic – Key Largo",
+    "address": "99570 Overseas Hwy, Key Largo, FL 33037",
+    "lat": 25.1423091,
+    "lng": -80.4038259,
+    "phone": "(305) 451-2222",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Pain Management",
+      "Spine",
+      "PIP Claims",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://www.islandchiropractic.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-428",
+    "name": "Florida Accident Injury & Rehab – Key Largo",
+    "address": "99080 Overseas Hwy, Key Largo, FL 33037",
+    "lat": 25.1423091,
+    "lng": -80.4038259,
+    "phone": "(305) 451-8535",
+    "specialties": [
+      "Auto Injuries",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "http://www.accidentinjurykeylargo.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
+    "available": true
+  },
+  {
+    "id": "c-429",
+    "name": "Big Pine Chiropractic – Big Pine Key",
+    "address": "30501 Overseas Hwy, Big Pine Key, FL 33043",
+    "lat": 24.669731,
+    "lng": -81.356202,
+    "phone": "(305) 872-1994",
+    "specialties": [
+      "Chiropractic",
+      "Auto Injuries",
+      "Rehabilitation",
+      "Pain Management",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "https://bigpinechiropractic.com/",
+    "region": "SOUTH FLORIDA",
+    "county": "Miami-Dade",
     "available": true
   }
 ]

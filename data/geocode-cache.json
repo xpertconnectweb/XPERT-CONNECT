@@ -1723,5 +1723,106 @@
   "5795 Overseas Hwy, Marathon, FL 33050": {
     "lat": 24.7172481,
     "lng": -81.0715448
+  },
+  "7003 NW 11th Pl #5, Gainesville, FL 32605": {
+    "lat": 29.6519684,
+    "lng": -82.3249846
+  },
+  "4131 NW 28th Ln #3B, Gainesville, FL 32606": {
+    "lat": 29.6519684,
+    "lng": -82.3249846
+  },
+  "1306 E Silver Springs Blvd #101, Ocala, FL 34470": {
+    "lat": 29.1871986,
+    "lng": -82.1400923
+  },
+  "1950 Laurel Manor Dr #204, The Villages, FL 32162": {
+    "lat": 28.9247641,
+    "lng": -82.0021918
+  },
+  "1501 US-441 Building 1000 Suite #1001, Lady Lake, FL 32159": {
+    "lat": 28.9174855,
+    "lng": -81.9228604
+  },
+  "15151 US-441 #200, Summerfield, FL 34491": {
+    "lat": 29.0085924,
+    "lng": -82.0348092
+  },
+  "4170 Town Center Blvd #100, Orlando, FL 32837": {
+    "lat": 28.5421218,
+    "lng": -81.379045
+  },
+  "7984 Forest City Rd #106, Orlando, FL 32810": {
+    "lat": 28.5421218,
+    "lng": -81.379045
+  },
+  "11500 University Blvd #103, Orlando, FL 32817": {
+    "lat": 28.5421218,
+    "lng": -81.379045
+  },
+  "339 Cypress Pkwy #260, Kissimmee, FL 34759": {
+    "lat": 28.2918995,
+    "lng": -81.4075838
+  },
+  "103 W Oak St #C, Kissimmee, FL 34741": {
+    "lat": 28.2918995,
+    "lng": -81.4075838
+  },
+  "949 S Orlando Ave #107, Winter Park, FL 32789": {
+    "lat": 28.5977707,
+    "lng": -81.3510264
+  },
+  "101 N Horatio Ave #200, Maitland, FL 32751 (cerca de border con Orange Co)": null,
+  "3325 S Florida Ave #100, Lakeland, FL 33803": {
+    "lat": 28.0005457,
+    "lng": -81.9569047
+  },
+  "4150 N Armenia Ave #102, Tampa, FL 33607": {
+    "lat": 27.9449854,
+    "lng": -82.4583107
+  },
+  "13002 Seminole Blvd #4, Largo, FL 33778": {
+    "lat": 27.8914674,
+    "lng": -82.7878088
+  },
+  "17841 Hunting Bow Cir Suite #101, Lutz, FL 33558": {
+    "lat": 28.1511243,
+    "lng": -82.4614831
+  },
+  "10370 Hernando Ave #200, Spring Hill, FL 34608": {
+    "lat": 28.4635266,
+    "lng": -82.5363557
+  },
+  "13637 Cortez Blvd #2, Brooksville, FL 34613": {
+    "lat": 28.5552719,
+    "lng": -82.3878709
+  },
+  "1910 S Tuttle Ave #103, Sarasota, FL 34239": {
+    "lat": 27.3365805,
+    "lng": -82.5308545
+  },
+  "2073 Cattlemen Rd #324, Sarasota, FL 34232": {
+    "lat": 27.3365805,
+    "lng": -82.5308545
+  },
+  "205 Tamiami Trail #201, Punta Gorda, FL 33950": {
+    "lat": 26.9351529,
+    "lng": -82.0512058
+  },
+  "12975 Collier Blvd #107, Naples, FL 34116": {
+    "lat": 26.1421976,
+    "lng": -81.7942944
+  },
+  "671 Goodlette Rd N #150, Naples, FL 34102": {
+    "lat": 26.1557573,
+    "lng": -81.7915203
+  },
+  "801 SE 6th Ave #102, Delray Beach, FL 33483": {
+    "lat": 26.4614625,
+    "lng": -80.0728201
+  },
+  "1014 Truman Ave #2, Key West, FL 33040": {
+    "lat": 24.5548262,
+    "lng": -81.8020722
   }
 }
