@@ -1,17 +1,9 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-const transporter = process.env.SMTP_HOST
-  ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
-  : null
+const resend = new Resend(process.env.RESEND_API_KEY)
 
-const INTERNAL_EMAIL = process.env.INTERNAL_EMAIL || ''
+const FROM_EMAIL = process.env.EMAIL_FROM || 'Xpert Connect <onboarding@resend.dev>'
+const INTERNAL_EMAIL = process.env.INTERNAL_EMAIL || 'xpertconnect.web@gmail.com'
 
 function escapeHtml(str: string): string {
   return str
@@ -36,17 +28,19 @@ interface EmailOptions {
 }
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
-  if (transporter) {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@xpertconnect.com',
-      ...options,
-    })
-  } else {
-    console.log('=== EMAIL NOTIFICATION ===')
-    console.log(`To: ${options.to}`)
-    console.log(`Subject: ${options.subject}`)
-    console.log('=========================')
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+  })
+
+  if (error) {
+    console.error('Resend email error:', error)
+    throw new Error(`Failed to send email: ${error.message}`)
   }
+
+  console.log(`Email sent to ${options.to} (id: ${data?.id})`)
 }
 
 /** Email sent to the clinic when a referral is created */
@@ -107,10 +101,8 @@ export function internalNotificationEmail(
   const dateStr = formatDateTime(createdAt)
   const firmLine = safe.lawyerFirm ? ` (${safe.lawyerFirm})` : ''
 
-  const to = INTERNAL_EMAIL || 'internal-team@xpertconnect.com'
-
   return sendEmail({
-    to,
+    to: INTERNAL_EMAIL,
     subject: `[Referral] ${safe.lawyerName} → ${safe.clinicName}`,
     html: `
       <h2>New Referral Notification</h2>
@@ -121,6 +113,53 @@ export function internalNotificationEmail(
         <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Case Type</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.caseType}</td></tr>
         <tr><td style="padding:8px;font-weight:bold;">Date / Time</td><td style="padding:8px;">${dateStr} (ET)</td></tr>
       </table>
+      <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>
+    `,
+  })
+}
+
+/** Email sent when someone submits the contact form */
+export function contactFormEmail(
+  name: string,
+  email: string,
+  phone: string,
+  service: string,
+  message: string
+) {
+  const safe = {
+    name: escapeHtml(name),
+    email: escapeHtml(email),
+    phone: escapeHtml(phone),
+    service: escapeHtml(service),
+    message: escapeHtml(message),
+  }
+
+  return sendEmail({
+    to: INTERNAL_EMAIL,
+    subject: `[Contact] New message from ${safe.name}`,
+    html: `
+      <h2>New Contact Form Submission</h2>
+      <table style="border-collapse:collapse;width:100%;max-width:500px;">
+        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Name</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.name}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.email}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Phone</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.phone}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Service</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.service}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;">Message</td><td style="padding:8px;">${safe.message || '(none)'}</td></tr>
+      </table>
+      <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>
+    `,
+  })
+}
+
+/** Email sent when someone subscribes to the newsletter */
+export function newsletterSubscriptionEmail(email: string) {
+  return sendEmail({
+    to: INTERNAL_EMAIL,
+    subject: `[Newsletter] New subscriber: ${email}`,
+    html: `
+      <h2>New Newsletter Subscriber</h2>
+      <p>A new user has subscribed to the newsletter:</p>
+      <p style="font-size:18px;font-weight:bold;">${escapeHtml(email)}</p>
       <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>
     `,
   })
