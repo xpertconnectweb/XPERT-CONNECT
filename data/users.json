@@ -34,5 +34,13 @@
     "role": "clinic",
     "clinicId": "c-160",
     "email": "admin@coralgablesmed.example.com"
+  },
+  {
+    "id": "admin-001",
+    "username": "admin_xpert",
+    "password": "$2b$10$tslzLORQJZK6JuMNl7T8OOpNwg6shlfIcTyebwtAlR/0W5BolDA/G",
+    "name": "Xpert Admin",
+    "role": "admin",
+    "email": "admin@xpertconnect.com"
   }
 ]

@@ -6,6 +6,7 @@ import {
   getReferralsByClinic,
   createReferral,
   getClinicById,
+  getUsersByClinicId,
 } from '@/lib/data'
 import { referralCreatedEmail, internalNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
@@ -89,17 +90,30 @@ export async function POST(request: NextRequest) {
     updatedAt: now,
   })
 
-  // Send email to clinic (non-blocking)
-  referralCreatedEmail(
-    clinic.name,
-    clinic.email,
-    lawyerName,
-    lawyerFirm,
-    cleanName,
-    cleanCase,
-    cleanCoverage,
-    cleanPip
-  ).catch((err) => console.error('Clinic email failed:', err))
+  // Collect all clinic emails: clinic entity email + clinic user emails
+  const emailSet = new Set<string>()
+  if (clinic.email) emailSet.add(clinic.email)
+
+  const clinicUsers = await getUsersByClinicId(clinic.id)
+  clinicUsers.forEach((user) => {
+    if (user.email) emailSet.add(user.email)
+  })
+
+  const clinicEmails = Array.from(emailSet)
+
+  // Send email to all clinic emails (non-blocking)
+  clinicEmails.forEach((email) => {
+    referralCreatedEmail(
+      clinic.name,
+      email,
+      lawyerName,
+      lawyerFirm,
+      cleanName,
+      cleanCase,
+      cleanCoverage,
+      cleanPip
+    ).catch((err) => console.error(`Clinic email to ${email} failed:`, err))
+  })
 
   // Send internal team notification (non-blocking)
   internalNotificationEmail(

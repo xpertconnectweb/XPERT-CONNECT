@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   username    TEXT UNIQUE NOT NULL,
   password    TEXT NOT NULL,
   name        TEXT NOT NULL,
-  role        TEXT NOT NULL CHECK (role IN ('lawyer', 'clinic')),
+  role        TEXT NOT NULL CHECK (role IN ('lawyer', 'clinic', 'admin')),
   clinic_id   TEXT,
   firm_name   TEXT,
   email       TEXT NOT NULL,
@@ -134,3 +134,10 @@ CREATE POLICY "Anon insert contacts"
 CREATE POLICY "Anon insert newsletter"
   ON newsletter_subscribers FOR INSERT
   WITH CHECK (true);
+
+-- =============================================================
+-- Migration: Add 'admin' role to users table
+-- Run this on existing databases to update the role constraint:
+-- =============================================================
+-- ALTER TABLE users DROP CONSTRAINT users_role_check;
+-- ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('lawyer', 'clinic', 'admin'));

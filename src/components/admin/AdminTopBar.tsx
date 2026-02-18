@@ -3,15 +3,12 @@
 import { useSession, signOut } from 'next-auth/react'
 import { Menu, LogOut, User } from 'lucide-react'
 
-interface TopBarProps {
+interface AdminTopBarProps {
   onMenuToggle: () => void
 }
 
-export function TopBar({ onMenuToggle }: TopBarProps) {
+export function AdminTopBar({ onMenuToggle }: AdminTopBarProps) {
   const { data: session } = useSession()
-
-  const role = session?.user?.role
-  const roleLabel = role === 'lawyer' ? 'Attorney' : role === 'admin' ? 'Administrator' : 'Clinic'
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
@@ -35,7 +32,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
           </div>
           <div className="hidden sm:block">
             <p className="text-sm font-medium text-gray-900 leading-tight">{session?.user?.name}</p>
-            <p className="text-xs text-gray-500">{roleLabel}</p>
+            <p className="text-xs text-gray-500">Administrator</p>
           </div>
         </div>
         <div className="h-6 w-px bg-gray-200 hidden sm:block" />

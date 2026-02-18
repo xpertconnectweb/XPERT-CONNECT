@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -35,7 +35,12 @@ export function LoginForm() {
       setPassword('')
       setLoading(false)
     } else {
-      router.push('/professionals/map')
+      const session = await getSession()
+      if (session?.user?.role === 'admin') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/professionals/map')
+      }
       router.refresh()
     }
   }
