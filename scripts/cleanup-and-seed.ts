@@ -58,7 +58,7 @@ async function main() {
         lng: -82.0905,
         phone: '+1 (941) 555-0456',
         email: 'clinic@florida-injury.com',
-        specialties: JSON.stringify(['Chiropractic', 'Physical Therapy', 'Pain Management']),
+        specialties: ['Chiropractic', 'Physical Therapy', 'Pain Management'],
         region: 'Southwest Florida',
         county: 'Charlotte',
         available: true
