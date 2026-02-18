@@ -64,25 +64,81 @@ export function referralCreatedEmail(
     pip: escapeHtml(pip),
   }
 
-  const firmLine = safe.lawyerFirm
-    ? ` from <strong>${safe.lawyerFirm}</strong>`
-    : ''
+  const firmLine = safe.lawyerFirm ? ` from ${safe.lawyerFirm}` : ''
 
   return sendEmail({
     to: clinicEmail,
-    subject: `New Patient Referral from ${safe.lawyerName}`,
+    subject: `🏥 New Patient Referral from ${safe.lawyerName}`,
     html: `
-      <h2>New Patient Referral</h2>
-      <p>Hello ${safe.clinicName},</p>
-      <p>You have received a new patient referral from <strong>${safe.lawyerName}</strong>${firmLine}.</p>
-      <ul>
-        <li><strong>Patient:</strong> ${safe.patientName}</li>
-        <li><strong>Case Type:</strong> ${safe.caseType}</li>
-        <li><strong>Coverage:</strong> ${safe.coverage}</li>
-        <li><strong>PIP:</strong> ${safe.pip}</li>
-      </ul>
-      <p>Please log in to your Xpert Connect dashboard to view the full details.</p>
-      <p>Best regards,<br>Xpert Connect</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f5f5;">
+        <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);padding:40px 30px;text-align:center;">
+            <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:bold;">New Patient Referral</h1>
+            <p style="color:#e0e7ff;margin:10px 0 0 0;font-size:16px;">Xpert Connect</p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding:40px 30px;">
+            <p style="font-size:16px;color:#1f2937;line-height:1.6;margin:0 0 20px 0;">
+              Hello <strong>${safe.clinicName}</strong>,
+            </p>
+            <p style="font-size:16px;color:#1f2937;line-height:1.6;margin:0 0 30px 0;">
+              You have received a new patient referral from <strong>${safe.lawyerName}</strong>${firmLine}.
+            </p>
+
+            <!-- Referral Details Card -->
+            <div style="background-color:#f8fafc;border-left:4px solid #3b82f6;padding:25px;margin:0 0 30px 0;border-radius:8px;">
+              <h2 style="color:#1e3a8a;margin:0 0 20px 0;font-size:18px;font-weight:bold;">Referral Details</h2>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;width:120px;">Patient:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.patientName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Case Type:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.caseType}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Coverage:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.coverage}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">PIP:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.pip}</td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align:center;margin:30px 0;">
+              <a href="https://www.844xpert.com/professionals/referrals" style="display:inline-block;background-color:#3b82f6;color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;">View Full Details</a>
+            </div>
+
+            <p style="font-size:14px;color:#6b7280;line-height:1.6;margin:30px 0 0 0;">
+              Best regards,<br>
+              <strong style="color:#1f2937;">The Xpert Connect Team</strong>
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="color:#6b7280;font-size:12px;margin:0 0 10px 0;">
+              © ${new Date().getFullYear()} Xpert Connect. All rights reserved.
+            </p>
+            <p style="color:#9ca3af;font-size:11px;margin:0;">
+              This is an automated notification. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
     `,
   })
 }
@@ -113,19 +169,82 @@ export function internalNotificationEmail(
 
   return sendEmail({
     to: INTERNAL_EMAIL,
-    subject: `[Referral] ${safe.lawyerName} → ${safe.clinicName}`,
+    subject: `🔔 [Internal] New Referral: ${safe.lawyerName} → ${safe.clinicName}`,
     html: `
-      <h2>New Referral Notification</h2>
-      <table style="border-collapse:collapse;width:100%;max-width:500px;">
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Sent by</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.lawyerName}${firmLine}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Clinic</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.clinicName}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Patient</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.patientName}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Case Type</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.caseType}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Coverage</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.coverage}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">PIP</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.pip}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;">Date / Time</td><td style="padding:8px;">${dateStr} (ET)</td></tr>
-      </table>
-      <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f5f5;">
+        <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#dc2626 0%,#ef4444 100%);padding:40px 30px;text-align:center;">
+            <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:bold;">Internal Notification</h1>
+            <p style="color:#fecaca;margin:10px 0 0 0;font-size:16px;">New Referral Activity</p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding:40px 30px;">
+            <div style="background-color:#fef2f2;border-left:4px solid #dc2626;padding:20px;margin:0 0 30px 0;border-radius:8px;">
+              <p style="color:#991b1b;margin:0;font-size:16px;font-weight:600;">
+                ${safe.lawyerName}${firmLine} → ${safe.clinicName}
+              </p>
+            </div>
+
+            <!-- Referral Details -->
+            <div style="background-color:#f8fafc;border-radius:8px;padding:25px;margin:0 0 30px 0;">
+              <h2 style="color:#1f2937;margin:0 0 20px 0;font-size:18px;font-weight:bold;">Referral Details</h2>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;width:120px;">Sent by:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.lawyerName}${firmLine}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Clinic:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.clinicName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Patient:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.patientName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Case Type:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.caseType}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Coverage:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.coverage}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">PIP:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.pip}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Date/Time:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${dateStr} (ET)</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="text-align:center;">
+              <a href="https://www.844xpert.com/admin/referrals" style="display:inline-block;background-color:#dc2626;color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;">View in Admin Dashboard</a>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="color:#6b7280;font-size:12px;margin:0 0 10px 0;">
+              © ${new Date().getFullYear()} Xpert Connect. All rights reserved.
+            </p>
+            <p style="color:#9ca3af;font-size:11px;margin:0;">
+              This is an internal automated notification. Do not forward.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
     `,
   })
 }
@@ -148,17 +267,73 @@ export function contactFormEmail(
 
   return sendEmail({
     to: INTERNAL_EMAIL,
-    subject: `[Contact] New message from ${safe.name}`,
+    subject: `📩 New Contact Message from ${safe.name}`,
     html: `
-      <h2>New Contact Form Submission</h2>
-      <table style="border-collapse:collapse;width:100%;max-width:500px;">
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Name</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.name}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.email}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Phone</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.phone}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;border-bottom:1px solid #eee;">Service</td><td style="padding:8px;border-bottom:1px solid #eee;">${safe.service}</td></tr>
-        <tr><td style="padding:8px;font-weight:bold;">Message</td><td style="padding:8px;">${safe.message || '(none)'}</td></tr>
-      </table>
-      <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f5f5;">
+        <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#059669 0%,#10b981 100%);padding:40px 30px;text-align:center;">
+            <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:bold;">New Contact Message</h1>
+            <p style="color:#d1fae5;margin:10px 0 0 0;font-size:16px;">Someone wants to connect with you!</p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding:40px 30px;">
+            <!-- Contact Details Card -->
+            <div style="background-color:#f0fdf4;border-left:4px solid #10b981;padding:25px;margin:0 0 30px 0;border-radius:8px;">
+              <h2 style="color:#065f46;margin:0 0 20px 0;font-size:18px;font-weight:bold;">Contact Information</h2>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;width:120px;">Name:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Email:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;"><a href="mailto:${safe.email}" style="color:#10b981;text-decoration:none;">${safe.email}</a></td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Phone:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;"><a href="tel:${safe.phone}" style="color:#10b981;text-decoration:none;">${safe.phone}</a></td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Service:</td>
+                  <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.service}</td>
+                </tr>
+              </table>
+            </div>
+
+            ${safe.message ? `
+              <div style="background-color:#f8fafc;border-radius:8px;padding:20px;margin:0 0 30px 0;">
+                <h3 style="color:#1f2937;margin:0 0 15px 0;font-size:16px;font-weight:600;">Message:</h3>
+                <p style="color:#4b5563;line-height:1.6;margin:0;white-space:pre-wrap;">${safe.message}</p>
+              </div>
+            ` : ''}
+
+            <div style="background-color:#fef3c7;border-left:4px solid #f59e0b;padding:15px 20px;border-radius:8px;">
+              <p style="color:#92400e;margin:0;font-size:14px;line-height:1.5;">
+                <strong>⏱️ Quick Tip:</strong> Respond within 24 hours for the best customer experience!
+              </p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="color:#6b7280;font-size:12px;margin:0 0 10px 0;">
+              © ${new Date().getFullYear()} Xpert Connect. All rights reserved.
+            </p>
+            <p style="color:#9ca3af;font-size:11px;margin:0;">
+              This is an automated notification from your website contact form.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
     `,
   })
 }
@@ -167,12 +342,48 @@ export function contactFormEmail(
 export function newsletterSubscriptionEmail(email: string) {
   return sendEmail({
     to: INTERNAL_EMAIL,
-    subject: `[Newsletter] New subscriber: ${email}`,
+    subject: `📬 New Newsletter Subscriber: ${email}`,
     html: `
-      <h2>New Newsletter Subscriber</h2>
-      <p>A new user has subscribed to the newsletter:</p>
-      <p style="font-size:18px;font-weight:bold;">${escapeHtml(email)}</p>
-      <p style="margin-top:16px;color:#666;">This is an automated notification from Xpert Connect.</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f5f5;">
+        <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%);padding:40px 30px;text-align:center;">
+            <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:bold;">New Newsletter Subscriber</h1>
+            <p style="color:#ede9fe;margin:10px 0 0 0;font-size:16px;">Your audience is growing!</p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding:40px 30px;text-align:center;">
+            <div style="background:linear-gradient(135deg,#faf5ff 0%,#f3e8ff 100%);border-radius:12px;padding:30px;margin:0 0 30px 0;">
+              <p style="color:#6b7280;margin:0 0 15px 0;font-size:14px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">New Subscriber Email</p>
+              <p style="color:#7c3aed;font-size:24px;font-weight:bold;margin:0;word-break:break-all;">${escapeHtml(email)}</p>
+            </div>
+
+            <div style="background-color:#ecfdf5;border-left:4px solid #10b981;padding:20px;border-radius:8px;text-align:left;">
+              <p style="color:#065f46;margin:0;font-size:14px;line-height:1.6;">
+                <strong>✅ Action Required:</strong> Add this subscriber to your email marketing list to keep them engaged with your latest updates and offers.
+              </p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
+            <p style="color:#6b7280;font-size:12px;margin:0 0 10px 0;">
+              © ${new Date().getFullYear()} Xpert Connect. All rights reserved.
+            </p>
+            <p style="color:#9ca3af;font-size:11px;margin:0;">
+              Automated notification from your newsletter signup form.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
     `,
   })
 }
