@@ -159,12 +159,22 @@ export default function AdminClinicsPage() {
   }
 
   const toggleAvailability = async (id: string, currentStatus: boolean) => {
-    await fetch(`/api/admin/clinics/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ available: !currentStatus }),
-    })
-    await fetchClinics()
+    try {
+      const res = await fetch(`/api/admin/clinics/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ available: !currentStatus }),
+      })
+
+      if (!res.ok) {
+        console.error('Failed to toggle availability')
+        return
+      }
+
+      await fetchClinics()
+    } catch (error) {
+      console.error('Error toggling availability:', error)
+    }
   }
 
   const filtered = clinics.filter((c) => {
