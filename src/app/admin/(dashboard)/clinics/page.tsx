@@ -57,6 +57,7 @@ export default function AdminClinicsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [availFilter, setAvailFilter] = useState<string>('')
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   const fetchClinics = useCallback(async () => {
     const res = await fetch('/api/professionals/clinics')
@@ -159,6 +160,7 @@ export default function AdminClinicsPage() {
   }
 
   const toggleAvailability = async (id: string, currentStatus: boolean) => {
+    setTogglingId(id)
     try {
       const res = await fetch(`/api/admin/clinics/${id}`, {
         method: 'PATCH',
@@ -168,12 +170,15 @@ export default function AdminClinicsPage() {
 
       if (!res.ok) {
         console.error('Failed to toggle availability')
+        setTogglingId(null)
         return
       }
 
       await fetchClinics()
     } catch (error) {
       console.error('Error toggling availability:', error)
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -275,17 +280,24 @@ export default function AdminClinicsPage() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleAvailability(clinic.id, clinic.available)}
-                      className="flex items-center gap-1.5 group"
+                      disabled={togglingId === clinic.id}
+                      className={`relative inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                        clinic.available
+                          ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
+                      } ${togglingId === clinic.id ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-sm'}`}
                     >
-                      {clinic.available ? (
+                      {togglingId === clinic.id ? (
                         <>
-                          <ToggleRight className="h-5 w-5 text-green-600 group-hover:text-green-700" />
-                          <span className="text-xs text-green-600 font-medium">Available</span>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Updating...</span>
                         </>
                       ) : (
                         <>
-                          <ToggleLeft className="h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                          <span className="text-xs text-gray-500">Unavailable</span>
+                          <span className={`h-2 w-2 rounded-full transition-all duration-200 ${
+                            clinic.available ? 'bg-green-500 shadow-sm shadow-green-500/50' : 'bg-gray-400'
+                          }`} />
+                          <span>{clinic.available ? 'Available' : 'Unavailable'}</span>
                         </>
                       )}
                     </button>
