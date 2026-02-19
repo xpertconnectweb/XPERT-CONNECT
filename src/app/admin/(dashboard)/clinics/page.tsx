@@ -70,7 +70,12 @@ export default function AdminClinicsPage() {
   const [loadingEmails, setLoadingEmails] = useState(false)
 
   const fetchClinics = useCallback(async () => {
-    const res = await fetch('/api/professionals/clinics')
+    const res = await fetch('/api/professionals/clinics', {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    })
     const data = await res.json()
     setClinics(data)
     setLoading(false)
@@ -140,6 +145,8 @@ export default function AdminClinicsPage() {
           const data = await res.json()
           throw new Error(data.error || 'Failed to update clinic')
         }
+        const result = await res.json()
+        console.log('✓ Clinic updated:', result)
       } else {
         const res = await fetch('/api/admin/clinics', {
           method: 'POST',
@@ -150,9 +157,12 @@ export default function AdminClinicsPage() {
           const data = await res.json()
           throw new Error(data.error || 'Failed to create clinic')
         }
+        const result = await res.json()
+        console.log('✓ Clinic created:', result)
       }
 
       setShowModal(false)
+      setLoading(true)
       await fetchClinics()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -164,7 +174,9 @@ export default function AdminClinicsPage() {
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/admin/clinics/${id}`, { method: 'DELETE' })
     if (res.ok) {
+      console.log('✓ Clinic deleted')
       setDeleteConfirm(null)
+      setLoading(true)
       await fetchClinics()
     }
   }
@@ -179,14 +191,19 @@ export default function AdminClinicsPage() {
       })
 
       if (!res.ok) {
-        console.error('Failed to toggle availability')
+        console.error('✗ Failed to toggle availability')
         setTogglingId(null)
         return
       }
 
+      const result = await res.json()
+      console.log('✓ Availability toggled:', result)
+
+      // Force immediate refresh with loading state
+      setLoading(true)
       await fetchClinics()
     } catch (error) {
-      console.error('Error toggling availability:', error)
+      console.error('✗ Error toggling availability:', error)
     } finally {
       setTogglingId(null)
     }
