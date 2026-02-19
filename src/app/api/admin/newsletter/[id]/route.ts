@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== 'admin') {
@@ -13,10 +13,11 @@ export async function DELETE(
   }
 
   try {
+    const { id } = await params
     const { error } = await supabaseAdmin
       .from('newsletter_subscribers')
       .delete()
-      .eq('id', parseInt(params.id))
+      .eq('id', parseInt(id))
 
     if (error) throw error
 
