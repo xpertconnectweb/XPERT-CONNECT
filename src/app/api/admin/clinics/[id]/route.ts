@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== 'admin') {
@@ -13,15 +13,24 @@ export async function PATCH(
   }
 
   try {
+    const { id } = await params
     const body = await request.json()
-    const { error } = await supabaseAdmin
+
+    console.log('Updating clinic:', id, 'with data:', body)
+
+    const { data, error } = await supabaseAdmin
       .from('clinics')
       .update(body)
-      .eq('id', params.id)
+      .eq('id', id)
+      .select()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
 
-    return NextResponse.json({ success: true })
+    console.log('Update successful:', data)
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('Error updating clinic:', error)
     return NextResponse.json(
@@ -33,7 +42,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== 'admin') {
@@ -41,10 +50,11 @@ export async function DELETE(
   }
 
   try {
+    const { id } = await params
     const { error } = await supabaseAdmin
       .from('clinics')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) throw error
 
