@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail } from 'lucide-react'
 
 interface Clinic {
   id: string
@@ -16,6 +16,13 @@ interface Clinic {
   region?: string
   county?: string
   available: boolean
+}
+
+interface ClinicUser {
+  id: string
+  name: string
+  email: string
+  username: string
 }
 
 interface ClinicForm {
@@ -58,6 +65,9 @@ export default function AdminClinicsPage() {
   const [search, setSearch] = useState('')
   const [availFilter, setAvailFilter] = useState<string>('')
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [showEmailsModal, setShowEmailsModal] = useState(false)
+  const [selectedClinicEmails, setSelectedClinicEmails] = useState<{ clinicEmail: string; userEmails: string[] } | null>(null)
+  const [loadingEmails, setLoadingEmails] = useState(false)
 
   const fetchClinics = useCallback(async () => {
     const res = await fetch('/api/professionals/clinics')
@@ -179,6 +189,35 @@ export default function AdminClinicsPage() {
       console.error('Error toggling availability:', error)
     } finally {
       setTogglingId(null)
+    }
+  }
+
+  const showClinicEmails = async (clinic: Clinic) => {
+    setLoadingEmails(true)
+    setShowEmailsModal(true)
+    try {
+      // Fetch users linked to this clinic
+      const res = await fetch(`/api/admin/clinics/${clinic.id}/users`)
+      if (res.ok) {
+        const users: ClinicUser[] = await res.json()
+        setSelectedClinicEmails({
+          clinicEmail: clinic.email,
+          userEmails: users.map(u => u.email).filter(Boolean)
+        })
+      } else {
+        setSelectedClinicEmails({
+          clinicEmail: clinic.email,
+          userEmails: []
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching clinic users:', error)
+      setSelectedClinicEmails({
+        clinicEmail: clinic.email,
+        userEmails: []
+      })
+    } finally {
+      setLoadingEmails(false)
     }
   }
 
@@ -304,6 +343,14 @@ export default function AdminClinicsPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => showClinicEmails(clinic)}
+                        className="rounded-lg p-2 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        aria-label={`View emails for ${clinic.name}`}
+                        title="View all emails that receive referrals"
+                      >
+                        <Mail className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => openEdit(clinic)}
                         className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
@@ -509,6 +556,91 @@ export default function AdminClinicsPage() {
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {editingId ? 'Update' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Recipients Modal */}
+      {showEmailsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-heading text-lg font-semibold text-gray-900">
+                Email Recipients
+              </h2>
+              <button onClick={() => setShowEmailsModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {loadingEmails ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-gold" />
+              </div>
+            ) : selectedClinicEmails ? (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    Cuando se crea un referral, se envían emails a:
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
+                    <div className="text-xs font-medium text-blue-700 mb-1">Clinic Entity Email</div>
+                    <div className="text-sm text-blue-900 font-mono">
+                      {selectedClinicEmails.clinicEmail || <span className="text-gray-400 italic">No configurado</span>}
+                    </div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      Se cambia en "Edit" de la clínica
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-green-50 border border-green-200 p-3">
+                    <div className="text-xs font-medium text-green-700 mb-1">
+                      User Accounts Linked ({selectedClinicEmails.userEmails.length})
+                    </div>
+                    {selectedClinicEmails.userEmails.length > 0 ? (
+                      <div className="space-y-1">
+                        {selectedClinicEmails.userEmails.map((email, idx) => (
+                          <div key={idx} className="text-sm text-green-900 font-mono">
+                            {email}
+                          </div>
+                        ))}
+                        <div className="text-xs text-green-600 mt-2">
+                          Se cambian en la página "Users"
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-400 italic">
+                        No hay usuarios vinculados
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mt-4">
+                  <div className="flex items-start gap-2">
+                    <Mail className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-amber-700">
+                      <strong>Total emails que recibirán notificaciones:</strong>
+                      <div className="mt-1 font-medium">
+                        {[selectedClinicEmails.clinicEmail, ...selectedClinicEmails.userEmails].filter(Boolean).length} email(s)
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowEmailsModal(false)}
+                className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cerrar
               </button>
             </div>
           </div>
