@@ -11,6 +11,10 @@ export async function GET() {
 
   const clinics = await getClinics()
   return NextResponse.json(clinics, {
-    headers: { 'Cache-Control': 'private, max-age=300' }, // 5 min cache
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
   })
 }
