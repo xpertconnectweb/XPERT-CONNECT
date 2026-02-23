@@ -8,7 +8,7 @@ const iconMap: Record<string, typeof Phone> = { Phone, Mail, MapPin, Clock }
 
 const defaultContactInfo = [
   { icon: Phone, label: 'Call Us', value: '1-844-XPERT-NOW', href: 'tel:+18449737866' },
-  { icon: Mail, label: 'Email', value: 'info@xpertconnect.com', href: 'mailto:info@xpertconnect.com' },
+  { icon: Mail, label: 'Email', value: 'xpertconnect.web@gmail.com', href: 'mailto:xpertconnect.web@gmail.com' },
   { icon: Clock, label: 'Available', value: '24/7 Support', href: null },
   { icon: MapPin, label: 'Locations', value: 'Florida & Minnesota', href: null },
 ]
