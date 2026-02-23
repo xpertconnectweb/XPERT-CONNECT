@@ -76,9 +76,9 @@ export function Footer() {
                 <Phone className="h-4 w-4" />
                 <span>1-844-XPERT-NOW</span>
               </a>
-              <a href="mailto:info@xpertconnect.com" className="flex items-center gap-3 text-white/80 hover:text-gold transition-colors">
+              <a href="mailto:xpertconnect.web@gmail.com" className="flex items-center gap-3 text-white/80 hover:text-gold transition-colors">
                 <Mail className="h-4 w-4" />
-                <span>info@xpertconnect.com</span>
+                <span>xpertconnect.web@gmail.com</span>
               </a>
             </div>
           </div>
