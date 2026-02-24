@@ -11,6 +11,7 @@ import {
 import { referralCreatedEmail, internalNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { v4 as uuidv4 } from 'uuid'
+import { waitUntil } from '@vercel/functions'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -102,51 +103,53 @@ export async function POST(request: NextRequest) {
   const clinicEmails = Array.from(emailSet)
 
   // Send emails with delay to respect Resend rate limit (2 emails/sec)
-  // We send in background to not block the response
-  ;(async () => {
-    try {
-      // Send to clinic emails first with 600ms delay between each
-      for (const email of clinicEmails) {
-        try {
-          await referralCreatedEmail(
-            clinic.name,
-            email,
-            lawyerName,
-            lawyerFirm,
-            cleanName,
-            cleanCase,
-            cleanCoverage,
-            cleanPip
-          )
-          console.log(`✓ Clinic email sent to ${email}`)
-          // Wait 600ms before next email to respect rate limit
-          if (clinicEmails.indexOf(email) < clinicEmails.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 600))
+  // waitUntil keeps the serverless function alive until emails finish sending
+  waitUntil(
+    (async () => {
+      try {
+        // Send to clinic emails first with 600ms delay between each
+        for (const email of clinicEmails) {
+          try {
+            await referralCreatedEmail(
+              clinic.name,
+              email,
+              lawyerName,
+              lawyerFirm,
+              cleanName,
+              cleanCase,
+              cleanCoverage,
+              cleanPip
+            )
+            console.log(`✓ Clinic email sent to ${email}`)
+            // Wait 600ms before next email to respect rate limit
+            if (clinicEmails.indexOf(email) < clinicEmails.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 600))
+            }
+          } catch (err) {
+            console.error(`✗ Clinic email to ${email} failed:`, err)
           }
-        } catch (err) {
-          console.error(`✗ Clinic email to ${email} failed:`, err)
         }
+
+        // Wait before sending internal email
+        await new Promise(resolve => setTimeout(resolve, 600))
+
+        // Send internal team notification
+        await internalNotificationEmail(
+          lawyerName,
+          lawyerFirm,
+          clinic.name,
+          cleanName,
+          cleanCase,
+          cleanCoverage,
+          cleanPip,
+          now
+        )
+        console.log('✓ Internal notification sent')
+      } catch (err) {
+        console.error('✗ Internal email failed:', err)
       }
-
-      // Wait before sending internal email
-      await new Promise(resolve => setTimeout(resolve, 600))
-
-      // Send internal team notification
-      await internalNotificationEmail(
-        lawyerName,
-        lawyerFirm,
-        clinic.name,
-        cleanName,
-        cleanCase,
-        cleanCoverage,
-        cleanPip,
-        now
-      )
-      console.log('✓ Internal notification sent')
-    } catch (err) {
-      console.error('✗ Internal email failed:', err)
-    }
-  })()
+    })()
+  )
 
   return NextResponse.json(referral, { status: 201 })
 }
