@@ -150,20 +150,20 @@ export function referralCreatedEmail(
           </div>
 
           <!-- Footer -->
-          <div style="background-color:#1e293b;padding:32px 30px;text-align:center;">
-            <a href="https://www.844xpert.com" style="text-decoration:none;">
-              <img src="https://www.844xpert.com/images/logo.png" alt="Xpert Connect" width="120" style="display:inline-block;max-width:120px;height:auto;opacity:0.9;margin-bottom:16px;" />
-            </a>
-            <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 8px 0;">
+          <div style="background-color:#1e293b;padding:28px 30px;text-align:center;">
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;margin:0 0 10px 0;letter-spacing:0.3px;">
+              Xpert Connect
+            </p>
+            <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:0 0 6px 0;">
               &copy; ${new Date().getFullYear()} Xpert Connect. All rights reserved.
             </p>
-            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin:0 0 12px 0;">
+            <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:0 0 14px 0;">
               This is an automated notification. Please do not reply directly to this email.
             </p>
-            <div style="margin-top:12px;">
-              <a href="https://www.844xpert.com" style="color:rgba(255,255,255,0.5);font-size:11px;text-decoration:none;margin:0 8px;">www.844xpert.com</a>
-              <span style="color:rgba(255,255,255,0.25);">|</span>
-              <a href="mailto:xpertconnect.web@gmail.com" style="color:rgba(255,255,255,0.5);font-size:11px;text-decoration:none;margin:0 8px;">xpertconnect.web@gmail.com</a>
+            <div>
+              <a href="https://www.844xpert.com" style="color:rgba(255,255,255,0.45);font-size:11px;text-decoration:none;margin:0 8px;">www.844xpert.com</a>
+              <span style="color:rgba(255,255,255,0.2);">|</span>
+              <a href="mailto:xpertconnect.web@gmail.com" style="color:rgba(255,255,255,0.45);font-size:11px;text-decoration:none;margin:0 8px;">xpertconnect.web@gmail.com</a>
             </div>
           </div>
         </div>
@@ -283,20 +283,20 @@ export function internalNotificationEmail(
           </div>
 
           <!-- Footer -->
-          <div style="background-color:#1e293b;padding:32px 30px;text-align:center;">
-            <a href="https://www.844xpert.com" style="text-decoration:none;">
-              <img src="https://www.844xpert.com/images/logo.png" alt="Xpert Connect" width="120" style="display:inline-block;max-width:120px;height:auto;opacity:0.9;margin-bottom:16px;" />
-            </a>
-            <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 8px 0;">
+          <div style="background-color:#1e293b;padding:28px 30px;text-align:center;">
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;margin:0 0 10px 0;letter-spacing:0.3px;">
+              Xpert Connect
+            </p>
+            <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:0 0 6px 0;">
               &copy; ${new Date().getFullYear()} Xpert Connect. All rights reserved.
             </p>
-            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin:0 0 12px 0;">
+            <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:0 0 14px 0;">
               Internal automated notification. Confidential &mdash; Do not forward.
             </p>
-            <div style="margin-top:12px;">
-              <a href="https://www.844xpert.com" style="color:rgba(255,255,255,0.5);font-size:11px;text-decoration:none;margin:0 8px;">www.844xpert.com</a>
-              <span style="color:rgba(255,255,255,0.25);">|</span>
-              <a href="mailto:xpertconnect.web@gmail.com" style="color:rgba(255,255,255,0.5);font-size:11px;text-decoration:none;margin:0 8px;">xpertconnect.web@gmail.com</a>
+            <div>
+              <a href="https://www.844xpert.com" style="color:rgba(255,255,255,0.45);font-size:11px;text-decoration:none;margin:0 8px;">www.844xpert.com</a>
+              <span style="color:rgba(255,255,255,0.2);">|</span>
+              <a href="mailto:xpertconnect.web@gmail.com" style="color:rgba(255,255,255,0.45);font-size:11px;text-decoration:none;margin:0 8px;">xpertconnect.web@gmail.com</a>
             </div>
           </div>
         </div>
