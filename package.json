@@ -12,6 +12,7 @@
     "@sanity/client": "^7.14.1",
     "@sanity/image-url": "^2.0.3",
     "@supabase/supabase-js": "^2.95.3",
+    "@vercel/functions": "^3.4.2",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.0",
     "leaflet": "^1.9.4",
