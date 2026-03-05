@@ -27,7 +27,8 @@ const unavailableIcon = L.divIcon({
 
 L.Marker.prototype.options.icon = availableIcon
 
-const FLORIDA_CENTER: [number, number] = [28.0, -82.0]
+const US_DEFAULT_CENTER: [number, number] = [39.8, -89.5]
+const US_DEFAULT_ZOOM = 5
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 3958.8
@@ -64,7 +65,7 @@ export function MapView() {
   const debouncedLocation = useDebounce(locationQuery, 400)
   const [locating, setLocating] = useState(false)
   const [locationLabel, setLocationLabel] = useState('')
-  const [mapCenter, setMapCenter] = useState<[number, number]>(FLORIDA_CENTER)
+  const [mapCenter, setMapCenter] = useState<[number, number]>(US_DEFAULT_CENTER)
   const [showPanel, setShowPanel] = useState(false)
 
   const mapRef = useRef<L.Map | null>(null)
@@ -87,7 +88,7 @@ export function MapView() {
     ;(async () => {
       setGeocoding(true)
       try {
-        const q = encodeURIComponent(debouncedLocation + ', Florida, US')
+        const q = encodeURIComponent(debouncedLocation + ', US')
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=5&countrycodes=us`, { headers: { 'User-Agent': 'XpertConnect/1.0' } })
         if (!res.ok) throw new Error()
         const data: GeocodeSuggestion[] = await res.json()
@@ -125,7 +126,7 @@ export function MapView() {
   }, [])
 
   const handleClearLocation = useCallback(() => {
-    setLocationLabel(''); setLocationQuery(''); setMapCenter(FLORIDA_CENTER); mapRef.current?.setView(FLORIDA_CENTER, 7)
+    setLocationLabel(''); setLocationQuery(''); setMapCenter(US_DEFAULT_CENTER); mapRef.current?.setView(US_DEFAULT_CENTER, US_DEFAULT_ZOOM)
   }, [])
 
   const filteredClinics: ClinicWithDistance[] = useMemo(() => {
@@ -172,7 +173,7 @@ export function MapView() {
       {/* ═══ MAP ═══ */}
       <MapContainer
         center={mapCenter}
-        zoom={7}
+        zoom={US_DEFAULT_ZOOM}
         className="h-full w-full"
         scrollWheelZoom={true}
         ref={mapRef}

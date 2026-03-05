@@ -37,33 +37,35 @@ async function main() {
 
     console.log(`📋 Found ${clinics.length} clinics to restore\n`)
 
-    // Delete existing clinics (but keep users)
-    console.log('📝 Cleaning existing clinics...')
-    await supabase.from('clinics').delete().gte('id', '')
-    console.log('✅ Existing clinics cleaned\n')
+    // Upsert clinics in batches (Supabase has request size limits)
+    const BATCH_SIZE = 200
+    const rows = clinics.map((clinic) => ({
+      id: clinic.id,
+      name: clinic.name,
+      address: clinic.address,
+      lat: clinic.lat,
+      lng: clinic.lng,
+      phone: clinic.phone || '',
+      specialties: clinic.specialties,
+      email: clinic.email || '',
+      website: clinic.website || null,
+      region: clinic.region || null,
+      county: clinic.county || null,
+      available: clinic.available !== false
+    }))
 
-    // Insert all clinics
-    console.log('🔄 Inserting clinics...')
-    const { error } = await supabase.from('clinics').insert(
-      clinics.map((clinic) => ({
-        id: clinic.id,
-        name: clinic.name,
-        address: clinic.address,
-        lat: clinic.lat,
-        lng: clinic.lng,
-        phone: clinic.phone || '',
-        specialties: clinic.specialties, // Already an array, no need for JSON.stringify
-        email: clinic.email || '',
-        website: clinic.website || null,
-        region: clinic.region || null,
-        county: clinic.county || null,
-        available: clinic.available !== false
-      }))
-    )
+    const totalBatches = Math.ceil(rows.length / BATCH_SIZE)
+    console.log(`🔄 Upserting ${rows.length} clinics in ${totalBatches} batches...`)
 
-    if (error) throw error
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE)
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1
+      const { error } = await supabase.from('clinics').upsert(batch, { onConflict: 'id' })
+      if (error) throw error
+      console.log(`  Batch ${batchNum}/${totalBatches}: ${batch.length} clinics upserted`)
+    }
 
-    console.log(`✅ Successfully restored ${clinics.length} clinics!\n`)
+    console.log(`\n✅ Successfully restored ${clinics.length} clinics!\n`)
 
     console.log('🎉 All clinics have been restored to Supabase!')
     console.log('\n📍 Clinics by region:')
