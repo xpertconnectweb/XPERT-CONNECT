@@ -7711,5 +7711,4272 @@
     "region": "SOUTH FLORIDA",
     "county": "Miami-Dade",
     "available": true
+  },
+  {
+    "id": "c-430",
+    "name": "Riverwood Healthcare Center – Rehabilitation Services",
+    "address": "200 Bunker Hill Dr, Aitkin, MN 56431",
+    "lat": 46.5297709,
+    "lng": -93.6987027,
+    "phone": "218-927-2121",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Aitkin",
+    "available": true
+  },
+  {
+    "id": "c-431",
+    "name": "Riverwood Physical Therapy – Garrison Clinic",
+    "address": "25427 370th St, Garrison, MN 56450",
+    "lat": 46.294428,
+    "lng": -93.8271992,
+    "phone": "218-927-5580",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Aitkin",
+    "available": true
+  },
+  {
+    "id": "c-432",
+    "name": "Riverwood Physical Therapy – McGregor Clinic",
+    "address": "2 E Center Ave, McGregor, MN 55760",
+    "lat": 46.6068138,
+    "lng": -93.3066902,
+    "phone": "218-768-4011",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Aitkin",
+    "available": true
+  },
+  {
+    "id": "c-433",
+    "name": "Blaine Massage Therapy Center",
+    "address": "10995 Club West Pkwy, Blaine, MN 55449",
+    "lat": 45.1696921,
+    "lng": -93.2289188,
+    "phone": "763-786-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Anoka",
+    "available": true
+  },
+  {
+    "id": "c-434",
+    "name": "NovaCare Rehabilitation – Blaine",
+    "address": "11850 Aberdeen St NE, Blaine, MN 55449",
+    "lat": 45.1855608,
+    "lng": -93.2337689,
+    "phone": "763-780-7777",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Anoka",
+    "available": true
+  },
+  {
+    "id": "c-435",
+    "name": "Allina Health Physical Therapy – Coon Rapids",
+    "address": "9055 Springbrook Dr, Coon Rapids, MN 55433",
+    "lat": 45.1359478,
+    "lng": -93.2742762,
+    "phone": "763-236-6000",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Anoka",
+    "available": true
+  },
+  {
+    "id": "c-436",
+    "name": "Atlas Massage Clinic",
+    "address": "620 Main St W, Detroit Lakes, MN 56501",
+    "lat": 46.8208177,
+    "lng": -95.8537576,
+    "phone": "218-325-0500",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Becker",
+    "available": true
+  },
+  {
+    "id": "c-437",
+    "name": "Essentia Health – St. Mary’s Clinic",
+    "address": "1027 Washington Ave, Detroit Lakes, MN 56501",
+    "lat": 46.8140078,
+    "lng": -95.8444374,
+    "phone": "218-844-2300",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Becker",
+    "available": true
+  },
+  {
+    "id": "c-438",
+    "name": "Essentia Health – St. Mary’s Therapy Center",
+    "address": "1112 Lincoln Ave, Detroit Lakes, MN 56501",
+    "lat": 46.8125659,
+    "lng": -95.8435407,
+    "phone": "218-847-0883",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Becker",
+    "available": true
+  },
+  {
+    "id": "c-439",
+    "name": "RehabAuthority Physical Therapy",
+    "address": "924 McKinley Ave, Detroit Lakes, MN 56501",
+    "lat": 46.8166788,
+    "lng": -95.8416277,
+    "phone": "218-234-2907",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Becker",
+    "available": true
+  },
+  {
+    "id": "c-440",
+    "name": "Spitzer Physical Therapy",
+    "address": "1415 Madison Ave, Detroit Lakes, MN 56501",
+    "lat": 46.8069168,
+    "lng": -95.8356022,
+    "phone": "218-847-4486",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Becker",
+    "available": true
+  },
+  {
+    "id": "c-441",
+    "name": "Explore Chiropractic / Massage Therapy",
+    "address": "Bemidji, MN 56601",
+    "lat": 47.4723148,
+    "lng": -94.8832791,
+    "phone": "218-333-8811",
+    "specialties": [
+      "Chiropractic",
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Beltrami",
+    "available": true
+  },
+  {
+    "id": "c-442",
+    "name": "Sanford Bemidji – Outpatient Therapy (Peak Center)",
+    "address": "2017 Net Way NW, Bemidji, MN 56601",
+    "lat": 47.5087794,
+    "lng": -94.9068222,
+    "phone": "218-333-5898",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy",
+      "Physical Therapy",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Beltrami",
+    "available": true
+  },
+  {
+    "id": "c-443",
+    "name": "St. Cloud Orthopedics Physical Therapy",
+    "address": "1901 Connecticut Ave S, Sartell, MN 56377",
+    "lat": 45.5983854,
+    "lng": -94.2004975,
+    "phone": "320-251-2663",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Benton",
+    "available": true
+  },
+  {
+    "id": "c-444",
+    "name": "NovaCare Rehabilitation – Sauk Rapids",
+    "address": "1105 2nd St N, Sauk Rapids, MN 56379",
+    "lat": 45.5980375,
+    "lng": -94.1570814,
+    "phone": "320-259-7005",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Benton",
+    "available": true
+  },
+  {
+    "id": "c-445",
+    "name": "CentraCare – Physical Medicine & Rehabilitation",
+    "address": "1200 6th Ave N, St. Cloud, MN 56303",
+    "lat": 45.572142,
+    "lng": -94.168958,
+    "phone": "320-251-2700",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Benton",
+    "available": true
+  },
+  {
+    "id": "c-446",
+    "name": "Big Stone Therapies – Ortonville",
+    "address": "420 2nd St NW, Ortonville, MN 56278",
+    "lat": 45.3083135,
+    "lng": -96.4483675,
+    "phone": "320-839-2400",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Big Stone",
+    "available": true
+  },
+  {
+    "id": "c-447",
+    "name": "Ortonville Area Health Services Rehabilitation",
+    "address": "450 Eastvold Ave, Ortonville, MN 56278",
+    "lat": 45.314997,
+    "lng": -96.4464582,
+    "phone": "320-839-6157",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Big Stone",
+    "available": true
+  },
+  {
+    "id": "c-448",
+    "name": "Ortonville Massage Therapy",
+    "address": "315 Main St, Ortonville, MN 56278",
+    "lat": 45.3213922,
+    "lng": -96.4621755,
+    "phone": "320-839-3333",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Big Stone",
+    "available": true
+  },
+  {
+    "id": "c-449",
+    "name": "Mankato Physical Therapy",
+    "address": "1400 Madison Ave, Mankato, MN 56001",
+    "lat": 44.1691225,
+    "lng": -93.9718759,
+    "phone": "507-387-5858",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Blue Earth",
+    "available": true
+  },
+  {
+    "id": "c-450",
+    "name": "Mayo Clinic Health System – Rehabilitation",
+    "address": "1025 Marsh St, Mankato, MN 56001",
+    "lat": 44.1636371,
+    "lng": -93.9843762,
+    "phone": "507-625-4031",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Blue Earth",
+    "available": true
+  },
+  {
+    "id": "c-451",
+    "name": "Orthopaedic & Fracture Clinic – Physical Therapy",
+    "address": "1431 Premier Dr, Mankato, MN 56001",
+    "lat": 44.1955524,
+    "lng": -93.952541,
+    "phone": "507-386-6600",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Blue Earth",
+    "available": true
+  },
+  {
+    "id": "c-452",
+    "name": "New Ulm Massage Therapy",
+    "address": "15 N Minnesota St, New Ulm, MN 56073",
+    "lat": 44.3134449,
+    "lng": -94.4592514,
+    "phone": "507-354-4000",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Brown",
+    "available": true
+  },
+  {
+    "id": "c-453",
+    "name": "New Ulm Medical Center Rehabilitation",
+    "address": "1324 5th St N, New Ulm, MN 56073",
+    "lat": 44.3135396,
+    "lng": -94.4765087,
+    "phone": "507-217-5011",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Brown",
+    "available": true
+  },
+  {
+    "id": "c-454",
+    "name": "NovaCare Rehabilitation – New Ulm",
+    "address": "516 20th St N, New Ulm, MN 56073",
+    "lat": 44.3328307,
+    "lng": -94.4779718,
+    "phone": "507-354-8833",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Brown",
+    "available": true
+  },
+  {
+    "id": "c-455",
+    "name": "Carlton Wellness Center Therapy Services",
+    "address": "199 Chestnut Ave, Carlton, MN 55718",
+    "lat": 46.664114,
+    "lng": -92.426868,
+    "phone": "218-384-1115",
+    "specialties": [
+      "General Medicine"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Carlton",
+    "available": true
+  },
+  {
+    "id": "c-456",
+    "name": "Community Memorial Hospital Rehabilitation",
+    "address": "512 Skyline Blvd, Cloquet, MN 55720",
+    "lat": 46.7309575,
+    "lng": -92.4618347,
+    "phone": "218-485-4481",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Carlton",
+    "available": true
+  },
+  {
+    "id": "c-457",
+    "name": "Essentia Health – Cloquet Physical Therapy",
+    "address": "512 Skyline Blvd, Cloquet, MN 55720",
+    "lat": 46.7309575,
+    "lng": -92.4618347,
+    "phone": "218-786-3800",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Carlton",
+    "available": true
+  },
+  {
+    "id": "c-458",
+    "name": "Chaska Massage Therapy",
+    "address": "127 W 4th St, Chaska, MN 55318",
+    "lat": 44.7871413,
+    "lng": -93.6015051,
+    "phone": "952-368-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Carver",
+    "available": true
+  },
+  {
+    "id": "c-459",
+    "name": "NovaCare Rehabilitation – Chaska",
+    "address": "1100 Hazeltine Blvd, Chaska, MN 55318",
+    "lat": 44.83523,
+    "lng": -93.601869,
+    "phone": "952-448-4444",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Carver",
+    "available": true
+  },
+  {
+    "id": "c-460",
+    "name": "Ridgeview Rehabilitation – Waconia",
+    "address": "500 S Maple St, Waconia, MN 55387",
+    "lat": 44.8431468,
+    "lng": -93.792291,
+    "phone": "952-442-2191",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Carver",
+    "available": true
+  },
+  {
+    "id": "c-461",
+    "name": "Essentia Health – Pine River Physical Therapy",
+    "address": "280 Barclay Ave, Pine River, MN 56474",
+    "lat": 46.7165108,
+    "lng": -94.4066721,
+    "phone": "218-587-4430",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cass",
+    "available": true
+  },
+  {
+    "id": "c-462",
+    "name": "Back In Motion Physical Therapy – Walker",
+    "address": "507 Minnesota Ave, Walker, MN 56484",
+    "lat": 47.1015501,
+    "lng": -94.5826067,
+    "phone": "218-547-0080",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cass",
+    "available": true
+  },
+  {
+    "id": "c-463",
+    "name": "Sanford Health – Walker Clinic Rehabilitation",
+    "address": "614 Michigan Ave, Walker, MN 56484",
+    "lat": 47.1009643,
+    "lng": -94.5846244,
+    "phone": "218-547-6900",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cass",
+    "available": true
+  },
+  {
+    "id": "c-464",
+    "name": "CCM Health Rehabilitation Services",
+    "address": "824 N 11th St, Montevideo, MN 56265",
+    "lat": 44.9539652,
+    "lng": -95.7119575,
+    "phone": "320-269-8877",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Chippewa",
+    "available": true
+  },
+  {
+    "id": "c-465",
+    "name": "Montevideo Massage Therapy",
+    "address": "202 S 1st St, Montevideo, MN 56265",
+    "lat": 44.9443496,
+    "lng": -95.7238498,
+    "phone": "320-269-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Chippewa",
+    "available": true
+  },
+  {
+    "id": "c-466",
+    "name": "Montevideo Physical Therapy Clinic",
+    "address": "1117 N 7th St, Montevideo, MN 56265",
+    "lat": 44.9507915,
+    "lng": -95.7178889,
+    "phone": "320-269-8870",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Chippewa",
+    "available": true
+  },
+  {
+    "id": "c-467",
+    "name": "Essentia Health – Moorhead Physical Therapy",
+    "address": "801 Belsly Blvd, Moorhead, MN 56560",
+    "lat": 46.839731,
+    "lng": -96.767153,
+    "phone": "701-364-3000",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Clay",
+    "available": true
+  },
+  {
+    "id": "c-468",
+    "name": "Moorhead Massage Therapy Clinic",
+    "address": "1500 11th St N, Moorhead, MN 56560",
+    "lat": 46.890595,
+    "lng": -96.762346,
+    "phone": "218-233-1171",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Clay",
+    "available": true
+  },
+  {
+    "id": "c-469",
+    "name": "ProRehab Physical Therapy",
+    "address": "3101 25th St S, Moorhead, MN 56560",
+    "lat": 46.8371899,
+    "lng": -96.7389173,
+    "phone": "218-236-8063",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Clay",
+    "available": true
+  },
+  {
+    "id": "c-470",
+    "name": "Sanford Health – Moorhead Rehabilitation",
+    "address": "4000 28th Ave S, Moorhead, MN 56560",
+    "lat": 46.8477301,
+    "lng": -96.7601598,
+    "phone": "701-234-6161",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Clay",
+    "available": true
+  },
+  {
+    "id": "c-471",
+    "name": "NovaCare Rehabilitation",
+    "address": "Clearwater, MN ",
+    "lat": 47.5643825,
+    "lng": -95.3747844,
+    "phone": "320-558-6661",
+    "specialties": [
+      "Sports Medicine",
+      "Rehabilitation",
+      "Work Injury Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Clearwater",
+    "available": true
+  },
+  {
+    "id": "c-472",
+    "name": "Grand Marais Massage Therapy",
+    "address": "17 W Wisconsin St, Grand Marais, MN 55604",
+    "lat": 47.7495709,
+    "lng": -90.3341367,
+    "phone": "218-387-3320",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cook",
+    "available": true
+  },
+  {
+    "id": "c-473",
+    "name": "Grand Marais Physical Therapy Clinic",
+    "address": "101 W Hwy 61, Grand Marais, MN 55604",
+    "lat": 47.7506911,
+    "lng": -90.3349835,
+    "phone": "218-387-2500",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cook",
+    "available": true
+  },
+  {
+    "id": "c-474",
+    "name": "North Shore Health Rehabilitation Services",
+    "address": "515 5th Ave W, Grand Marais, MN 55604",
+    "lat": 47.7565716,
+    "lng": -90.3418978,
+    "phone": "218-387-3040",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cook",
+    "available": true
+  },
+  {
+    "id": "c-475",
+    "name": "North Shore Health – Rehabilitation",
+    "address": "Grand Marais, MN 55604",
+    "lat": 47.750467,
+    "lng": -90.334675,
+    "phone": "218-387-3040",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Cook",
+    "available": true
+  },
+  {
+    "id": "c-476",
+    "name": "Windom Area Health Rehabilitation",
+    "address": "2150 Hospital Dr, Windom, MN 56101",
+    "lat": 43.8790317,
+    "lng": -95.1130484,
+    "phone": "507-831-2400",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Cottonwood",
+    "available": true
+  },
+  {
+    "id": "c-477",
+    "name": "Windom Massage Therapy",
+    "address": "335 10th St, Windom, MN 56101",
+    "lat": 43.866467,
+    "lng": -95.1168555,
+    "phone": "507-831-5555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Cottonwood",
+    "available": true
+  },
+  {
+    "id": "c-478",
+    "name": "Windom Physical Therapy Center",
+    "address": "920 3rd Ave, Windom, MN 56101",
+    "lat": 43.8657194,
+    "lng": -95.1164429,
+    "phone": "507-831-2222",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Cottonwood",
+    "available": true
+  },
+  {
+    "id": "c-479",
+    "name": "Big Stone Therapies – Baxter",
+    "address": "13760 Cypress Dr, Baxter, MN 56425",
+    "lat": 46.3602257,
+    "lng": -94.2349256,
+    "phone": "218-454-4143",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Crow Wing",
+    "available": true
+  },
+  {
+    "id": "c-480",
+    "name": "Northern Orthopedics Physical Therapy",
+    "address": "8406 Excelsior Rd, Baxter, MN 56425",
+    "lat": 46.3547539,
+    "lng": -94.2591703,
+    "phone": "218-454-2626",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Crow Wing",
+    "available": true
+  },
+  {
+    "id": "c-481",
+    "name": "Brainerd Massage Therapy",
+    "address": "510 Laurel St, Brainerd, MN 56401",
+    "lat": 46.355708,
+    "lng": -94.2018842,
+    "phone": "218-822-5885",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Crow Wing",
+    "available": true
+  },
+  {
+    "id": "c-482",
+    "name": "Essentia Health – Brainerd Rehabilitation",
+    "address": "2024 S 6th St, Brainerd, MN 56401",
+    "lat": 46.3347877,
+    "lng": -94.2008472,
+    "phone": "218-829-2861",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Crow Wing",
+    "available": true
+  },
+  {
+    "id": "c-483",
+    "name": "Apple Valley Massage Therapy",
+    "address": "15322 Galaxie Ave, Apple Valley, MN 55124",
+    "lat": 44.7269413,
+    "lng": -93.206954,
+    "phone": "952-432-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Dakota",
+    "available": true
+  },
+  {
+    "id": "c-484",
+    "name": "NovaCare Rehabilitation – Apple Valley",
+    "address": "14655 Galaxie Ave, Apple Valley, MN 55124",
+    "lat": 44.7368409,
+    "lng": -93.2083543,
+    "phone": "952-432-4345",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Dakota",
+    "available": true
+  },
+  {
+    "id": "c-485",
+    "name": "Burnsville Physical Therapy Clinic",
+    "address": "14050 Nicollet Ave, Burnsville, MN 55337",
+    "lat": 44.7486912,
+    "lng": -93.277919,
+    "phone": "952-898-1800",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Dakota",
+    "available": true
+  },
+  {
+    "id": "c-486",
+    "name": "Twin Cities Orthopedics – Eagan",
+    "address": "2700 Vikings Cir, Eagan, MN 55121",
+    "lat": 44.8575284,
+    "lng": -93.1179744,
+    "phone": "952-456-7000",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Dakota",
+    "available": true
+  },
+  {
+    "id": "c-487",
+    "name": "Kasson Massage Therapy",
+    "address": "24 S Mantorville Ave, Kasson, MN 55944",
+    "lat": 44.019309,
+    "lng": -92.7482703,
+    "phone": "507-634-4200",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Dodge",
+    "available": true
+  },
+  {
+    "id": "c-488",
+    "name": "Kasson Physical Therapy Clinic",
+    "address": "101 Mantorville Ave N, Kasson, MN 55944",
+    "lat": 44.0453295,
+    "lng": -92.7468743,
+    "phone": "507-634-3332",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Dodge",
+    "available": true
+  },
+  {
+    "id": "c-489",
+    "name": "Mayo Clinic Health System Physical Therapy",
+    "address": "411 W Main St, Kasson, MN 55944",
+    "lat": 44.0295712,
+    "lng": -92.7535022,
+    "phone": "507-634-6400",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Dodge",
+    "available": true
+  },
+  {
+    "id": "c-490",
+    "name": "Advantage Rehab",
+    "address": "700 Cedar St Suite 153, Alexandria, MN 56308",
+    "lat": 45.8835101,
+    "lng": -95.3745015,
+    "phone": "320-219-9680",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Douglas",
+    "available": true
+  },
+  {
+    "id": "c-491",
+    "name": "Alomere Health Rehab Services",
+    "address": "207 18th Ave E, Alexandria, MN 56308",
+    "lat": 45.8715157,
+    "lng": -95.3723872,
+    "phone": "320-762-6079",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Douglas",
+    "available": true
+  },
+  {
+    "id": "c-492",
+    "name": "Heartland Orthopedics Physical Therapy",
+    "address": "111 17th Ave E, Alexandria, MN 56308",
+    "lat": 45.8733635,
+    "lng": -95.375852,
+    "phone": "320-335-6067",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Douglas",
+    "available": true
+  },
+  {
+    "id": "c-493",
+    "name": "Northwest Rehabilitation",
+    "address": "410 30th Ave E Suite 102, Alexandria, MN 56308",
+    "lat": 45.8835101,
+    "lng": -95.3745015,
+    "phone": "320-763-5505",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Douglas",
+    "available": true
+  },
+  {
+    "id": "c-494",
+    "name": "Sanford Health Rehabilitation",
+    "address": "1527 Broadway St, Alexandria, MN 56308",
+    "lat": 45.8751289,
+    "lng": -95.3776559,
+    "phone": "320-762-0399",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Douglas",
+    "available": true
+  },
+  {
+    "id": "c-495",
+    "name": "Blue Earth Massage Therapy",
+    "address": "110 N Grove St, Blue Earth, MN 56013",
+    "lat": 43.6388983,
+    "lng": -94.0907716,
+    "phone": "507-526-4100",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Faribault",
+    "available": true
+  },
+  {
+    "id": "c-496",
+    "name": "Blue Earth Physical Therapy",
+    "address": "125 W 6th St, Blue Earth, MN 56013",
+    "lat": 43.6382563,
+    "lng": -94.103674,
+    "phone": "507-526-5555",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Faribault",
+    "available": true
+  },
+  {
+    "id": "c-497",
+    "name": "United Hospital District Rehab Services",
+    "address": "515 S Moore St, Blue Earth, MN 56013",
+    "lat": 43.6336368,
+    "lng": -94.1001614,
+    "phone": "507-526-7388",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Faribault",
+    "available": true
+  },
+  {
+    "id": "c-498",
+    "name": "Harmony Physical Therapy",
+    "address": "20 Main Ave N, Harmony, MN 55939",
+    "lat": 43.5546098,
+    "lng": -92.00987,
+    "phone": "507-886-6000",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Fillmore",
+    "available": true
+  },
+  {
+    "id": "c-499",
+    "name": "Fillmore County Hospital Rehab",
+    "address": "165 Main St W, Preston, MN 55965",
+    "lat": 39.4719326,
+    "lng": -79.6886958,
+    "phone": "507-765-3800",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Fillmore",
+    "available": true
+  },
+  {
+    "id": "c-500",
+    "name": "Preston Massage Therapy",
+    "address": "102 Fillmore St, Preston, MN 55965",
+    "lat": 43.670228,
+    "lng": -92.0817386,
+    "phone": "507-765-2500",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Fillmore",
+    "available": true
+  },
+  {
+    "id": "c-501",
+    "name": "Albert Lea Massage Therapy",
+    "address": "120 W Clark St, Albert Lea, MN 56007",
+    "lat": 43.649835,
+    "lng": -93.3690858,
+    "phone": "507-377-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Freeborn",
+    "available": true
+  },
+  {
+    "id": "c-502",
+    "name": "Albert Lea Physical Therapy",
+    "address": "132 Bridge Ave, Albert Lea, MN 56007",
+    "lat": 43.6504532,
+    "lng": -93.3632985,
+    "phone": "507-377-3100",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Freeborn",
+    "available": true
+  },
+  {
+    "id": "c-503",
+    "name": "Mayo Clinic Health System – Albert Lea Rehabilitation",
+    "address": "404 W Fountain St, Albert Lea, MN 56007",
+    "lat": 43.6521902,
+    "lng": -93.3734005,
+    "phone": "507-377-6450",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Freeborn",
+    "available": true
+  },
+  {
+    "id": "c-504",
+    "name": "Mayo Clinic Health System – Red Wing Rehabilitation",
+    "address": "701 Hewitt Blvd, Red Wing, MN 55066",
+    "lat": 44.5599318,
+    "lng": -92.5728598,
+    "phone": "651-267-5500",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Goodhue",
+    "available": true
+  },
+  {
+    "id": "c-505",
+    "name": "Orthopedic Physical Therapy of Red Wing",
+    "address": "1407 Old West Main St, Red Wing, MN 55066",
+    "lat": 44.562705,
+    "lng": -92.5469418,
+    "phone": "651-388-6600",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Goodhue",
+    "available": true
+  },
+  {
+    "id": "c-506",
+    "name": "Red Wing Massage Therapy",
+    "address": "418 Bush St, Red Wing, MN 55066",
+    "lat": 44.564279,
+    "lng": -92.5327454,
+    "phone": "651-388-8080",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Goodhue",
+    "available": true
+  },
+  {
+    "id": "c-507",
+    "name": "Grant County Physical Therapy Services",
+    "address": "204 Central Ave N, Elbow Lake, MN 56531",
+    "lat": 45.9948963,
+    "lng": -95.9775955,
+    "phone": "218-685-5314",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Grant",
+    "available": true
+  },
+  {
+    "id": "c-508",
+    "name": "Sanford Health – Elbow Lake Clinic",
+    "address": "1411 Highway 79 E, Elbow Lake, MN 56531",
+    "lat": 45.994127,
+    "lng": -95.976721,
+    "phone": "218-685-7300",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Grant",
+    "available": true
+  },
+  {
+    "id": "c-509",
+    "name": "Wellness Massage Therapy",
+    "address": "104 Central Ave S, Elbow Lake, MN 56531",
+    "lat": 45.9877821,
+    "lng": -95.9789005,
+    "phone": "218-685-4030",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Grant",
+    "available": true
+  },
+  {
+    "id": "c-510",
+    "name": "TRIA Orthopedic Center – Physical Therapy",
+    "address": "8100 Northland Dr, Bloomington, MN 55431",
+    "lat": 44.8579113,
+    "lng": -93.3282016,
+    "phone": "952-806-5600",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Hennepin",
+    "available": true
+  },
+  {
+    "id": "c-511",
+    "name": "Courage Kenny Rehabilitation Institute",
+    "address": "3915 Golden Valley Rd, Golden Valley, MN 55422",
+    "lat": 44.9995202,
+    "lng": -93.3288495,
+    "phone": "612-775-2000",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Hennepin",
+    "available": true
+  },
+  {
+    "id": "c-512",
+    "name": "Minneapolis Massage & Bodywork",
+    "address": "112 W 26th St, Minneapolis, MN 55404",
+    "lat": 44.955618,
+    "lng": -93.279977,
+    "phone": "612-872-5555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Hennepin",
+    "available": true
+  },
+  {
+    "id": "c-513",
+    "name": "NovaCare Rehabilitation – Minneapolis",
+    "address": "825 Nicollet Mall, Minneapolis, MN 55402",
+    "lat": 44.9750574,
+    "lng": -93.2732543,
+    "phone": "612-339-2041",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Hennepin",
+    "available": true
+  },
+  {
+    "id": "c-514",
+    "name": "Caledonia Massage Therapy",
+    "address": "121 S Kingston St, Caledonia, MN 55921",
+    "lat": 43.6343608,
+    "lng": -91.4968932,
+    "phone": "507-725-4100",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Houston",
+    "available": true
+  },
+  {
+    "id": "c-515",
+    "name": "Caledonia Physical Therapy Clinic",
+    "address": "125 E Grove St, Caledonia, MN 55921",
+    "lat": 43.6337062,
+    "lng": -91.4966334,
+    "phone": "507-725-5200",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Houston",
+    "available": true
+  },
+  {
+    "id": "c-516",
+    "name": "Gundersen Health System Rehabilitation – Caledonia",
+    "address": "183 Spruce St, Caledonia, MN 55921",
+    "lat": 44.4246338,
+    "lng": -72.0162665,
+    "phone": "507-725-3379",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Houston",
+    "available": true
+  },
+  {
+    "id": "c-517",
+    "name": "Back In Motion Physical Therapy",
+    "address": "Park Rapids, MN 56470",
+    "lat": 46.9221813,
+    "lng": -95.0586322,
+    "phone": "218-346-2464",
+    "specialties": [
+      "Physical Therapy",
+      "Manual Therapy",
+      "Dry Needling"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Hubbard",
+    "available": true
+  },
+  {
+    "id": "c-518",
+    "name": "CHI St Joseph’s Health Rehabilitation",
+    "address": "600 Pleasant Ave, Park Rapids, MN 56470",
+    "lat": 46.9162888,
+    "lng": -95.0624116,
+    "phone": "218-732-3311",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Hubbard",
+    "available": true
+  },
+  {
+    "id": "c-519",
+    "name": "CHI St. Joseph’s Health – Rehab Services",
+    "address": "Park Rapids, MN 56470",
+    "lat": 46.9221813,
+    "lng": -95.0586322,
+    "phone": "218-732-3311",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Hubbard",
+    "available": true
+  },
+  {
+    "id": "c-520",
+    "name": "Essentia Health – Outpatient Physical Therapy",
+    "address": "Park Rapids, MN 56470",
+    "lat": 46.9221813,
+    "lng": -95.0586322,
+    "phone": "218-732-6371",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy",
+      "Orthopedic Rehabilitation",
+      "Rehabilitation",
+      "Neurological Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Hubbard",
+    "available": true
+  },
+  {
+    "id": "c-521",
+    "name": "Park Rapids Massage Therapy",
+    "address": "201 Main Ave S, Park Rapids, MN 56470",
+    "lat": 46.920934,
+    "lng": -95.060135,
+    "phone": "218-732-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Hubbard",
+    "available": true
+  },
+  {
+    "id": "c-522",
+    "name": "Park Rapids Physical Therapy",
+    "address": "110 7th St W, Park Rapids, MN 56470",
+    "lat": 46.9157846,
+    "lng": -95.058556,
+    "phone": "218-732-5444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Hubbard",
+    "available": true
+  },
+  {
+    "id": "c-523",
+    "name": "Big Stone Therapies – Grand Rapids",
+    "address": "510 SE 13th St, Grand Rapids, MN 55744",
+    "lat": 47.2173953,
+    "lng": -93.5200088,
+    "phone": "218-326-1111",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Itasca",
+    "available": true
+  },
+  {
+    "id": "c-524",
+    "name": "Grand Itasca Clinic & Hospital Rehabilitation",
+    "address": "1601 Golf Course Rd, Grand Rapids, MN 55744",
+    "lat": 47.2228859,
+    "lng": -93.5549542,
+    "phone": "218-326-3401",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Itasca",
+    "available": true
+  },
+  {
+    "id": "c-525",
+    "name": "Grand Itasca Clinic & Hospital – Rehab",
+    "address": "1601 Golf Course Rd, Grand Rapids, MN 55744",
+    "lat": 47.2228859,
+    "lng": -93.5549542,
+    "phone": "218-326-3401",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Itasca",
+    "available": true
+  },
+  {
+    "id": "c-526",
+    "name": "Grand Rapids Massage Therapy",
+    "address": "315 NE 2nd Ave, Grand Rapids, MN 55744",
+    "lat": 47.2403899,
+    "lng": -93.5252573,
+    "phone": "218-326-5555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Itasca",
+    "available": true
+  },
+  {
+    "id": "c-527",
+    "name": "Patti Kampa Physical Therapy",
+    "address": "Grand Rapids, MN 55744",
+    "lat": 47.237166,
+    "lng": -93.530214,
+    "phone": "218-326-2200",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Itasca",
+    "available": true
+  },
+  {
+    "id": "c-528",
+    "name": "Radtke Physical Therapy",
+    "address": "Grand Rapids, MN 55744",
+    "lat": 47.237166,
+    "lng": -93.530214,
+    "phone": "218-326-3300",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Itasca",
+    "available": true
+  },
+  {
+    "id": "c-529",
+    "name": "Jackson Massage Therapy",
+    "address": "312 2nd St, Jackson, MN 56143",
+    "lat": 43.6203042,
+    "lng": -94.987548,
+    "phone": "507-847-3333",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Jackson",
+    "available": true
+  },
+  {
+    "id": "c-530",
+    "name": "Jackson Physical Therapy Clinic",
+    "address": "405 Sherman St, Jackson, MN 56143",
+    "lat": 43.621675,
+    "lng": -94.9896983,
+    "phone": "507-847-2250",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Jackson",
+    "available": true
+  },
+  {
+    "id": "c-531",
+    "name": "Sanford Jackson Medical Center Rehabilitation",
+    "address": "1430 North Hwy, Jackson, MN 56143",
+    "lat": 43.6246942,
+    "lng": -95.0043578,
+    "phone": "507-847-2420",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Jackson",
+    "available": true
+  },
+  {
+    "id": "c-532",
+    "name": "Kanabec County Massage Therapy",
+    "address": "208 Maple Ave, Mora, MN 55051",
+    "lat": 45.8778972,
+    "lng": -93.2953248,
+    "phone": "320-679-4555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Kanabec",
+    "available": true
+  },
+  {
+    "id": "c-533",
+    "name": "Mora Physical Therapy Clinic",
+    "address": "600 Clark St, Mora, MN 55051",
+    "lat": 45.8714338,
+    "lng": -93.2918592,
+    "phone": "320-679-3333",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Kanabec",
+    "available": true
+  },
+  {
+    "id": "c-534",
+    "name": "Welia Health Rehabilitation",
+    "address": "301 Highway 65 S, Mora, MN 55051",
+    "lat": 45.8763597,
+    "lng": -93.2969493,
+    "phone": "320-679-1212",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Kanabec",
+    "available": true
+  },
+  {
+    "id": "c-535",
+    "name": "Big Stone Therapies – Willmar",
+    "address": "1305 1st St S, Willmar, MN 56201",
+    "lat": 45.1090236,
+    "lng": -95.041368,
+    "phone": "320-214-7744",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Kandiyohi",
+    "available": true
+  },
+  {
+    "id": "c-536",
+    "name": "CentraCare – Willmar Rehabilitation Services",
+    "address": "101 Willmar Ave SW, Willmar, MN 56201",
+    "lat": 45.110502,
+    "lng": -95.04296,
+    "phone": "320-231-5000",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Kandiyohi",
+    "available": true
+  },
+  {
+    "id": "c-537",
+    "name": "Willmar Physical Therapy & Massage",
+    "address": "1605 1st St S, Willmar, MN 56201",
+    "lat": 45.1049243,
+    "lng": -95.0396868,
+    "phone": "320-235-6060",
+    "specialties": [
+      "Massage Therapy",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Kandiyohi",
+    "available": true
+  },
+  {
+    "id": "c-538",
+    "name": "Big Stone Therapies – Hallock",
+    "address": "Hallock, MN 56728",
+    "lat": 48.7744263,
+    "lng": -96.946447,
+    "phone": "218-843-3834",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Kittson",
+    "available": true
+  },
+  {
+    "id": "c-539",
+    "name": "Hallock Massage Therapy",
+    "address": "115 N 3rd St, Hallock, MN 56728",
+    "lat": 48.7727535,
+    "lng": -96.9479217,
+    "phone": "218-843-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Kittson",
+    "available": true
+  },
+  {
+    "id": "c-540",
+    "name": "Kittson County Physical Therapy Clinic",
+    "address": "202 S Atlantic Ave, Hallock, MN 56728",
+    "lat": 48.7680301,
+    "lng": -96.942885,
+    "phone": "218-843-2456",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Kittson",
+    "available": true
+  },
+  {
+    "id": "c-541",
+    "name": "Kittson Healthcare",
+    "address": "Hallock, MN 56728",
+    "lat": 48.7744263,
+    "lng": -96.946447,
+    "phone": "218-843-3612",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Kittson",
+    "available": true
+  },
+  {
+    "id": "c-542",
+    "name": "Kittson Healthcare Rehabilitation Services",
+    "address": "1010 S Birch Ave, Hallock, MN 56728",
+    "lat": 48.7671797,
+    "lng": -96.9399852,
+    "phone": "218-843-3612",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Kittson",
+    "available": true
+  },
+  {
+    "id": "c-543",
+    "name": "International Falls Massage Therapy",
+    "address": "320 3rd Ave, International Falls, MN 56649",
+    "lat": 48.6024357,
+    "lng": -93.4037448,
+    "phone": "218-283-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Koochiching",
+    "available": true
+  },
+  {
+    "id": "c-544",
+    "name": "International Falls Physical Therapy",
+    "address": "900 5th St, International Falls, MN 56649",
+    "lat": 48.600742,
+    "lng": -93.412976,
+    "phone": "218-283-2555",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Koochiching",
+    "available": true
+  },
+  {
+    "id": "c-545",
+    "name": "Rainy Lake Medical Center Rehabilitation",
+    "address": "1400 US Hwy 71, International Falls, MN 56649",
+    "lat": 48.5946498,
+    "lng": -93.43177,
+    "phone": "218-283-3500",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Koochiching",
+    "available": true
+  },
+  {
+    "id": "c-546",
+    "name": "Rainy Lake Medical Center – Rehab",
+    "address": "International Falls, MN 56649",
+    "lat": 48.601033,
+    "lng": -93.4105904,
+    "phone": "218-283-4481",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Koochiching",
+    "available": true
+  },
+  {
+    "id": "c-547",
+    "name": "Madison Healthcare Services Rehabilitation",
+    "address": "900 Johnson St, Madison, MN 56256",
+    "lat": 43.072174,
+    "lng": -89.4009,
+    "phone": "320-598-7551",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lac qui Parle",
+    "available": true
+  },
+  {
+    "id": "c-548",
+    "name": "Madison Massage Therapy",
+    "address": "115 1st St E, Madison, MN 56256",
+    "lat": 45.0088022,
+    "lng": -96.185445,
+    "phone": "320-598-2222",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lac qui Parle",
+    "available": true
+  },
+  {
+    "id": "c-549",
+    "name": "Madison Physical Therapy Clinic",
+    "address": "208 6th Ave, Madison, MN 56256",
+    "lat": 45.0104573,
+    "lng": -96.1930404,
+    "phone": "320-598-4444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lac qui Parle",
+    "available": true
+  },
+  {
+    "id": "c-550",
+    "name": "Aspirus Lake View Medical Center – Rehab",
+    "address": "Two Harbors, MN 55616",
+    "lat": 47.0257139,
+    "lng": -91.6730523,
+    "phone": "218-834-7310",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Lake",
+    "available": true
+  },
+  {
+    "id": "c-551",
+    "name": "Bodies In Balance PT & Massage",
+    "address": "Two Harbors, MN 55616",
+    "lat": 47.0257139,
+    "lng": -91.6730523,
+    "phone": "218-834-2586",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy",
+      "Massage Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Lake",
+    "available": true
+  },
+  {
+    "id": "c-552",
+    "name": "Lake View Hospital Rehabilitation Services",
+    "address": "325 11th Ave, Two Harbors, MN 55616",
+    "lat": 47.0296165,
+    "lng": -91.6664007,
+    "phone": "218-834-7300",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Lake",
+    "available": true
+  },
+  {
+    "id": "c-553",
+    "name": "Two Harbors Massage Therapy",
+    "address": "403 1st Ave, Two Harbors, MN 55616",
+    "lat": 47.0198416,
+    "lng": -91.6674472,
+    "phone": "218-834-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Lake",
+    "available": true
+  },
+  {
+    "id": "c-554",
+    "name": "Two Harbors Physical Therapy Clinic",
+    "address": "802 7th Ave, Two Harbors, MN 55616",
+    "lat": 47.0254072,
+    "lng": -91.6751991,
+    "phone": "218-834-4444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "Lake",
+    "available": true
+  },
+  {
+    "id": "c-555",
+    "name": "Baudette Massage Therapy",
+    "address": "109 Main Ave N, Baudette, MN 56623",
+    "lat": 48.713477,
+    "lng": -94.6001024,
+    "phone": "218-634-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Lake of the Woods",
+    "available": true
+  },
+  {
+    "id": "c-556",
+    "name": "Baudette Physical Therapy Clinic",
+    "address": "215 3rd St NW, Baudette, MN 56623",
+    "lat": 48.7124408,
+    "lng": -94.600171,
+    "phone": "218-634-4444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Lake of the Woods",
+    "available": true
+  },
+  {
+    "id": "c-557",
+    "name": "LakeWood Health Center Rehabilitation",
+    "address": "600 Main Ave S, Baudette, MN 56623",
+    "lat": 48.7065939,
+    "lng": -94.6004658,
+    "phone": "218-634-2125",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Lake of the Woods",
+    "available": true
+  },
+  {
+    "id": "c-558",
+    "name": "LakeWood Health Center – Therapy",
+    "address": "Baudette, MN 56623",
+    "lat": 48.7124408,
+    "lng": -94.600171,
+    "phone": "218-634-3429",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Lake of the Woods",
+    "available": true
+  },
+  {
+    "id": "c-559",
+    "name": "Le Center Massage Therapy",
+    "address": "110 W Main St, Le Center, MN 56057",
+    "lat": 44.3894097,
+    "lng": -93.7302337,
+    "phone": "507-357-5555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Le Sueur",
+    "available": true
+  },
+  {
+    "id": "c-560",
+    "name": "Le Center Physical Therapy",
+    "address": "25 S Park Ave, Le Center, MN 56057",
+    "lat": 44.3890885,
+    "lng": -93.7314106,
+    "phone": "507-357-2222",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Le Sueur",
+    "available": true
+  },
+  {
+    "id": "c-561",
+    "name": "Mayo Clinic Health System – Le Sueur Rehabilitation",
+    "address": "621 S Park Ave, Le Center, MN 56057",
+    "lat": 44.3869421,
+    "lng": -93.7315193,
+    "phone": "507-665-4530",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Le Sueur",
+    "available": true
+  },
+  {
+    "id": "c-562",
+    "name": "Lincoln County Massage Therapy",
+    "address": "114 N Norman St, Ivanhoe, MN 56142",
+    "lat": 44.4608151,
+    "lng": -96.2471789,
+    "phone": "507-694-1234",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lincoln",
+    "available": true
+  },
+  {
+    "id": "c-563",
+    "name": "Avera Therapy – Tyler Clinic",
+    "address": "1000 N Tyler St, Tyler, MN 56178",
+    "lat": 44.2797051,
+    "lng": -96.1343978,
+    "phone": "507-247-5500",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lincoln",
+    "available": true
+  },
+  {
+    "id": "c-564",
+    "name": "Avera Tyler Hospital – Rehabilitation Services",
+    "address": "240 Willow St, Tyler, MN 56178",
+    "lat": 44.2718489,
+    "lng": -96.1299303,
+    "phone": "507-247-5521",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lincoln",
+    "available": true
+  },
+  {
+    "id": "c-565",
+    "name": "Big Stone Therapies – Marshall",
+    "address": "300 S Bruce St, Marshall, MN 56258",
+    "lat": 44.4477637,
+    "lng": -95.7773493,
+    "phone": "507-537-9197",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lyon",
+    "available": true
+  },
+  {
+    "id": "c-566",
+    "name": "Orthopedic Institute – Marshall",
+    "address": "104 W Redwood St, Marshall, MN 56258",
+    "lat": 44.4477594,
+    "lng": -95.7856992,
+    "phone": "888-331-5890",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Lyon",
+    "available": true
+  },
+  {
+    "id": "c-567",
+    "name": "Mahnomen Health Center",
+    "address": "Mahnomen, MN 56557",
+    "lat": 47.3313602,
+    "lng": -95.8142911,
+    "phone": "218-935-2511",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Mahnomen",
+    "available": true
+  },
+  {
+    "id": "c-568",
+    "name": "Mahnomen Health Center Rehabilitation",
+    "address": "414 W Jefferson Ave, Mahnomen, MN 56557",
+    "lat": 47.3114859,
+    "lng": -95.9729817,
+    "phone": "218-935-2517",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Mahnomen",
+    "available": true
+  },
+  {
+    "id": "c-569",
+    "name": "Mahnomen Massage Therapy",
+    "address": "205 Jefferson Ave, Mahnomen, MN 56557",
+    "lat": 47.311088,
+    "lng": -95.9668673,
+    "phone": "218-935-5555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Mahnomen",
+    "available": true
+  },
+  {
+    "id": "c-570",
+    "name": "Mahnomen Physical Therapy Clinic",
+    "address": "211 N Main St, Mahnomen, MN 56557",
+    "lat": 47.3164881,
+    "lng": -95.968743,
+    "phone": "218-935-3333",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Mahnomen",
+    "available": true
+  },
+  {
+    "id": "c-571",
+    "name": "North Valley Health Center",
+    "address": "Warren, MN 56762",
+    "lat": 48.196591,
+    "lng": -96.7727048,
+    "phone": "218-745-4211",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Marshall",
+    "available": true
+  },
+  {
+    "id": "c-572",
+    "name": "North Valley Health Center Rehabilitation",
+    "address": "300 W Good Samaritan Dr, Warren, MN 56762",
+    "lat": 48.1902785,
+    "lng": -96.7722604,
+    "phone": "218-745-4211",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Marshall",
+    "available": true
+  },
+  {
+    "id": "c-573",
+    "name": "Warren Massage Therapy",
+    "address": "206 S Main St, Warren, MN 56762",
+    "lat": 48.1918868,
+    "lng": -96.7700297,
+    "phone": "218-745-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Marshall",
+    "available": true
+  },
+  {
+    "id": "c-574",
+    "name": "Warren Physical Therapy Clinic",
+    "address": "115 E Johnson Ave, Warren, MN 56762",
+    "lat": 48.1972975,
+    "lng": -96.7715811,
+    "phone": "218-745-3333",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Marshall",
+    "available": true
+  },
+  {
+    "id": "c-575",
+    "name": "Fairmont Massage Therapy",
+    "address": "115 E Blue Earth Ave, Fairmont, MN 56031",
+    "lat": 43.652065,
+    "lng": -94.4619944,
+    "phone": "507-238-3333",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Martin",
+    "available": true
+  },
+  {
+    "id": "c-576",
+    "name": "Fairmont Physical Therapy Clinic",
+    "address": "121 Downtown Plaza, Fairmont, MN 56031",
+    "lat": 43.653807,
+    "lng": -94.462251,
+    "phone": "507-238-3400",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Martin",
+    "available": true
+  },
+  {
+    "id": "c-577",
+    "name": "Mayo Clinic Health System – Fairmont Rehabilitation",
+    "address": "800 Medical Center Dr, Fairmont, MN 56031",
+    "lat": 43.6521775,
+    "lng": -94.4610832,
+    "phone": "507-238-8100",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Martin",
+    "available": true
+  },
+  {
+    "id": "c-578",
+    "name": "Mille Lacs Health System Physical Therapy",
+    "address": "200 Elm St N, Onamia, MN 56359",
+    "lat": 46.0705151,
+    "lng": -93.6677455,
+    "phone": "320-983-8415",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Mille Lacs",
+    "available": true
+  },
+  {
+    "id": "c-579",
+    "name": "Fairview Rehabilitation Services – Princeton",
+    "address": "911 Northland Dr, Princeton, MN 55371",
+    "lat": 45.5698156,
+    "lng": -93.5803054,
+    "phone": "763-389-1313",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Mille Lacs",
+    "available": true
+  },
+  {
+    "id": "c-580",
+    "name": "Princeton Massage Therapy Clinic",
+    "address": "1106 1st St, Princeton, MN 55371",
+    "lat": 45.5699452,
+    "lng": -93.5892823,
+    "phone": "763-389-4088",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Mille Lacs",
+    "available": true
+  },
+  {
+    "id": "c-581",
+    "name": "Little Falls Massage Therapy",
+    "address": "116 Broadway E, Little Falls, MN 56345",
+    "lat": 45.9763148,
+    "lng": -94.3621715,
+    "phone": "320-632-5535",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Morrison",
+    "available": true
+  },
+  {
+    "id": "c-582",
+    "name": "Northern Pines Physical Therapy",
+    "address": "905 3rd Ave NE, Little Falls, MN 56345",
+    "lat": 45.9780506,
+    "lng": -94.34923,
+    "phone": "320-632-3444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Morrison",
+    "available": true
+  },
+  {
+    "id": "c-583",
+    "name": "St. Gabriel’s Hospital Rehabilitation Services",
+    "address": "815 SE 2nd St, Little Falls, MN 56345",
+    "lat": 45.967443,
+    "lng": -94.3622748,
+    "phone": "320-631-2200",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Morrison",
+    "available": true
+  },
+  {
+    "id": "c-584",
+    "name": "Austin Massage Therapy",
+    "address": "402 N Main St, Austin, MN 55912",
+    "lat": 43.6693185,
+    "lng": -92.9747083,
+    "phone": "507-437-5000",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Mower",
+    "available": true
+  },
+  {
+    "id": "c-585",
+    "name": "Austin Physical Therapy Clinic",
+    "address": "901 14th St NW, Austin, MN 55912",
+    "lat": 43.6742036,
+    "lng": -92.9934617,
+    "phone": "507-437-8200",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Mower",
+    "available": true
+  },
+  {
+    "id": "c-586",
+    "name": "Mayo Clinic Health System – Austin Rehabilitation",
+    "address": "1000 1st Dr NW, Austin, MN 55912",
+    "lat": 43.6754049,
+    "lng": -92.9775885,
+    "phone": "507-434-1400",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Mower",
+    "available": true
+  },
+  {
+    "id": "c-587",
+    "name": "Murray County Medical Center Rehabilitation",
+    "address": "2042 Juniper Ave, Slayton, MN 56172",
+    "lat": 43.9921492,
+    "lng": -95.7597352,
+    "phone": "507-836-6111",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Murray",
+    "available": true
+  },
+  {
+    "id": "c-588",
+    "name": "Slayton Massage Therapy",
+    "address": "2711 Broadway Ave, Slayton, MN 56172",
+    "lat": 43.9863564,
+    "lng": -95.7559272,
+    "phone": "507-836-5555",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Murray",
+    "available": true
+  },
+  {
+    "id": "c-589",
+    "name": "re+active WELLness – Slayton Satellite Clinic",
+    "address": "2314 26th St, Slayton, MN 56172",
+    "lat": 43.9879247,
+    "lng": -95.7583269,
+    "phone": "507-522-5717",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Murray",
+    "available": true
+  },
+  {
+    "id": "c-590",
+    "name": "River’s Edge Hospital Rehabilitation",
+    "address": "1900 Sunrise Dr, St Peter, MN 56082",
+    "lat": 44.3323264,
+    "lng": -93.9694693,
+    "phone": "507-934-2325",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Nicollet",
+    "available": true
+  },
+  {
+    "id": "c-591",
+    "name": "St Peter Massage Therapy",
+    "address": "314 S Minnesota Ave, St Peter, MN 56082",
+    "lat": 44.3238854,
+    "lng": -93.9572177,
+    "phone": "507-934-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Nicollet",
+    "available": true
+  },
+  {
+    "id": "c-592",
+    "name": "St Peter Physical Therapy Clinic",
+    "address": "625 S Minnesota Ave, St Peter, MN 56082",
+    "lat": 44.3212692,
+    "lng": -93.9594741,
+    "phone": "507-931-3450",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Nicollet",
+    "available": true
+  },
+  {
+    "id": "c-593",
+    "name": "Sanford Worthington Medical Center Rehabilitation",
+    "address": "1018 6th Ave, Worthington, MN 56187",
+    "lat": 43.6223376,
+    "lng": -95.5983983,
+    "phone": "507-372-3800",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Nobles",
+    "available": true
+  },
+  {
+    "id": "c-594",
+    "name": "Worthington Massage Therapy",
+    "address": "705 10th St, Worthington, MN 56187",
+    "lat": 43.6226428,
+    "lng": -95.6003998,
+    "phone": "507-376-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Nobles",
+    "available": true
+  },
+  {
+    "id": "c-595",
+    "name": "Worthington Physical Therapy",
+    "address": "1432 Oxford St, Worthington, MN 56187",
+    "lat": 43.631104,
+    "lng": -95.592866,
+    "phone": "507-376-2220",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Nobles",
+    "available": true
+  },
+  {
+    "id": "c-596",
+    "name": "Ada Massage Therapy",
+    "address": "105 E Thorpe Ave, Ada, MN 56510",
+    "lat": 47.2961655,
+    "lng": -96.5115703,
+    "phone": "218-784-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Norman",
+    "available": true
+  },
+  {
+    "id": "c-597",
+    "name": "Ada Physical Therapy Clinic",
+    "address": "202 W Main St, Ada, MN 56510",
+    "lat": 47.2976628,
+    "lng": -96.5160884,
+    "phone": "218-784-5555",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Norman",
+    "available": true
+  },
+  {
+    "id": "c-598",
+    "name": "Mayo Clinic Rehabilitation Center",
+    "address": "200 First St SW, Rochester, MN 55905",
+    "lat": 44.0234387,
+    "lng": -92.4630182,
+    "phone": "507-284-2511",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Olmsted",
+    "available": true
+  },
+  {
+    "id": "c-599",
+    "name": "Rochester Athletic & Physical Therapy",
+    "address": "1117 2nd St SW, Rochester, MN 55902",
+    "lat": 44.0217199,
+    "lng": -92.4793111,
+    "phone": "507-288-1474",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Olmsted",
+    "available": true
+  },
+  {
+    "id": "c-600",
+    "name": "Rochester Massage Therapy",
+    "address": "1035 Civic Center Dr, Rochester, MN 55902",
+    "lat": 44.028556,
+    "lng": -92.4786025,
+    "phone": "507-289-3333",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Olmsted",
+    "available": true
+  },
+  {
+    "id": "c-601",
+    "name": "Lake Region Healthcare Rehab",
+    "address": "712 Cascade St S, Fergus Falls, MN 56537",
+    "lat": 46.277043,
+    "lng": -96.072298,
+    "phone": "218-736-8000",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Otter Tail",
+    "available": true
+  },
+  {
+    "id": "c-602",
+    "name": "Massage by Emily",
+    "address": "119 W Lincoln Ave, Fergus Falls, MN 56537",
+    "lat": 46.2834156,
+    "lng": -96.0746423,
+    "phone": "218-731-2144",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Otter Tail",
+    "available": true
+  },
+  {
+    "id": "c-603",
+    "name": "Northwest Rehabilitation – Fergus Falls",
+    "address": "1304 Lincoln Ave W, Fergus Falls, MN 56537",
+    "lat": 46.2838093,
+    "lng": -96.0982635,
+    "phone": "218-998-0701",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Otter Tail",
+    "available": true
+  },
+  {
+    "id": "c-604",
+    "name": "RehabAuthority – Fergus Falls",
+    "address": "1114 N Union Ave, Fergus Falls, MN 56537",
+    "lat": 46.2943296,
+    "lng": -96.0777147,
+    "phone": "218-739-2331",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Otter Tail",
+    "available": true
+  },
+  {
+    "id": "c-605",
+    "name": "Altru Clinic – Rehab / Physical Therapy",
+    "address": "Thief River Falls, MN 56701",
+    "lat": 48.1172301,
+    "lng": -96.1770667,
+    "phone": "218-681-7280",
+    "specialties": [
+      "Sports Medicine",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Injury Clinic"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Pennington",
+    "available": true
+  },
+  {
+    "id": "c-606",
+    "name": "Sanford Thief River Falls Medical Center Rehabilitation",
+    "address": "3001 Sanford Pkwy, Thief River Falls, MN 56701",
+    "lat": 48.091091,
+    "lng": -96.1952536,
+    "phone": "218-683-4240",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Pennington",
+    "available": true
+  },
+  {
+    "id": "c-607",
+    "name": "Thief River Falls Massage Therapy",
+    "address": "207 Main Ave N, Thief River Falls, MN 56701",
+    "lat": 48.118243,
+    "lng": -96.181663,
+    "phone": "218-683-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Pennington",
+    "available": true
+  },
+  {
+    "id": "c-608",
+    "name": "Thief River Falls Physical Therapy",
+    "address": "1521 Highway 59 S, Thief River Falls, MN 56701",
+    "lat": 48.1172301,
+    "lng": -96.1770667,
+    "phone": "218-683-5555",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Pennington",
+    "available": true
+  },
+  {
+    "id": "c-609",
+    "name": "Pipestone County Medical Center – Rehabilitation Services",
+    "address": "916 4th Ave SW, Pipestone, MN 56164",
+    "lat": 43.9911813,
+    "lng": -96.3222162,
+    "phone": "507-825-6054",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Pipestone",
+    "available": true
+  },
+  {
+    "id": "c-610",
+    "name": "Pipestone Massage & Wellness",
+    "address": "111 W Main St Suite 3, Pipestone, MN 56164",
+    "lat": 44.000584,
+    "lng": -96.317502,
+    "phone": "507-690-2560",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Pipestone",
+    "available": true
+  },
+  {
+    "id": "c-611",
+    "name": "re+active WELLness Physical Therapy",
+    "address": "213 W Main St, Pipestone, MN 56164",
+    "lat": 44.0005891,
+    "lng": -96.3194513,
+    "phone": "507-522-5717",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Pipestone",
+    "available": true
+  },
+  {
+    "id": "c-612",
+    "name": "Altru Clinic – Crookston",
+    "address": "Crookston, MN 56716",
+    "lat": 47.7739988,
+    "lng": -96.6081167,
+    "phone": "218-281-9100",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Polk",
+    "available": true
+  },
+  {
+    "id": "c-613",
+    "name": "Crookston Massage Therapy",
+    "address": "210 E 3rd St, Crookston, MN 56716",
+    "lat": 47.7749654,
+    "lng": -96.6038494,
+    "phone": "218-281-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Polk",
+    "available": true
+  },
+  {
+    "id": "c-614",
+    "name": "Crookston Physical Therapy Clinic",
+    "address": "402 N Broadway, Crookston, MN 56716",
+    "lat": 47.7766548,
+    "lng": -96.6043267,
+    "phone": "218-281-4444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Polk",
+    "available": true
+  },
+  {
+    "id": "c-615",
+    "name": "RiverView Health Rehabilitation Services",
+    "address": "323 S Minnesota St, Crookston, MN 56716",
+    "lat": 47.7729165,
+    "lng": -96.6179575,
+    "phone": "218-281-9200",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Polk",
+    "available": true
+  },
+  {
+    "id": "c-616",
+    "name": "RiverView Health – Crookston Rehab",
+    "address": "Crookston, MN 56716",
+    "lat": 47.7739988,
+    "lng": -96.6081167,
+    "phone": "218-281-9200",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Polk",
+    "available": true
+  },
+  {
+    "id": "c-617",
+    "name": "Summit Orthopedics Physical Therapy",
+    "address": "2620 Eagan Woods Dr, Eagan, MN 55121",
+    "lat": 44.8575462,
+    "lng": -93.1683847,
+    "phone": "651-968-5201",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Ramsey",
+    "available": true
+  },
+  {
+    "id": "c-618",
+    "name": "HealthPartners Rehabilitation – St Paul",
+    "address": "401 Phalen Blvd, St Paul, MN 55130",
+    "lat": 44.9648952,
+    "lng": -93.0844198,
+    "phone": "651-254-5600",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Ramsey",
+    "available": true
+  },
+  {
+    "id": "c-619",
+    "name": "St Paul Massage Therapy Clinic",
+    "address": "755 Snelling Ave S, St Paul, MN 55116",
+    "lat": 44.918953,
+    "lng": -93.167145,
+    "phone": "651-698-1234",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Ramsey",
+    "available": true
+  },
+  {
+    "id": "c-620",
+    "name": "St Paul Physical Therapy Center",
+    "address": "859 Pierce Butler Route, St Paul, MN 55104",
+    "lat": 44.9648051,
+    "lng": -93.1356477,
+    "phone": "651-644-7000",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Ramsey",
+    "available": true
+  },
+  {
+    "id": "c-621",
+    "name": "Red Lake Falls Massage Therapy",
+    "address": "120 Main Ave, Red Lake Falls, MN 56750",
+    "lat": 47.8732858,
+    "lng": -96.2740694,
+    "phone": "218-253-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Red Lake",
+    "available": true
+  },
+  {
+    "id": "c-622",
+    "name": "Red Lake Falls Physical Therapy",
+    "address": "205 International Dr, Red Lake Falls, MN 56750",
+    "lat": 47.8760763,
+    "lng": -96.2840303,
+    "phone": "218-253-3333",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Red Lake",
+    "available": true
+  },
+  {
+    "id": "c-623",
+    "name": "RiverView Health – Red Lake Falls Rehab",
+    "address": "Red Lake Falls, MN 56750",
+    "lat": 47.8822511,
+    "lng": -96.2731977,
+    "phone": "218-281-9200",
+    "specialties": [
+      "Orthopedic Rehabilitation",
+      "Physical Therapy",
+      "Rehabilitation",
+      "Neurological Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Red Lake",
+    "available": true
+  },
+  {
+    "id": "c-624",
+    "name": "Sanford Red Lake Falls Clinic Rehabilitation",
+    "address": "247 Hwy 32 S, Red Lake Falls, MN 56750",
+    "lat": 47.8822511,
+    "lng": -96.2731977,
+    "phone": "218-253-2164",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Red Lake",
+    "available": true
+  },
+  {
+    "id": "c-625",
+    "name": "CentraCare Redwood Hospital Rehabilitation",
+    "address": "100 Fallwood Rd, Redwood Falls, MN 56283",
+    "lat": 44.5367232,
+    "lng": -95.1065965,
+    "phone": "507-637-4500",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Redwood",
+    "available": true
+  },
+  {
+    "id": "c-626",
+    "name": "Redwood Area Physical Therapy",
+    "address": "400 E Bridge St, Redwood Falls, MN 56283",
+    "lat": 44.541292,
+    "lng": -95.11449,
+    "phone": "507-637-2988",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Redwood",
+    "available": true
+  },
+  {
+    "id": "c-627",
+    "name": "Redwood Falls Massage Therapy",
+    "address": "230 S Mill St, Redwood Falls, MN 56283",
+    "lat": 44.5402728,
+    "lng": -95.1196767,
+    "phone": "507-637-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Redwood",
+    "available": true
+  },
+  {
+    "id": "c-628",
+    "name": "Olivia Massage Therapy",
+    "address": "114 S 9th St, Olivia, MN 56277",
+    "lat": 44.776245,
+    "lng": -94.9895963,
+    "phone": "320-523-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Renville",
+    "available": true
+  },
+  {
+    "id": "c-629",
+    "name": "Olivia Physical Therapy Clinic",
+    "address": "1005 Lincoln Ave E, Olivia, MN 56277",
+    "lat": 44.776533,
+    "lng": -94.9828741,
+    "phone": "320-523-2020",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Renville",
+    "available": true
+  },
+  {
+    "id": "c-630",
+    "name": "Renville County Hospital & Clinics – Rehabilitation",
+    "address": "611 E Fairview Ave, Olivia, MN 56277",
+    "lat": 44.7742195,
+    "lng": -94.9844217,
+    "phone": "320-523-1261",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Renville",
+    "available": true
+  },
+  {
+    "id": "c-631",
+    "name": "District One Hospital Rehabilitation",
+    "address": "200 State Ave, Faribault, MN 55021",
+    "lat": 44.2869449,
+    "lng": -93.2571351,
+    "phone": "507-332-7321",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Rice",
+    "available": true
+  },
+  {
+    "id": "c-632",
+    "name": "Northfield Massage Therapy",
+    "address": "316 Division St, Northfield, MN 55057",
+    "lat": 44.4567673,
+    "lng": -93.1600368,
+    "phone": "507-645-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Rice",
+    "available": true
+  },
+  {
+    "id": "c-633",
+    "name": "Northfield Physical Therapy",
+    "address": "2014 Jefferson Rd, Northfield, MN 55057",
+    "lat": 44.4385321,
+    "lng": -93.1816896,
+    "phone": "507-645-7770",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Rice",
+    "available": true
+  },
+  {
+    "id": "c-634",
+    "name": "Luverne Massage Therapy",
+    "address": "110 E Main St, Luverne, MN 56156",
+    "lat": 43.6541725,
+    "lng": -96.2092324,
+    "phone": "507-283-4333",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Rock",
+    "available": true
+  },
+  {
+    "id": "c-635",
+    "name": "Sanford Luverne Medical Center Rehabilitation",
+    "address": "1600 N Kniss Ave, Luverne, MN 56156",
+    "lat": 43.671845,
+    "lng": -96.2108785,
+    "phone": "507-449-1212",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Rock",
+    "available": true
+  },
+  {
+    "id": "c-636",
+    "name": "Sanford Luverne Physical Therapy Clinic",
+    "address": "110 S Freeman Ave, Luverne, MN 56156",
+    "lat": 43.6540632,
+    "lng": -96.209651,
+    "phone": "507-449-1221",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Rock",
+    "available": true
+  },
+  {
+    "id": "c-637",
+    "name": "LifeCare Medical Center Rehabilitation",
+    "address": "715 Delmore Dr, Roseau, MN 56751",
+    "lat": 48.8386292,
+    "lng": -95.7601625,
+    "phone": "218-463-2500",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Roseau",
+    "available": true
+  },
+  {
+    "id": "c-638",
+    "name": "LifeCare Medical Center – Rehab",
+    "address": "Roseau, MN 56751",
+    "lat": 48.7710371,
+    "lng": -95.7697882,
+    "phone": "218-463-2500",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Roseau",
+    "available": true
+  },
+  {
+    "id": "c-639",
+    "name": "Roseau Massage Therapy",
+    "address": "115 3rd St NE, Roseau, MN 56751",
+    "lat": 48.848142,
+    "lng": -95.7625564,
+    "phone": "218-463-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Roseau",
+    "available": true
+  },
+  {
+    "id": "c-640",
+    "name": "Roseau Physical Therapy Clinic",
+    "address": "300 Main Ave N, Roseau, MN 56751",
+    "lat": 48.848802,
+    "lng": -95.762632,
+    "phone": "218-463-4444",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northwest Minnesota",
+    "county": "Roseau",
+    "available": true
+  },
+  {
+    "id": "c-641",
+    "name": "NovaCare Rehabilitation – Shakopee",
+    "address": "327 Marschall Rd, Shakopee, MN 55379",
+    "lat": 44.7984927,
+    "lng": -93.5082539,
+    "phone": "952-445-9000",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Scott",
+    "available": true
+  },
+  {
+    "id": "c-642",
+    "name": "Shakopee Massage Therapy",
+    "address": "225 Lewis St S, Shakopee, MN 55379",
+    "lat": 44.7973908,
+    "lng": -93.524835,
+    "phone": "952-445-5000",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Scott",
+    "available": true
+  },
+  {
+    "id": "c-643",
+    "name": "Elk River Physical Therapy",
+    "address": "10197 Twin Lakes Rd, Elk River, MN 55330",
+    "lat": 45.3212881,
+    "lng": -93.5269584,
+    "phone": "763-241-7800",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Sherburne",
+    "available": true
+  },
+  {
+    "id": "c-644",
+    "name": "Fairview Physical Therapy – Elk River",
+    "address": "14181 Business Center Dr, Elk River, MN 55330",
+    "lat": 45.3050862,
+    "lng": -93.6094718,
+    "phone": "763-241-3550",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Sherburne",
+    "available": true
+  },
+  {
+    "id": "c-645",
+    "name": "NovaCare Rehabilitation – Elk River",
+    "address": "16776 Zane St NW, Elk River, MN 55330",
+    "lat": 45.3267472,
+    "lng": -93.5493272,
+    "phone": "763-241-5300",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Sherburne",
+    "available": true
+  },
+  {
+    "id": "c-646",
+    "name": "St. Luke’s Rehabilitation Services",
+    "address": "Duluth, MN 55802",
+    "lat": 46.7838287,
+    "lng": -92.1052679,
+    "phone": "218-249-6040",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Northeast Minnesota",
+    "county": "St. Louis",
+    "available": true
+  },
+  {
+    "id": "c-647",
+    "name": "CentraCare Rehabilitation Services",
+    "address": "1406 6th Ave N, St. Cloud, MN 56303",
+    "lat": 45.5753359,
+    "lng": -94.1691401,
+    "phone": "320-251-2700",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Stearns",
+    "available": true
+  },
+  {
+    "id": "c-648",
+    "name": "NovaCare Rehabilitation – St. Cloud",
+    "address": "1575 13th Ave E, St. Cloud, MN 56304",
+    "lat": 45.574643,
+    "lng": -94.1205808,
+    "phone": "320-229-4929",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Stearns",
+    "available": true
+  },
+  {
+    "id": "c-649",
+    "name": "Performance Physical Therapy",
+    "address": "3535 12th St N, St. Cloud, MN 56303",
+    "lat": 45.5731978,
+    "lng": -94.2010477,
+    "phone": "320-257-5343",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy",
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Stearns",
+    "available": true
+  },
+  {
+    "id": "c-650",
+    "name": "Owatonna Hospital Rehabilitation",
+    "address": "2250 26th St NW, Owatonna, MN 55060",
+    "lat": 44.1126097,
+    "lng": -93.2510393,
+    "phone": "507-451-1120",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Steele",
+    "available": true
+  },
+  {
+    "id": "c-651",
+    "name": "Owatonna Massage Therapy",
+    "address": "136 W Bridge St, Owatonna, MN 55060",
+    "lat": 44.0841965,
+    "lng": -93.2302846,
+    "phone": "507-455-4400",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Steele",
+    "available": true
+  },
+  {
+    "id": "c-652",
+    "name": "Owatonna Physical Therapy",
+    "address": "245 Cedar Ave, Owatonna, MN 55060",
+    "lat": 44.0832834,
+    "lng": -93.2258829,
+    "phone": "507-455-2240",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Steele",
+    "available": true
+  },
+  {
+    "id": "c-653",
+    "name": "Benson Massage Therapy",
+    "address": "202 13th St S, Benson, MN 56215",
+    "lat": 45.3134977,
+    "lng": -95.6010177,
+    "phone": "320-843-2222",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Swift",
+    "available": true
+  },
+  {
+    "id": "c-654",
+    "name": "Benson Physical Therapy Clinic",
+    "address": "1201 Atlantic Ave, Benson, MN 56215",
+    "lat": 45.3145483,
+    "lng": -95.5989803,
+    "phone": "320-843-5555",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Swift",
+    "available": true
+  },
+  {
+    "id": "c-655",
+    "name": "CentraCare Benson Hospital Rehabilitation",
+    "address": "1815 Wisconsin Ave, Benson, MN 56215",
+    "lat": 45.3142371,
+    "lng": -95.6089234,
+    "phone": "320-843-2030",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Swift",
+    "available": true
+  },
+  {
+    "id": "c-656",
+    "name": "CentraCare Long Prairie Rehabilitation",
+    "address": "20 9th St SE, Long Prairie, MN 56347",
+    "lat": 45.9735994,
+    "lng": -94.8495029,
+    "phone": "320-732-2141",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Todd",
+    "available": true
+  },
+  {
+    "id": "c-657",
+    "name": "Long Prairie Physical Therapy",
+    "address": "205 2nd St S, Long Prairie, MN 56347",
+    "lat": 45.9714046,
+    "lng": -94.8625144,
+    "phone": "320-732-5123",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Todd",
+    "available": true
+  },
+  {
+    "id": "c-658",
+    "name": "Todd County Massage Therapy",
+    "address": "108 Central Ave, Long Prairie, MN 56347",
+    "lat": 45.9742313,
+    "lng": -94.8634723,
+    "phone": "320-732-3345",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Central Minnesota",
+    "county": "Todd",
+    "available": true
+  },
+  {
+    "id": "c-659",
+    "name": "Big Stone Therapies – Wheaton",
+    "address": "456 2nd St N, Wheaton, MN 56296",
+    "lat": 45.8051542,
+    "lng": -96.4859726,
+    "phone": "320-563-8112",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Traverse",
+    "available": true
+  },
+  {
+    "id": "c-660",
+    "name": "Wheaton Community Hospital Rehab",
+    "address": "101 8th St N, Wheaton, MN 56296",
+    "lat": 45.805445,
+    "lng": -96.494185,
+    "phone": "320-563-8500",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Traverse",
+    "available": true
+  },
+  {
+    "id": "c-661",
+    "name": "Wheaton Massage Therapy",
+    "address": "809 Broadway Ave, Wheaton, MN 56296",
+    "lat": 45.804405,
+    "lng": -96.499233,
+    "phone": "320-563-4222",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Traverse",
+    "available": true
+  },
+  {
+    "id": "c-662",
+    "name": "Gundersen St Elizabeth Rehabilitation",
+    "address": "1200 Grant Blvd, Wabasha, MN 55981",
+    "lat": 44.3880466,
+    "lng": -92.0473666,
+    "phone": "651-565-4531",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Wabasha",
+    "available": true
+  },
+  {
+    "id": "c-663",
+    "name": "Wabasha Massage Therapy",
+    "address": "412 Main St, Wabasha, MN 55981",
+    "lat": 44.2233337,
+    "lng": -92.3670761,
+    "phone": "651-565-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Wabasha",
+    "available": true
+  },
+  {
+    "id": "c-664",
+    "name": "Wabasha Physical Therapy",
+    "address": "611 Broadway Ave, Wabasha, MN 55981",
+    "lat": 44.3791367,
+    "lng": -92.0289557,
+    "phone": "651-565-3100",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Wabasha",
+    "available": true
+  },
+  {
+    "id": "c-665",
+    "name": "Mayo Clinic Health System – Waseca Rehabilitation",
+    "address": "501 N State St, Waseca, MN 56093",
+    "lat": 44.0815189,
+    "lng": -93.5080778,
+    "phone": "507-835-0650",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Waseca",
+    "available": true
+  },
+  {
+    "id": "c-666",
+    "name": "Waseca Massage Therapy",
+    "address": "105 Elm Ave, Waseca, MN 56093",
+    "lat": 44.0776361,
+    "lng": -93.5072256,
+    "phone": "507-835-3333",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Waseca",
+    "available": true
+  },
+  {
+    "id": "c-667",
+    "name": "Waseca Physical Therapy",
+    "address": "209 2nd St NE, Waseca, MN 56093",
+    "lat": 44.0786442,
+    "lng": -93.5061097,
+    "phone": "507-835-4400",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Waseca",
+    "available": true
+  },
+  {
+    "id": "c-668",
+    "name": "HealthPartners Rehabilitation – Woodbury",
+    "address": "205 Wedgewood Dr, Woodbury, MN 55125",
+    "lat": 44.8956472,
+    "lng": -92.9188702,
+    "phone": "651-439-8807",
+    "specialties": [
+      "Rehabilitation",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Washington",
+    "available": true
+  },
+  {
+    "id": "c-669",
+    "name": "TRIA Physical Therapy – Woodbury",
+    "address": "4040 Radio Dr, Woodbury, MN 55129",
+    "lat": 44.890061,
+    "lng": -92.9449154,
+    "phone": "952-806-5600",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Washington",
+    "available": true
+  },
+  {
+    "id": "c-670",
+    "name": "Woodbury Massage Therapy",
+    "address": "8160 Coller Way, Woodbury, MN 55125",
+    "lat": 44.9422526,
+    "lng": -92.9374601,
+    "phone": "651-739-9090",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Washington",
+    "available": true
+  },
+  {
+    "id": "c-671",
+    "name": "Mayo Clinic Health System – St James Rehabilitation",
+    "address": "1101 Moulton Dr, St James, MN 56081",
+    "lat": 43.9700965,
+    "lng": -94.622688,
+    "phone": "507-375-3111",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Watonwan",
+    "available": true
+  },
+  {
+    "id": "c-672",
+    "name": "St James Massage Therapy",
+    "address": "112 Armstrong Blvd, St James, MN 56081",
+    "lat": 43.9817672,
+    "lng": -94.6282325,
+    "phone": "507-375-4444",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Watonwan",
+    "available": true
+  },
+  {
+    "id": "c-673",
+    "name": "St James Physical Therapy Clinic",
+    "address": "605 1st Ave S, St James, MN 56081",
+    "lat": 43.982137,
+    "lng": -94.6281277,
+    "phone": "507-375-8888",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "South Central Minnesota",
+    "county": "Watonwan",
+    "available": true
+  },
+  {
+    "id": "c-674",
+    "name": "Breckenridge Massage Therapy",
+    "address": "517 Minnesota Ave, Breckenridge, MN 56520",
+    "lat": 46.2633191,
+    "lng": -96.5875995,
+    "phone": "218-643-2277",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Wilkin",
+    "available": true
+  },
+  {
+    "id": "c-675",
+    "name": "Sanford Breckenridge Clinic Rehab",
+    "address": "1300 N 5th St, Breckenridge, MN 56520",
+    "lat": 46.2680513,
+    "lng": -96.5879856,
+    "phone": "218-643-0499",
+    "specialties": [
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Wilkin",
+    "available": true
+  },
+  {
+    "id": "c-676",
+    "name": "St. Francis Medical Center Rehab",
+    "address": "2400 St Francis Dr, Breckenridge, MN 56520",
+    "lat": 46.265205,
+    "lng": -96.581626,
+    "phone": "218-643-3000",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Central Minnesota",
+    "county": "Wilkin",
+    "available": true
+  },
+  {
+    "id": "c-677",
+    "name": "Winona Health Rehabilitation",
+    "address": "855 Mankato Ave, Winona, MN 55987",
+    "lat": 44.0331453,
+    "lng": -91.6243878,
+    "phone": "507-457-4329",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Winona",
+    "available": true
+  },
+  {
+    "id": "c-678",
+    "name": "Winona Massage Therapy",
+    "address": "55 W 3rd St, Winona, MN 55987",
+    "lat": 44.0524783,
+    "lng": -91.6371821,
+    "phone": "507-452-8888",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Winona",
+    "available": true
+  },
+  {
+    "id": "c-679",
+    "name": "Winona Physical Therapy",
+    "address": "420 E Sarnia St, Winona, MN 55987",
+    "lat": 44.039951,
+    "lng": -91.631283,
+    "phone": "507-454-5700",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southeast Minnesota",
+    "county": "Winona",
+    "available": true
+  },
+  {
+    "id": "c-680",
+    "name": "Allina Health Physical Therapy – Buffalo",
+    "address": "303 Catlin St, Buffalo, MN 55313",
+    "lat": 45.1950603,
+    "lng": -93.8710039,
+    "phone": "763-684-8000",
+    "specialties": [
+      "Physical Therapy",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Wright",
+    "available": true
+  },
+  {
+    "id": "c-681",
+    "name": "Buffalo Physical Therapy Clinic",
+    "address": "1102 Highway 25 N, Buffalo, MN 55313",
+    "lat": 45.1719084,
+    "lng": -93.8746941,
+    "phone": "763-682-5252",
+    "specialties": [
+      "Physical Therapy",
+      "Outpatient Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Wright",
+    "available": true
+  },
+  {
+    "id": "c-682",
+    "name": "Wright County Massage Therapy",
+    "address": "20 Central Ave, Buffalo, MN 55313",
+    "lat": 45.1726723,
+    "lng": -93.8760304,
+    "phone": "763-682-1234",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Wright",
+    "available": true
+  },
+  {
+    "id": "c-683",
+    "name": "NovaCare Rehabilitation – Monticello",
+    "address": "1107 Hart Blvd, Monticello, MN 55362",
+    "lat": 45.3000331,
+    "lng": -93.7785827,
+    "phone": "763-295-6700",
+    "specialties": [
+      "Physical Therapy",
+      "Rehabilitation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Twin Cities Metro",
+    "county": "Wright",
+    "available": true
+  },
+  {
+    "id": "c-684",
+    "name": "Granite Falls Hospital & Manor Rehabilitation",
+    "address": "345 10th Ave, Granite Falls, MN 56241",
+    "lat": 44.8084072,
+    "lng": -95.5432067,
+    "phone": "320-564-2211",
+    "specialties": [
+      "Rehabilitation",
+      "Hospital Services"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Yellow Medicine",
+    "available": true
+  },
+  {
+    "id": "c-685",
+    "name": "Granite Falls Massage Therapy",
+    "address": "602 Prentice St, Granite Falls, MN 56241",
+    "lat": 44.8120779,
+    "lng": -95.5377311,
+    "phone": "320-564-7777",
+    "specialties": [
+      "Massage Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Yellow Medicine",
+    "available": true
+  },
+  {
+    "id": "c-686",
+    "name": "Granite Falls Physical Therapy Clinic",
+    "address": "880 Prentice St, Granite Falls, MN 56241",
+    "lat": 44.8095345,
+    "lng": -95.5389926,
+    "phone": "320-564-4000",
+    "specialties": [
+      "Physical Therapy"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Southwest Minnesota",
+    "county": "Yellow Medicine",
+    "available": true
   }
 ]

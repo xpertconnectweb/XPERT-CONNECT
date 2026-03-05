@@ -435,7 +435,7 @@ export default function AdminClinicsPage() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  placeholder="Florida Injury Centers"
+                  placeholder="Clinic Name"
                 />
               </div>
 
@@ -446,7 +446,7 @@ export default function AdminClinicsPage() {
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  placeholder="123 Medical Plaza, Miami, FL 33101"
+                  placeholder="123 Medical Plaza, City, ST 00000"
                 />
               </div>
 
@@ -519,7 +519,7 @@ export default function AdminClinicsPage() {
                     value={form.region}
                     onChange={(e) => setForm({ ...form, region: e.target.value })}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="South Florida"
+                    placeholder="Region Name"
                   />
                 </div>
                 <div>
@@ -529,7 +529,7 @@ export default function AdminClinicsPage() {
                     value={form.county}
                     onChange={(e) => setForm({ ...form, county: e.target.value })}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="Miami-Dade"
+                    placeholder="County Name"
                   />
                 </div>
               </div>
