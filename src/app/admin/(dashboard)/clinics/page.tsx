@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail } from 'lucide-react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail, FilterX } from 'lucide-react'
 
 interface Clinic {
   id: string
@@ -64,6 +64,10 @@ export default function AdminClinicsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [availFilter, setAvailFilter] = useState<string>('')
+  const [stateFilter, setStateFilter] = useState<string>('')
+  const [regionFilter, setRegionFilter] = useState<string>('')
+  const [countyFilter, setCountyFilter] = useState<string>('')
+  const [specialtyFilter, setSpecialtyFilter] = useState<string>('')
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [showEmailsModal, setShowEmailsModal] = useState(false)
   const [selectedClinicEmails, setSelectedClinicEmails] = useState<{ clinicEmail: string; userEmails: string[] } | null>(null)
@@ -238,7 +242,79 @@ export default function AdminClinicsPage() {
     }
   }
 
+  const getClinicState = useCallback((clinic: Clinic): string => {
+    if (clinic.address.includes(', FL ')) return 'Florida'
+    if (clinic.address.includes(', MN ')) return 'Minnesota'
+    return ''
+  }, [])
+
+  // Dynamic dropdown options derived from clinics data
+  const regionOptions = useMemo(() => {
+    const regions = new Set<string>()
+    clinics.forEach((c) => {
+      if (!c.region) return
+      if (stateFilter && getClinicState(c) !== stateFilter) return
+      regions.add(c.region)
+    })
+    return Array.from(regions).sort()
+  }, [clinics, stateFilter, getClinicState])
+
+  const countyOptions = useMemo(() => {
+    const counties = new Set<string>()
+    clinics.forEach((c) => {
+      if (!c.county) return
+      if (stateFilter && getClinicState(c) !== stateFilter) return
+      if (regionFilter && c.region !== regionFilter) return
+      counties.add(c.county)
+    })
+    return Array.from(counties).sort()
+  }, [clinics, stateFilter, regionFilter, getClinicState])
+
+  const specialtyOptions = useMemo(() => {
+    const specs = new Set<string>()
+    clinics.forEach((c) => c.specialties.forEach((s) => specs.add(s)))
+    return Array.from(specs).sort()
+  }, [clinics])
+
+  // Reset cascading filters when parent changes
+  useEffect(() => {
+    if (regionFilter && !regionOptions.includes(regionFilter)) {
+      setRegionFilter('')
+    }
+  }, [regionOptions, regionFilter])
+
+  useEffect(() => {
+    if (countyFilter && !countyOptions.includes(countyFilter)) {
+      setCountyFilter('')
+    }
+  }, [countyOptions, countyFilter])
+
+  const hasActiveFilters = search || stateFilter || regionFilter || countyFilter || specialtyFilter || availFilter
+
+  const clearAllFilters = () => {
+    setSearch('')
+    setStateFilter('')
+    setRegionFilter('')
+    setCountyFilter('')
+    setSpecialtyFilter('')
+    setAvailFilter('')
+  }
+
+  // Stats
+  const stats = useMemo(() => {
+    const fl = clinics.filter((c) => getClinicState(c) === 'Florida').length
+    const mn = clinics.filter((c) => getClinicState(c) === 'Minnesota').length
+    const avail = clinics.filter((c) => c.available).length
+    return { total: clinics.length, fl, mn, avail, unavail: clinics.length - avail }
+  }, [clinics, getClinicState])
+
   const filtered = clinics.filter((c) => {
+    if (stateFilter && getClinicState(c) !== stateFilter) return false
+    if (regionFilter && c.region !== regionFilter) return false
+    if (countyFilter && c.county !== countyFilter) return false
+    if (specialtyFilter && !c.specialties.includes(specialtyFilter)) return false
+    if (availFilter === 'available' && !c.available) return false
+    if (availFilter === 'unavailable' && c.available) return false
     if (search) {
       const q = search.toLowerCase()
       const matches =
@@ -248,8 +324,6 @@ export default function AdminClinicsPage() {
         (c.county && c.county.toLowerCase().includes(q))
       if (!matches) return false
     }
-    if (availFilter === 'available' && !c.available) return false
-    if (availFilter === 'unavailable' && c.available) return false
     return true
   })
 
@@ -274,30 +348,143 @@ export default function AdminClinicsPage() {
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search clinics..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-          />
-        </div>
-        <select
-          value={availFilter}
-          onChange={(e) => setAvailFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+      {/* Summary Stats Bar */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={clearAllFilters}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            !hasActiveFilters
+              ? 'bg-gold/10 text-gold border border-gold/30'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
+          }`}
         >
-          <option value="">All Clinics</option>
-          <option value="available">Available Only</option>
-          <option value="unavailable">Unavailable Only</option>
-        </select>
-        <span className="text-sm text-gray-500">
-          {filtered.length} clinic{filtered.length !== 1 ? 's' : ''}
-        </span>
+          Total: {stats.total}
+        </button>
+        <button
+          onClick={() => { clearAllFilters(); setStateFilter('Florida') }}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            stateFilter === 'Florida' && !regionFilter && !countyFilter && !specialtyFilter && !availFilter && !search
+              ? 'bg-blue-100 text-blue-700 border border-blue-300'
+              : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
+          }`}
+        >
+          Florida: {stats.fl}
+        </button>
+        <button
+          onClick={() => { clearAllFilters(); setStateFilter('Minnesota') }}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            stateFilter === 'Minnesota' && !regionFilter && !countyFilter && !specialtyFilter && !availFilter && !search
+              ? 'bg-blue-100 text-blue-700 border border-blue-300'
+              : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
+          }`}
+        >
+          Minnesota: {stats.mn}
+        </button>
+        <button
+          onClick={() => { clearAllFilters(); setAvailFilter('available') }}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            availFilter === 'available' && !stateFilter && !regionFilter && !countyFilter && !specialtyFilter && !search
+              ? 'bg-green-100 text-green-700 border border-green-300'
+              : 'bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600 border border-gray-200'
+          }`}
+        >
+          Available: {stats.avail}
+        </button>
+        <button
+          onClick={() => { clearAllFilters(); setAvailFilter('unavailable') }}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            availFilter === 'unavailable' && !stateFilter && !regionFilter && !countyFilter && !specialtyFilter && !search
+              ? 'bg-red-100 text-red-700 border border-red-300'
+              : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 border border-gray-200'
+          }`}
+        >
+          Unavailable: {stats.unavail}
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="space-y-3">
+        {/* Row 1: Search + Clear */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, address, region, county..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+            />
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <FilterX className="h-4 w-4" />
+              Clear Filters
+            </button>
+          )}
+          <span className="ml-auto text-sm font-medium text-gray-500">
+            {filtered.length} of {clinics.length} clinic{clinics.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* Row 2: Dropdowns */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All States</option>
+            <option value="Florida">Florida</option>
+            <option value="Minnesota">Minnesota</option>
+          </select>
+
+          <select
+            value={regionFilter}
+            onChange={(e) => setRegionFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All Regions ({regionOptions.length})</option>
+            {regionOptions.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+
+          <select
+            value={countyFilter}
+            onChange={(e) => setCountyFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All Counties ({countyOptions.length})</option>
+            {countyOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+
+          <select
+            value={specialtyFilter}
+            onChange={(e) => setSpecialtyFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All Specialties ({specialtyOptions.length})</option>
+            {specialtyOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
+          <select
+            value={availFilter}
+            onChange={(e) => setAvailFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All Availability</option>
+            <option value="available">Available Only</option>
+            <option value="unavailable">Unavailable Only</option>
+          </select>
+        </div>
       </div>
 
       {/* Clinics table */}
