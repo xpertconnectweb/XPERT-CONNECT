@@ -43,15 +43,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Failed to save contact.' }, { status: 500 })
     }
 
-    // Send internal notification (non-blocking)
-    contactFormEmail(name, email, phone, service, message)
-      .catch((err) => console.error('Contact email failed:', err))
-
-    // Send confirmation to user (delayed to respect Resend rate limit)
-    setTimeout(() => {
+    // Send both emails concurrently before responding (Vercel kills context after response)
+    await Promise.allSettled([
+      contactFormEmail(name, email, phone, service, message)
+        .catch((err) => console.error('Contact email failed:', err)),
       contactConfirmationEmail(name, email, service)
-        .catch((err) => console.error('Contact confirmation email failed:', err))
-    }, 600)
+        .catch((err) => console.error('Contact confirmation email failed:', err)),
+    ])
 
     return NextResponse.json({ ok: true })
   } catch (error) {

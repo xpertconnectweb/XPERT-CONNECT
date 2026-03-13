@@ -26,15 +26,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Failed to subscribe.' }, { status: 500 })
     }
 
-    // Send internal notification (non-blocking)
-    newsletterSubscriptionEmail(email)
-      .catch((err) => console.error('Newsletter email failed:', err))
-
-    // Send welcome email to subscriber (delayed to respect Resend rate limit)
-    setTimeout(() => {
+    // Send both emails concurrently before responding (Vercel kills context after response)
+    await Promise.allSettled([
+      newsletterSubscriptionEmail(email)
+        .catch((err) => console.error('Newsletter email failed:', err)),
       newsletterWelcomeEmail(email)
-        .catch((err) => console.error('Newsletter welcome email failed:', err))
-    }, 600)
+        .catch((err) => console.error('Newsletter welcome email failed:', err)),
+    ])
 
     return NextResponse.json({ ok: true })
   } catch (error) {
