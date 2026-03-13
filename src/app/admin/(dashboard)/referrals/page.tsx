@@ -44,7 +44,10 @@ export default function AdminReferralsPage() {
     if (statusFilter) params.set('status', statusFilter)
 
     fetch(`/api/admin/referrals?${params}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch referrals')
+        return res.json()
+      })
       .then(setReferrals)
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -63,9 +66,12 @@ export default function AdminReferralsPage() {
       })
       if (res.ok) {
         await fetchReferrals()
+      } else {
+        alert('Failed to update status. Please try again.')
       }
     } catch (error) {
       console.error('Failed to update status:', error)
+      alert('Failed to update status. Please try again.')
     }
   }
 
@@ -77,9 +83,14 @@ export default function AdminReferralsPage() {
       if (res.ok) {
         setDeleteConfirm(null)
         await fetchReferrals()
+      } else {
+        alert('Failed to delete referral. Please try again.')
+        setDeleteConfirm(null)
       }
     } catch (error) {
       console.error('Failed to delete referral:', error)
+      alert('Failed to delete referral. Please try again.')
+      setDeleteConfirm(null)
     }
   }
 

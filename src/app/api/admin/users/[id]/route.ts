@@ -67,7 +67,7 @@ export async function PATCH(
     fields.password = await bcrypt.hash(body.password, 10)
   }
 
-  if (body.firmName !== undefined) fields.firmName = sanitize(body.firmName || '')
+  if (body.firmName !== undefined) fields.firmName = sanitize(body.firmName || '') || undefined
   if (body.clinicId !== undefined) fields.clinicId = body.clinicId
 
   const updated = await updateUser(id, fields)

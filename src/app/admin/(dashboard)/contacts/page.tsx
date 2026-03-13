@@ -21,7 +21,10 @@ export default function AdminContactsPage() {
 
   const fetchContacts = useCallback(async () => {
     fetch('/api/admin/contacts')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch contacts')
+        return res.json()
+      })
       .then(setContacts)
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -36,6 +39,9 @@ export default function AdminContactsPage() {
     if (res.ok) {
       setDeleteConfirm(null)
       await fetchContacts()
+    } else {
+      alert('Failed to delete contact. Please try again.')
+      setDeleteConfirm(null)
     }
   }
 
