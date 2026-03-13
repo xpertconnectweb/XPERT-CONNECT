@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { contactFormEmail } from '@/lib/email'
+import { contactFormEmail, contactConfirmationEmail } from '@/lib/email'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -43,9 +43,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Failed to save contact.' }, { status: 500 })
     }
 
-    // Send email notification (non-blocking)
+    // Send internal notification (non-blocking)
     contactFormEmail(name, email, phone, service, message)
       .catch((err) => console.error('Contact email failed:', err))
+
+    // Send confirmation to user (delayed to respect Resend rate limit)
+    setTimeout(() => {
+      contactConfirmationEmail(name, email, service)
+        .catch((err) => console.error('Contact confirmation email failed:', err))
+    }, 600)
 
     return NextResponse.json({ ok: true })
   } catch (error) {

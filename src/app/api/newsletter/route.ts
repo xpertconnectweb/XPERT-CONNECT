@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { newsletterSubscriptionEmail } from '@/lib/email'
+import { newsletterSubscriptionEmail, newsletterWelcomeEmail } from '@/lib/email'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -26,9 +26,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Failed to subscribe.' }, { status: 500 })
     }
 
-    // Send notification (non-blocking)
+    // Send internal notification (non-blocking)
     newsletterSubscriptionEmail(email)
       .catch((err) => console.error('Newsletter email failed:', err))
+
+    // Send welcome email to subscriber (delayed to respect Resend rate limit)
+    setTimeout(() => {
+      newsletterWelcomeEmail(email)
+        .catch((err) => console.error('Newsletter welcome email failed:', err))
+    }, 600)
 
     return NextResponse.json({ ok: true })
   } catch (error) {
