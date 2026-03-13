@@ -178,10 +178,12 @@ export default function AdminClinicsPage() {
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/admin/clinics/${id}`, { method: 'DELETE' })
     if (res.ok) {
-      console.log('✓ Clinic deleted')
       setDeleteConfirm(null)
       setLoading(true)
       await fetchClinics()
+    } else {
+      alert('Failed to delete clinic. Please try again.')
+      setDeleteConfirm(null)
     }
   }
 

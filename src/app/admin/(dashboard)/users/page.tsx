@@ -54,10 +54,16 @@ export default function AdminUsersPage() {
   const [clinicSearch, setClinicSearch] = useState('')
 
   const fetchUsers = useCallback(async () => {
-    const res = await fetch('/api/admin/users')
-    const data = await res.json()
-    setUsers(data)
-    setLoading(false)
+    try {
+      const res = await fetch('/api/admin/users')
+      if (!res.ok) throw new Error('Failed to fetch users')
+      const data = await res.json()
+      setUsers(data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const fetchClinics = useCallback(async () => {
@@ -168,6 +174,14 @@ export default function AdminUsersPage() {
     if (res.ok) {
       setDeleteConfirm(null)
       await fetchUsers()
+    } else {
+      let message = 'Failed to delete user'
+      try {
+        const data = await res.json()
+        message = data.error || message
+      } catch { /* ignore */ }
+      alert(message)
+      setDeleteConfirm(null)
     }
   }
 

@@ -7,6 +7,7 @@ import {
   createReferral,
   getClinicById,
   getUsersByClinicId,
+  getUserById,
 } from '@/lib/data'
 import { referralCreatedEmail, internalNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
@@ -69,27 +70,45 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Clinic not found' }, { status: 404 })
   }
 
+  // Verify the lawyer still exists in DB (JWT may outlive deleted user)
+  const lawyer = await getUserById(session.user.id)
+  if (!lawyer) {
+    return NextResponse.json(
+      { error: 'Your account was not found. Please log out and log in again.' },
+      { status: 403 }
+    )
+  }
+
   const now = new Date().toISOString()
   const lawyerName = session.user.name || 'Unknown'
   const lawyerFirm = session.user.firmName || ''
 
-  const referral = await createReferral({
-    id: `ref-${uuidv4()}`,
-    lawyerId: session.user.id,
-    lawyerName,
-    lawyerFirm,
-    clinicId: clinic.id,
-    clinicName: clinic.name,
-    patientName: cleanName,
-    patientPhone: cleanPhone,
-    caseType: cleanCase,
-    coverage: cleanCoverage,
-    pip: cleanPip,
-    notes: cleanNotes,
-    status: 'received',
-    createdAt: now,
-    updatedAt: now,
-  })
+  let referral
+  try {
+    referral = await createReferral({
+      id: `ref-${uuidv4()}`,
+      lawyerId: session.user.id,
+      lawyerName,
+      lawyerFirm,
+      clinicId: clinic.id,
+      clinicName: clinic.name,
+      patientName: cleanName,
+      patientPhone: cleanPhone,
+      caseType: cleanCase,
+      coverage: cleanCoverage,
+      pip: cleanPip,
+      notes: cleanNotes,
+      status: 'received',
+      createdAt: now,
+      updatedAt: now,
+    })
+  } catch (err) {
+    console.error('POST /referrals createReferral failed:', err)
+    return NextResponse.json(
+      { error: 'Failed to create referral. Please try again.' },
+      { status: 500 }
+    )
+  }
 
   // Collect all clinic emails: clinic entity email + clinic user emails
   const emailSet = new Set<string>()

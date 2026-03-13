@@ -16,7 +16,10 @@ export default function AdminNewsletterPage() {
 
   const fetchSubscribers = useCallback(async () => {
     fetch('/api/admin/newsletter')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch subscribers')
+        return res.json()
+      })
       .then(setSubscribers)
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -31,6 +34,9 @@ export default function AdminNewsletterPage() {
     if (res.ok) {
       setDeleteConfirm(null)
       await fetchSubscribers()
+    } else {
+      alert('Failed to delete subscriber. Please try again.')
+      setDeleteConfirm(null)
     }
   }
 

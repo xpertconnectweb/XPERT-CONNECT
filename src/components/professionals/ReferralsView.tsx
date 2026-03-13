@@ -12,6 +12,7 @@ export function ReferralsView() {
   const [referrals, setReferrals] = useState<Referral[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [updateError, setUpdateError] = useState('')
 
   const fetchReferrals = useCallback(async () => {
     setError(false)
@@ -33,6 +34,7 @@ export function ReferralsView() {
 
   // Optimistic status update
   const handleStatusChange = async (id: string, status: ReferralStatus) => {
+    setUpdateError('')
     // Optimistically update the UI
     setReferrals((prev) =>
       prev.map((r) =>
@@ -48,6 +50,7 @@ export function ReferralsView() {
       })
       if (!res.ok) throw new Error('Update failed')
     } catch {
+      setUpdateError('Failed to update status. Please try again.')
       // Revert on failure
       await fetchReferrals()
     }
@@ -101,6 +104,12 @@ export function ReferralsView() {
             : `${referrals.length} referral${referrals.length !== 1 ? 's' : ''} received`}
         </p>
       </div>
+
+      {updateError && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {updateError}
+        </div>
+      )}
 
       {/* Stats Cards */}
       {referrals.length > 0 && (

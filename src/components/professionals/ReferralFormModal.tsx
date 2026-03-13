@@ -76,8 +76,14 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to create referral')
+        let message = 'Failed to create referral'
+        try {
+          const data = await res.json()
+          message = data.error || message
+        } catch {
+          // Server returned non-JSON response
+        }
+        throw new Error(message)
       }
 
       setSuccess(true)

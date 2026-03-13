@@ -41,7 +41,10 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetch('/api/admin/stats')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch stats')
+        return res.json()
+      })
       .then(setStats)
       .catch(console.error)
       .finally(() => setLoading(false))
