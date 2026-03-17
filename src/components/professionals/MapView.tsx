@@ -398,10 +398,10 @@ export function MapView() {
       </div>
 
       {/* ═══ CLINIC PANEL ═══ */}
-      {showPanel && <div className="absolute inset-0 z-[498] bg-black/20 lg:hidden" onClick={() => setShowPanel(false)} />}
-      <div className={`absolute top-0 right-0 bottom-0 z-[499] w-80 sm:w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col transition-transform duration-300 ease-out ${showPanel ? 'translate-x-0' : 'translate-x-full'}`}
+      {showPanel && <div className="absolute inset-0 z-[600] bg-black/20 lg:hidden" onClick={() => setShowPanel(false)} />}
+      <div className={`absolute top-0 right-0 bottom-0 z-[601] w-full sm:w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col transition-transform duration-300 ease-out ${showPanel ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ willChange: 'transform' }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <div>
             <h2 className="font-heading text-sm font-bold text-navy">Nearest Clinics</h2>
             <p className="text-[11px] text-gray-400 mt-0.5">{panelClinics.length} results</p>
@@ -410,7 +410,7 @@ export function MapView() {
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {panelClinics.length === 0 ? (
             <div className="p-10 text-center">
               <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
