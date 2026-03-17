@@ -789,7 +789,7 @@ export default function AdminClinicsPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-2">
-                    Cuando se crea un referral, se envían emails a:
+                    When a referral is created, notification emails are sent to:
                   </p>
                 </div>
 
@@ -797,10 +797,10 @@ export default function AdminClinicsPage() {
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                     <div className="text-xs font-medium text-blue-700 mb-1">Clinic Entity Email</div>
                     <div className="text-sm text-blue-900 font-mono">
-                      {selectedClinicEmails.clinicEmail || <span className="text-gray-400 italic">No configurado</span>}
+                      {selectedClinicEmails.clinicEmail || <span className="text-gray-400 italic">Not configured</span>}
                     </div>
                     <div className="text-xs text-blue-600 mt-1">
-                      Se cambia en "Edit" de la clínica
+                      Change it via the clinic &quot;Edit&quot; button
                     </div>
                   </div>
 
@@ -816,12 +816,12 @@ export default function AdminClinicsPage() {
                           </div>
                         ))}
                         <div className="text-xs text-green-600 mt-2">
-                          Se cambian en la página "Users"
+                          Manage them on the &quot;Users&quot; page
                         </div>
                       </div>
                     ) : (
                       <div className="text-sm text-gray-400 italic">
-                        No hay usuarios vinculados
+                        No linked users
                       </div>
                     )}
                   </div>
@@ -831,7 +831,7 @@ export default function AdminClinicsPage() {
                   <div className="flex items-start gap-2">
                     <Mail className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <div className="text-xs text-amber-700">
-                      <strong>Total emails que recibirán notificaciones:</strong>
+                      <strong>Total emails that will receive notifications:</strong>
                       <div className="mt-1 font-medium">
                         {[selectedClinicEmails.clinicEmail, ...selectedClinicEmails.userEmails].filter(Boolean).length} email(s)
                       </div>
@@ -846,7 +846,7 @@ export default function AdminClinicsPage() {
                 onClick={() => setShowEmailsModal(false)}
                 className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
               >
-                Cerrar
+                Close
               </button>
             </div>
           </div>

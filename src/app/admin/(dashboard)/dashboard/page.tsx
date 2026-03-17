@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Users, Scale, Building2, FileText, MessageSquare, Mail, Clock, CheckCircle2, Loader2 } from 'lucide-react'
+import { Users, Scale, Building2, FileText, MessageSquare, Mail, Inbox, Clock, CheckCircle2, Loader2 } from 'lucide-react'
 
 interface Stats {
   totalUsers: number
@@ -24,15 +24,23 @@ interface Stats {
 }
 
 const statusColors: Record<string, string> = {
-  received: 'bg-blue-100 text-blue-700',
-  in_process: 'bg-yellow-100 text-yellow-700',
-  attended: 'bg-green-100 text-green-700',
+  received: 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/10',
+  in_process: 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/10',
+  attended: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10',
 }
 
 const statusLabels: Record<string, string> = {
   received: 'Received',
   in_process: 'In Process',
   attended: 'Attended',
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export default function AdminDashboardPage() {
@@ -53,37 +61,39 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+        <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-navy/10 border-t-gold" />
       </div>
     )
   }
 
-  if (!stats) return <p className="text-gray-500">Failed to load stats.</p>
+  if (!stats) return (
+    <div className="flex items-center justify-center py-20">
+      <p className="text-sm text-gray-400">Failed to load stats.</p>
+    </div>
+  )
 
   const cards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'bg-navy' },
-    { label: 'Lawyers', value: stats.lawyers, icon: Scale, color: 'bg-blue-600' },
-    { label: 'Clinics', value: stats.clinics, icon: Building2, color: 'bg-emerald-600' },
-    { label: 'Total Referrals', value: stats.totalReferrals, icon: FileText, color: 'bg-gold' },
-    { label: 'Contacts', value: stats.totalContacts, icon: MessageSquare, color: 'bg-purple-600' },
-    { label: 'Newsletter', value: stats.totalSubscribers, icon: Mail, color: 'bg-pink-600' },
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, gradient: 'from-[#1a2a4a] to-[#2a3f6a]', accent: 'bg-navy' },
+    { label: 'Lawyers', value: stats.lawyers, icon: Scale, gradient: 'from-blue-500 to-blue-600', accent: 'bg-blue-500' },
+    { label: 'Clinics', value: stats.clinics, icon: Building2, gradient: 'from-emerald-500 to-emerald-600', accent: 'bg-emerald-500' },
+    { label: 'Total Referrals', value: stats.totalReferrals, icon: FileText, gradient: 'from-[#d4a84b] to-[#c49a3f]', accent: 'bg-gold' },
+    { label: 'Contacts', value: stats.totalContacts, icon: MessageSquare, gradient: 'from-purple-500 to-purple-600', accent: 'bg-purple-500' },
+    { label: 'Newsletter', value: stats.totalSubscribers, icon: Mail, gradient: 'from-pink-500 to-pink-600', accent: 'bg-pink-500' },
   ]
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-bold text-gray-900">Dashboard</h1>
-
+    <div className="space-y-8">
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
-          <div key={card.label} className="rounded-xl bg-white p-5 shadow-sm border border-gray-100">
+          <div key={card.label} className="group rounded-2xl bg-white p-5 shadow-sm border border-gray-200/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center gap-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-lg text-white ${card.color}`}>
-                <card.icon className="h-6 w-6" />
+              <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} text-white shadow-sm`}>
+                <card.icon className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">{card.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                <p className="text-xs text-gray-400 font-medium">{card.label}</p>
+                <p className="text-3xl font-bold text-gray-900 tabular-nums">{card.value}</p>
               </div>
             </div>
           </div>
@@ -91,63 +101,83 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Referral status breakdown */}
-      <div className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
-        <h2 className="font-heading text-lg font-semibold text-gray-900 mb-4">Referral Status Breakdown</h2>
+      <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-200/80">
+        <h2 className="font-heading text-base font-bold text-navy mb-5">Referral Status</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="flex items-center gap-3 rounded-lg bg-blue-50 p-4">
-            <Clock className="h-5 w-5 text-blue-600" />
-            <div>
-              <p className="text-sm text-blue-600">Received</p>
-              <p className="text-xl font-bold text-blue-700">{stats.received}</p>
+          <div className="relative rounded-xl border border-gray-200/80 p-5 overflow-hidden hover:shadow-sm transition-shadow">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-blue-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
+                <Inbox className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{stats.received}</p>
+                <p className="text-xs text-gray-400 font-medium">Received</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-lg bg-yellow-50 p-4">
-            <Loader2 className="h-5 w-5 text-yellow-600" />
-            <div>
-              <p className="text-sm text-yellow-600">In Process</p>
-              <p className="text-xl font-bold text-yellow-700">{stats.inProcess}</p>
+          <div className="relative rounded-xl border border-gray-200/80 p-5 overflow-hidden hover:shadow-sm transition-shadow">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-amber-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }}>
+                <Clock className="h-5 w-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{stats.inProcess}</p>
+                <p className="text-xs text-gray-400 font-medium">In Process</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-lg bg-green-50 p-4">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-sm text-green-600">Attended</p>
-              <p className="text-xl font-bold text-green-700">{stats.attended}</p>
+          <div className="relative rounded-xl border border-gray-200/80 p-5 overflow-hidden hover:shadow-sm transition-shadow">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-emerald-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' }}>
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{stats.attended}</p>
+                <p className="text-xs text-gray-400 font-medium">Attended</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent referrals */}
-      <div className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
-        <h2 className="font-heading text-lg font-semibold text-gray-900 mb-4">Recent Referrals</h2>
+      <div className="rounded-2xl bg-white shadow-sm border border-gray-200/80 overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100">
+          <h2 className="font-heading text-base font-bold text-navy">Recent Referrals</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Latest 5 referrals across all clinics</p>
+        </div>
         {stats.recentReferrals.length === 0 ? (
-          <p className="text-sm text-gray-500">No referrals yet.</p>
+          <div className="px-6 py-10 text-center">
+            <p className="text-sm text-gray-400">No referrals yet.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-left text-gray-500">
-                  <th className="pb-3 pr-4 font-medium">Patient</th>
-                  <th className="pb-3 pr-4 font-medium">Lawyer</th>
-                  <th className="pb-3 pr-4 font-medium">Clinic</th>
-                  <th className="pb-3 pr-4 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Date</th>
+                <tr style={{ background: 'linear-gradient(to bottom, #fafbfc, #f5f6f8)' }}>
+                  <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Patient</th>
+                  <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Lawyer</th>
+                  <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Clinic</th>
+                  <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Status</th>
+                  <th className="px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100/80">
                 {stats.recentReferrals.map((ref) => (
-                  <tr key={ref.id}>
-                    <td className="py-3 pr-4 text-gray-900">{ref.patientName}</td>
-                    <td className="py-3 pr-4 text-gray-600">{ref.lawyerName}</td>
-                    <td className="py-3 pr-4 text-gray-600">{ref.clinicName}</td>
-                    <td className="py-3 pr-4">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[ref.status] || 'bg-gray-100 text-gray-600'}`}>
+                  <tr key={ref.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-gray-900">{ref.patientName}</td>
+                    <td className="px-6 py-4 text-gray-600">{ref.lawyerName}</td>
+                    <td className="px-6 py-4 text-gray-600">{ref.clinicName}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusColors[ref.status] || 'bg-gray-100 text-gray-600'}`}>
                         {statusLabels[ref.status] || ref.status}
                       </span>
                     </td>
-                    <td className="py-3 text-gray-500">
-                      {new Date(ref.createdAt).toLocaleDateString()}
+                    <td className="px-6 py-4 text-gray-400 text-xs">
+                      {formatDate(ref.createdAt)}
                     </td>
                   </tr>
                 ))}

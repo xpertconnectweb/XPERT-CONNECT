@@ -1,7 +1,35 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { Menu, LogOut, User } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, LogOut } from 'lucide-react'
+
+const PAGE_TITLES: Record<string, string> = {
+  '/admin/dashboard': 'Dashboard',
+  '/admin/users': 'Users',
+  '/admin/clinics': 'Clinics',
+  '/admin/referrals': 'Referrals',
+  '/admin/contacts': 'Contacts',
+  '/admin/newsletter': 'Newsletter',
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
+function getInitials(name?: string | null): string {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
 
 interface AdminTopBarProps {
   onMenuToggle: () => void
@@ -9,40 +37,53 @@ interface AdminTopBarProps {
 
 export function AdminTopBar({ onMenuToggle }: AdminTopBarProps) {
   const { data: session } = useSession()
+  const pathname = usePathname()
+
+  const pageTitle = PAGE_TITLES[pathname] || ''
+  const firstName = session?.user?.name?.split(' ')[0] || ''
+  const initials = getInitials(session?.user?.name)
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
-      {/* Mobile menu toggle */}
-      <button
-        onClick={onMenuToggle}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 lg:hidden transition-colors"
-        aria-label="Toggle sidebar"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-white px-4 lg:px-6" style={{ borderBottom: '1px solid transparent', borderImage: 'linear-gradient(to right, #e5e7eb, #d4a84b20, #e5e7eb) 1' }}>
+      {/* Left side */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={onMenuToggle}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden transition-colors"
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
 
-      {/* Spacer for desktop */}
-      <div className="hidden lg:block" />
+        <div className="hidden lg:block">
+          {pageTitle && (
+            <h1 className="font-heading text-lg font-bold text-navy leading-tight">{pageTitle}</h1>
+          )}
+          <p className="text-xs text-gray-400">
+            {getGreeting()}, {firstName}
+          </p>
+        </div>
+      </div>
 
-      {/* User info & logout */}
+      {/* Right side */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-navy text-white">
-            <User className="h-4 w-4" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #1a2a4a, #2a3f6a)' }}>
+            {initials}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-gray-900 leading-tight">{session?.user?.name}</p>
-            <p className="text-xs text-gray-500">Administrator</p>
+            <p className="text-sm font-semibold text-gray-900 leading-tight">{session?.user?.name}</p>
+            <p className="text-[11px] text-gray-400">Administrator</p>
           </div>
         </div>
-        <div className="h-6 w-px bg-gray-200 hidden sm:block" />
+        <div className="h-6 w-px bg-gray-100 hidden sm:block" />
         <button
           onClick={() => signOut({ callbackUrl: '/professionals/login' })}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-gray-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500"
           aria-label="Sign out"
         >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Sign Out</span>
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline font-medium">Sign Out</span>
         </button>
       </div>
     </header>
