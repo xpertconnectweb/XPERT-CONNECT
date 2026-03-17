@@ -2,7 +2,7 @@
 
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet'
 import L from 'leaflet'
 import { useSession } from 'next-auth/react'
 import {
@@ -152,34 +152,39 @@ export function MapView() {
   const isLawyer = session?.user?.role === 'lawyer'
 
   if (loading) return (
-    <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-gray-50" role="status">
+    <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f8f9fb]" role="status">
       <div className="text-center">
-        <div className="h-10 w-10 mx-auto animate-spin rounded-full border-4 border-navy/20 border-t-gold" />
-        <p className="mt-3 text-sm text-gray-500">Loading clinics...</p>
+        <div className="h-8 w-8 mx-auto animate-spin rounded-full border-[3px] border-navy/10 border-t-gold" />
+        <p className="mt-4 text-xs text-gray-400 tracking-wide">Loading clinics...</p>
       </div>
     </div>
   )
 
   if (error) return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center bg-gray-50">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50"><AlertTriangle className="h-6 w-6 text-red-500" /></div>
-      <div><p className="font-medium text-gray-900">Failed to load clinics</p><p className="text-sm text-gray-500 mt-1">Please check your connection and try again.</p></div>
-      <button onClick={fetchClinics} className="inline-flex items-center gap-2 rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-navy-light transition-colors"><RefreshCw className="h-4 w-4" /> Retry</button>
+    <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center bg-[#f8f9fb]">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50"><AlertTriangle className="h-6 w-6 text-red-400" /></div>
+      <div><p className="font-semibold text-gray-900">Failed to load clinics</p><p className="text-sm text-gray-400 mt-1">Please check your connection and try again.</p></div>
+      <button onClick={fetchClinics} className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-sm font-medium text-white hover:bg-navy-light transition-colors"><RefreshCw className="h-4 w-4" /> Retry</button>
     </div>
   )
 
   return (
-    <div className="relative h-[calc(100vh-4rem)] bg-gray-100">
+    <div className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-xl overflow-hidden shadow-sm">
       {/* ═══ MAP ═══ */}
       <MapContainer
         center={mapCenter}
         zoom={US_DEFAULT_ZOOM}
         className="h-full w-full"
         scrollWheelZoom={true}
+        zoomControl={false}
         ref={mapRef}
         whenReady={() => { mapRef.current?.on('moveend', handleMapMoveEnd) }}
       >
-        <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <ZoomControl position="bottomleft" />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
         {filteredClinics.map((clinic) => (
           <Marker key={clinic.id} position={[clinic.lat, clinic.lng]} icon={clinic.available ? availableIcon : unavailableIcon}>
             <Popup>
@@ -219,14 +224,14 @@ export function MapView() {
 
       {/* ═══ FLOATING SEARCH (top-left) ═══ */}
       <div className="absolute top-3 left-3 z-[500] w-[calc(100%-6.5rem)] max-w-md" style={{ pointerEvents: 'none' }}>
-        <div className="flex flex-col gap-1.5" style={{ pointerEvents: 'auto' }}>
+        <div className="flex flex-col gap-2" style={{ pointerEvents: 'auto' }}>
           {/* Location search */}
           <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
             {locationLabel ? (
-              <div className="flex items-center w-full rounded-lg bg-white py-2 pl-10 pr-9 text-sm text-navy shadow-lg border border-gray-100">
+              <div className="flex items-center w-full rounded-xl bg-white py-2.5 pl-10 pr-9 text-sm text-navy shadow-lg shadow-black/[0.08] border border-gray-200/60">
                 <span className="truncate font-medium">{locationLabel}</span>
-                <button onClick={handleClearLocation} className="absolute right-2.5 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600" aria-label="Clear location"><X className="h-3.5 w-3.5" /></button>
+                <button onClick={handleClearLocation} className="absolute right-2.5 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Clear location"><X className="h-3.5 w-3.5" /></button>
               </div>
             ) : (
               <>
@@ -234,13 +239,13 @@ export function MapView() {
                   onChange={(e) => { setLocationQuery(e.target.value); if (e.target.value.length >= 3) setShowSuggestions(true) }}
                   onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
                   placeholder="Search location (city, ZIP)..."
-                  className="w-full rounded-lg bg-white py-2 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/30 shadow-lg border border-gray-100" />
+                  className="w-full rounded-xl bg-white py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/20 shadow-lg shadow-black/[0.08] border border-gray-200/60" />
                 {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />}
                 {showSuggestions && suggestions.length > 0 && (
-                  <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-1 rounded-lg bg-white shadow-xl border border-gray-100 overflow-hidden">
+                  <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-1.5 rounded-xl bg-white shadow-xl shadow-black/[0.1] border border-gray-200/60 overflow-hidden">
                     {suggestions.map((s, i) => (
-                      <button key={i} onClick={() => handleSelectSuggestion(s)} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
-                        <span className="text-gray-800">{s.display_name.split(',').slice(0, 3).join(',')}</span>
+                      <button key={i} onClick={() => handleSelectSuggestion(s)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50/80 transition-colors border-b border-gray-100/50 last:border-0">
+                        <span className="text-gray-700">{s.display_name.split(',').slice(0, 3).join(',')}</span>
                       </button>
                     ))}
                   </div>
@@ -250,41 +255,41 @@ export function MapView() {
           </div>
 
           {/* Filter + available toggle */}
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 z-10" />
               <input ref={filterInputRef} type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)}
                 placeholder="Filter clinics..."
-                className="w-full rounded-lg bg-white py-1.5 pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/30 shadow-lg border border-gray-100" />
+                className="w-full rounded-xl bg-white py-2 pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/20 shadow-lg shadow-black/[0.08] border border-gray-200/60" />
               {filterText && (
-                <button onClick={handleClearFilter} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Clear filter"><X className="h-3 w-3" /></button>
+                <button onClick={handleClearFilter} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Clear filter"><X className="h-3 w-3" /></button>
               )}
             </div>
             <button
               onClick={() => setShowAvailableOnly(!showAvailableOnly)}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-lg border transition-colors whitespace-nowrap ${showAvailableOnly ? 'bg-green-50 text-green-700 border-green-200' : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium shadow-lg shadow-black/[0.08] border transition-all duration-200 whitespace-nowrap ${showAvailableOnly ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-gray-500 border-gray-200/60 hover:bg-gray-50'}`}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${showAvailableOnly ? 'bg-green-500' : 'bg-gray-300'}`} />
+              <span className={`h-2 w-2 rounded-full transition-colors ${showAvailableOnly ? 'bg-emerald-500' : 'bg-gray-300'}`} />
               Available
             </button>
           </div>
 
           {/* Clinic count badge */}
-          <span className="self-start inline-flex items-center rounded-full bg-navy/85 px-2.5 py-0.5 text-[11px] font-medium text-white shadow-lg">
+          <span className="self-start inline-flex items-center rounded-full bg-navy/90 px-3 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/[0.08]">
             {filteredClinics.length} clinic{filteredClinics.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
       {/* ═══ FLOATING BUTTONS (top-right) ═══ */}
-      <div className="absolute top-3 right-3 z-[500] flex flex-col gap-1.5">
+      <div className="absolute top-3 right-3 z-[500] flex flex-col gap-2">
         <button onClick={handleGeolocate} disabled={locating}
-          className="flex items-center justify-center h-9 w-9 rounded-lg bg-white border border-gray-100 shadow-lg text-gray-600 hover:text-navy hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          className="flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-gray-200/60 shadow-lg shadow-black/[0.08] text-gray-500 hover:text-navy hover:bg-gray-50 disabled:opacity-50 transition-colors"
           title="Use my location">
           {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Locate className="h-4 w-4" />}
         </button>
         <button onClick={() => setShowPanel(!showPanel)}
-          className={`flex items-center justify-center h-9 w-9 rounded-lg border shadow-lg transition-colors ${showPanel ? 'bg-navy text-white border-navy' : 'bg-white text-gray-600 border-gray-100 hover:text-navy hover:bg-gray-50'}`}
+          className={`flex items-center justify-center h-10 w-10 rounded-xl border shadow-lg shadow-black/[0.08] transition-all duration-200 ${showPanel ? 'bg-navy text-white border-navy' : 'bg-white text-gray-500 border-gray-200/60 hover:text-navy hover:bg-gray-50'}`}
           title="Clinic list">
           <List className="h-4 w-4" />
         </button>
@@ -294,30 +299,36 @@ export function MapView() {
       {showPanel && <div className="absolute inset-0 z-[498] bg-black/20 lg:hidden" onClick={() => setShowPanel(false)} />}
       <div className={`absolute top-0 right-0 bottom-0 z-[499] w-80 sm:w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col transition-transform duration-300 ease-out ${showPanel ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ willChange: 'transform' }}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/80">
-          <h2 className="font-heading text-sm font-bold text-navy">Nearest Clinics</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">{filteredClinics.length} results</span>
-            <button onClick={() => setShowPanel(false)} className="h-7 w-7 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 transition-colors" aria-label="Close panel">
-              <ChevronRight className="h-4 w-4" />
-            </button>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
+          <div>
+            <h2 className="font-heading text-sm font-bold text-navy">Nearest Clinics</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">{filteredClinics.length} results</p>
           </div>
+          <button onClick={() => setShowPanel(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Close panel">
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto">
           {filteredClinics.length === 0 ? (
-            <div className="p-8 text-center"><MapPin className="h-8 w-8 text-gray-200 mx-auto mb-2" /><p className="text-sm text-gray-400">No clinics found.</p></div>
-          ) : filteredClinics.map((clinic, idx) => (
+            <div className="p-10 text-center">
+              <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
+                <MapPin className="h-5 w-5 text-gray-300" />
+              </div>
+              <p className="text-sm font-medium text-gray-400">No clinics found</p>
+              <p className="text-xs text-gray-300 mt-1">Try adjusting your filters</p>
+            </div>
+          ) : filteredClinics.map((clinic) => (
             <button key={clinic.id} onClick={() => handleFocusClinic(clinic)}
-              className={`w-full text-left px-4 py-3 hover:bg-blue-50/50 transition-colors focus:outline-none focus:bg-blue-50/50 ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
+              className="group w-full text-left px-5 py-3.5 border-b border-gray-100/60 hover:bg-gray-50/80 transition-all duration-150 focus:outline-none focus:bg-gray-50/80">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-medium text-sm text-gray-900 leading-tight">{clinic.name}</h3>
+                <h3 className="font-medium text-sm text-gray-900 leading-tight group-hover:text-navy transition-colors">{clinic.name}</h3>
                 <span className="text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0 tabular-nums">{clinic.distance.toFixed(1)} mi</span>
               </div>
               <p className="text-xs text-gray-500 mt-0.5 leading-snug">{clinic.address}</p>
               {clinic.county && <p className="text-[10px] text-gray-400 mt-0.5">{clinic.county}</p>}
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${clinic.available ? 'text-green-600' : 'text-gray-400'}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${clinic.available ? 'bg-green-500' : 'bg-gray-300'}`} />
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${clinic.available ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${clinic.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
                   {clinic.available ? 'Available' : 'Unavailable'}
                 </span>
                 <span className="text-gray-200 text-[10px]">|</span>
