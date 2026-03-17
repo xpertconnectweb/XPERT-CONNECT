@@ -21,7 +21,9 @@ export interface NewsletterSubscriber {
 
 // Users
 export async function getUsers(): Promise<User[]> {
-  const { data, error } = await supabaseAdmin.from('users').select('*')
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('id, username, password, name, role, clinic_id, firm_name, email')
   if (error) {
     console.error('getUsers error:', error)
     return []
@@ -34,7 +36,7 @@ export async function getUserByUsername(
 ): Promise<User | undefined> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select('id, username, password, name, role, clinic_id, firm_name, email')
     .eq('username', username)
     .single()
   if (error || !data) return undefined
@@ -43,7 +45,9 @@ export async function getUserByUsername(
 
 // Clinics
 export async function getClinics(): Promise<Clinic[]> {
-  const { data, error } = await supabaseAdmin.from('clinics').select('*')
+  const { data, error } = await supabaseAdmin
+    .from('clinics')
+    .select('id, name, address, lat, lng, phone, specialties, email, website, region, county, available')
   if (error) {
     console.error('getClinics error:', error)
     return []
@@ -56,7 +60,7 @@ export async function getClinicById(
 ): Promise<Clinic | undefined> {
   const { data, error } = await supabaseAdmin
     .from('clinics')
-    .select('*')
+    .select('id, name, address, lat, lng, phone, specialties, email, website, region, county, available')
     .eq('id', id)
     .single()
   if (error || !data) return undefined
@@ -67,7 +71,7 @@ export async function getClinicById(
 export async function getReferrals(): Promise<Referral[]> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('*')
+    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
     .order('created_at', { ascending: false })
   if (error) {
     console.error('getReferrals error:', error)
@@ -81,7 +85,7 @@ export async function getReferralsByLawyer(
 ): Promise<Referral[]> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('*')
+    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
     .eq('lawyer_id', lawyerId)
     .order('created_at', { ascending: false })
   if (error) {
@@ -96,7 +100,7 @@ export async function getReferralsByClinic(
 ): Promise<Referral[]> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('*')
+    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
     .eq('clinic_id', clinicId)
     .order('created_at', { ascending: false })
   if (error) {
@@ -111,7 +115,7 @@ export async function getReferralById(
 ): Promise<Referral | undefined> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('*')
+    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
     .eq('id', id)
     .single()
   if (error || !data) return undefined
@@ -153,7 +157,7 @@ export async function updateReferralStatus(
 export async function getUsersByClinicId(clinicId: string): Promise<User[]> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select('id, username, password, name, role, clinic_id, firm_name, email')
     .eq('clinic_id', clinicId)
     .eq('role', 'clinic')
   if (error || !data) return []
@@ -164,7 +168,7 @@ export async function getUsersByClinicId(clinicId: string): Promise<User[]> {
 export async function getUserById(id: string): Promise<User | undefined> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select('id, username, password, name, role, clinic_id, firm_name, email')
     .eq('id', id)
     .single()
   if (error || !data) return undefined
@@ -216,7 +220,7 @@ export async function deleteUser(id: string): Promise<boolean> {
 export async function getContacts(): Promise<Contact[]> {
   const { data, error } = await supabaseAdmin
     .from('contacts')
-    .select('*')
+    .select('id, name, email, phone, service, message, created_at')
     .order('created_at', { ascending: false })
   if (error) {
     console.error('getContacts error:', error)
@@ -229,7 +233,7 @@ export async function getContacts(): Promise<Contact[]> {
 export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
   const { data, error } = await supabaseAdmin
     .from('newsletter_subscribers')
-    .select('*')
+    .select('id, email, subscribed_at')
     .order('subscribed_at', { ascending: false })
   if (error) {
     console.error('getNewsletterSubscribers error:', error)

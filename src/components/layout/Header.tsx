@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Phone, Menu, X, UserCircle } from 'lucide-react'
@@ -17,12 +17,19 @@ const navLinks = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const ticking = useRef(false)
+
+  const handleScroll = useCallback(() => {
+    if (!ticking.current) {
+      requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 50)
+        ticking.current = false
+      })
+      ticking.current = true
+    }
+  }, [])
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isMobileMenuOpen) {
         setIsMobileMenuOpen(false)
@@ -32,13 +39,13 @@ export function Header() {
     // Check initial scroll position on mount
     handleScroll()
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('keydown', handleKeyDown)
     return () => {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen, handleScroll])
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
 

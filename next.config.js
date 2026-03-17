@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+
+const isDev = process.env.NODE_ENV === 'development'
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -25,11 +28,14 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              // unsafe-eval only in dev (Next.js HMR requires it)
+              isDev
+                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+                : "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' https://images.unsplash.com https://cdn.sanity.io https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
-              "connect-src 'self' https://*.supabase.co https://cdn.sanity.io https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org",
+              "img-src 'self' https://images.unsplash.com https://cdn.sanity.io https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://unpkg.com data: blob:",
+              "connect-src 'self' https://*.supabase.co https://cdn.sanity.io https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org",
             ].join('; '),
           },
         ],
