@@ -1,8 +1,8 @@
 'use client'
 
 import 'leaflet/dist/leaflet.css'
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet'
+import { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { useSession } from 'next-auth/react'
 import {
@@ -48,6 +48,122 @@ function useDebounce<T>(value: T, delay: number): T {
 
 interface ClinicWithDistance extends Clinic { distance: number }
 
+/* ── Only render markers visible in current viewport ── */
+function ViewportMarkers({
+  clinics,
+  isLawyer,
+  onReferral,
+}: {
+  clinics: ClinicWithDistance[]
+  isLawyer: boolean
+  onReferral: (c: Clinic) => void
+}) {
+  const map = useMap()
+  const [visibleClinics, setVisibleClinics] = useState<ClinicWithDistance[]>([])
+
+  const updateVisible = useCallback(() => {
+    const bounds = map.getBounds()
+    // Pad bounds slightly so markers at edge don't pop in/out
+    const padded = bounds.pad(0.1)
+    setVisibleClinics(clinics.filter((c) => padded.contains([c.lat, c.lng])))
+  }, [map, clinics])
+
+  useEffect(() => {
+    updateVisible()
+    map.on('moveend', updateVisible)
+    map.on('zoomend', updateVisible)
+    return () => {
+      map.off('moveend', updateVisible)
+      map.off('zoomend', updateVisible)
+    }
+  }, [map, updateVisible])
+
+  return (
+    <>
+      {visibleClinics.map((clinic) => (
+        <ClinicMarker key={clinic.id} clinic={clinic} isLawyer={isLawyer} onReferral={onReferral} />
+      ))}
+    </>
+  )
+}
+
+/* ── Memoized single marker ── */
+const ClinicMarker = memo(function ClinicMarker({
+  clinic,
+  isLawyer,
+  onReferral,
+}: {
+  clinic: ClinicWithDistance
+  isLawyer: boolean
+  onReferral: (c: Clinic) => void
+}) {
+  return (
+    <Marker position={[clinic.lat, clinic.lng]} icon={clinic.available ? availableIcon : unavailableIcon}>
+      <Popup>
+        <div className="min-w-[240px] max-w-[300px]">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h3 className="font-bold text-[#1a2a4a] text-[15px] leading-tight">{clinic.name}</h3>
+            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, whiteSpace: 'nowrap', background: clinic.available ? '#ecfdf5' : '#f3f4f6', color: clinic.available ? '#15803d' : '#9ca3af' }}>
+              {clinic.available ? 'Available' : 'Unavailable'}
+            </span>
+          </div>
+          <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 2px' }}>{clinic.address}</p>
+          <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 2px' }}>{clinic.phone}</p>
+          {clinic.website && (
+            <a href={clinic.website.startsWith('http') ? clinic.website : `https://${clinic.website}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#20b2aa', display: 'block', margin: '0 0 2px' }}>
+              Visit Website
+            </a>
+          )}
+          <p style={{ fontSize: 11, color: '#9ca3af', margin: '4px 0 8px' }}>{clinic.distance.toFixed(1)} miles away</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
+            {clinic.specialties.map((s) => (
+              <span key={s} style={{ fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 99, background: 'rgba(26,42,74,0.08)', color: '#1a2a4a' }}>{s}</span>
+            ))}
+          </div>
+          {isLawyer && clinic.available && (
+            <button onClick={() => onReferral(clinic)} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', background: '#d4a84b', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              Send Referral
+            </button>
+          )}
+          {isLawyer && !clinic.available && (
+            <p style={{ fontSize: 11, textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>Not accepting referrals</p>
+          )}
+        </div>
+      </Popup>
+    </Marker>
+  )
+})
+
+/* ── Memoized panel row ── */
+const PanelRow = memo(function PanelRow({
+  clinic,
+  onFocus,
+}: {
+  clinic: ClinicWithDistance
+  onFocus: (c: ClinicWithDistance) => void
+}) {
+  return (
+    <button onClick={() => onFocus(clinic)}
+      className="group w-full text-left px-5 py-3.5 border-b border-gray-100/60 hover:bg-gray-50/80 transition-colors focus:outline-none focus:bg-gray-50/80">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-medium text-sm text-gray-900 leading-tight group-hover:text-navy transition-colors">{clinic.name}</h3>
+        <span className="text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0 tabular-nums">{clinic.distance.toFixed(1)} mi</span>
+      </div>
+      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{clinic.address}</p>
+      {clinic.county && <p className="text-[10px] text-gray-400 mt-0.5">{clinic.county}</p>}
+      <div className="flex items-center gap-1.5 mt-2">
+        <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${clinic.available ? 'text-emerald-600' : 'text-gray-400'}`}>
+          <span className={`h-1.5 w-1.5 rounded-full ${clinic.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+          {clinic.available ? 'Available' : 'Unavailable'}
+        </span>
+        <span className="text-gray-200 text-[10px]">|</span>
+        <span className="text-[11px] text-gray-400 truncate">{clinic.specialties.slice(0, 2).join(', ')}</span>
+      </div>
+    </button>
+  )
+})
+
+/* ══════════════════════════════════════ */
 export function MapView() {
   const { data: session } = useSession()
   const [clinics, setClinics] = useState<Clinic[]>([])
@@ -67,6 +183,9 @@ export function MapView() {
   const [locationLabel, setLocationLabel] = useState('')
   const [mapCenter, setMapCenter] = useState<[number, number]>(US_DEFAULT_CENTER)
   const [showPanel, setShowPanel] = useState(false)
+
+  // Debounce map center for panel distance calculations (avoid recalc on every pan frame)
+  const debouncedCenter = useDebounce(mapCenter, 300)
 
   const mapRef = useRef<L.Map | null>(null)
   const filterInputRef = useRef<HTMLInputElement>(null)
@@ -129,19 +248,36 @@ export function MapView() {
     setLocationLabel(''); setLocationQuery(''); setMapCenter(US_DEFAULT_CENTER); mapRef.current?.setView(US_DEFAULT_CENTER, US_DEFAULT_ZOOM)
   }, [])
 
-  const filteredClinics: ClinicWithDistance[] = useMemo(() => {
+  // Pre-filter clinics (text + availability) — no distance, used for map markers
+  const validClinics = useMemo(() => {
     const query = filterText.toLowerCase().trim()
     let result = clinics.filter((c) => c.lat !== 0 && c.lng !== 0)
-      .map((c) => ({ ...c, distance: haversineDistance(mapCenter[0], mapCenter[1], c.lat, c.lng) }))
     if (showAvailableOnly) result = result.filter((c) => c.available)
     if (query) result = result.filter((c) =>
       c.name.toLowerCase().includes(query) || c.address.toLowerCase().includes(query) ||
       c.specialties.some((s) => s.toLowerCase().includes(query)) ||
       (c.region && c.region.toLowerCase().includes(query)) || (c.county && c.county.toLowerCase().includes(query))
     )
-    result.sort((a, b) => a.distance - b.distance)
     return result
-  }, [clinics, filterText, showAvailableOnly, mapCenter])
+  }, [clinics, filterText, showAvailableOnly])
+
+  // Add distances for marker popups (uses live mapCenter)
+  const markerClinics: ClinicWithDistance[] = useMemo(() => {
+    return validClinics.map((c) => ({
+      ...c,
+      distance: haversineDistance(mapCenter[0], mapCenter[1], c.lat, c.lng),
+    }))
+  }, [validClinics, mapCenter])
+
+  // Panel list uses debounced center to avoid recalculating on every pan frame
+  const panelClinics: ClinicWithDistance[] = useMemo(() => {
+    const withDistance = validClinics.map((c) => ({
+      ...c,
+      distance: haversineDistance(debouncedCenter[0], debouncedCenter[1], c.lat, c.lng),
+    }))
+    withDistance.sort((a, b) => a.distance - b.distance)
+    return withDistance
+  }, [validClinics, debouncedCenter])
 
   const handleReferral = useCallback((clinic: Clinic) => { mapRef.current?.closePopup(); setSelectedClinic(clinic); setShowModal(true) }, [])
   const handleCloseModal = useCallback(() => { setShowModal(false); setSelectedClinic(null) }, [])
@@ -185,41 +321,7 @@ export function MapView() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {filteredClinics.map((clinic) => (
-          <Marker key={clinic.id} position={[clinic.lat, clinic.lng]} icon={clinic.available ? availableIcon : unavailableIcon}>
-            <Popup>
-              <div className="min-w-[240px] max-w-[300px]">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-bold text-[#1a2a4a] text-[15px] leading-tight">{clinic.name}</h3>
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, whiteSpace: 'nowrap', background: clinic.available ? '#ecfdf5' : '#f3f4f6', color: clinic.available ? '#15803d' : '#9ca3af' }}>
-                    {clinic.available ? 'Available' : 'Unavailable'}
-                  </span>
-                </div>
-                <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 2px' }}>{clinic.address}</p>
-                <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 2px' }}>{clinic.phone}</p>
-                {clinic.website && (
-                  <a href={clinic.website.startsWith('http') ? clinic.website : `https://${clinic.website}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#20b2aa', display: 'block', margin: '0 0 2px' }}>
-                    Visit Website
-                  </a>
-                )}
-                <p style={{ fontSize: 11, color: '#9ca3af', margin: '4px 0 8px' }}>{clinic.distance.toFixed(1)} miles away</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-                  {clinic.specialties.map((s) => (
-                    <span key={s} style={{ fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 99, background: 'rgba(26,42,74,0.08)', color: '#1a2a4a' }}>{s}</span>
-                  ))}
-                </div>
-                {isLawyer && clinic.available && (
-                  <button onClick={() => handleReferral(clinic)} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', background: '#d4a84b', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-                    Send Referral
-                  </button>
-                )}
-                {isLawyer && !clinic.available && (
-                  <p style={{ fontSize: 11, textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>Not accepting referrals</p>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <ViewportMarkers clinics={markerClinics} isLawyer={isLawyer} onReferral={handleReferral} />
       </MapContainer>
 
       {/* ═══ FLOATING SEARCH (top-left) ═══ */}
@@ -276,7 +378,7 @@ export function MapView() {
 
           {/* Clinic count badge */}
           <span className="self-start inline-flex items-center rounded-full bg-navy/90 px-3 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/[0.08]">
-            {filteredClinics.length} clinic{filteredClinics.length !== 1 ? 's' : ''}
+            {validClinics.length} clinic{validClinics.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
@@ -302,14 +404,14 @@ export function MapView() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
           <div>
             <h2 className="font-heading text-sm font-bold text-navy">Nearest Clinics</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5">{filteredClinics.length} results</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{panelClinics.length} results</p>
           </div>
           <button onClick={() => setShowPanel(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Close panel">
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {filteredClinics.length === 0 ? (
+          {panelClinics.length === 0 ? (
             <div className="p-10 text-center">
               <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
                 <MapPin className="h-5 w-5 text-gray-300" />
@@ -317,24 +419,8 @@ export function MapView() {
               <p className="text-sm font-medium text-gray-400">No clinics found</p>
               <p className="text-xs text-gray-300 mt-1">Try adjusting your filters</p>
             </div>
-          ) : filteredClinics.map((clinic) => (
-            <button key={clinic.id} onClick={() => handleFocusClinic(clinic)}
-              className="group w-full text-left px-5 py-3.5 border-b border-gray-100/60 hover:bg-gray-50/80 transition-all duration-150 focus:outline-none focus:bg-gray-50/80">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-medium text-sm text-gray-900 leading-tight group-hover:text-navy transition-colors">{clinic.name}</h3>
-                <span className="text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0 tabular-nums">{clinic.distance.toFixed(1)} mi</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5 leading-snug">{clinic.address}</p>
-              {clinic.county && <p className="text-[10px] text-gray-400 mt-0.5">{clinic.county}</p>}
-              <div className="flex items-center gap-1.5 mt-2">
-                <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${clinic.available ? 'text-emerald-600' : 'text-gray-400'}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${clinic.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                  {clinic.available ? 'Available' : 'Unavailable'}
-                </span>
-                <span className="text-gray-200 text-[10px]">|</span>
-                <span className="text-[11px] text-gray-400 truncate">{clinic.specialties.slice(0, 2).join(', ')}</span>
-              </div>
-            </button>
+          ) : panelClinics.map((clinic) => (
+            <PanelRow key={clinic.id} clinic={clinic} onFocus={handleFocusClinic} />
           ))}
         </div>
       </div>
