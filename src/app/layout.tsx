@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Montserrat, Open_Sans } from 'next/font/google'
 import './globals.css'
 import { getSiteSettings } from '@/lib/sanity-queries'
@@ -14,6 +14,12 @@ const openSans = Open_Sans({
   variable: '--font-open-sans',
   display: 'swap',
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
 
 const defaultTitle = 'Xpert Connect | Been in an Accident? We Can Help'
 const defaultDescription = 'Connect with experienced attorneys and medical clinics after an accident. Free consultation. We are not attorneys - we connect you with trusted professionals who can help.'
