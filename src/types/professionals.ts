@@ -9,6 +9,7 @@ export interface User {
   clinicId?: string // only for clinic users
   firmName?: string // only for lawyer users
   email: string
+  state?: string // state filter for lawyers (e.g. 'FL', 'MN')
 }
 
 export interface Clinic {
@@ -23,6 +24,22 @@ export interface Clinic {
   website?: string
   region?: string
   county?: string
+  available: boolean
+}
+
+export interface Lawyer {
+  id: string
+  name: string
+  address: string
+  lat: number
+  lng: number
+  phone: string
+  practiceAreas: string[]
+  email: string
+  website?: string
+  region?: string
+  county?: string
+  zipCode?: string
   available: boolean
 }
 

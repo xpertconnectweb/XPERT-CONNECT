@@ -29,6 +29,7 @@ export const authOptions: NextAuthOptions = {
           clinicId: user.clinicId,
           firmName: user.firmName,
           username: user.username,
+          state: user.state,
         }
       },
     }),
@@ -45,6 +46,7 @@ export const authOptions: NextAuthOptions = {
         token.clinicId = user.clinicId
         token.firmName = user.firmName
         token.username = user.username
+        token.state = user.state
       }
       return token
     },
@@ -54,6 +56,7 @@ export const authOptions: NextAuthOptions = {
       session.user.clinicId = token.clinicId
       session.user.firmName = token.firmName
       session.user.username = token.username
+      session.user.state = token.state
       return session
     },
   },

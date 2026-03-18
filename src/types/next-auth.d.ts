@@ -9,6 +9,7 @@ declare module 'next-auth' {
       clinicId?: string
       firmName?: string
       username: string
+      state?: string
     } & DefaultSession['user']
   }
 
@@ -18,6 +19,7 @@ declare module 'next-auth' {
     clinicId?: string
     firmName?: string
     username: string
+    state?: string
   }
 }
 
@@ -28,5 +30,6 @@ declare module 'next-auth/jwt' {
     clinicId?: string
     firmName?: string
     username: string
+    state?: string
   }
 }

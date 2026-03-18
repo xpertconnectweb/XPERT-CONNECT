@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { name, username, password, role, email, firmName, clinicId } = body
+  const { name, username, password, role, email, firmName, clinicId, state } = body
 
   if (!name || !username || !password || !role || !email) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       email,
       firmName: role === 'lawyer' ? sanitize(firmName || '') || undefined : undefined,
       clinicId: role === 'clinic' ? clinicId : undefined,
+      state: role === 'lawyer' && state ? state : undefined,
     })
 
     const { password: _, ...safe } = user

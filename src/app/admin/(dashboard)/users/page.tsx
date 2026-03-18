@@ -12,6 +12,7 @@ interface UserRow {
   email: string
   firmName?: string
   clinicId?: string
+  state?: string
   createdAt?: string
 }
 
@@ -29,6 +30,7 @@ interface UserForm {
   email: string
   firmName: string
   clinicId: string
+  state: string
 }
 
 const emptyForm: UserForm = {
@@ -39,6 +41,7 @@ const emptyForm: UserForm = {
   email: '',
   firmName: '',
   clinicId: '',
+  state: '',
 }
 
 export default function AdminUsersPage() {
@@ -100,6 +103,7 @@ export default function AdminUsersPage() {
       email: user.email,
       firmName: user.firmName || '',
       clinicId: user.clinicId || '',
+      state: user.state || '',
     })
     // Pre-fill clinic search with current clinic name
     if (user.clinicId) {
@@ -131,7 +135,10 @@ export default function AdminUsersPage() {
           email: form.email,
         }
         if (form.password) body.password = form.password
-        if (form.role === 'lawyer') body.firmName = form.firmName
+        if (form.role === 'lawyer') {
+          body.firmName = form.firmName
+          body.state = form.state
+        }
         if (form.role === 'clinic') body.clinicId = form.clinicId
 
         const res = await fetch(`/api/admin/users/${editingId}`, {
@@ -254,7 +261,16 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-600">{user.email}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
-                    {user.role === 'lawyer' && (user.firmName || '—')}
+                    {user.role === 'lawyer' && (
+                      <span>
+                        {user.firmName || '—'}
+                        {user.state && (
+                          <span className="ml-2 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            {user.state}
+                          </span>
+                        )}
+                      </span>
+                    )}
                     {user.role === 'clinic' && (clinicNameMap.get(user.clinicId || '') || user.clinicId || '—')}
                     {user.role === 'admin' && '—'}
                   </td>
@@ -358,7 +374,7 @@ export default function AdminUsersPage() {
                   value={form.role}
                   onChange={(e) => {
                     const newRole = e.target.value as UserRole
-                    setForm({ ...form, role: newRole, clinicId: '', firmName: '' })
+                    setForm({ ...form, role: newRole, clinicId: '', firmName: '', state: '' })
                     setClinicSearch('')
                   }}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
@@ -380,16 +396,31 @@ export default function AdminUsersPage() {
               </div>
 
               {form.role === 'lawyer' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Firm Name</label>
-                  <input
-                    type="text"
-                    value={form.firmName}
-                    onChange={(e) => setForm({ ...form, firmName: e.target.value })}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="Law firm name"
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Firm Name</label>
+                    <input
+                      type="text"
+                      value={form.firmName}
+                      onChange={(e) => setForm({ ...form, firmName: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      placeholder="Law firm name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">State Filter</label>
+                    <select
+                      value={form.state}
+                      onChange={(e) => setForm({ ...form, state: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    >
+                      <option value="">All States</option>
+                      <option value="FL">Florida (FL)</option>
+                      <option value="MN">Minnesota (MN)</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-400">Limits which clinics this attorney can see</p>
+                  </div>
+                </>
               )}
 
               {form.role === 'clinic' && (
