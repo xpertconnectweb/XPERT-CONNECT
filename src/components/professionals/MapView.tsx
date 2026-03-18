@@ -1,42 +1,50 @@
 'use client'
 
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
 import { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import 'leaflet.markercluster'
+import { List as VirtualList } from 'react-window'
 import { useSession } from 'next-auth/react'
 import {
   AlertTriangle, RefreshCw, Search, X, MapPin,
-  Locate, Loader2, List, ChevronRight,
+  Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale,
 } from 'lucide-react'
 import { ReferralFormModal } from './ReferralFormModal'
 import type { Clinic } from '@/types/professionals'
 import type { Lawyer } from '@/types/professionals'
 
-/* ── Marker icons ── */
-const clinicIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41],
-})
+/* ── Custom SVG marker icons ── */
+function createSvgIcon(color: string, borderColor: string, symbol: string, opacity = 1) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="32" height="42">
+    <defs>
+      <filter id="s${color.replace('#','')}" x="-20%" y="-10%" width="140%" height="130%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/>
+      </filter>
+    </defs>
+    <g filter="url(#s${color.replace('#','')})">
+      <path d="M18 2C10.27 2 4 8.27 4 16c0 10 14 26 14 26s14-16 14-26c0-7.73-6.27-14-14-14z" fill="${color}" stroke="${borderColor}" stroke-width="1.5" opacity="${opacity}"/>
+      <circle cx="18" cy="16" r="7" fill="white" opacity="${opacity > 0.6 ? 0.95 : 0.5}"/>
+      <text x="18" y="20" text-anchor="middle" font-size="11" font-weight="700" font-family="system-ui,sans-serif" fill="${color}" opacity="${opacity > 0.6 ? 1 : 0.6}">${symbol}</text>
+    </g>
+  </svg>`
+  return L.divIcon({
+    html: svg,
+    iconSize: [32, 42],
+    iconAnchor: [16, 42],
+    popupAnchor: [0, -38],
+    className: '',
+  })
+}
 
-const clinicUnavailableIcon = L.divIcon({
-  html: `<img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" style="width:25px;height:41px;filter:grayscale(1);opacity:.45" />`,
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], className: '',
-})
+const clinicAvailIcon = createSvgIcon('#0284c7', '#0369a1', '+')
+const clinicUnavailIcon = createSvgIcon('#94a3b8', '#64748b', '+', 0.5)
+const lawyerAvailIcon = createSvgIcon('#dc2626', '#b91c1c', '\u00A7')
+const lawyerUnavailIcon = createSvgIcon('#94a3b8', '#64748b', '\u00A7', 0.5)
 
-const lawyerIcon = L.divIcon({
-  html: `<img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" style="width:25px;height:41px;filter:hue-rotate(140deg) saturate(2)" />`,
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], className: '',
-})
-
-const lawyerUnavailableIcon = L.divIcon({
-  html: `<img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" style="width:25px;height:41px;filter:hue-rotate(140deg) saturate(2) grayscale(1);opacity:.45" />`,
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], className: '',
-})
-
-L.Marker.prototype.options.icon = clinicIcon
+L.Marker.prototype.options.icon = clinicAvailIcon
 
 const US_DEFAULT_CENTER: [number, number] = [39.8, -89.5]
 const US_DEFAULT_ZOOM = 5
@@ -78,15 +86,38 @@ interface MapItem {
   available: boolean
   distance: number
   type: MapItemType
-  // Clinic-specific
   specialties?: string[]
-  // Lawyer-specific
   practiceAreas?: string[]
   zipCode?: string
 }
 
-/* ── Only render markers visible in current viewport ── */
-function ViewportMarkers({
+/* ── Custom cluster icon factory ── */
+function createClusterIcon(cluster: L.MarkerCluster) {
+  const markers = cluster.getAllChildMarkers()
+  const count = markers.length
+  let hasClinic = false, hasLawyer = false
+  for (const m of markers) {
+    const t = (m.options as { itemType?: string }).itemType
+    if (t === 'lawyer') hasLawyer = true; else hasClinic = true
+    if (hasClinic && hasLawyer) break
+  }
+  const bg = hasClinic && hasLawyer ? '#1a2a4a' : hasLawyer ? '#dc2626' : '#0284c7'
+  const size = count < 20 ? 36 : count < 100 ? 44 : 54
+  return L.divIcon({
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${bg};color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-size:${size < 40 ? 12 : 14}px;font-family:system-ui,sans-serif;
+      box-shadow:0 3px 12px rgba(0,0,0,0.3),0 0 0 3px rgba(255,255,255,0.5);
+    ">${count}</div>`,
+    className: 'custom-cluster-icon',
+    iconSize: L.point(size, size),
+  })
+}
+
+/* ── MarkerClusterGroup wrapper for react-leaflet v4 ── */
+function MarkerClusterGroup({
   items,
   isLawyer,
   onReferral,
@@ -96,94 +127,151 @@ function ViewportMarkers({
   onReferral: (c: Clinic) => void
 }) {
   const map = useMap()
-  const [visibleItems, setVisibleItems] = useState<MapItem[]>([])
-
-  const updateVisible = useCallback(() => {
-    const bounds = map.getBounds()
-    const padded = bounds.pad(0.1)
-    setVisibleItems(items.filter((item) => padded.contains([item.lat, item.lng])))
-  }, [map, items])
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
+  const markersRef = useRef<Map<string, L.Marker>>(new Map())
 
   useEffect(() => {
-    updateVisible()
-    map.on('moveend', updateVisible)
-    map.on('zoomend', updateVisible)
-    return () => {
-      map.off('moveend', updateVisible)
-      map.off('zoomend', updateVisible)
+    if (clusterRef.current) {
+      map.removeLayer(clusterRef.current)
     }
-  }, [map, updateVisible])
+    const group = (L as unknown as { markerClusterGroup: (opts: object) => L.MarkerClusterGroup }).markerClusterGroup({
+      maxClusterRadius: 60,
+      disableClusteringAtZoom: 16,
+      chunkedLoading: true,
+      showCoverageOnHover: false,
+      iconCreateFunction: createClusterIcon,
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      animate: true,
+    })
 
-  return (
-    <>
-      {visibleItems.map((item) => (
-        <ItemMarker key={item.id} item={item} isLawyer={isLawyer} onReferral={onReferral} />
-      ))}
-    </>
-  )
+    const newMarkers = new Map<string, L.Marker>()
+    const leafletMarkers: L.Marker[] = []
+
+    for (const item of items) {
+      const icon = item.type === 'lawyer'
+        ? (item.available ? lawyerAvailIcon : lawyerUnavailIcon)
+        : (item.available ? clinicAvailIcon : clinicUnavailIcon)
+
+      const marker = L.marker([item.lat, item.lng], {
+        icon,
+        itemType: item.type,
+      } as L.MarkerOptions & { itemType: string })
+
+      // Build popup content lazily
+      marker.bindPopup(() => buildPopupContent(item, isLawyer, onReferral), {
+        minWidth: 260,
+        maxWidth: 310,
+        className: 'premium-popup',
+      })
+
+      newMarkers.set(item.id, marker)
+      leafletMarkers.push(marker)
+    }
+
+    group.addLayers(leafletMarkers)
+    map.addLayer(group)
+    clusterRef.current = group
+    markersRef.current = newMarkers
+
+    return () => {
+      map.removeLayer(group)
+    }
+  }, [map, items, isLawyer, onReferral])
+
+  return null
 }
 
-/* ── Memoized single marker ── */
-const ItemMarker = memo(function ItemMarker({
-  item,
-  isLawyer,
-  onReferral,
-}: {
-  item: MapItem
-  isLawyer: boolean
-  onReferral: (c: Clinic) => void
-}) {
-  const getIcon = () => {
-    if (item.type === 'lawyer') return item.available ? lawyerIcon : lawyerUnavailableIcon
-    return item.available ? clinicIcon : clinicUnavailableIcon
+/* ── Build popup HTML string ── */
+function buildPopupContent(
+  item: MapItem,
+  isLawyer: boolean,
+  onReferral: (c: Clinic) => void,
+): HTMLElement {
+  const container = document.createElement('div')
+  container.style.cssText = 'min-width:260px;max-width:310px;font-family:system-ui,-apple-system,sans-serif;'
+
+  const tags = item.type === 'clinic' ? item.specialties : item.practiceAreas
+  const tagBg = item.type === 'clinic' ? '#eff6ff' : '#fef2f2'
+  const tagColor = item.type === 'clinic' ? '#1e40af' : '#991b1b'
+  const typeBg = item.type === 'clinic' ? '#e0f2fe' : '#fee2e2'
+  const typeColor = item.type === 'clinic' ? '#0369a1' : '#dc2626'
+  const iconBg = item.type === 'clinic' ? 'linear-gradient(135deg,#0284c7,#0ea5e9)' : 'linear-gradient(135deg,#dc2626,#ef4444)'
+  const symbol = item.type === 'clinic' ? '+' : '\u00A7'
+  const typeLabel = item.type === 'clinic' ? 'Clinic' : 'Attorney'
+
+  let html = `
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+      <div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:${iconBg};display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700">${symbol}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:#0f172a;line-height:1.3">${escapeHtml(item.name)}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:1px 7px;border-radius:4px;background:${typeBg};color:${typeColor}">${typeLabel}</span>
+          <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:${item.available ? '#059669' : '#9ca3af'}">
+            <span style="width:6px;height:6px;border-radius:50%;background:${item.available ? '#10b981' : '#d1d5db'};${item.available ? 'box-shadow:0 0 0 2px rgba(16,185,129,0.2)' : ''}"></span>
+            ${item.available ? 'Available' : 'Unavailable'}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div style="height:1px;background:#f1f5f9;margin:0 0 10px"></div>
+    <div style="font-size:12px;color:#475569;line-height:1.5">
+      <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px">
+        <span style="color:#94a3b8;flex-shrink:0;margin-top:1px;font-size:13px">&#9906;</span>
+        <span>${escapeHtml(item.address)}</span>
+      </div>`
+
+  if (item.phone) {
+    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+      <span style="color:#94a3b8;flex-shrink:0;font-size:13px">&#9742;</span>
+      <span>${escapeHtml(item.phone)}</span>
+    </div>`
+  }
+  if (item.website) {
+    const href = item.website.startsWith('http') ? item.website : `https://${item.website}`
+    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+      <span style="color:#94a3b8;flex-shrink:0;font-size:13px">&#9741;</span>
+      <a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="color:#0284c7;text-decoration:none;font-weight:500">Visit Website</a>
+    </div>`
   }
 
-  return (
-    <Marker position={[item.lat, item.lng]} icon={getIcon()}>
-      <Popup>
-        <div className="min-w-[240px] max-w-[300px]">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-bold text-[#1a2a4a] text-[15px] leading-tight">{item.name}</h3>
-            <div className="flex flex-col items-end gap-1">
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, whiteSpace: 'nowrap', background: item.type === 'clinic' ? '#e0f2fe' : '#fef2f2', color: item.type === 'clinic' ? '#0369a1' : '#dc2626' }}>
-                {item.type === 'clinic' ? 'Clinic' : 'Attorney'}
-              </span>
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, whiteSpace: 'nowrap', background: item.available ? '#ecfdf5' : '#f3f4f6', color: item.available ? '#15803d' : '#9ca3af' }}>
-                {item.available ? 'Available' : 'Unavailable'}
-              </span>
-            </div>
-          </div>
-          <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 2px' }}>{item.address}</p>
-          <p style={{ fontSize: 13, color: '#4b5563', margin: '0 0 2px' }}>{item.phone}</p>
-          {item.website && (
-            <a href={item.website.startsWith('http') ? item.website : `https://${item.website}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#20b2aa', display: 'block', margin: '0 0 2px' }}>
-              Visit Website
-            </a>
-          )}
-          <p style={{ fontSize: 11, color: '#9ca3af', margin: '4px 0 8px' }}>{item.distance.toFixed(1)} miles away</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-            {item.type === 'clinic' && item.specialties?.map((s) => (
-              <span key={s} style={{ fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 99, background: 'rgba(26,42,74,0.08)', color: '#1a2a4a' }}>{s}</span>
-            ))}
-            {item.type === 'lawyer' && item.practiceAreas?.map((s) => (
-              <span key={s} style={{ fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.08)', color: '#991b1b' }}>{s}</span>
-            ))}
-          </div>
-          {isLawyer && item.type === 'clinic' && item.available && (
-            <button onClick={() => onReferral(item as unknown as Clinic)} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', background: '#d4a84b', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-              Send Referral
-            </button>
-          )}
-          {isLawyer && item.type === 'clinic' && !item.available && (
-            <p style={{ fontSize: 11, textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>Not accepting referrals</p>
-          )}
-        </div>
-      </Popup>
-    </Marker>
-  )
-})
+  html += `</div>
+    <div style="font-size:11px;color:#94a3b8;margin:8px 0;font-weight:500">${item.distance.toFixed(1)} miles away</div>`
 
-/* ── Memoized panel row ── */
+  if (tags && tags.length > 0) {
+    html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">`
+    for (const t of tags) {
+      html += `<span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;background:${tagBg};color:${tagColor}">${escapeHtml(t)}</span>`
+    }
+    html += `</div>`
+  }
+
+  container.innerHTML = html
+
+  if (isLawyer && item.type === 'clinic' && item.available) {
+    const btn = document.createElement('button')
+    btn.textContent = 'Send Referral'
+    btn.style.cssText = 'width:100%;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#d4a84b,#c4982f);color:#fff;font-weight:700;font-size:13px;letter-spacing:0.01em;box-shadow:0 2px 8px rgba(212,168,75,0.35);'
+    btn.addEventListener('click', () => onReferral(item as unknown as Clinic))
+    container.appendChild(btn)
+  } else if (isLawyer && item.type === 'clinic' && !item.available) {
+    const p = document.createElement('p')
+    p.textContent = 'Not accepting referrals'
+    p.style.cssText = 'font-size:11px;text-align:center;color:#9ca3af;font-style:italic;margin:0;'
+    container.appendChild(p)
+  }
+
+  return container
+}
+
+function escapeHtml(str: string): string {
+  const div = document.createElement('div')
+  div.textContent = str
+  return div.innerHTML
+}
+
+
+/* ── Panel row ── */
 const PanelRow = memo(function PanelRow({
   item,
   onFocus,
@@ -191,37 +279,106 @@ const PanelRow = memo(function PanelRow({
   item: MapItem
   onFocus: (item: MapItem) => void
 }) {
+  const isClinic = item.type === 'clinic'
   return (
     <button onClick={() => onFocus(item)}
-      className="group w-full text-left px-5 py-3.5 border-b border-gray-100/60 hover:bg-gray-50/80 transition-colors focus:outline-none focus:bg-gray-50/80">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={`inline-flex items-center flex-shrink-0 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${item.type === 'clinic' ? 'bg-sky-100 text-sky-700' : 'bg-red-100 text-red-700'}`}>
-            {item.type === 'clinic' ? 'Clinic' : 'Attorney'}
-          </span>
-          <h3 className="font-medium text-sm text-gray-900 leading-tight group-hover:text-navy transition-colors truncate">{item.name}</h3>
+      className="group w-full text-left px-5 py-4 border-b border-gray-100/80 hover:bg-gradient-to-r hover:from-gray-50/80 hover:to-transparent transition-all duration-200 focus:outline-none">
+      <div className="flex items-start gap-3">
+        {/* Type icon */}
+        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5 ${isClinic ? 'bg-sky-50 text-sky-600' : 'bg-red-50 text-red-600'}`}>
+          {isClinic ? <Building2 className="h-3.5 w-3.5" /> : <Scale className="h-3.5 w-3.5" />}
         </div>
-        <span className="text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0 tabular-nums">{item.distance.toFixed(1)} mi</span>
-      </div>
-      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{item.address}</p>
-      {item.county && <p className="text-[10px] text-gray-400 mt-0.5">{item.county}</p>}
-      <div className="flex items-center gap-1.5 mt-2">
-        <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${item.available ? 'text-emerald-600' : 'text-gray-400'}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${item.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-          {item.available ? 'Available' : 'Unavailable'}
-        </span>
-        <span className="text-gray-200 text-[10px]">|</span>
-        <span className="text-[11px] text-gray-400 truncate">
-          {item.type === 'clinic'
-            ? item.specialties?.slice(0, 2).join(', ')
-            : item.practiceAreas?.slice(0, 2).join(', ')}
-        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-[13px] text-gray-900 leading-tight group-hover:text-navy transition-colors truncate">{item.name}</h3>
+            <span className="text-[10px] text-gray-400 whitespace-nowrap flex-shrink-0 tabular-nums font-medium bg-gray-50 px-2 py-0.5 rounded-md">{item.distance.toFixed(1)} mi</span>
+          </div>
+          <p className="text-[11px] text-gray-500 mt-1 leading-snug truncate">{item.address}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${item.available ? 'text-emerald-600' : 'text-gray-400'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${item.available ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-gray-300'}`} />
+              {item.available ? 'Available' : 'Unavailable'}
+            </span>
+            <span className="text-gray-200">|</span>
+            <span className="text-[10px] text-gray-400 truncate font-medium">
+              {isClinic
+                ? item.specialties?.slice(0, 2).join(' \u00B7 ')
+                : item.practiceAreas?.slice(0, 2).join(' \u00B7 ')}
+            </span>
+          </div>
+        </div>
       </div>
     </button>
   )
 })
 
-/* ══════════════════════════════════════ */
+/* ── Virtualized panel list ── */
+function VirtualPanelList({ items, onFocus }: { items: MapItem[]; onFocus: (item: MapItem) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState(400)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) setHeight(entry.contentRect.height)
+    })
+    ro.observe(el)
+    setHeight(el.clientHeight)
+    return () => ro.disconnect()
+  }, [])
+
+  if (items.length === 0) {
+    return (
+      <div className="flex-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="p-12 text-center">
+          <div className="h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <MapPin className="h-6 w-6 text-gray-300" />
+          </div>
+          <p className="text-sm font-semibold text-gray-400">No results found</p>
+          <p className="text-xs text-gray-300 mt-1.5">Try adjusting your search or filters</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={containerRef} className="flex-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <VirtualList<VirtualRowProps>
+        style={{ height }}
+        rowCount={items.length}
+        rowHeight={80}
+        overscanCount={5}
+        rowProps={{ items, onFocus }}
+        rowComponent={VirtualPanelRow}
+      />
+    </div>
+  )
+}
+
+type VirtualRowProps = { items: MapItem[]; onFocus: (item: MapItem) => void }
+
+function VirtualPanelRow({
+  index,
+  style,
+  items,
+  onFocus,
+}: {
+  index: number
+  style: React.CSSProperties
+  ariaAttributes: object
+  items: MapItem[]
+  onFocus: (item: MapItem) => void
+}) {
+  const item = items[index]
+  return (
+    <div style={style}>
+      <PanelRow item={item} onFocus={onFocus} />
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════ */
 export function MapView() {
   const { data: session } = useSession()
   const [clinics, setClinics] = useState<Clinic[]>([])
@@ -249,7 +406,7 @@ export function MapView() {
   const [mapCenter, setMapCenter] = useState<[number, number]>(initialCenter)
   const [showPanel, setShowPanel] = useState(false)
 
-  const debouncedCenter = useDebounce(mapCenter, 300)
+  const debouncedCenter = useDebounce(mapCenter, 500)
 
   const mapRef = useRef<L.Map | null>(null)
   const filterInputRef = useRef<HTMLInputElement>(null)
@@ -266,10 +423,7 @@ export function MapView() {
       if (!clinicsRes.ok) throw new Error()
       setClinics(await clinicsRes.json())
       if (lawyersRes.ok) {
-        const lawyersData = await lawyersRes.json()
-        setLawyers(lawyersData)
-      } else {
-        console.warn('Lawyers API responded with', lawyersRes.status)
+        setLawyers(await lawyersRes.json())
       }
     } catch { setError(true) } finally { setLoading(false) }
   }, [])
@@ -324,7 +478,7 @@ export function MapView() {
     setLocationLabel(''); setLocationQuery(''); setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
   }, [initialCenter, initialZoom])
 
-  // Build unified MapItem list from clinics + lawyers
+  // Build unified MapItem list
   const validItems: MapItem[] = useMemo(() => {
     const query = filterText.toLowerCase().trim()
     const items: MapItem[] = []
@@ -338,12 +492,7 @@ export function MapView() {
           c.specialties.some((s) => s.toLowerCase().includes(query)) ||
           (c.region && c.region.toLowerCase().includes(query)) || (c.county && c.county.toLowerCase().includes(query))
         )) continue
-        items.push({
-          ...c,
-          distance: 0,
-          type: 'clinic',
-          specialties: c.specialties,
-        })
+        items.push({ ...c, distance: 0, type: 'clinic', specialties: c.specialties })
       }
     }
 
@@ -357,21 +506,10 @@ export function MapView() {
           (l.region && l.region.toLowerCase().includes(query)) || (l.county && l.county.toLowerCase().includes(query))
         )) continue
         items.push({
-          id: l.id,
-          name: l.name,
-          address: l.address,
-          lat: l.lat,
-          lng: l.lng,
-          phone: l.phone,
-          email: l.email,
-          website: l.website,
-          region: l.region,
-          county: l.county,
-          available: l.available,
-          distance: 0,
-          type: 'lawyer',
-          practiceAreas: l.practiceAreas,
-          zipCode: l.zipCode,
+          id: l.id, name: l.name, address: l.address, lat: l.lat, lng: l.lng,
+          phone: l.phone, email: l.email, website: l.website, region: l.region,
+          county: l.county, available: l.available, distance: 0, type: 'lawyer',
+          practiceAreas: l.practiceAreas, zipCode: l.zipCode,
         })
       }
     }
@@ -379,26 +517,24 @@ export function MapView() {
     return items
   }, [clinics, lawyers, filterText, showAvailableOnly, showClinics, showLawyers])
 
-  // Add distances for marker popups
-  const markerItems: MapItem[] = useMemo(() => {
-    return validItems.map((item) => ({
-      ...item,
-      distance: haversineDistance(mapCenter[0], mapCenter[1], item.lat, item.lng),
-    }))
-  }, [validItems, mapCenter])
-
-  // Panel list sorted by distance
-  const panelItems: MapItem[] = useMemo(() => {
-    const withDistance = validItems.map((item) => ({
+  const itemsWithDistance = useMemo(() =>
+    validItems.map(item => ({
       ...item,
       distance: haversineDistance(debouncedCenter[0], debouncedCenter[1], item.lat, item.lng),
     }))
-    withDistance.sort((a, b) => a.distance - b.distance)
-    return withDistance
-  }, [validItems, debouncedCenter])
+  , [validItems, debouncedCenter])
 
-  const clinicCount = useMemo(() => validItems.filter(i => i.type === 'clinic').length, [validItems])
-  const lawyerCount = useMemo(() => validItems.filter(i => i.type === 'lawyer').length, [validItems])
+  const panelItems = useMemo(() =>
+    [...itemsWithDistance].sort((a, b) => a.distance - b.distance)
+  , [itemsWithDistance])
+
+  const { clinicCount, lawyerCount } = useMemo(() => {
+    let clinics = 0, lawyers = 0
+    for (const item of validItems) {
+      if (item.type === 'clinic') clinics++; else lawyers++
+    }
+    return { clinicCount: clinics, lawyerCount: lawyers }
+  }, [validItems])
 
   const handleReferral = useCallback((clinic: Clinic) => { mapRef.current?.closePopup(); setSelectedClinic(clinic); setShowModal(true) }, [])
   const handleCloseModal = useCallback(() => { setShowModal(false); setSelectedClinic(null) }, [])
@@ -408,25 +544,31 @@ export function MapView() {
 
   const isLawyer = session?.user?.role === 'lawyer'
 
+  /* ── Loading state ── */
   if (loading) return (
-    <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f8f9fb]" role="status">
+    <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f0f4f8]" role="status">
       <div className="text-center">
-        <div className="h-8 w-8 mx-auto animate-spin rounded-full border-[3px] border-navy/10 border-t-gold" />
-        <p className="mt-4 text-xs text-gray-400 tracking-wide">Loading map...</p>
+        <div className="relative h-12 w-12 mx-auto">
+          <div className="absolute inset-0 rounded-full border-[3px] border-navy/5" />
+          <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-gold animate-spin" />
+        </div>
+        <p className="mt-5 text-xs text-gray-400 tracking-widest uppercase font-medium">Loading map</p>
       </div>
     </div>
   )
 
+  /* ── Error state ── */
   if (error) return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center bg-[#f8f9fb]">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50"><AlertTriangle className="h-6 w-6 text-red-400" /></div>
-      <div><p className="font-semibold text-gray-900">Failed to load data</p><p className="text-sm text-gray-400 mt-1">Please check your connection and try again.</p></div>
-      <button onClick={fetchData} className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-sm font-medium text-white hover:bg-navy-light transition-colors"><RefreshCw className="h-4 w-4" /> Retry</button>
+    <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-5 text-center bg-[#f0f4f8]">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 shadow-sm"><AlertTriangle className="h-7 w-7 text-red-400" /></div>
+      <div><p className="font-semibold text-gray-900 text-lg">Connection Error</p><p className="text-sm text-gray-400 mt-1.5 max-w-xs">Unable to load map data. Please check your connection and try again.</p></div>
+      <button onClick={fetchData} className="inline-flex items-center gap-2 rounded-xl bg-navy px-6 py-3 text-sm font-semibold text-white hover:bg-navy-light transition-all shadow-lg shadow-navy/20"><RefreshCw className="h-4 w-4" /> Try Again</button>
     </div>
   )
 
+  /* ── Main map ── */
   return (
-    <div className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-xl overflow-hidden shadow-sm">
+    <div className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-2xl overflow-hidden shadow-md">
       {/* MAP */}
       <MapContainer
         center={initialCenter}
@@ -434,6 +576,7 @@ export function MapView() {
         className="h-full w-full"
         scrollWheelZoom={true}
         zoomControl={false}
+        preferCanvas={true}
         ref={mapRef}
         whenReady={() => { mapRef.current?.on('moveend', handleMapMoveEnd) }}
       >
@@ -442,138 +585,124 @@ export function MapView() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <ViewportMarkers items={markerItems} isLawyer={isLawyer} onReferral={handleReferral} />
+        <MarkerClusterGroup items={itemsWithDistance} isLawyer={isLawyer} onReferral={handleReferral} />
       </MapContainer>
 
-      {/* FLOATING SEARCH (top-left) */}
-      <div className="absolute top-3 left-3 z-[500] w-[calc(100%-6.5rem)] max-w-md" style={{ pointerEvents: 'none' }}>
-        <div className="flex flex-col gap-2" style={{ pointerEvents: 'auto' }}>
-          {/* Location search */}
-          <div className="relative">
-            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-            {locationLabel ? (
-              <div className="flex items-center w-full rounded-xl bg-white py-2.5 pl-10 pr-9 text-sm text-navy shadow-lg shadow-black/[0.08] border border-gray-200/60">
-                <span className="truncate font-medium">{locationLabel}</span>
-                <button onClick={handleClearLocation} className="absolute right-2.5 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Clear location"><X className="h-3.5 w-3.5" /></button>
-              </div>
-            ) : (
-              <>
-                <input ref={locationInputRef} type="text" value={locationQuery}
-                  onChange={(e) => { setLocationQuery(e.target.value); if (e.target.value.length >= 3) setShowSuggestions(true) }}
-                  onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
-                  placeholder="Search location (city, ZIP)..."
-                  className="w-full rounded-xl bg-white py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/20 shadow-lg shadow-black/[0.08] border border-gray-200/60" />
-                {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-1.5 rounded-xl bg-white shadow-xl shadow-black/[0.1] border border-gray-200/60 overflow-hidden">
-                    {suggestions.map((s, i) => (
-                      <button key={i} onClick={() => handleSelectSuggestion(s)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50/80 transition-colors border-b border-gray-100/50 last:border-0">
-                        <span className="text-gray-700">{s.display_name.split(',').slice(0, 3).join(',')}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+      {/* ═══ CONTROLS PANEL (top-left) ═══ */}
+      <div className="absolute top-4 left-4 z-[500] w-[calc(100%-7rem)] max-w-[420px]" style={{ pointerEvents: 'none' }}>
+        <div className="flex flex-col gap-2.5" style={{ pointerEvents: 'auto' }}>
 
-          {/* Filter + toggles */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 z-10" />
-              <input ref={filterInputRef} type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)}
-                placeholder="Filter by name, area..."
-                className="w-full rounded-xl bg-white py-2 pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/20 shadow-lg shadow-black/[0.08] border border-gray-200/60" />
-              {filterText && (
-                <button onClick={handleClearFilter} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Clear filter"><X className="h-3 w-3" /></button>
+          {/* Glass card container */}
+          <div className="rounded-2xl bg-white/[0.92] backdrop-blur-xl shadow-xl shadow-black/[0.08] border border-white/60 p-3 space-y-2.5">
+
+            {/* Location search */}
+            <div className="relative">
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+              {locationLabel ? (
+                <div className="flex items-center w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-navy border border-gray-200/40">
+                  <span className="truncate font-semibold">{locationLabel}</span>
+                  <button onClick={handleClearLocation} className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 transition-colors" aria-label="Clear location"><X className="h-3.5 w-3.5" /></button>
+                </div>
+              ) : (
+                <>
+                  <input ref={locationInputRef} type="text" value={locationQuery}
+                    onChange={(e) => { setLocationQuery(e.target.value); if (e.target.value.length >= 3) setShowSuggestions(true) }}
+                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
+                    placeholder="Search location (city, ZIP)..."
+                    className="w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/15 focus:bg-white border border-gray-200/40 transition-all" />
+                  {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-2 rounded-xl bg-white shadow-2xl shadow-black/[0.12] border border-gray-200/60 overflow-hidden">
+                      {suggestions.map((s, i) => (
+                        <button key={i} onClick={() => handleSelectSuggestion(s)} className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50/80 transition-colors border-b border-gray-100/50 last:border-0">
+                          <span className="text-gray-700 font-medium">{s.display_name.split(',').slice(0, 3).join(',')}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
-            <button
-              onClick={() => setShowAvailableOnly(!showAvailableOnly)}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium shadow-lg shadow-black/[0.08] border transition-all duration-200 whitespace-nowrap ${showAvailableOnly ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-gray-500 border-gray-200/60 hover:bg-gray-50'}`}
-            >
-              <span className={`h-2 w-2 rounded-full transition-colors ${showAvailableOnly ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-              Available
-            </button>
-          </div>
 
-          {/* Type toggles: Clinics / Attorneys */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowClinics(!showClinics)}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg shadow-black/[0.08] border transition-all duration-200 whitespace-nowrap ${showClinics ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-white text-gray-400 border-gray-200/60 hover:bg-gray-50'}`}
-            >
-              <span className={`h-2 w-2 rounded-full transition-colors ${showClinics ? 'bg-sky-500' : 'bg-gray-300'}`} />
-              Clinics
-            </button>
-            <button
-              onClick={() => setShowLawyers(!showLawyers)}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg shadow-black/[0.08] border transition-all duration-200 whitespace-nowrap ${showLawyers ? 'bg-red-50 text-red-700 border-red-200' : 'bg-white text-gray-400 border-gray-200/60 hover:bg-gray-50'}`}
-            >
-              <span className={`h-2 w-2 rounded-full transition-colors ${showLawyers ? 'bg-red-500' : 'bg-gray-300'}`} />
-              Attorneys
-            </button>
-          </div>
+            {/* Filter row */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 z-10" />
+                <input ref={filterInputRef} type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)}
+                  placeholder="Filter by name, specialty..."
+                  className="w-full rounded-lg bg-gray-50/80 py-2 pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/15 focus:bg-white border border-gray-200/40 transition-all" />
+                {filterText && (
+                  <button onClick={handleClearFilter} className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 transition-colors" aria-label="Clear filter"><X className="h-3 w-3" /></button>
+                )}
+              </div>
+              <button
+                onClick={() => setShowAvailableOnly(!showAvailableOnly)}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-semibold border transition-all duration-200 whitespace-nowrap ${showAvailableOnly ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/25' : 'bg-gray-50/80 text-gray-500 border-gray-200/40 hover:bg-gray-100/80'}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full transition-colors ${showAvailableOnly ? 'bg-white' : 'bg-gray-300'}`} />
+                Available
+              </button>
+            </div>
 
-          {/* Count badges */}
-          <div className="flex gap-1.5">
-            {showClinics && (
-              <span className="inline-flex items-center rounded-full bg-navy/90 px-3 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/[0.08]">
-                {clinicCount} clinic{clinicCount !== 1 ? 's' : ''}
-              </span>
-            )}
-            {showLawyers && (
-              <span className="inline-flex items-center rounded-full bg-red-600/90 px-3 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/[0.08]">
-                {lawyerCount} attorney{lawyerCount !== 1 ? 's' : ''}
-              </span>
-            )}
+            {/* Divider */}
+            <div className="h-px bg-gray-200/50" />
+
+            {/* Type toggles + counts */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowClinics(!showClinics)}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showClinics ? 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
+              >
+                <Building2 className="h-3 w-3" />
+                Clinics
+                <span className={`ml-0.5 text-[10px] ${showClinics ? 'text-sky-100' : 'text-gray-300'}`}>{clinicCount}</span>
+              </button>
+              <button
+                onClick={() => setShowLawyers(!showLawyers)}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showLawyers ? 'bg-red-500 text-white border-red-500 shadow-md shadow-red-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
+              >
+                <Scale className="h-3 w-3" />
+                Attorneys
+                <span className={`ml-0.5 text-[10px] ${showLawyers ? 'text-red-100' : 'text-gray-300'}`}>{lawyerCount}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* FLOATING BUTTONS (top-right) */}
-      <div className="absolute top-3 right-3 z-[500] flex flex-col gap-2">
+      {/* ═══ RIGHT BUTTONS ═══ */}
+      <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2">
         <button onClick={handleGeolocate} disabled={locating}
-          className="flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-gray-200/60 shadow-lg shadow-black/[0.08] text-gray-500 hover:text-navy hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/[0.92] backdrop-blur-xl border border-white/60 shadow-xl shadow-black/[0.08] text-gray-500 hover:text-navy hover:bg-white disabled:opacity-50 transition-all"
           title="Use my location">
           {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Locate className="h-4 w-4" />}
         </button>
         <button onClick={() => setShowPanel(!showPanel)}
-          className={`flex items-center justify-center h-10 w-10 rounded-xl border shadow-lg shadow-black/[0.08] transition-all duration-200 ${showPanel ? 'bg-navy text-white border-navy' : 'bg-white text-gray-500 border-gray-200/60 hover:text-navy hover:bg-gray-50'}`}
+          className={`flex items-center justify-center h-10 w-10 rounded-xl backdrop-blur-xl border shadow-xl shadow-black/[0.08] transition-all duration-200 ${showPanel ? 'bg-navy text-white border-navy shadow-navy/30' : 'bg-white/[0.92] text-gray-500 border-white/60 hover:text-navy hover:bg-white'}`}
           title="List view">
-          <List className="h-4 w-4" />
+          <ListIcon className="h-4 w-4" />
         </button>
       </div>
 
-      {/* PANEL */}
-      {showPanel && <div className="absolute inset-0 z-[600] bg-black/20 lg:hidden" onClick={() => setShowPanel(false)} />}
-      <div className={`absolute top-0 right-0 bottom-0 z-[601] w-full sm:w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col transition-transform duration-300 ease-out ${showPanel ? 'translate-x-0' : 'translate-x-full'}`}
+      {/* ═══ SIDE PANEL ═══ */}
+      {showPanel && <div className="absolute inset-0 z-[600] bg-black/20 backdrop-blur-[2px] lg:hidden" onClick={() => setShowPanel(false)} />}
+      <div className={`absolute top-0 right-0 bottom-0 z-[601] w-full sm:w-[400px] bg-white/[0.97] backdrop-blur-xl shadow-2xl border-l border-gray-200/50 flex flex-col transition-transform duration-300 ease-out ${showPanel ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ willChange: 'transform' }}>
+        {/* Panel header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <div>
-            <h2 className="font-heading text-sm font-bold text-navy">Nearest Results</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5">{panelItems.length} results</p>
+            <h2 className="font-heading text-sm font-bold text-navy tracking-tight">Nearest Results</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{panelItems.length} results found</p>
           </div>
           <button onClick={() => setShowPanel(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Close panel">
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          {panelItems.length === 0 ? (
-            <div className="p-10 text-center">
-              <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3">
-                <MapPin className="h-5 w-5 text-gray-300" />
-              </div>
-              <p className="text-sm font-medium text-gray-400">No results found</p>
-              <p className="text-xs text-gray-300 mt-1">Try adjusting your filters</p>
-            </div>
-          ) : panelItems.map((item) => (
-            <PanelRow key={item.id} item={item} onFocus={handleFocusItem} />
-          ))}
-        </div>
+        {/* Panel list (virtualized) */}
+        <VirtualPanelList items={panelItems} onFocus={handleFocusItem} />
       </div>
 
-      {/* REFERRAL MODAL */}
+      {/* ═══ REFERRAL MODAL ═══ */}
       {showModal && selectedClinic && <ReferralFormModal clinic={selectedClinic} onClose={handleCloseModal} />}
     </div>
   )
