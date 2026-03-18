@@ -69,6 +69,7 @@ export async function PATCH(
 
   if (body.firmName !== undefined) fields.firmName = sanitize(body.firmName || '') || undefined
   if (body.clinicId !== undefined) fields.clinicId = body.clinicId
+  if (body.state !== undefined) fields.state = body.state || undefined
 
   const updated = await updateUser(id, fields)
   if (!updated) {

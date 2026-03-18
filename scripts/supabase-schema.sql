@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   clinic_id   TEXT,
   firm_name   TEXT,
   email       TEXT NOT NULL,
+  state       TEXT,
   created_at  TIMESTAMPTZ DEFAULT now(),
   updated_at  TIMESTAMPTZ DEFAULT now()
 );
@@ -35,7 +36,26 @@ CREATE TABLE IF NOT EXISTS clinics (
   updated_at  TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. Referrals table (FKs to users and clinics)
+-- 3. Lawyers table
+CREATE TABLE IF NOT EXISTS lawyers (
+  id             TEXT PRIMARY KEY,
+  name           TEXT NOT NULL,
+  address        TEXT NOT NULL,
+  lat            DOUBLE PRECISION NOT NULL,
+  lng            DOUBLE PRECISION NOT NULL,
+  phone          TEXT NOT NULL DEFAULT '',
+  practice_areas JSONB NOT NULL DEFAULT '[]',
+  email          TEXT NOT NULL DEFAULT '',
+  website        TEXT,
+  region         TEXT,
+  county         TEXT,
+  zip_code       TEXT,
+  available      BOOLEAN NOT NULL DEFAULT true,
+  created_at     TIMESTAMPTZ DEFAULT now(),
+  updated_at     TIMESTAMPTZ DEFAULT now()
+);
+
+-- 4. Referrals table (FKs to users and clinics)
 CREATE TABLE IF NOT EXISTS referrals (
   id             TEXT PRIMARY KEY,
   lawyer_id      TEXT NOT NULL REFERENCES users(id),
@@ -91,6 +111,10 @@ CREATE TRIGGER trg_clinics_updated_at
   BEFORE UPDATE ON clinics
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER trg_lawyers_updated_at
+  BEFORE UPDATE ON lawyers
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 CREATE TRIGGER trg_referrals_updated_at
   BEFORE UPDATE ON referrals
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -100,6 +124,7 @@ CREATE TRIGGER trg_referrals_updated_at
 -- =============================================================
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clinics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lawyers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
@@ -111,6 +136,10 @@ CREATE POLICY "Service role full access on users"
 
 CREATE POLICY "Service role full access on clinics"
   ON clinics FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on lawyers"
+  ON lawyers FOR ALL
   USING (auth.role() = 'service_role');
 
 CREATE POLICY "Service role full access on referrals"
@@ -141,3 +170,9 @@ CREATE POLICY "Anon insert newsletter"
 -- =============================================================
 -- ALTER TABLE users DROP CONSTRAINT users_role_check;
 -- ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('lawyer', 'clinic', 'admin'));
+
+-- =============================================================
+-- Migration: Add 'state' column to users table
+-- Run this on existing databases:
+-- =============================================================
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS state TEXT;

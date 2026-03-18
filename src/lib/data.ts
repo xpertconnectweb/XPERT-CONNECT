@@ -1,6 +1,6 @@
 import { supabaseAdmin } from './supabase'
 import { rowToModel, rowsToModels, modelToRow } from './mappers'
-import type { User, Clinic, Referral } from '@/types/professionals'
+import type { User, Clinic, Lawyer, Referral } from '@/types/professionals'
 
 // Contact / Newsletter types
 export interface Contact {
@@ -23,7 +23,7 @@ export interface NewsletterSubscriber {
 export async function getUsers(): Promise<User[]> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email')
+    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
   if (error) {
     console.error('getUsers error:', error)
     return []
@@ -36,7 +36,7 @@ export async function getUserByUsername(
 ): Promise<User | undefined> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email')
+    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
     .eq('username', username)
     .single()
   if (error || !data) return undefined
@@ -55,6 +55,20 @@ export async function getClinics(): Promise<Clinic[]> {
   return rowsToModels<Clinic>(data)
 }
 
+export async function getClinicsByState(state: string): Promise<Clinic[]> {
+  // State abbreviation pattern in address: ", FL " or ", MN "
+  const pattern = `%, ${state} %`
+  const { data, error } = await supabaseAdmin
+    .from('clinics')
+    .select('id, name, address, lat, lng, phone, specialties, email, website, region, county, available')
+    .ilike('address', pattern)
+  if (error) {
+    console.error('getClinicsByState error:', error)
+    return []
+  }
+  return rowsToModels<Clinic>(data)
+}
+
 export async function getClinicById(
   id: string
 ): Promise<Clinic | undefined> {
@@ -65,6 +79,84 @@ export async function getClinicById(
     .single()
   if (error || !data) return undefined
   return rowToModel<Clinic>(data)
+}
+
+// Lawyers
+const LAWYER_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, email, website, region, county, zip_code, available'
+
+export async function getLawyers(): Promise<Lawyer[]> {
+  const { data, error } = await supabaseAdmin
+    .from('lawyers')
+    .select(LAWYER_COLUMNS)
+  if (error) {
+    console.error('getLawyers error:', error)
+    return []
+  }
+  return rowsToModels<Lawyer>(data)
+}
+
+export async function getLawyersByState(state: string): Promise<Lawyer[]> {
+  const pattern = `%, ${state} %`
+  const { data, error } = await supabaseAdmin
+    .from('lawyers')
+    .select(LAWYER_COLUMNS)
+    .ilike('address', pattern)
+  if (error) {
+    console.error('getLawyersByState error:', error)
+    return []
+  }
+  return rowsToModels<Lawyer>(data)
+}
+
+export async function getLawyerById(id: string): Promise<Lawyer | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('lawyers')
+    .select(LAWYER_COLUMNS)
+    .eq('id', id)
+    .single()
+  if (error || !data) return undefined
+  return rowToModel<Lawyer>(data)
+}
+
+export async function createLawyer(lawyer: Lawyer): Promise<Lawyer> {
+  const row = modelToRow(lawyer)
+  const { data, error } = await supabaseAdmin
+    .from('lawyers')
+    .insert(row)
+    .select()
+    .single()
+  if (error) {
+    console.error('createLawyer error:', error)
+    throw new Error('Failed to create lawyer')
+  }
+  return rowToModel<Lawyer>(data)
+}
+
+export async function updateLawyer(
+  id: string,
+  fields: Partial<Omit<Lawyer, 'id'>>
+): Promise<Lawyer | null> {
+  const row = modelToRow(fields)
+  const { data, error } = await supabaseAdmin
+    .from('lawyers')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) {
+    console.error('updateLawyer error:', error)
+    return null
+  }
+  return rowToModel<Lawyer>(data)
+}
+
+export async function deleteLawyer(id: string): Promise<boolean> {
+  const { error } = await supabaseAdmin.from('lawyers').delete().eq('id', id)
+  if (error) {
+    console.error('deleteLawyer error:', error)
+    return false
+  }
+  return true
 }
 
 // Referrals
@@ -157,7 +249,7 @@ export async function updateReferralStatus(
 export async function getUsersByClinicId(clinicId: string): Promise<User[]> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email')
+    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
     .eq('clinic_id', clinicId)
     .eq('role', 'clinic')
   if (error || !data) return []
@@ -168,7 +260,7 @@ export async function getUsersByClinicId(clinicId: string): Promise<User[]> {
 export async function getUserById(id: string): Promise<User | undefined> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email')
+    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
     .eq('id', id)
     .single()
   if (error || !data) return undefined

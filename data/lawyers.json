@@ -1,0 +1,3046 @@
+[
+  {
+    "id": "l-001",
+    "name": "Bogin Munns & Munns PA",
+    "address": "1000 Legion Pl #1000, Orlando, FL 32801",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 578-9696",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-002",
+    "name": "The Law Office of Corey I. Cohen",
+    "address": "21 Park Lake St, Orlando, FL 32803 32801",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 246-0066",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-003",
+    "name": "The Umansky Law Firm",
+    "address": "1945 E Michigan St, Orlando, FL 32806",
+    "lat": 28.5129021,
+    "lng": -81.3725105,
+    "phone": "(407) 228-3838",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32806",
+    "available": true
+  },
+  {
+    "id": "l-004",
+    "name": "Nater Law Firm PLLC",
+    "address": "100 E Pine St #110, Orlando, FL 32801",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 203-6575",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-005",
+    "name": "The Law Office of Steven G. Mason",
+    "address": "37 N Orange Ave #500, Orlando, FL 32801",
+    "lat": 28.5428605,
+    "lng": -81.3787504,
+    "phone": "(407) 422-4529",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-006",
+    "name": "Leppard Law",
+    "address": "638 Broadway Ave, Orlando, FL 32803",
+    "lat": 28.552432,
+    "lng": -81.3728301,
+    "phone": "(407) 244-3000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32803",
+    "available": true
+  },
+  {
+    "id": "l-007",
+    "name": "The Rivas Law Firm",
+    "address": "111 N Orange Ave #800, Orlando, FL 32801",
+    "lat": 28.5439034,
+    "lng": -81.3786131,
+    "phone": "(407) 644-8844",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law",
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-008",
+    "name": "NeJame Law",
+    "address": "189 S Orange Ave #1800, Orlando, FL 32801",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 500-0000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-009",
+    "name": "Law Office of Gustavo Frances PA",
+    "address": "37 N Orange Ave #500, Orlando, FL 32801",
+    "lat": 28.5428605,
+    "lng": -81.3787504,
+    "phone": "(407) 412-7041",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-010",
+    "name": "The Lopez Law Group",
+    "address": "390 N Orange Ave #2300, Orlando, FL 32801",
+    "lat": 28.5473262,
+    "lng": -81.3796351,
+    "phone": "(407) 512-4394",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-011",
+    "name": "The Baez Law Firm",
+    "address": "638 Broadway Ave, Orlando, FL 32803",
+    "lat": 28.552432,
+    "lng": -81.3728301,
+    "phone": "(407) 898-5035",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32803",
+    "available": true
+  },
+  {
+    "id": "l-012",
+    "name": "Law Office of Modesto A. Maidique",
+    "address": "111 N Orange Ave #800, Orlando, FL 32801",
+    "lat": 28.5439034,
+    "lng": -81.3786131,
+    "phone": "(407) 245-2887",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-013",
+    "name": "Law Office of John Guidry",
+    "address": "800 N Magnolia Ave #1625, Orlando, FL 32803",
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "phone": "(407) 423-1117",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32803",
+    "available": true
+  },
+  {
+    "id": "l-014",
+    "name": "The Law Office of Brittany Wagner",
+    "address": "390 N Orange Ave #2300, Orlando, FL 32801",
+    "lat": 28.5473262,
+    "lng": -81.3796351,
+    "phone": "(407) 602-2000",
+    "practiceAreas": [
+      "Family Law",
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-015",
+    "name": "Law Office of Derek B. Alvarez",
+    "address": "800 N Magnolia Ave, Orlando, FL 32803",
+    "lat": 28.5459796,
+    "lng": -81.3767409,
+    "phone": "(407) 603-6722",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32803",
+    "available": true
+  },
+  {
+    "id": "l-016",
+    "name": "Law Office of Carlos G. Smith",
+    "address": "390 N Orange Ave #2300, Orlando, FL 32801",
+    "lat": 28.5473262,
+    "lng": -81.3796351,
+    "phone": "(407) 801-4357",
+    "practiceAreas": [
+      "Civil Litigation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32801",
+    "available": true
+  },
+  {
+    "id": "l-017",
+    "name": "Law Office of Brian D. Tadros",
+    "address": "800 N Magnolia Ave, Orlando, FL 32803",
+    "lat": 28.5459796,
+    "lng": -81.3767409,
+    "phone": "(407) 423-6360",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orlando",
+    "county": "Orange County",
+    "zipCode": "32803",
+    "available": true
+  },
+  {
+    "id": "l-018",
+    "name": "The Law Office of Jose L. Rivas",
+    "address": "21 S Clyde Ave, Kissimmee, FL 34741",
+    "lat": 28.2915306,
+    "lng": -81.413138,
+    "phone": "(407) 847-1400",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Kissimmee",
+    "county": "Osceola County",
+    "zipCode": "34741",
+    "available": true
+  },
+  {
+    "id": "l-019",
+    "name": "The Law Office of Wyndell G. Darville",
+    "address": "103 E Monument Ave, Kissimmee, FL 34741",
+    "lat": 28.292934,
+    "lng": -81.405717,
+    "phone": "(407) 846-0075",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Kissimmee",
+    "county": "Osceola County",
+    "zipCode": "34741",
+    "available": true
+  },
+  {
+    "id": "l-020",
+    "name": "The Pendas Law Firm (Kissimmee)",
+    "address": "920 N Main St, Kissimmee, FL 34744",
+    "lat": 28.2918995,
+    "lng": -81.4075838,
+    "phone": "(407) 648-2800",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Kissimmee",
+    "county": "Osceola County",
+    "zipCode": "34744",
+    "available": true
+  },
+  {
+    "id": "l-021",
+    "name": "The Law Office of David Bigney",
+    "address": "165 W Jessup Ave, Longwood, FL 32750",
+    "lat": 28.6979165,
+    "lng": -81.3288572,
+    "phone": "(407) 834-3311",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Longwood",
+    "county": "Seminole County",
+    "zipCode": "32750",
+    "available": true
+  },
+  {
+    "id": "l-022",
+    "name": "Law Office of Sherri L. Collins",
+    "address": "111 N Wymore Rd, Altamonte Springs, FL 32714",
+    "lat": 28.6408597,
+    "lng": -81.387924,
+    "phone": "(407) 862-6464",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Altamonte Springs",
+    "county": "Seminole County",
+    "zipCode": "32714",
+    "available": true
+  },
+  {
+    "id": "l-023",
+    "name": "The Law Office of James R. Spears",
+    "address": "1057 Willa Springs Dr #100, Winter Springs, FL 32708",
+    "lat": 28.6987317,
+    "lng": -81.3055188,
+    "phone": "(407) 542-0505",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Winter Springs",
+    "county": "Seminole County",
+    "zipCode": "32708",
+    "available": true
+  },
+  {
+    "id": "l-024",
+    "name": "Law Office of Jeffrey Dowd",
+    "address": "200 W Lake Mary Blvd, Sanford, FL 32773",
+    "lat": 28.7569651,
+    "lng": -81.2883699,
+    "phone": "(407) 323-9300",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Sanford",
+    "county": "Seminole County",
+    "zipCode": "32773",
+    "available": true
+  },
+  {
+    "id": "l-025",
+    "name": "Law Office of David A. Best",
+    "address": "1301 E Altamonte Dr, Altamonte Springs, FL 32701",
+    "lat": 28.663445,
+    "lng": -81.347382,
+    "phone": "(407) 260-2000",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Altamonte Springs",
+    "county": "Seminole County",
+    "zipCode": "32701",
+    "available": true
+  },
+  {
+    "id": "l-026",
+    "name": "Law Office of Michael J. Duggan",
+    "address": "950 S Winter Park Dr, Casselberry, FL 32707",
+    "lat": 28.6714702,
+    "lng": -81.3382005,
+    "phone": "(407) 834-8000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Casselberry",
+    "county": "Seminole County",
+    "zipCode": "32707",
+    "available": true
+  },
+  {
+    "id": "l-027",
+    "name": "Law Office of Daniel R. Weiner",
+    "address": "283 Cranes Roost Blvd #111, Altamonte Springs, FL 32701",
+    "lat": 28.6660379,
+    "lng": -81.3826647,
+    "phone": "(407) 645-4833",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Altamonte Springs",
+    "county": "Seminole County",
+    "zipCode": "32701",
+    "available": true
+  },
+  {
+    "id": "l-028",
+    "name": "Law Office of Jennifer Jackson",
+    "address": "255 Primera Blvd #160, Lake Mary, FL 32746",
+    "lat": 28.7602506,
+    "lng": -81.3566466,
+    "phone": "(407) 333-4455",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Lake Mary",
+    "county": "Seminole County",
+    "zipCode": "32746",
+    "available": true
+  },
+  {
+    "id": "l-029",
+    "name": "Law Office of Timothy W. Terry",
+    "address": "146 2nd St NW, Winter Haven, FL 33881",
+    "lat": 28.0234737,
+    "lng": -81.7288105,
+    "phone": "(863) 293-7447",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Winter Haven",
+    "county": "Polk County",
+    "zipCode": "33881",
+    "available": true
+  },
+  {
+    "id": "l-030",
+    "name": "Law Office of Kevin R. McNamara",
+    "address": "2210 S Florida Ave, Lakeland, FL 33803",
+    "lat": 28.0175066,
+    "lng": -81.9569678,
+    "phone": "(863) 687-0200",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Lakeland",
+    "county": "Polk County",
+    "zipCode": "33803",
+    "available": true
+  },
+  {
+    "id": "l-031",
+    "name": "The Law Office of John L. Crawford",
+    "address": "2115 S Florida Ave, Lakeland, FL 33803",
+    "lat": 28.01802,
+    "lng": -81.957155,
+    "phone": "(863) 683-3163",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Lakeland",
+    "county": "Polk County",
+    "zipCode": "33803",
+    "available": true
+  },
+  {
+    "id": "l-032",
+    "name": "Law Office of Brian P. Haas",
+    "address": "550 Pope Ave NW #300, Winter Haven, FL 33881",
+    "lat": 28.0222435,
+    "lng": -81.7328568,
+    "phone": "(863) 299-2299",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Winter Haven",
+    "county": "Polk County",
+    "zipCode": "33881",
+    "available": true
+  },
+  {
+    "id": "l-033",
+    "name": "Law Office of David M. Taylor",
+    "address": "113 Palmola St, Lakeland, FL 33803",
+    "lat": 28.0262812,
+    "lng": -81.9568358,
+    "phone": "(863) 682-1900",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Lakeland",
+    "county": "Polk County",
+    "zipCode": "33803",
+    "available": true
+  },
+  {
+    "id": "l-034",
+    "name": "Law Office of Christopher A. Sierra",
+    "address": "114 E Main St, Bartow, FL 33830",
+    "lat": 27.8964281,
+    "lng": -81.8428479,
+    "phone": "(863) 533-8100",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Bartow",
+    "county": "Polk County",
+    "zipCode": "33830",
+    "available": true
+  },
+  {
+    "id": "l-035",
+    "name": "Law Office of James E. Thomas",
+    "address": "315 W Main St, Tavares, FL 32778",
+    "lat": 28.8018654,
+    "lng": -81.7301052,
+    "phone": "(352) 343-4444",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tavares",
+    "county": "Lake County",
+    "zipCode": "32778",
+    "available": true
+  },
+  {
+    "id": "l-036",
+    "name": "Law Office of David R. Heil",
+    "address": "101 E Main St, Tavares, FL 32778",
+    "lat": 28.802292,
+    "lng": -81.727877,
+    "phone": "(352) 343-0090",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tavares",
+    "county": "Lake County",
+    "zipCode": "32778",
+    "available": true
+  },
+  {
+    "id": "l-037",
+    "name": "Douglas R. Beam, P.A.",
+    "address": "25 W New Haven Ave #101, Melbourne, FL 32901",
+    "lat": 28.0785034,
+    "lng": -80.6077908,
+    "phone": "(321) 723-6591",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Melbourne",
+    "county": "Brevard County",
+    "zipCode": "32901",
+    "available": true
+  },
+  {
+    "id": "l-038",
+    "name": "Law Office of John M. Phillips",
+    "address": "2323 S Babcock St, Melbourne, FL 32901",
+    "lat": 28.073258,
+    "lng": -80.62116,
+    "phone": "(321) 951-4500",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Melbourne",
+    "county": "Brevard County",
+    "zipCode": "32901",
+    "available": true
+  },
+  {
+    "id": "l-039",
+    "name": "Law Office of Robert L. Downey",
+    "address": "505 Delannoy Ave #301, Cocoa, FL 32922",
+    "lat": 28.3556635,
+    "lng": -80.7325345,
+    "phone": "(321) 639-1320",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Cocoa",
+    "county": "Brevard County",
+    "zipCode": "32922",
+    "available": true
+  },
+  {
+    "id": "l-040",
+    "name": "Law Office of Stephen G. Webster",
+    "address": "190 Center St, Cape Canaveral, FL 32920",
+    "lat": 28.3814735,
+    "lng": -80.6069467,
+    "phone": "(321) 783-4141",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Cape Canaveral",
+    "county": "Brevard County",
+    "zipCode": "32920",
+    "available": true
+  },
+  {
+    "id": "l-041",
+    "name": "Chiumento Law PLLC",
+    "address": "145 City Pl #301, Palm Coast, FL 32164",
+    "lat": 29.5541432,
+    "lng": -81.2207673,
+    "phone": "(386) 445-8900",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Palm Coast",
+    "county": "Flagler County",
+    "zipCode": "32164",
+    "available": true
+  },
+  {
+    "id": "l-042",
+    "name": "The Law Office of Jeffrey Brower",
+    "address": "160 Cypress Point Pkwy #B207, Palm Coast, FL 32164",
+    "lat": 29.5541432,
+    "lng": -81.2207673,
+    "phone": "(386) 445-5530",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Palm Coast",
+    "county": "Flagler County",
+    "zipCode": "32164",
+    "available": true
+  },
+  {
+    "id": "l-043",
+    "name": "The Law Office of Michael E. Haas",
+    "address": "1 Florida Park Dr S, Palm Coast, FL 32137",
+    "lat": 29.557059,
+    "lng": -81.20664,
+    "phone": "(386) 445-1122",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Palm Coast",
+    "county": "Flagler County",
+    "zipCode": "32137",
+    "available": true
+  },
+  {
+    "id": "l-044",
+    "name": "The Law Office of David B. Sacks",
+    "address": "120 E Granada Blvd, Ormond Beach, FL 32176",
+    "lat": 29.2854132,
+    "lng": -81.0557921,
+    "phone": "(386) 672-8080",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Ormond Beach",
+    "county": "Volusia County",
+    "zipCode": "32176",
+    "available": true
+  },
+  {
+    "id": "l-045",
+    "name": "Rice Law Firm (Daytona)",
+    "address": "103 Orange Ave #200, Daytona Beach, FL 32114",
+    "lat": 29.2108147,
+    "lng": -81.0228331,
+    "phone": "(386) 255-5000",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Daytona Beach",
+    "county": "Volusia County",
+    "zipCode": "32114",
+    "available": true
+  },
+  {
+    "id": "l-046",
+    "name": "The Law Office of J. Michael Shuler",
+    "address": "209 S Commerce Ave, Sebring, FL 33870",
+    "lat": 27.4944296,
+    "lng": -81.4396357,
+    "phone": "(863) 385-4444",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Sebring",
+    "county": "Highlands County",
+    "zipCode": "33870",
+    "available": true
+  },
+  {
+    "id": "l-047",
+    "name": "Law Office of James L. Lowman",
+    "address": "205 S Commerce Ave, Sebring, FL 33870",
+    "lat": 27.4945058,
+    "lng": -81.4397118,
+    "phone": "(863) 385-5156",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Sebring",
+    "county": "Highlands County",
+    "zipCode": "33870",
+    "available": true
+  },
+  {
+    "id": "l-048",
+    "name": "Law Office of Robert W. Gant",
+    "address": "216 S Commerce Ave, Sebring, FL 33870",
+    "lat": 27.4945052,
+    "lng": -81.4394593,
+    "phone": "(863) 385-2222",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Sebring",
+    "county": "Highlands County",
+    "zipCode": "33870",
+    "available": true
+  },
+  {
+    "id": "l-049",
+    "name": "Waddell & Waddell, P.A.",
+    "address": "125 W Romana St #800, Pensacola, FL 32502",
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "phone": "(850) 438-8270",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-050",
+    "name": "The Virga Law Firm, P.A.",
+    "address": "109 E Garden St #500, Pensacola, FL 32502",
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "phone": "(850) 466-3330",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-051",
+    "name": "The Law Office of J. Scott Merritt",
+    "address": "201 E Government St, Pensacola, FL 32502",
+    "lat": 30.409661,
+    "lng": -87.211758,
+    "phone": "(850) 437-1100",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-052",
+    "name": "The Law Office of James Burns",
+    "address": "226 S Palafox St, Pensacola, FL 32502",
+    "lat": 30.4094736,
+    "lng": -87.2143305,
+    "phone": "(850) 433-1200",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-053",
+    "name": "The Law Office of Randall J. Etheridge",
+    "address": "221 W Garden St, Pensacola, FL 32502",
+    "lat": 30.4121551,
+    "lng": -87.2187995,
+    "phone": "(850) 434-7766",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-054",
+    "name": "The Law Office of David L. McLeod",
+    "address": "307 S Palafox St, Pensacola, FL 32502",
+    "lat": 30.4090753,
+    "lng": -87.2146004,
+    "phone": "(850) 432-1800",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-055",
+    "name": "The Law Office of Thomas J. Ueberschaer",
+    "address": "1720 W Fairfield Dr, Pensacola, FL 32501",
+    "lat": 30.4454129,
+    "lng": -87.2378336,
+    "phone": "(850) 432-2345",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32501",
+    "available": true
+  },
+  {
+    "id": "l-056",
+    "name": "The Law Office of Paul H. Skier",
+    "address": "310 S Baylen St #520, Pensacola, FL 32502",
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "phone": "(850) 434-4343",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-057",
+    "name": "The Law Office of Christopher Janes",
+    "address": "501 Brent Ln, Pensacola, FL 32503",
+    "lat": 30.474995,
+    "lng": -87.221043,
+    "phone": "(850) 432-0202",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32503",
+    "available": true
+  },
+  {
+    "id": "l-058",
+    "name": "The Law Office of J. Scott Smith",
+    "address": "4400 Bayou Blvd #35, Pensacola, FL 32503",
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "phone": "(850) 476-0000",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32503",
+    "available": true
+  },
+  {
+    "id": "l-059",
+    "name": "The Law Office of John M. Merting",
+    "address": "125 W Romana St #600, Pensacola, FL 32502",
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "phone": "(850) 432-6000",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola",
+    "county": "Escambia County",
+    "zipCode": "32502",
+    "available": true
+  },
+  {
+    "id": "l-060",
+    "name": "Abogado/Firma",
+    "address": "Dirección, FL ZIP Code",
+    "lat": 26.7083444,
+    "lng": -80.1089041,
+    "phone": "Teléfono",
+    "practiceAreas": [
+      "Especialidad"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Región",
+    "county": "Condado",
+    "zipCode": "ZIP Code",
+    "available": true
+  },
+  {
+    "id": "l-061",
+    "name": "The Law Office of Collin Cherry",
+    "address": "1114 E Park Ave, Tallahassee, FL 32301",
+    "lat": 30.4419349,
+    "lng": -84.2639276,
+    "phone": "(850) 224-5000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32301",
+    "available": true
+  },
+  {
+    "id": "l-062",
+    "name": "The Law Office of Nathan Prince",
+    "address": "101 N Monroe St #1000, Tallahassee, FL 32301",
+    "lat": 30.4380832,
+    "lng": -84.2809332,
+    "phone": "(850) 273-8324",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32301",
+    "available": true
+  },
+  {
+    "id": "l-063",
+    "name": "The Law Office of Michael Ufferman",
+    "address": "2022 Raymond Diehl Rd, Tallahassee, FL 32308",
+    "lat": 30.5001312,
+    "lng": -84.2435589,
+    "phone": "(850) 385-9300",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32308",
+    "available": true
+  },
+  {
+    "id": "l-064",
+    "name": "The Law Office of H. Scott Fingerhut",
+    "address": "1500 Mahan Dr #250, Tallahassee, FL 32308",
+    "lat": 30.4380832,
+    "lng": -84.2809332,
+    "phone": "(850) 224-4600",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32308",
+    "available": true
+  },
+  {
+    "id": "l-065",
+    "name": "The Law Office of Travis DuRant",
+    "address": "1704 Hermitage Blvd #100, Tallahassee, FL 32308",
+    "lat": 30.4380832,
+    "lng": -84.2809332,
+    "phone": "(850) 222-9999",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32308",
+    "available": true
+  },
+  {
+    "id": "l-066",
+    "name": "The Law Office of Kristine M. Van Vorst",
+    "address": "101 N Monroe St #900, Tallahassee, FL 32301",
+    "lat": 30.4380832,
+    "lng": -84.2809332,
+    "phone": "(850) 224-7000",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32301",
+    "available": true
+  },
+  {
+    "id": "l-067",
+    "name": "The Law Office of Jami Coleman",
+    "address": "307 S Calhoun St, Tallahassee, FL 32301",
+    "lat": 30.4397532,
+    "lng": -84.2794941,
+    "phone": "(850) 222-9700",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32301",
+    "available": true
+  },
+  {
+    "id": "l-068",
+    "name": "The Law Office of John Grant",
+    "address": "1215 Thomasville Rd, Tallahassee, FL 32303",
+    "lat": 30.4559835,
+    "lng": -84.2771829,
+    "phone": "(850) 224-1111",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32303",
+    "available": true
+  },
+  {
+    "id": "l-069",
+    "name": "The Law Office of Charles H. Leo",
+    "address": "125 E Virginia St, Tallahassee, FL 32301",
+    "lat": 30.4457185,
+    "lng": -84.2816136,
+    "phone": "(850) 222-2222",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32301",
+    "available": true
+  },
+  {
+    "id": "l-070",
+    "name": "The Law Office of Guy S. Spearman",
+    "address": "113 S Monroe St, Tallahassee, FL 32301",
+    "lat": 30.441267,
+    "lng": -84.2804355,
+    "phone": "(850) 224-5000",
+    "practiceAreas": [
+      "Civil Litigation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tallahassee",
+    "county": "Leon County",
+    "zipCode": "32301",
+    "available": true
+  },
+  {
+    "id": "l-071",
+    "name": "Brannon & Brannon",
+    "address": "251 Mary Esther Blvd #104, Mary Esther, FL 32569",
+    "lat": 30.4099215,
+    "lng": -86.6630098,
+    "phone": "(850) 243-5500",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Walton Beach",
+    "county": "Okaloosa County",
+    "zipCode": "32569",
+    "available": true
+  },
+  {
+    "id": "l-072",
+    "name": "The Law Office of Randall Spivey",
+    "address": "1817 Lewis Turner Blvd, Fort Walton Beach, FL 32547",
+    "lat": 30.4617366,
+    "lng": -86.6265698,
+    "phone": "(850) 863-4900",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Walton Beach",
+    "county": "Okaloosa County",
+    "zipCode": "32547",
+    "available": true
+  },
+  {
+    "id": "l-073",
+    "name": "The Law Office of Kevin M. Gunter",
+    "address": "909 Mar Walt Dr #1014, Fort Walton Beach, FL 32547",
+    "lat": 30.4057552,
+    "lng": -86.618842,
+    "phone": "(850) 226-7600",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Walton Beach",
+    "county": "Okaloosa County",
+    "zipCode": "32547",
+    "available": true
+  },
+  {
+    "id": "l-074",
+    "name": "The Law Office of John Jay Miller",
+    "address": "1992 Lewis Turner Blvd #101, Fort Walton Beach, FL 32547",
+    "lat": 30.4690587,
+    "lng": -86.6109107,
+    "phone": "(850) 244-6800",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Walton Beach",
+    "county": "Okaloosa County",
+    "zipCode": "32547",
+    "available": true
+  },
+  {
+    "id": "l-075",
+    "name": "The Law Office of Jeffrey Burns",
+    "address": "154 Brooks St SE, Fort Walton Beach, FL 32548",
+    "lat": 30.4031236,
+    "lng": -86.6069524,
+    "phone": "(850) 244-6666",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Walton Beach",
+    "county": "Okaloosa County",
+    "zipCode": "32548",
+    "available": true
+  },
+  {
+    "id": "l-076",
+    "name": "Anchors Smith Grimsley PLLC",
+    "address": "909 Mar Walt Dr #1014, Fort Walton Beach, FL 32547",
+    "lat": 30.4057552,
+    "lng": -86.618842,
+    "phone": "(850) 863-4064",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Walton Beach",
+    "county": "Okaloosa County",
+    "zipCode": "32547",
+    "available": true
+  },
+  {
+    "id": "l-077",
+    "name": "The Law Office of Stephen A. Evans",
+    "address": "4507 Furling Ln #201, Destin, FL 32541",
+    "lat": 30.3935337,
+    "lng": -86.4957834,
+    "phone": "(850) 650-7000",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Destin",
+    "county": "Okaloosa County",
+    "zipCode": "32541",
+    "available": true
+  },
+  {
+    "id": "l-078",
+    "name": "The Law Office of John J. Shell",
+    "address": "4495 Caroline St, Milton, FL 32570",
+    "lat": 30.6197004,
+    "lng": -87.04922,
+    "phone": "(850) 623-9000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Milton",
+    "county": "Santa Rosa County",
+    "zipCode": "32570",
+    "available": true
+  },
+  {
+    "id": "l-079",
+    "name": "The Law Office of Michael D. Payne",
+    "address": "4495 Caroline St, Milton, FL 32570",
+    "lat": 30.6197004,
+    "lng": -87.04922,
+    "phone": "(850) 623-4000",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Milton",
+    "county": "Santa Rosa County",
+    "zipCode": "32570",
+    "available": true
+  },
+  {
+    "id": "l-080",
+    "name": "The Law Office of David A. Colecchi",
+    "address": "4475 Woodbine Rd, Pace, FL 32571",
+    "lat": 30.6002855,
+    "lng": -87.1827019,
+    "phone": "(850) 995-9999",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pace",
+    "county": "Santa Rosa County",
+    "zipCode": "32571",
+    "available": true
+  },
+  {
+    "id": "l-081",
+    "name": "The Law Office of Matthew M. Williams",
+    "address": "4618 Woodbine Rd, Pace, FL 32571",
+    "lat": 30.6000354,
+    "lng": -87.1822858,
+    "phone": "(850) 995-0001",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pace",
+    "county": "Santa Rosa County",
+    "zipCode": "32571",
+    "available": true
+  },
+  {
+    "id": "l-082",
+    "name": "The Law Office of Craig W. Whisenhunt",
+    "address": "4540 Chumuckla Hwy, Pace, FL 32571",
+    "lat": 30.6012884,
+    "lng": -87.1614303,
+    "phone": "(850) 994-2200",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pace",
+    "county": "Santa Rosa County",
+    "zipCode": "32571",
+    "available": true
+  },
+  {
+    "id": "l-083",
+    "name": "The Law Office of R. Keith Rogers",
+    "address": "4475 Woodbine Rd, Pace, FL 32571",
+    "lat": 30.6002855,
+    "lng": -87.1827019,
+    "phone": "(850) 995-1100",
+    "practiceAreas": [
+      "Civil Litigation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pace",
+    "county": "Santa Rosa County",
+    "zipCode": "32571",
+    "available": true
+  },
+  {
+    "id": "l-084",
+    "name": "The Law Office of James H. Taylor",
+    "address": "4300 Bayou Blvd #45, Pensacola, FL 32503",
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "phone": "(850) 434-3333",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pensacola Area",
+    "county": "Santa Rosa County",
+    "zipCode": "32503",
+    "available": true
+  },
+  {
+    "id": "l-085",
+    "name": "The Law Office of Wade G. Mercer",
+    "address": "503 Harrison Ave, Panama City, FL 32401",
+    "lat": 30.1571913,
+    "lng": -85.6604746,
+    "phone": "(850) 785-7454",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Panama City",
+    "county": "Bay County",
+    "zipCode": "32401",
+    "available": true
+  },
+  {
+    "id": "l-086",
+    "name": "The Law Office of William G. Smith",
+    "address": "221 McKenzie Ave, Panama City, FL 32401",
+    "lat": 30.1526318,
+    "lng": -85.6581058,
+    "phone": "(850) 785-7500",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Panama City",
+    "county": "Bay County",
+    "zipCode": "32401",
+    "available": true
+  },
+  {
+    "id": "l-087",
+    "name": "The Law Office of Daniel W. Brown",
+    "address": "431 Magnolia Ave, Panama City, FL 32401",
+    "lat": 30.1556846,
+    "lng": -85.6590855,
+    "phone": "(850) 785-4445",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Panama City",
+    "county": "Bay County",
+    "zipCode": "32401",
+    "available": true
+  },
+  {
+    "id": "l-088",
+    "name": "The Law Office of J. Ryan Carpenter",
+    "address": "1022 Harrison Ave, Panama City, FL 32401",
+    "lat": 30.1670827,
+    "lng": -85.6598234,
+    "phone": "(850) 769-3434",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Panama City",
+    "county": "Bay County",
+    "zipCode": "32401",
+    "available": true
+  },
+  {
+    "id": "l-089",
+    "name": "The Law Office of John M. Fumero",
+    "address": "703 Jenks Ave, Panama City, FL 32401",
+    "lat": 30.1608241,
+    "lng": -85.6629881,
+    "phone": "(850) 872-1212",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Panama City",
+    "county": "Bay County",
+    "zipCode": "32401",
+    "available": true
+  },
+  {
+    "id": "l-090",
+    "name": "The Law Office of Stephen Kaplan",
+    "address": "821 Jenks Ave, Panama City, FL 32401",
+    "lat": 30.1628939,
+    "lng": -85.6626933,
+    "phone": "(850) 785-7000",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Panama City",
+    "county": "Bay County",
+    "zipCode": "32401",
+    "available": true
+  },
+  {
+    "id": "l-091",
+    "name": "The Law Office of Kate Mesic, P.A.",
+    "address": "501 Riverside Ave #902, Jacksonville, FL 32202",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 358-0990",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32202",
+    "available": true
+  },
+  {
+    "id": "l-092",
+    "name": "The Law Office of Shorstein & Lee",
+    "address": "4651 Salisbury Rd #400, Jacksonville, FL 32256",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 358-0700",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32256",
+    "available": true
+  },
+  {
+    "id": "l-093",
+    "name": "The Law Office of Tony I. Moss, P.A.",
+    "address": "301 W Bay St #14155, Jacksonville, FL 32202",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 358-1110",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32202",
+    "available": true
+  },
+  {
+    "id": "l-094",
+    "name": "The Law Office of Nooney, Roberts, Hewett & Nowicki",
+    "address": "501 Riverside Ave #601, Jacksonville, FL 32202",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 398-1992",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32202",
+    "available": true
+  },
+  {
+    "id": "l-095",
+    "name": "The Law Office of Alysia A. Keplinger",
+    "address": "233 E Bay St #920, Jacksonville, FL 32202",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 358-2757",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32202",
+    "available": true
+  },
+  {
+    "id": "l-096",
+    "name": "The Law Office of David M. Goldman PLLC",
+    "address": "4115 Hendricks Ave, Jacksonville, FL 32207",
+    "lat": 30.3033114,
+    "lng": -81.6520407,
+    "phone": "(904) 685-1200",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32207",
+    "available": true
+  },
+  {
+    "id": "l-097",
+    "name": "The Law Office of Jason K.S. Porter, P.A.",
+    "address": "100 N Laura St #702, Jacksonville, FL 32202",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 701-0591",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32202",
+    "available": true
+  },
+  {
+    "id": "l-098",
+    "name": "The Law Office of Matthew D. Shirk, P.A.",
+    "address": "1301 Riverplace Blvd #1500, Jacksonville, FL 32207",
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "phone": "(904) 680-7777",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Jacksonville",
+    "county": "Duval County",
+    "zipCode": "32207",
+    "available": true
+  },
+  {
+    "id": "l-099",
+    "name": "The Law Office of St. Johns Law Group",
+    "address": "104 Sea Grove Main St, St Augustine, FL 32080",
+    "lat": 29.8446108,
+    "lng": -81.2775826,
+    "phone": "(904) 495-0400",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Augustine",
+    "county": "St. Johns County",
+    "zipCode": "32080",
+    "available": true
+  },
+  {
+    "id": "l-100",
+    "name": "The Law Office of Canan Law",
+    "address": "501 Anastasia Blvd, St Augustine, FL 32080",
+    "lat": 29.890184,
+    "lng": -81.295116,
+    "phone": "(904) 824-9400",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Augustine",
+    "county": "St. Johns County",
+    "zipCode": "32080",
+    "available": true
+  },
+  {
+    "id": "l-101",
+    "name": "The Law Office of Douglas F. Burnett, P.A.",
+    "address": "100 Whetstone Pl #102, St Augustine, FL 32086",
+    "lat": 29.8946952,
+    "lng": -81.3145395,
+    "phone": "(904) 217-7100",
+    "practiceAreas": [
+      "Real Estate Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Augustine",
+    "county": "St. Johns County",
+    "zipCode": "32086",
+    "available": true
+  },
+  {
+    "id": "l-102",
+    "name": "The Law Office of Erin E. Borries",
+    "address": "255 W King St, St Augustine, FL 32084",
+    "lat": 29.8922287,
+    "lng": -81.3124332,
+    "phone": "(904) 829-1900",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Augustine",
+    "county": "St. Johns County",
+    "zipCode": "32084",
+    "available": true
+  },
+  {
+    "id": "l-103",
+    "name": "The Law Office of Kyle E. Merritt, P.A.",
+    "address": "1521 N Ponce De Leon Blvd, St Augustine, FL 32084",
+    "lat": 29.901856,
+    "lng": -81.3202983,
+    "phone": "(904) 824-3000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Augustine",
+    "county": "St. Johns County",
+    "zipCode": "32084",
+    "available": true
+  },
+  {
+    "id": "l-104",
+    "name": "The Law Office of Meldon Law",
+    "address": "703 N Main St #A, Gainesville, FL 32601",
+    "lat": 29.6519684,
+    "lng": -82.3249846,
+    "phone": "(352) 373-8000",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Gainesville",
+    "county": "Alachua County",
+    "zipCode": "32601",
+    "available": true
+  },
+  {
+    "id": "l-105",
+    "name": "The Law Office of Musca Law",
+    "address": "207 NE 1st St, Gainesville, FL 32601",
+    "lat": 29.6535229,
+    "lng": -82.3239097,
+    "phone": "(352) 375-0812",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Gainesville",
+    "county": "Alachua County",
+    "zipCode": "32601",
+    "available": true
+  },
+  {
+    "id": "l-106",
+    "name": "The Law Office of Scarlett & O’Hara, P.A.",
+    "address": "2234 NW 40th Terrace, Gainesville, FL 32605",
+    "lat": 29.6730598,
+    "lng": -82.3845441,
+    "phone": "(352) 378-7272",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Gainesville",
+    "county": "Alachua County",
+    "zipCode": "32605",
+    "available": true
+  },
+  {
+    "id": "l-107",
+    "name": "The Law Office of Bogin, Munns & Munns (Gainesville)",
+    "address": "2700 NW 43rd St #C, Gainesville, FL 32606",
+    "lat": 29.6519684,
+    "lng": -82.3249846,
+    "phone": "(352) 332-7688",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Gainesville",
+    "county": "Alachua County",
+    "zipCode": "32606",
+    "available": true
+  },
+  {
+    "id": "l-108",
+    "name": "The Law Office of Fine, Farkash & Parlapiano, P.A.",
+    "address": "622 NE 1st St, Gainesville, FL 32601",
+    "lat": 29.6573558,
+    "lng": -82.32427,
+    "phone": "(352) 372-7171",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Gainesville",
+    "county": "Alachua County",
+    "zipCode": "32601",
+    "available": true
+  },
+  {
+    "id": "l-109",
+    "name": "The Law Office of Lasky & Davis, P.A.",
+    "address": "1835-3 Eastwest Pkwy, Fleming Island, FL 32003",
+    "lat": 30.0873904,
+    "lng": -81.7120195,
+    "phone": "(904) 269-1111",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fleming Island",
+    "county": "Clay County",
+    "zipCode": "32003",
+    "available": true
+  },
+  {
+    "id": "l-110",
+    "name": "The Law Office of The Law Offices of Ron Sholes, P.A.",
+    "address": "818 Blanding Blvd, Orange Park, FL 32065",
+    "lat": 30.1654707,
+    "lng": -81.7016346,
+    "phone": "(904) 269-1111",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orange Park",
+    "county": "Clay County",
+    "zipCode": "32065",
+    "available": true
+  },
+  {
+    "id": "l-111",
+    "name": "The Law Office of Brown & Barbas, PLLC",
+    "address": "2301 Park Ave #404, Orange Park, FL 32073",
+    "lat": 30.1654707,
+    "lng": -81.7016346,
+    "phone": "(904) 264-3412",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orange Park",
+    "county": "Clay County",
+    "zipCode": "32073",
+    "available": true
+  },
+  {
+    "id": "l-112",
+    "name": "The Law Office of The Law Offices of John J. Rahaim, P.A.",
+    "address": "1279 Kingsley Ave #118, Orange Park, FL 32073",
+    "lat": 30.1654707,
+    "lng": -81.7016346,
+    "phone": "(904) 264-8800",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Orange Park",
+    "county": "Clay County",
+    "zipCode": "32073",
+    "available": true
+  },
+  {
+    "id": "l-113",
+    "name": "The Law Office of Dean Tsourakis",
+    "address": "615 SE 17th St #201, Ocala, FL 34471",
+    "lat": 29.171767,
+    "lng": -82.1301064,
+    "phone": "(352) 671-9777",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Ocala",
+    "county": "Marion County",
+    "zipCode": "34471",
+    "available": true
+  },
+  {
+    "id": "l-114",
+    "name": "The Law Office of Bogin, Munns & Munns (Ocala)",
+    "address": "1396 E Silver Springs Blvd, Ocala, FL 34470",
+    "lat": 29.187118,
+    "lng": -82.1202183,
+    "phone": "(352) 732-7777",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Ocala",
+    "county": "Marion County",
+    "zipCode": "34470",
+    "available": true
+  },
+  {
+    "id": "l-115",
+    "name": "The Law Office of R. Craig DeThomasis",
+    "address": "750 SE 3rd Ave, Ocala, FL 34471",
+    "lat": 29.1807587,
+    "lng": -82.1342946,
+    "phone": "(352) 732-5000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Ocala",
+    "county": "Marion County",
+    "zipCode": "34471",
+    "available": true
+  },
+  {
+    "id": "l-116",
+    "name": "The Law Office of Goldman & Associates",
+    "address": "500 NE 8th Ave, Ocala, FL 34470",
+    "lat": 29.192228,
+    "lng": -82.129947,
+    "phone": "(352) 622-6100",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Ocala",
+    "county": "Marion County",
+    "zipCode": "34470",
+    "available": true
+  },
+  {
+    "id": "l-117",
+    "name": "The Law Office of Clyde Davis",
+    "address": "961687 Gateway Blvd #101, Fernandina Beach, FL 32034",
+    "lat": 30.6712285,
+    "lng": -81.4630025,
+    "phone": "(904) 261-7001",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fernandina Beach",
+    "county": "Nassau County",
+    "zipCode": "32034",
+    "available": true
+  },
+  {
+    "id": "l-118",
+    "name": "The Law Office of A. James Mullaney",
+    "address": "11 S 4th St, Fernandina Beach, FL 32034",
+    "lat": 30.6708894,
+    "lng": -81.4622248,
+    "phone": "(904) 261-5465",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fernandina Beach",
+    "county": "Nassau County",
+    "zipCode": "32034",
+    "available": true
+  },
+  {
+    "id": "l-119",
+    "name": "The Law Office of Denise May",
+    "address": "474300 E State Rd 200 #3, Fernandina Beach, FL 32034",
+    "lat": 30.6712285,
+    "lng": -81.4630025,
+    "phone": "(904) 491-7000",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fernandina Beach",
+    "county": "Nassau County",
+    "zipCode": "32034",
+    "available": true
+  },
+  {
+    "id": "l-120",
+    "name": "The Law Office of Jason R. Moulton, P.A.",
+    "address": "495 Grand Blvd #206, Miramar Beach, FL 32550",
+    "lat": 30.377985,
+    "lng": -86.3616979,
+    "phone": "(850) 650-2222",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miramar Beach",
+    "county": "Walton County",
+    "zipCode": "32550",
+    "available": true
+  },
+  {
+    "id": "l-121",
+    "name": "The Law Office of Gregory D. Smith",
+    "address": "541 US Hwy 90 W #A, DeFuniak Springs, FL 32433",
+    "lat": 30.7210227,
+    "lng": -86.1152184,
+    "phone": "(850) 892-1133",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "DeFuniak Springs",
+    "county": "Walton County",
+    "zipCode": "32433",
+    "available": true
+  },
+  {
+    "id": "l-122",
+    "name": "The Law Office of Clay Whaley",
+    "address": "12500 US Hwy 98 W #B101, Miramar Beach, FL 32550",
+    "lat": 30.377985,
+    "lng": -86.3616979,
+    "phone": "(850) 837-7777",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miramar Beach",
+    "county": "Walton County",
+    "zipCode": "32550",
+    "available": true
+  },
+  {
+    "id": "l-123",
+    "name": "The Law Office of Patricia A. Williams",
+    "address": "10 E Jefferson St, Quincy, FL 32351",
+    "lat": 30.5882356,
+    "lng": -84.5767535,
+    "phone": "(850) 875-8800",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Quincy",
+    "county": "Gadsden County",
+    "zipCode": "32351",
+    "available": true
+  },
+  {
+    "id": "l-124",
+    "name": "The Law Office of Julian P. Cook",
+    "address": "5 N Madison St, Quincy, FL 32351",
+    "lat": 30.5883244,
+    "lng": -84.5756926,
+    "phone": "(850) 627-7777",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Quincy",
+    "county": "Gadsden County",
+    "zipCode": "32351",
+    "available": true
+  },
+  {
+    "id": "l-125",
+    "name": "The Law Office of Taracks & Associates",
+    "address": "501 E Kennedy Blvd #1700, Tampa, FL 33602",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 281-2897",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33602",
+    "available": true
+  },
+  {
+    "id": "l-126",
+    "name": "The Law Office of Richard L. Gonzmart",
+    "address": "412 E Madison St #824, Tampa, FL 33602",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 223-5000",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33602",
+    "available": true
+  },
+  {
+    "id": "l-127",
+    "name": "The Law Office of Andrew B. Buda, P.A.",
+    "address": "2503 W Swann Ave, Tampa, FL 33609",
+    "lat": 27.9375887,
+    "lng": -82.4853392,
+    "phone": "(813) 254-0077",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33609",
+    "available": true
+  },
+  {
+    "id": "l-128",
+    "name": "The Law Office of Samuel P. Bell, III, P.A.",
+    "address": "3800 W Bay to Bay Blvd #11, Tampa, FL 33629",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 258-2808",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33629",
+    "available": true
+  },
+  {
+    "id": "l-129",
+    "name": "The Law Office of Laurie E. Ohall, P.A.",
+    "address": "3311 W Kennedy Blvd, Tampa, FL 33609",
+    "lat": 27.9448873,
+    "lng": -82.4976216,
+    "phone": "(813) 514-0400",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33609",
+    "available": true
+  },
+  {
+    "id": "l-130",
+    "name": "The Law Office of Haas Law Group",
+    "address": "320 W Kennedy Blvd #220, Tampa, FL 33606",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 254-1000",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33606",
+    "available": true
+  },
+  {
+    "id": "l-131",
+    "name": "The Law Office of All Family Law Group, P.A.",
+    "address": "511 W Bay St #350, Tampa, FL 33606",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 672-1900",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33606",
+    "available": true
+  },
+  {
+    "id": "l-132",
+    "name": "The Law Office of Florida Law Advisers, P.A.",
+    "address": "10150 Highland Manor Dr #200, Tampa, FL 33610",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(800) 990-7763",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33610",
+    "available": true
+  },
+  {
+    "id": "l-133",
+    "name": "The Law Office of Rivas Law Group",
+    "address": "4921 Memorial Hwy #300, Tampa, FL 33634",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 421-4555",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33634",
+    "available": true
+  },
+  {
+    "id": "l-134",
+    "name": "The Law Office of Abrahamson & Uiterwyk",
+    "address": "201 E Kennedy Blvd #1250, Tampa, FL 33602",
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "phone": "(813) 223-5295",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Tampa",
+    "county": "Hillsborough County",
+    "zipCode": "33602",
+    "available": true
+  },
+  {
+    "id": "l-135",
+    "name": "The Law Office of Michael A. Ziegler, P.A.",
+    "address": "4900 Central Ave, St Petersburg, FL 33707",
+    "lat": 27.770837,
+    "lng": -82.699973,
+    "phone": "(727) 384-3840",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Petersburg",
+    "county": "Pinellas County",
+    "zipCode": "33707",
+    "available": true
+  },
+  {
+    "id": "l-136",
+    "name": "The Law Office of Stephen G. Kunz",
+    "address": "814 Ponce De Leon Blvd, Clearwater, FL 33756",
+    "lat": 27.9351732,
+    "lng": -82.7833714,
+    "phone": "(727) 447-4500",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Clearwater",
+    "county": "Pinellas County",
+    "zipCode": "33756",
+    "available": true
+  },
+  {
+    "id": "l-137",
+    "name": "The Law Office of Denis M. deVlaming, P.A.",
+    "address": "2385 Tampa Rd #4, Palm Harbor, FL 34683",
+    "lat": 28.0780718,
+    "lng": -82.7637127,
+    "phone": "(727) 787-2500",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Palm Harbor",
+    "county": "Pinellas County",
+    "zipCode": "34683",
+    "available": true
+  },
+  {
+    "id": "l-138",
+    "name": "The Law Office of Jennifer L. Zwiebel, P.A.",
+    "address": "2385 Tampa Rd #4, Palm Harbor, FL 34683",
+    "lat": 28.0780718,
+    "lng": -82.7637127,
+    "phone": "(727) 787-2500",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Palm Harbor",
+    "county": "Pinellas County",
+    "zipCode": "34683",
+    "available": true
+  },
+  {
+    "id": "l-139",
+    "name": "The Law Office of The Law Offices of Jonathan F. Marshall",
+    "address": "1101 Belcher Rd S #B, Largo, FL 33771",
+    "lat": 27.9094665,
+    "lng": -82.7873244,
+    "phone": "(727) 584-4404",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Largo",
+    "county": "Pinellas County",
+    "zipCode": "33771",
+    "available": true
+  },
+  {
+    "id": "l-140",
+    "name": "The Law Office of Family Matters Law Group, P.A.",
+    "address": "1301 Seminole Blvd #150, Largo, FL 33770",
+    "lat": 27.9094665,
+    "lng": -82.7873244,
+    "phone": "(727) 397-5571",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Largo",
+    "county": "Pinellas County",
+    "zipCode": "33770",
+    "available": true
+  },
+  {
+    "id": "l-141",
+    "name": "The Law Office of Battaglia, Ross, Dicus & McQuaid, P.A.",
+    "address": "5858 Central Ave, St Petersburg, FL 33707",
+    "lat": 27.7704597,
+    "lng": -82.7136018,
+    "phone": "(727) 381-2300",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "St. Petersburg",
+    "county": "Pinellas County",
+    "zipCode": "33707",
+    "available": true
+  },
+  {
+    "id": "l-142",
+    "name": "The Law Office of Roman Austin Personal Injury Lawyers",
+    "address": "521 S Missouri Ave, Clearwater, FL 33756",
+    "lat": 27.959938,
+    "lng": -82.787508,
+    "phone": "(727) 787-2500",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Clearwater",
+    "county": "Pinellas County",
+    "zipCode": "33756",
+    "available": true
+  },
+  {
+    "id": "l-143",
+    "name": "The Law Office of Cohen & Cohen Law, P.A.",
+    "address": "11401 Seminole Blvd, Largo, FL 33778",
+    "lat": 27.8922716,
+    "lng": -82.7870318,
+    "phone": "(727) 393-3444",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Largo",
+    "county": "Pinellas County",
+    "zipCode": "33778",
+    "available": true
+  },
+  {
+    "id": "l-144",
+    "name": "The Law Office of Florida Consumer Lawyers",
+    "address": "1101 Belcher Rd S #B, Largo, FL 33771",
+    "lat": 27.9094665,
+    "lng": -82.7873244,
+    "phone": "(727) 586-3306",
+    "practiceAreas": [
+      "Civil Litigation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Largo",
+    "county": "Pinellas County",
+    "zipCode": "33771",
+    "available": true
+  },
+  {
+    "id": "l-145",
+    "name": "The Law Office of Rene Pichardo",
+    "address": "10691 N Kendall Dr #206, Miami, FL 33176",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 670-7070",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33176",
+    "available": true
+  },
+  {
+    "id": "l-146",
+    "name": "The Law Office of Scott Kotler, P.A.",
+    "address": "66 W Flagler St #900, Miami, FL 33130",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 358-3828",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33130",
+    "available": true
+  },
+  {
+    "id": "l-147",
+    "name": "The Law Office of Armando J. Hernandez, P.A.",
+    "address": "850 NW 42nd Ave #400, Miami, FL 33126",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 649-9900",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33126",
+    "available": true
+  },
+  {
+    "id": "l-148",
+    "name": "The Law Office of Valeria Schvartzman",
+    "address": "1200 Brickell Ave #1950, Miami, FL 33131",
+    "lat": 25.7621035,
+    "lng": -80.1922963,
+    "phone": "(305) 912-2929",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33131",
+    "available": true
+  },
+  {
+    "id": "l-149",
+    "name": "The Law Office of Clyde Taylor, P.A.",
+    "address": "19 W Flagler St #907, Miami, FL 33130",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 372-8070",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33130",
+    "available": true
+  },
+  {
+    "id": "l-150",
+    "name": "The Law Office of Jonathan Blecher, P.A.",
+    "address": "19 W Flagler St #1200, Miami, FL 33130",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 448-2644",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33130",
+    "available": true
+  },
+  {
+    "id": "l-151",
+    "name": "The Law Office of Gerson & Schwartz, P.A.",
+    "address": "1980 Coral Way, Miami, FL 33145",
+    "lat": 25.7504512,
+    "lng": -80.2268293,
+    "phone": "(305) 371-6000",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33145",
+    "available": true
+  },
+  {
+    "id": "l-152",
+    "name": "The Law Office of Hager & Schwartz, P.A.",
+    "address": "18001 Old Cutler Rd #600, Miami, FL 33157",
+    "lat": 25.568226,
+    "lng": -80.3505619,
+    "phone": "(305) 670-3500",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33157",
+    "available": true
+  },
+  {
+    "id": "l-153",
+    "name": "The Law Office of The Estate Plan",
+    "address": "999 Brickell Ave #410, Miami, FL 33131",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 735-2689",
+    "practiceAreas": [
+      "Estate Planning"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33131",
+    "available": true
+  },
+  {
+    "id": "l-154",
+    "name": "The Law Office of Grantham Law Firm",
+    "address": "2655 S Le Jeune Rd #504, Coral Gables, FL 33134",
+    "lat": 25.7331105,
+    "lng": -80.2585107,
+    "phone": "(305) 446-0100",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Coral Gables",
+    "county": "Miami-Dade County",
+    "zipCode": "33134",
+    "available": true
+  },
+  {
+    "id": "l-155",
+    "name": "The Law Office of Stabinski & Funt",
+    "address": "1401 Brickell Ave #510, Miami, FL 33131",
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "phone": "(305) 379-3899",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Miami",
+    "county": "Miami-Dade County",
+    "zipCode": "33131",
+    "available": true
+  },
+  {
+    "id": "l-156",
+    "name": "The Law Office of The Ticket Clinic",
+    "address": "1550 Madruga Ave #300, Coral Gables, FL 33146",
+    "lat": 25.7331105,
+    "lng": -80.2585107,
+    "phone": "(305) 444-4300",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Coral Gables",
+    "county": "Miami-Dade County",
+    "zipCode": "33146",
+    "available": true
+  },
+  {
+    "id": "l-157",
+    "name": "The Law Office of Rossen Law Firm",
+    "address": "619 S Andrews Ave #301, Fort Lauderdale, FL 33301",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(754) 206-6200",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33301",
+    "available": true
+  },
+  {
+    "id": "l-158",
+    "name": "The Law Office of Michael D. Weinstein, P.A.",
+    "address": "12 SE 7th St #700, Fort Lauderdale, FL 33301",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(954) 523-4444",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33301",
+    "available": true
+  },
+  {
+    "id": "l-159",
+    "name": "The Law Office of Brian P. Kowal, P.A.",
+    "address": "604 S Federal Hwy #300, Fort Lauderdale, FL 33301",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(954) 522-0304",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33301",
+    "available": true
+  },
+  {
+    "id": "l-160",
+    "name": "The Law Office of Meltzer & Bell, P.A.",
+    "address": "110 SE 6th St #1700, Fort Lauderdale, FL 33301",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(954) 765-6585",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33301",
+    "available": true
+  },
+  {
+    "id": "l-161",
+    "name": "The Law Office of Schlesinger Law Offices, P.A.",
+    "address": "1212 SE 3rd Ave, Fort Lauderdale, FL 33316",
+    "lat": 26.1073369,
+    "lng": -80.1399655,
+    "phone": "(954) 467-8800",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33316",
+    "available": true
+  },
+  {
+    "id": "l-162",
+    "name": "The Law Office of Kelley Uustal, PLC",
+    "address": "500 E Broward Blvd #1900, Fort Lauderdale, FL 33394",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(954) 522-6601",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33394",
+    "available": true
+  },
+  {
+    "id": "l-163",
+    "name": "The Law Office of The Quattro Firm, PLLC",
+    "address": "200 SE 6th St #300, Fort Lauderdale, FL 33301",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(954) 900-8885",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33301",
+    "available": true
+  },
+  {
+    "id": "l-164",
+    "name": "The Law Office of Vasquez de Lara Law Group",
+    "address": "600 W Las Olas Blvd, Fort Lauderdale, FL 33312",
+    "lat": 26.1188229,
+    "lng": -80.1497352,
+    "phone": "(954) 530-5520",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33312",
+    "available": true
+  },
+  {
+    "id": "l-165",
+    "name": "The Law Office of J.P. Gonzalez-Sirgo, P.A.",
+    "address": "601 S Federal Hwy #300, Hollywood, FL 33020",
+    "lat": 26.0112014,
+    "lng": -80.1494901,
+    "phone": "(954) 241-1900",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Hollywood",
+    "county": "Broward County",
+    "zipCode": "33020",
+    "available": true
+  },
+  {
+    "id": "l-166",
+    "name": "The Law Office of Saban & Solomon, P.A.",
+    "address": "1600 S Federal Hwy #1100, Pompano Beach, FL 33062",
+    "lat": 26.2378597,
+    "lng": -80.1247667,
+    "phone": "(954) 344-4200",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Pompano Beach",
+    "county": "Broward County",
+    "zipCode": "33062",
+    "available": true
+  },
+  {
+    "id": "l-167",
+    "name": "The Law Office of Flanigan & Leavitt, P.A.",
+    "address": "101 NE 3rd Ave #1500, Fort Lauderdale, FL 33301",
+    "lat": 26.1223084,
+    "lng": -80.1433786,
+    "phone": "(954) 733-3333",
+    "practiceAreas": [
+      "Civil Litigation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Fort Lauderdale",
+    "county": "Broward County",
+    "zipCode": "33301",
+    "available": true
+  },
+  {
+    "id": "l-168",
+    "name": "The Law Office of Eric M. Matheny, P.A.",
+    "address": "2240 Palm Beach Lakes Blvd #200, West Palm Beach, FL 33409",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 687-5555",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33409",
+    "available": true
+  },
+  {
+    "id": "l-169",
+    "name": "The Law Office of Daniel M. Rosenberg",
+    "address": "515 N Flagler Dr #350, West Palm Beach, FL 33401",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 832-7777",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33401",
+    "available": true
+  },
+  {
+    "id": "l-170",
+    "name": "The Law Office of Brian A. Dore, P.A.",
+    "address": "205 Worth Ave #201, Palm Beach, FL 33480",
+    "lat": 26.7056172,
+    "lng": -80.0361517,
+    "phone": "(561) 832-0200",
+    "practiceAreas": [
+      "Criminal Defense"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33480",
+    "available": true
+  },
+  {
+    "id": "l-171",
+    "name": "The Law Office of Lytal, Reiter, Smith, Ivey & Fronrath LLP",
+    "address": "515 N Flagler Dr #1600, West Palm Beach, FL 33401",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 655-1990",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33401",
+    "available": true
+  },
+  {
+    "id": "l-172",
+    "name": "The Law Office of Lesser, Landy, Smith & Siegel, PLLC",
+    "address": "222 Lakeview Ave #1250, West Palm Beach, FL 33401",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 655-2028",
+    "practiceAreas": [
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33401",
+    "available": true
+  },
+  {
+    "id": "l-173",
+    "name": "The Law Office of Ronald H. Kauffman, P.A.",
+    "address": "100 S Dixie Hwy #200, West Palm Beach, FL 33401",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 478-1171",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33401",
+    "available": true
+  },
+  {
+    "id": "l-174",
+    "name": "The Law Office of Beebe Armstrong, P.A.",
+    "address": "250 S Australian Ave #1200, West Palm Beach, FL 33401",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 820-9000",
+    "practiceAreas": [
+      "Estate Planning",
+      "Family Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33401",
+    "available": true
+  },
+  {
+    "id": "l-175",
+    "name": "The Law Office of Immigration Law Associates, P.A.",
+    "address": "2240 Palm Beach Lakes Blvd #300, West Palm Beach, FL 33409",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 689-9400",
+    "practiceAreas": [
+      "Immigration"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33409",
+    "available": true
+  },
+  {
+    "id": "l-176",
+    "name": "The Law Office of K/S Attorneys at Law",
+    "address": "1615 S Congress Ave #103, Delray Beach, FL 33445",
+    "lat": 26.4614625,
+    "lng": -80.0728201,
+    "phone": "(561) 266-9191",
+    "practiceAreas": [
+      "Business Law"
+    ],
+    "email": "",
+    "website": "",
+    "region": "Delray Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33445",
+    "available": true
+  },
+  {
+    "id": "l-177",
+    "name": "The Law Office of Pike & Lustig, LLP",
+    "address": "120 S Olive Ave #500, West Palm Beach, FL 33401",
+    "lat": 26.715364,
+    "lng": -80.0532942,
+    "phone": "(561) 291-8298",
+    "practiceAreas": [
+      "Civil Litigation"
+    ],
+    "email": "",
+    "website": "",
+    "region": "West Palm Beach",
+    "county": "Palm Beach County",
+    "zipCode": "33401",
+    "available": true
+  }
+]
