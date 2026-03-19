@@ -164,11 +164,11 @@
 .leaflet-popup-content-wrapper {
   border-radius: 14px !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
-  padding: 0 !important;
+  padding: 20px 18px !important;
 }
 
 .leaflet-popup-content {
-  margin: 14px 16px !important;
+  margin: 0 !important;
 }
 
 .leaflet-popup-tip {

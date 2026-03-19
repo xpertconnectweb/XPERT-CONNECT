@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, FileText, MessageSquare, Mail, Building2, Scale, ArrowLeft, Shield } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, MessageSquare, Mail, Building2, Scale, ArrowLeft, Shield, Clock, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -14,6 +14,11 @@ const navItems = [
   { href: '/admin/referrals', label: 'Referrals', icon: FileText },
   { href: '/admin/contacts', label: 'Contacts', icon: MessageSquare },
   { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+]
+
+const systemItems = [
+  { href: '/admin/activity', label: 'Activity', icon: Clock },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
 interface AdminSidebarProps {
@@ -74,6 +79,39 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </p>
           <ul className="space-y-1">
             {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onClose}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      'group relative flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200',
+                      isActive
+                        ? 'bg-white/[0.1] text-white'
+                        : 'text-white/50 hover:bg-white/[0.06] hover:text-white/80'
+                    )}
+                  >
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full bg-gold" />
+                    )}
+                    <item.icon className={cn(
+                      'h-[18px] w-[18px] transition-colors',
+                      isActive ? 'text-gold' : 'text-white/40 group-hover:text-white/60'
+                    )} aria-hidden="true" />
+                    {item.label}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+
+          <p className="px-4 mb-3 mt-8 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+            System
+          </p>
+          <ul className="space-y-1">
+            {systemItems.map((item) => {
               const isActive = pathname === item.href
               return (
                 <li key={item.href}>

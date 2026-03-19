@@ -8,9 +8,12 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/dashboard': 'Dashboard',
   '/admin/users': 'Users',
   '/admin/clinics': 'Clinics',
+  '/admin/lawyers': 'Lawyers',
   '/admin/referrals': 'Referrals',
   '/admin/contacts': 'Contacts',
   '/admin/newsletter': 'Newsletter',
+  '/admin/activity': 'Activity Log',
+  '/admin/settings': 'Settings',
 }
 
 function getGreeting(): string {

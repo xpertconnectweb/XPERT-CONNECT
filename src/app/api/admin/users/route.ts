@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUsers, createUser } from '@/lib/data'
 import { sanitize } from '@/lib/sanitize'
+import { logActivity } from '@/lib/activity-log'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 import type { UserRole } from '@/types/professionals'
@@ -78,6 +79,16 @@ export async function POST(request: NextRequest) {
     })
 
     const { password: _, ...safe } = user
+
+    await logActivity({
+      userId: session.user.id,
+      userName: session.user.name || 'Unknown',
+      action: 'user_created',
+      targetType: 'user',
+      targetId: user.id,
+      targetName: user.name,
+    })
+
     return NextResponse.json(safe, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Failed to create user. Username may already exist.' }, { status: 500 })

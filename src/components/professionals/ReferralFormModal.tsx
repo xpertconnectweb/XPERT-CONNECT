@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Send, Loader2, CheckCircle } from 'lucide-react'
+import { X, Send, Loader2, CheckCircle, User, Phone, Briefcase, Shield, FileCheck, StickyNote } from 'lucide-react'
 import type { Clinic } from '@/types/professionals'
 
 const CASE_TYPES = [
@@ -103,6 +103,11 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  const inputBase =
+    'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200'
+  const selectBase =
+    'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm text-gray-900 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200 appearance-none cursor-pointer'
+
   return (
     <div
       className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -111,51 +116,57 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div ref={modalRef} className="relative z-[10001] w-full max-w-lg rounded-2xl bg-white shadow-2xl animate-modal-in">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <div>
-            <h2 id="modal-title" className="font-heading text-lg font-bold text-navy">
-              New Referral
-            </h2>
-            <p className="text-sm text-gray-500">
-              Sending to {clinic.name}
-            </p>
+      <div ref={modalRef} className="relative z-[10001] w-full max-w-lg rounded-2xl bg-white shadow-2xl animate-modal-in overflow-hidden">
+        {/* Header with gradient accent */}
+        <div className="relative bg-gradient-to-r from-[#1a2a4a] to-[#2a3f6a] px-6 py-5">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] opacity-50" />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h2 id="modal-title" className="font-heading text-lg font-bold text-white">
+                New Referral
+              </h2>
+              <p className="text-sm text-white/60 mt-0.5">
+                Sending to <span className="text-gold font-medium">{clinic.name}</span>
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition-all duration-200"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5">
+        <div className="px-6 py-6">
           {success ? (
-            <div className="flex flex-col items-center py-8 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50 mb-4">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+            <div className="flex flex-col items-center py-10 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 mb-4 ring-4 ring-emerald-100">
+                <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <h3 className="font-heading text-lg font-bold text-navy mb-1">
                 Referral Sent!
               </h3>
               <p className="text-sm text-gray-500">
-                The clinic has been notified.
+                The clinic has been notified successfully.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+                <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700" role="alert">
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
                   {error}
                 </div>
               )}
 
+              {/* Patient Name */}
               <div>
-                <label htmlFor="patientName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Patient Name *
+                <label htmlFor="patientName" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <User className="h-3.5 w-3.5" />
+                  Patient Name <span className="text-red-400">*</span>
                 </label>
                 <input
                   ref={nameInputRef}
@@ -165,14 +176,16 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                   maxLength={100}
                   value={form.patientName}
                   onChange={(e) => updateField('patientName', e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
-                  placeholder="Enter patient name"
+                  className={inputBase}
+                  placeholder="Enter patient full name"
                 />
               </div>
 
+              {/* Patient Phone */}
               <div>
-                <label htmlFor="patientPhone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Patient Phone *
+                <label htmlFor="patientPhone" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Phone className="h-3.5 w-3.5" />
+                  Patient Phone <span className="text-red-400">*</span>
                 </label>
                 <input
                   id="patientPhone"
@@ -181,70 +194,92 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                   maxLength={20}
                   value={form.patientPhone}
                   onChange={(e) => updateField('patientPhone', e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
+                  className={inputBase}
                   placeholder="(305) 555-0000"
                 />
               </div>
 
+              {/* Case Type */}
               <div>
-                <label htmlFor="caseType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Case Type *
+                <label htmlFor="caseType" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  Case Type <span className="text-red-400">*</span>
                 </label>
-                <select
-                  id="caseType"
-                  required
-                  value={form.caseType}
-                  onChange={(e) => updateField('caseType', e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
-                >
-                  <option value="">Select case type</option>
-                  {CASE_TYPES.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="coverage" className="block text-sm font-medium text-gray-700 mb-1">
-                    Coverage *
-                  </label>
+                <div className="relative">
                   <select
-                    id="coverage"
+                    id="caseType"
                     required
-                    value={form.coverage}
-                    onChange={(e) => updateField('coverage', e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
+                    value={form.caseType}
+                    onChange={(e) => updateField('caseType', e.target.value)}
+                    className={selectBase}
                   >
-                    <option value="">Select coverage</option>
-                    {COVERAGE_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                    <option value="">Select case type</option>
+                    {CASE_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label htmlFor="pip" className="block text-sm font-medium text-gray-700 mb-1">
-                    PIP *
-                  </label>
-                  <select
-                    id="pip"
-                    required
-                    value={form.pip}
-                    onChange={(e) => updateField('pip', e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-colors"
-                  >
-                    <option value="">Select PIP</option>
-                    {PIP_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
                 </div>
               </div>
 
+              {/* Coverage + PIP row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="coverage" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <Shield className="h-3.5 w-3.5" />
+                    Coverage <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="coverage"
+                      required
+                      value={form.coverage}
+                      onChange={(e) => updateField('coverage', e.target.value)}
+                      className={selectBase}
+                    >
+                      <option value="">Select</option>
+                      {COVERAGE_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="pip" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <FileCheck className="h-3.5 w-3.5" />
+                    PIP <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="pip"
+                      required
+                      value={form.pip}
+                      onChange={(e) => updateField('pip', e.target.value)}
+                      className={selectBase}
+                    >
+                      <option value="">Select</option>
+                      {PIP_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
+                <label htmlFor="notes" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <StickyNote className="h-3.5 w-3.5" />
+                  Notes <span className="text-xs font-normal normal-case tracking-normal text-gray-400">(optional)</span>
                 </label>
                 <textarea
                   id="notes"
@@ -252,24 +287,28 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                   maxLength={500}
                   value={form.notes}
                   onChange={(e) => updateField('notes', e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 resize-none transition-colors"
+                  className={`${inputBase} resize-none`}
                   placeholder="Additional details about the patient case..."
                 />
-                <p className="text-xs text-gray-400 mt-1 text-right">{form.notes.length}/500</p>
+                <p className="text-[11px] text-gray-400 mt-1.5 text-right tabular-nums">{form.notes.length}/500</p>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              {/* Divider */}
+              <div className="h-px bg-gray-100" />
+
+              {/* Actions */}
+              <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-bold text-white hover:bg-gold-dark disabled:opacity-60 transition-colors"
+                  className="flex-[1.4] flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#d4a84b] to-[#c49a3f] px-4 py-3 text-sm font-bold text-white shadow-md shadow-gold/20 hover:shadow-lg hover:shadow-gold/30 hover:-translate-y-px disabled:opacity-60 disabled:shadow-none disabled:translate-y-0 transition-all duration-200"
                 >
                   {loading ? (
                     <>

@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail, FilterX } from 'lucide-react'
+import { BulkActionBar } from '@/components/admin/BulkActionBar'
+import { ConfirmModal } from '@/components/admin/ConfirmModal'
 
 interface Clinic {
   id: string
@@ -72,6 +74,9 @@ export default function AdminClinicsPage() {
   const [showEmailsModal, setShowEmailsModal] = useState(false)
   const [selectedClinicEmails, setSelectedClinicEmails] = useState<{ clinicEmail: string; userEmails: string[] } | null>(null)
   const [loadingEmails, setLoadingEmails] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   const fetchClinics = useCallback(async () => {
     const res = await fetch('/api/professionals/clinics', {
@@ -242,6 +247,90 @@ export default function AdminClinicsPage() {
     } finally {
       setLoadingEmails(false)
     }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = (filteredItems: Clinic[]) => {
+    const allFilteredIds = filteredItems.map((c) => c.id)
+    const allSelected = allFilteredIds.every((id) => selectedIds.has(id))
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(allFilteredIds))
+    }
+  }
+
+  const handleBulkToggle = async (available: boolean) => {
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/admin/clinics/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds), available }),
+      })
+      if (res.ok) {
+        setSelectedIds(new Set())
+        setLoading(true)
+        await fetchClinics()
+      }
+    } catch (err) {
+      console.error('Bulk toggle error:', err)
+    } finally {
+      setBulkLoading(false)
+      setBulkConfirm(null)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/admin/clinics/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      })
+      if (res.ok) {
+        setSelectedIds(new Set())
+        setLoading(true)
+        await fetchClinics()
+      }
+    } catch (err) {
+      console.error('Bulk delete error:', err)
+    } finally {
+      setBulkLoading(false)
+      setBulkConfirm(null)
+    }
+  }
+
+  const handleExportCSV = () => {
+    const selected = clinics.filter((c) => selectedIds.has(c.id))
+    const headers = ['Name', 'Address', 'Phone', 'Email', 'Specialties', 'Region', 'County', 'Available']
+    const rows = selected.map((c) => [
+      c.name,
+      c.address,
+      c.phone,
+      c.email,
+      c.specialties.join('; '),
+      c.region || '',
+      c.county || '',
+      c.available ? 'Yes' : 'No',
+    ])
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `clinics-export-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const getClinicState = useCallback((clinic: Clinic): string => {
@@ -495,6 +584,14 @@ export default function AdminClinicsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id))}
+                    onChange={() => toggleSelectAll(filtered)}
+                    className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Address</th>
                 <th className="px-4 py-3 font-medium">Region</th>
@@ -505,7 +602,15 @@ export default function AdminClinicsPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filtered.map((clinic) => (
-                <tr key={clinic.id} className="hover:bg-gray-50/50">
+                <tr key={clinic.id} className={`hover:bg-gray-50/50 ${selectedIds.has(clinic.id) ? 'bg-gold/5' : ''}`}>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(clinic.id)}
+                      onChange={() => toggleSelect(clinic.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                    />
+                  </td>
                   <td className="px-4 py-3 text-gray-900 font-medium">
                     <div>{clinic.name}</div>
                     <div className="text-xs text-gray-400">
@@ -767,6 +872,32 @@ export default function AdminClinicsPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        count={selectedIds.size}
+        entityType="clinic"
+        onMakeAvailable={() => setBulkConfirm({ action: 'available', message: `Make ${selectedIds.size} clinic(s) available?` })}
+        onMakeUnavailable={() => setBulkConfirm({ action: 'unavailable', message: `Make ${selectedIds.size} clinic(s) unavailable?` })}
+        onExportCSV={handleExportCSV}
+        onDelete={() => setBulkConfirm({ action: 'delete', message: `Delete ${selectedIds.size} clinic(s)? This cannot be undone.` })}
+        onClear={() => setSelectedIds(new Set())}
+      />
+
+      {/* Bulk Confirm Modal */}
+      <ConfirmModal
+        open={bulkConfirm !== null}
+        title={bulkConfirm?.action === 'delete' ? 'Delete Clinics' : 'Update Clinics'}
+        message={bulkConfirm?.message || ''}
+        confirmLabel={bulkConfirm?.action === 'delete' ? 'Delete' : 'Confirm'}
+        loading={bulkLoading}
+        onConfirm={() => {
+          if (bulkConfirm?.action === 'delete') handleBulkDelete()
+          else if (bulkConfirm?.action === 'available') handleBulkToggle(true)
+          else if (bulkConfirm?.action === 'unavailable') handleBulkToggle(false)
+        }}
+        onCancel={() => setBulkConfirm(null)}
+      />
 
       {/* Email Recipients Modal */}
       {showEmailsModal && (
