@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getClinics, getClinicsByState } from '@/lib/data'
+import { getClinics, getClinicsByState, getUserById } from '@/lib/data'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -9,12 +11,22 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const clinics = session.user.state
-    ? await getClinicsByState(session.user.state)
+  // Always read the user's current state from DB (JWT may be stale)
+  let userState: string | undefined
+  try {
+    const dbUser = await getUserById(session.user.id)
+    userState = dbUser?.state
+  } catch {
+    // Fallback to session state if DB lookup fails
+    userState = session.user.state
+  }
+
+  const clinics = userState
+    ? await getClinicsByState(userState)
     : await getClinics()
   return NextResponse.json(clinics, {
     headers: {
-      'Cache-Control': 'private, max-age=300, stale-while-revalidate=600',
+      'Cache-Control': 'private, no-store',
     },
   })
 }

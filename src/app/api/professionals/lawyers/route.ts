@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getLawyers, getLawyersByState } from '@/lib/data'
+import { getLawyers, getLawyersByState, getUserById } from '@/lib/data'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,12 +12,22 @@ export async function GET() {
   }
 
   try {
-    const lawyers = session.user.state
-      ? await getLawyersByState(session.user.state)
+    // Always read the user's current state from DB (JWT may be stale)
+    let userState: string | undefined
+    try {
+      const dbUser = await getUserById(session.user.id)
+      userState = dbUser?.state
+    } catch {
+      // Fallback to session state if DB lookup fails
+      userState = session.user.state
+    }
+
+    const lawyers = userState
+      ? await getLawyersByState(userState)
       : await getLawyers()
     return NextResponse.json(lawyers, {
       headers: {
-        'Cache-Control': 'private, max-age=300, stale-while-revalidate=600',
+        'Cache-Control': 'private, no-store',
       },
     })
   } catch (error) {

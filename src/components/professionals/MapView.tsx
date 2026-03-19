@@ -485,7 +485,7 @@ export function MapView() {
 
     if (showClinics) {
       for (const c of clinics) {
-        if (c.lat === 0 && c.lng === 0) continue
+        if (!c.lat || !c.lng || (c.lat === 0 && c.lng === 0)) continue
         if (showAvailableOnly && !c.available) continue
         if (query && !(
           c.name.toLowerCase().includes(query) || c.address.toLowerCase().includes(query) ||
@@ -498,11 +498,11 @@ export function MapView() {
 
     if (showLawyers) {
       for (const l of lawyers) {
-        if (l.lat === 0 && l.lng === 0) continue
+        if (!l.lat || !l.lng || (l.lat === 0 && l.lng === 0)) continue
         if (showAvailableOnly && !l.available) continue
         if (query && !(
           l.name.toLowerCase().includes(query) || l.address.toLowerCase().includes(query) ||
-          l.practiceAreas.some((s) => s.toLowerCase().includes(query)) ||
+          (l.practiceAreas || []).some((s) => s.toLowerCase().includes(query)) ||
           (l.region && l.region.toLowerCase().includes(query)) || (l.county && l.county.toLowerCase().includes(query))
         )) continue
         items.push({

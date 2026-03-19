@@ -79,7 +79,7 @@ export default function AdminClinicsPage() {
   const [bulkLoading, setBulkLoading] = useState(false)
 
   const fetchClinics = useCallback(async () => {
-    const res = await fetch('/api/professionals/clinics', {
+    const res = await fetch('/api/admin/clinics', {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
