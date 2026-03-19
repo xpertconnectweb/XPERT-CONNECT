@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { getUserByUsername } from './data'
+import { getUserByUsername, getUserById } from './data'
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -47,6 +47,25 @@ export const authOptions: NextAuthOptions = {
         token.firmName = user.firmName
         token.username = user.username
         token.state = user.state
+        token.refreshedAt = Date.now()
+      }
+      // Refresh user data from DB every 5 minutes
+      const refreshedAt = (token.refreshedAt as number) || 0
+      if (Date.now() - refreshedAt > 5 * 60 * 1000) {
+        try {
+          const dbUser = await getUserById(token.id as string)
+          if (dbUser) {
+            token.role = dbUser.role
+            token.clinicId = dbUser.clinicId
+            token.firmName = dbUser.firmName
+            token.state = dbUser.state
+            token.name = dbUser.name
+            token.email = dbUser.email
+          }
+        } catch {
+          // Silently ignore DB errors to avoid breaking sessions
+        }
+        token.refreshedAt = Date.now()
       }
       return token
     },
