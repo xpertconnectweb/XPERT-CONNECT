@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getLawyers } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
+import { logActivity } from '@/lib/activity-log'
 import { randomUUID } from 'crypto'
 
 export async function GET() {
@@ -38,8 +39,9 @@ export async function POST(request: Request) {
       available,
     } = body
 
+    const newId = randomUUID()
     const { error } = await supabaseAdmin.from('lawyers').insert({
-      id: randomUUID(),
+      id: newId,
       name,
       address,
       lat,
@@ -55,6 +57,15 @@ export async function POST(request: Request) {
     })
 
     if (error) throw error
+
+    await logActivity({
+      userId: session.user.id,
+      userName: session.user.name || 'Unknown',
+      action: 'lawyer_created',
+      targetType: 'lawyer',
+      targetId: newId,
+      targetName: name,
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

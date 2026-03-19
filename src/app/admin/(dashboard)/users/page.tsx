@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, X, Loader2, Search } from 'lucide-react'
+import { BulkActionBar } from '@/components/admin/BulkActionBar'
+import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import type { UserRole } from '@/types/professionals'
 
 interface UserRow {
@@ -55,6 +57,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [clinicSearch, setClinicSearch] = useState('')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -192,6 +197,48 @@ export default function AdminUsersPage() {
     }
   }
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    const allIds = users.map((u) => u.id)
+    const allSelected = allIds.every((id) => selectedIds.has(id))
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(allIds))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/admin/users/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      })
+      if (res.ok) {
+        setSelectedIds(new Set())
+        await fetchUsers()
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Bulk delete failed')
+      }
+    } catch (err) {
+      console.error('Bulk delete error:', err)
+    } finally {
+      setBulkLoading(false)
+      setBulkConfirm(null)
+    }
+  }
+
   // Filter clinics for the searchable dropdown
   const filteredClinics = clinicSearch.trim()
     ? clinics.filter(
@@ -235,6 +282,14 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={users.length > 0 && users.every((u) => selectedIds.has(u.id))}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Username</th>
                 <th className="px-4 py-3 font-medium">Role</th>
@@ -245,7 +300,15 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50/50">
+                <tr key={user.id} className={`hover:bg-gray-50/50 ${selectedIds.has(user.id) ? 'bg-gold/5' : ''}`}>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(user.id)}
+                      onChange={() => toggleSelect(user.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                    />
+                  </td>
                   <td className="px-4 py-3 text-gray-900 font-medium">{user.name}</td>
                   <td className="px-4 py-3 text-gray-600">{user.username}</td>
                   <td className="px-4 py-3">
@@ -315,6 +378,25 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        count={selectedIds.size}
+        entityType="user"
+        onDelete={() => setBulkConfirm({ action: 'delete', message: `Delete ${selectedIds.size} user(s)? This cannot be undone.` })}
+        onClear={() => setSelectedIds(new Set())}
+      />
+
+      {/* Bulk Confirm Modal */}
+      <ConfirmModal
+        open={bulkConfirm !== null}
+        title="Delete Users"
+        message={bulkConfirm?.message || ''}
+        confirmLabel="Delete"
+        loading={bulkLoading}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setBulkConfirm(null)}
+      />
 
       {/* Modal */}
       {showModal && (

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUserById, updateUser, deleteUser } from '@/lib/data'
 import { sanitize } from '@/lib/sanitize'
+import { logActivity } from '@/lib/activity-log'
 import bcrypt from 'bcryptjs'
 import type { UserRole } from '@/types/professionals'
 
@@ -77,6 +78,16 @@ export async function PATCH(
   }
 
   const { password: _, ...safe } = updated
+
+  await logActivity({
+    userId: session.user.id,
+    userName: session.user.name || 'Unknown',
+    action: 'user_updated',
+    targetType: 'user',
+    targetId: id,
+    targetName: updated.name,
+  })
+
   return NextResponse.json(safe)
 }
 
@@ -99,10 +110,20 @@ export async function DELETE(
     return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 })
   }
 
+  const existing = await getUserById(id)
   const success = await deleteUser(id)
   if (!success) {
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 })
   }
+
+  await logActivity({
+    userId: session.user.id,
+    userName: session.user.name || 'Unknown',
+    action: 'user_deleted',
+    targetType: 'user',
+    targetId: id,
+    targetName: existing?.name,
+  })
 
   return NextResponse.json({ success: true })
 }

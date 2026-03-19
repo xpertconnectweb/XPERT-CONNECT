@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Plus, Pencil, Trash2, X, Loader2, Search, FilterX } from 'lucide-react'
+import { BulkActionBar } from '@/components/admin/BulkActionBar'
+import { ConfirmModal } from '@/components/admin/ConfirmModal'
 
 interface Lawyer {
   id: string
@@ -64,6 +66,9 @@ export default function AdminLawyersPage() {
   const [countyFilter, setCountyFilter] = useState<string>('')
   const [practiceAreaFilter, setPracticeAreaFilter] = useState<string>('')
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   const fetchLawyers = useCallback(async () => {
     const res = await fetch('/api/admin/lawyers', {
@@ -194,6 +199,91 @@ export default function AdminLawyersPage() {
     } finally {
       setTogglingId(null)
     }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = (filteredItems: Lawyer[]) => {
+    const allFilteredIds = filteredItems.map((l) => l.id)
+    const allSelected = allFilteredIds.every((id) => selectedIds.has(id))
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(allFilteredIds))
+    }
+  }
+
+  const handleBulkToggle = async (available: boolean) => {
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/admin/lawyers/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds), available }),
+      })
+      if (res.ok) {
+        setSelectedIds(new Set())
+        setLoading(true)
+        await fetchLawyers()
+      }
+    } catch (err) {
+      console.error('Bulk toggle error:', err)
+    } finally {
+      setBulkLoading(false)
+      setBulkConfirm(null)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    setBulkLoading(true)
+    try {
+      const res = await fetch('/api/admin/lawyers/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      })
+      if (res.ok) {
+        setSelectedIds(new Set())
+        setLoading(true)
+        await fetchLawyers()
+      }
+    } catch (err) {
+      console.error('Bulk delete error:', err)
+    } finally {
+      setBulkLoading(false)
+      setBulkConfirm(null)
+    }
+  }
+
+  const handleExportCSV = () => {
+    const selected = lawyers.filter((l) => selectedIds.has(l.id))
+    const headers = ['Name', 'Address', 'Phone', 'Email', 'Practice Areas', 'Region', 'County', 'ZIP Code', 'Available']
+    const rows = selected.map((l) => [
+      l.name,
+      l.address,
+      l.phone,
+      l.email,
+      l.practiceAreas.join('; '),
+      l.region || '',
+      l.county || '',
+      l.zipCode || '',
+      l.available ? 'Yes' : 'No',
+    ])
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `lawyers-export-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const regionOptions = useMemo(() => {
@@ -392,6 +482,14 @@ export default function AdminLawyersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id))}
+                    onChange={() => toggleSelectAll(filtered)}
+                    className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Address</th>
                 <th className="px-4 py-3 font-medium">Region</th>
@@ -402,7 +500,15 @@ export default function AdminLawyersPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filtered.map((lawyer) => (
-                <tr key={lawyer.id} className="hover:bg-gray-50/50">
+                <tr key={lawyer.id} className={`hover:bg-gray-50/50 ${selectedIds.has(lawyer.id) ? 'bg-gold/5' : ''}`}>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(lawyer.id)}
+                      onChange={() => toggleSelect(lawyer.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                    />
+                  </td>
                   <td className="px-4 py-3 text-gray-900 font-medium">
                     <div>{lawyer.name}</div>
                     <div className="text-xs text-gray-400">
@@ -485,6 +591,32 @@ export default function AdminLawyersPage() {
           </table>
         </div>
       </div>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        count={selectedIds.size}
+        entityType="lawyer"
+        onMakeAvailable={() => setBulkConfirm({ action: 'available', message: `Make ${selectedIds.size} lawyer(s) available?` })}
+        onMakeUnavailable={() => setBulkConfirm({ action: 'unavailable', message: `Make ${selectedIds.size} lawyer(s) unavailable?` })}
+        onExportCSV={handleExportCSV}
+        onDelete={() => setBulkConfirm({ action: 'delete', message: `Delete ${selectedIds.size} lawyer(s)? This cannot be undone.` })}
+        onClear={() => setSelectedIds(new Set())}
+      />
+
+      {/* Bulk Confirm Modal */}
+      <ConfirmModal
+        open={bulkConfirm !== null}
+        title={bulkConfirm?.action === 'delete' ? 'Delete Lawyers' : 'Update Lawyers'}
+        message={bulkConfirm?.message || ''}
+        confirmLabel={bulkConfirm?.action === 'delete' ? 'Delete' : 'Confirm'}
+        loading={bulkLoading}
+        onConfirm={() => {
+          if (bulkConfirm?.action === 'delete') handleBulkDelete()
+          else if (bulkConfirm?.action === 'available') handleBulkToggle(true)
+          else if (bulkConfirm?.action === 'unavailable') handleBulkToggle(false)
+        }}
+        onCancel={() => setBulkConfirm(null)}
+      />
 
       {/* Modal */}
       {showModal && (

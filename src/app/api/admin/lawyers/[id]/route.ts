@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
+import { logActivity } from '@/lib/activity-log'
 
 export async function PATCH(
   request: Request,
@@ -32,6 +33,15 @@ export async function PATCH(
 
     if (error) throw error
 
+    await logActivity({
+      userId: session.user.id,
+      userName: session.user.name || 'Unknown',
+      action: 'lawyer_updated',
+      targetType: 'lawyer',
+      targetId: id,
+      targetName: data?.[0]?.name || id,
+    })
+
     return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('Error updating lawyer:', error)
@@ -59,6 +69,14 @@ export async function DELETE(
       .eq('id', id)
 
     if (error) throw error
+
+    await logActivity({
+      userId: session.user.id,
+      userName: session.user.name || 'Unknown',
+      action: 'lawyer_deleted',
+      targetType: 'lawyer',
+      targetId: id,
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
