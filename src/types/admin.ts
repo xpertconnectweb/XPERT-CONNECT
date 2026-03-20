@@ -11,6 +11,9 @@ export type ActivityAction =
   | 'bulk_toggle_availability'
   | 'bulk_delete'
   | 'settings_updated'
+  | 'referrer_referral_assigned'
+  | 'referrer_referral_updated'
+  | 'referrer_referral_deleted'
 
 export interface ActivityLog {
   id: number

@@ -317,9 +317,11 @@ export default function AdminUsersPage() {
                         ? 'bg-purple-100 text-purple-700'
                         : user.role === 'lawyer'
                         ? 'bg-blue-100 text-blue-700'
+                        : user.role === 'referrer'
+                        ? 'bg-orange-100 text-orange-700'
                         : 'bg-emerald-100 text-emerald-700'
                     }`}>
-                      {user.role === 'lawyer' ? 'Attorney' : user.role === 'clinic' ? 'Clinic' : 'Admin'}
+                      {user.role === 'lawyer' ? 'Attorney' : user.role === 'clinic' ? 'Clinic' : user.role === 'referrer' ? 'Referrer' : 'Admin'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{user.email}</td>
@@ -335,6 +337,7 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                     {user.role === 'clinic' && (clinicNameMap.get(user.clinicId || '') || user.clinicId || '—')}
+                    {user.role === 'referrer' && '—'}
                     {user.role === 'admin' && '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -463,6 +466,7 @@ export default function AdminUsersPage() {
                 >
                   <option value="lawyer">Attorney</option>
                   <option value="clinic">Clinic</option>
+                  <option value="referrer">Referrer</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>

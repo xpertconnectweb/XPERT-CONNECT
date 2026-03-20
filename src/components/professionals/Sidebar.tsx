@@ -3,12 +3,18 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Map, FileText, ArrowLeft } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { Map, FileText, ArrowLeft, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navItems = [
+const defaultNavItems = [
   { href: '/professionals/map', label: 'Map', icon: Map },
   { href: '/professionals/referrals', label: 'Referrals', icon: FileText },
+]
+
+const referrerNavItems = [
+  { href: '/professionals/refer', label: 'Refer a Client', icon: UserPlus },
+  { href: '/professionals/my-referrals', label: 'My Referrals', icon: FileText },
 ]
 
 interface SidebarProps {
@@ -18,6 +24,11 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
+
+  const isReferrer = session?.user?.role === 'referrer'
+  const navItems = isReferrer ? referrerNavItems : defaultNavItems
+  const logoHref = isReferrer ? '/professionals/refer' : '/professionals/map'
 
   return (
     <>
@@ -42,7 +53,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         {/* Logo */}
         <div className="flex items-center h-16 px-5 border-b border-white/[0.08]">
-          <Link href="/professionals/map" className="flex items-center" aria-label="Xpert Connect - Dashboard">
+          <Link href={logoHref} className="flex items-center" aria-label="Xpert Connect - Dashboard">
             <Image
               src="/images/logo.png"
               alt="Xpert Connect"

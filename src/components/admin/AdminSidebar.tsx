@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, FileText, MessageSquare, Mail, Building2, Scale, ArrowLeft, Shield, Clock, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, MessageSquare, Mail, Building2, Scale, ArrowLeft, Shield, Clock, Settings, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/clinics', label: 'Clinics', icon: Building2 },
   { href: '/admin/lawyers', label: 'Lawyers', icon: Scale },
   { href: '/admin/referrals', label: 'Referrals', icon: FileText },
+  { href: '/admin/referrer-referrals', label: 'Partner Referrals', icon: UserPlus },
   { href: '/admin/contacts', label: 'Contacts', icon: MessageSquare },
   { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
 ]

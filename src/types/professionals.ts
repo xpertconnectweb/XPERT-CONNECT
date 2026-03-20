@@ -1,4 +1,4 @@
-export type UserRole = 'lawyer' | 'clinic' | 'admin'
+export type UserRole = 'lawyer' | 'clinic' | 'admin' | 'referrer'
 
 export interface User {
   id: string
@@ -44,6 +44,31 @@ export interface Lawyer {
 }
 
 export type ReferralStatus = 'received' | 'in_process' | 'attended'
+
+export type ReferrerReferralStatus = 'pending' | 'assigned' | 'in_process' | 'completed'
+export type ServiceNeeded = 'clinic' | 'lawyer' | 'both'
+
+export interface ReferrerReferral {
+  id: string
+  referrerId: string
+  referrerName: string
+  state: string
+  clientName: string
+  clientPhone: string
+  clientEmail: string
+  clientAddress: string
+  serviceNeeded: ServiceNeeded
+  caseType: string
+  notes: string
+  status: ReferrerReferralStatus
+  assignedClinicId?: string
+  assignedClinicName?: string
+  assignedLawyerId?: string
+  assignedLawyerName?: string
+  adminNotes: string
+  createdAt: string
+  updatedAt: string
+}
 
 export interface Referral {
   id: string

@@ -10,6 +10,8 @@ import { TopBar } from './TopBar'
 const PAGE_TITLES: Record<string, string> = {
   '/professionals/map': 'Clinic Map',
   '/professionals/referrals': 'Referrals',
+  '/professionals/refer': 'Refer a Client',
+  '/professionals/my-referrals': 'My Referrals',
 }
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
