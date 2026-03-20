@@ -7,7 +7,7 @@ import { logActivity } from '@/lib/activity-log'
 import bcrypt from 'bcryptjs'
 import type { UserRole } from '@/types/professionals'
 
-const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin']
+const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin', 'referrer']
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
 

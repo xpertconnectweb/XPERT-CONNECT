@@ -22,6 +22,10 @@ export async function GET() {
 
   const { role, id, clinicId } = session.user
 
+  if (role === 'referrer') {
+    return NextResponse.json([])
+  }
+
   if (role === 'lawyer') {
     return NextResponse.json(await getReferralsByLawyer(id))
   }

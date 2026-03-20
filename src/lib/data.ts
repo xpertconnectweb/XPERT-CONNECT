@@ -1,6 +1,6 @@
 import { supabaseAdmin } from './supabase'
 import { rowToModel, rowsToModels, modelToRow } from './mappers'
-import type { User, Clinic, Lawyer, Referral } from '@/types/professionals'
+import type { User, Clinic, Lawyer, Referral, ReferrerReferral } from '@/types/professionals'
 
 // Contact / Newsletter types
 export interface Contact {
@@ -332,4 +332,83 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]
     return []
   }
   return rowsToModels<NewsletterSubscriber>(data)
+}
+
+// Referrer Referrals
+const RREF_COLUMNS = 'id, referrer_id, referrer_name, state, client_name, client_phone, client_email, client_address, service_needed, case_type, notes, status, assigned_clinic_id, assigned_clinic_name, assigned_lawyer_id, assigned_lawyer_name, admin_notes, created_at, updated_at'
+
+export async function getReferrerReferrals(): Promise<ReferrerReferral[]> {
+  const { data, error } = await supabaseAdmin
+    .from('referrer_referrals')
+    .select(RREF_COLUMNS)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('getReferrerReferrals error:', error)
+    return []
+  }
+  return rowsToModels<ReferrerReferral>(data)
+}
+
+export async function getReferrerReferralsByReferrer(referrerId: string): Promise<ReferrerReferral[]> {
+  const { data, error } = await supabaseAdmin
+    .from('referrer_referrals')
+    .select(RREF_COLUMNS)
+    .eq('referrer_id', referrerId)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('getReferrerReferralsByReferrer error:', error)
+    return []
+  }
+  return rowsToModels<ReferrerReferral>(data)
+}
+
+export async function getReferrerReferralById(id: string): Promise<ReferrerReferral | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('referrer_referrals')
+    .select(RREF_COLUMNS)
+    .eq('id', id)
+    .single()
+  if (error || !data) return undefined
+  return rowToModel<ReferrerReferral>(data)
+}
+
+export async function createReferrerReferral(referral: ReferrerReferral): Promise<ReferrerReferral> {
+  const row = modelToRow(referral)
+  const { data, error } = await supabaseAdmin
+    .from('referrer_referrals')
+    .insert(row)
+    .select()
+    .single()
+  if (error) {
+    console.error('createReferrerReferral error:', error)
+    throw new Error('Failed to create referrer referral')
+  }
+  return rowToModel<ReferrerReferral>(data)
+}
+
+export async function updateReferrerReferral(
+  id: string,
+  fields: Partial<Omit<ReferrerReferral, 'id'>>
+): Promise<ReferrerReferral | null> {
+  const row = modelToRow(fields)
+  const { data, error } = await supabaseAdmin
+    .from('referrer_referrals')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) {
+    console.error('updateReferrerReferral error:', error)
+    return null
+  }
+  return rowToModel<ReferrerReferral>(data)
+}
+
+export async function deleteReferrerReferral(id: string): Promise<boolean> {
+  const { error } = await supabaseAdmin.from('referrer_referrals').delete().eq('id', id)
+  if (error) {
+    console.error('deleteReferrerReferral error:', error)
+    return false
+  }
+  return true
 }

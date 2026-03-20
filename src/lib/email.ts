@@ -657,6 +657,144 @@ export function newsletterWelcomeEmail(email: string) {
   })
 }
 
+/** Internal notification when a referrer submits a new referral */
+export function referrerReferralNotificationEmail(
+  referrerName: string,
+  state: string,
+  clientName: string,
+  clientPhone: string,
+  clientAddress: string,
+  serviceNeeded: string,
+  caseType: string,
+  notes: string,
+  createdAt: string
+) {
+  const safe = {
+    referrerName: escapeHtml(referrerName),
+    state: escapeHtml(state),
+    clientName: escapeHtml(clientName),
+    clientPhone: escapeHtml(clientPhone),
+    clientAddress: escapeHtml(clientAddress),
+    serviceNeeded: escapeHtml(serviceNeeded),
+    caseType: escapeHtml(caseType),
+    notes: escapeHtml(notes),
+  }
+
+  const dateStr = formatDateTime(createdAt)
+  const serviceLabel = safe.serviceNeeded === 'clinic' ? 'Clinic' : safe.serviceNeeded === 'lawyer' ? 'Attorney' : 'Both'
+  const stateLabel = safe.state === 'FL' ? 'Florida' : safe.state === 'MN' ? 'Minnesota' : safe.state
+
+  return sendEmail({
+    to: INTERNAL_EMAIL,
+    subject: `[Partner Referral] New from ${safe.referrerName} — ${stateLabel}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background-color:#f0f2f5;">
+        <div style="max-width:640px;margin:0 auto;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);margin-top:20px;margin-bottom:20px;">
+
+          <!-- Logo Bar -->
+          <div style="background-color:#ffffff;padding:28px 30px 20px 30px;text-align:center;border-bottom:1px solid #e5e7eb;">
+            <a href="https://www.844xpert.com" style="text-decoration:none;">
+              <img src="https://www.844xpert.com/images/logo.png" alt="Xpert Connect" width="180" style="display:inline-block;max-width:180px;height:auto;" />
+            </a>
+          </div>
+
+          <!-- Header Banner -->
+          <div style="background:linear-gradient(135deg,#c2410c 0%,#ea580c 50%,#f97316 100%);padding:36px 30px;text-align:center;">
+            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:8px;padding:6px 16px;margin-bottom:14px;">
+              <span style="color:#ffffff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Partner Referral</span>
+            </div>
+            <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:-0.3px;">New Partner Referral</h1>
+            <p style="color:rgba(255,255,255,0.8);margin:8px 0 0 0;font-size:15px;font-weight:400;">A referrer has submitted a new client referral</p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding:36px 32px;">
+
+            <!-- Summary Banner -->
+            <div style="background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:1px solid #fed7aa;border-radius:10px;padding:20px 24px;margin:0 0 28px 0;text-align:center;">
+              <p style="color:#6b7280;margin:0 0 6px 0;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Referrer</p>
+              <p style="color:#c2410c;margin:0;font-size:17px;font-weight:700;">
+                ${safe.referrerName} &mdash; ${stateLabel}
+              </p>
+            </div>
+
+            <!-- Referral Details Card -->
+            <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin:0 0 28px 0;">
+              <div style="background:linear-gradient(135deg,#c2410c 0%,#ea580c 100%);padding:14px 24px;">
+                <h2 style="color:#ffffff;margin:0;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Referral Details</h2>
+              </div>
+              <div style="padding:20px 24px;">
+                <table style="width:100%;border-collapse:collapse;">
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;width:110px;border-bottom:1px solid #f1f5f9;">Client</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;border-bottom:1px solid #f1f5f9;">${safe.clientName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;border-bottom:1px solid #f1f5f9;">Phone</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;border-bottom:1px solid #f1f5f9;">${safe.clientPhone}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;border-bottom:1px solid #f1f5f9;">Address</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;border-bottom:1px solid #f1f5f9;">${safe.clientAddress}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;border-bottom:1px solid #f1f5f9;">Service</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;border-bottom:1px solid #f1f5f9;">${serviceLabel}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;border-bottom:1px solid #f1f5f9;">Case Type</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;border-bottom:1px solid #f1f5f9;">${safe.caseType}</td>
+                  </tr>
+                  ${safe.notes ? `
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;border-bottom:1px solid #f1f5f9;">Notes</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;border-bottom:1px solid #f1f5f9;">${safe.notes}</td>
+                  </tr>
+                  ` : ''}
+                  <tr>
+                    <td style="padding:12px 0;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;vertical-align:top;">Timestamp</td>
+                    <td style="padding:12px 0;color:#1f2937;font-size:15px;font-weight:500;">${dateStr} (ET)</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align:center;margin:32px 0;">
+              <a href="https://www.844xpert.com/admin/referrer-referrals" style="display:inline-block;background:linear-gradient(135deg,#c2410c 0%,#ea580c 100%);color:#ffffff;padding:16px 40px;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(234,88,12,0.35);">View in Admin Dashboard</a>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color:#1e293b;padding:28px 30px;text-align:center;">
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;margin:0 0 10px 0;letter-spacing:0.3px;">
+              Xpert Connect
+            </p>
+            <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:0 0 6px 0;">
+              &copy; ${new Date().getFullYear()} Xpert Connect. All rights reserved.
+            </p>
+            <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:0 0 14px 0;">
+              Internal automated notification. Confidential &mdash; Do not forward.
+            </p>
+            <div>
+              <a href="https://www.844xpert.com" style="color:rgba(255,255,255,0.45);font-size:11px;text-decoration:none;margin:0 8px;">www.844xpert.com</a>
+              <span style="color:rgba(255,255,255,0.2);">|</span>
+              <a href="mailto:xpertconnect.web@gmail.com" style="color:rgba(255,255,255,0.45);font-size:11px;text-decoration:none;margin:0 8px;">xpertconnect.web@gmail.com</a>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  })
+}
+
 /** Email sent when someone subscribes to the newsletter */
 export function newsletterSubscriptionEmail(email: string) {
   return sendEmail({

@@ -30,7 +30,7 @@ export function TopBar({ onMenuToggle, pageTitle }: TopBarProps) {
   const { data: session } = useSession()
 
   const role = session?.user?.role
-  const roleLabel = role === 'lawyer' ? 'Attorney' : role === 'admin' ? 'Administrator' : 'Clinic'
+  const roleLabel = role === 'lawyer' ? 'Attorney' : role === 'referrer' ? 'Referrer' : role === 'admin' ? 'Administrator' : 'Clinic'
   const firstName = session?.user?.name?.split(' ')[0] || ''
   const initials = getInitials(session?.user?.name)
 

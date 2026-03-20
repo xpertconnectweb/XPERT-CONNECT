@@ -11,6 +11,10 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  if (session.user.role === 'referrer') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   try {
     // Always read the user's current state from DB (JWT may be stale)
     let userState: string | undefined
