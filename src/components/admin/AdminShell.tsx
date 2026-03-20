@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import Image from 'next/image'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminTopBar } from './AdminTopBar'
+import { RouteProgressBar } from '../professionals/RouteProgressBar'
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession({
@@ -43,6 +44,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+      <RouteProgressBar />
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminTopBar onMenuToggle={() => setSidebarOpen((prev) => !prev)} />
