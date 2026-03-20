@@ -1,17 +1,17 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Loader2, Search, X, Trash2, Eye } from 'lucide-react'
+import { Loader2, Search, X, Trash2, Eye, FileText, Clock, UserCheck, CheckCircle2 } from 'lucide-react'
 import type { ReferrerReferral, ReferrerReferralStatus } from '@/types/professionals'
 
 interface ClinicOption { id: string; name: string; address: string }
 interface LawyerOption { id: string; name: string; address: string }
 
-const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
-  pending: { label: 'Pending', bg: 'bg-gray-100', text: 'text-gray-700' },
-  assigned: { label: 'Assigned', bg: 'bg-blue-100', text: 'text-blue-700' },
-  in_process: { label: 'In Process', bg: 'bg-amber-100', text: 'text-amber-700' },
-  completed: { label: 'Completed', bg: 'bg-emerald-100', text: 'text-emerald-700' },
+const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
+  pending: { label: 'Pending', bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' },
+  assigned: { label: 'Assigned', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
+  in_process: { label: 'In Process', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
+  completed: { label: 'Completed', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
 }
 
 function formatDate(iso: string) {
@@ -30,7 +30,7 @@ export default function AdminReferrerReferralsPage() {
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  // Assignment form state
+  // Assignment form
   const [assignClinicId, setAssignClinicId] = useState('')
   const [assignClinicName, setAssignClinicName] = useState('')
   const [assignLawyerId, setAssignLawyerId] = useState('')
@@ -74,6 +74,12 @@ export default function AdminReferrerReferralsPage() {
     fetchClinics()
     fetchLawyers()
   }, [fetchReferrals, fetchClinics, fetchLawyers])
+
+  // Stats
+  const total = referrals.length
+  const pendingCount = referrals.filter((r) => r.status === 'pending').length
+  const activeCount = referrals.filter((r) => r.status === 'assigned' || r.status === 'in_process').length
+  const completedCount = referrals.filter((r) => r.status === 'completed').length
 
   const openDetail = (r: ReferrerReferral) => {
     setSelected(r)
@@ -132,11 +138,10 @@ export default function AdminReferrerReferralsPage() {
     }
   }
 
-  // Filter referrals by state for clinic/lawyer dropdowns
+  // Filtered lists for assignment
   const filteredClinicsForAssignment = selected
     ? clinics.filter((c) => {
-        const stateAbbr = selected.state
-        const matchesState = c.address.includes(`, ${stateAbbr} `)
+        const matchesState = c.address.includes(`, ${selected.state} `)
         const matchesSearch = !clinicSearch || clinicSearch === assignClinicName ||
           c.name.toLowerCase().includes(clinicSearch.toLowerCase()) ||
           c.address.toLowerCase().includes(clinicSearch.toLowerCase())
@@ -146,8 +151,7 @@ export default function AdminReferrerReferralsPage() {
 
   const filteredLawyersForAssignment = selected
     ? lawyers.filter((l) => {
-        const stateAbbr = selected.state
-        const matchesState = l.address.includes(`, ${stateAbbr} `)
+        const matchesState = l.address.includes(`, ${selected.state} `)
         const matchesSearch = !lawyerSearch || lawyerSearch === assignLawyerName ||
           l.name.toLowerCase().includes(lawyerSearch.toLowerCase()) ||
           l.address.toLowerCase().includes(lawyerSearch.toLowerCase())
@@ -175,32 +179,88 @@ export default function AdminReferrerReferralsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+      <div className="flex h-64 items-center justify-center" role="status">
+        <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-navy/10 border-t-gold" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-bold text-gray-900">Partner Referrals</h1>
+      <div>
+        <h1 className="font-heading text-2xl font-bold text-gray-900">Partner Referrals</h1>
+        <p className="text-sm text-gray-400 mt-1">Manage and assign referrals from external partners</p>
+      </div>
+
+      {/* Stats */}
+      {total > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a2a4a] to-[#2a3f6a]">
+                <FileText className="h-[18px] w-[18px] text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{total}</p>
+                <p className="text-[11px] text-gray-400 font-medium">Total</p>
+              </div>
+            </div>
+          </div>
+          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-amber-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }}>
+                <Clock className="h-[18px] w-[18px] text-amber-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{pendingCount}</p>
+                <p className="text-[11px] text-gray-400 font-medium">Pending</p>
+              </div>
+            </div>
+          </div>
+          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-blue-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
+                <UserCheck className="h-[18px] w-[18px] text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{activeCount}</p>
+                <p className="text-[11px] text-gray-400 font-medium">Active</p>
+              </div>
+            </div>
+          </div>
+          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-emerald-400" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' }}>
+                <CheckCircle2 className="h-[18px] w-[18px] text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{completedCount}</p>
+                <p className="text-[11px] text-gray-400 font-medium">Completed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search client, referrer, case type..."
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-10 pr-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          className="rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
         >
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
@@ -211,7 +271,7 @@ export default function AdminReferrerReferralsPage() {
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          className="rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
         >
           <option value="">All States</option>
           <option value="FL">Florida</option>
@@ -220,46 +280,69 @@ export default function AdminReferrerReferralsPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+      <div className="rounded-2xl bg-white shadow-sm border border-gray-200/80 overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-gray-500">No partner referrals found</p>
+          <div className="py-20 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50">
+              <FileText className="h-6 w-6 text-gray-300" />
+            </div>
+            <p className="font-semibold text-gray-900">No partner referrals found</p>
+            <p className="text-sm text-gray-400 mt-1">
+              {search || filterStatus || filterState ? 'Try adjusting your filters' : 'Partner referrals will appear here'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
-                  <th className="px-4 py-3 font-medium">Referrer</th>
-                  <th className="px-4 py-3 font-medium">Client</th>
-                  <th className="px-4 py-3 font-medium">State</th>
-                  <th className="px-4 py-3 font-medium">Service</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                <tr className="border-b border-gray-100 text-left">
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Referrer</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Client</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">State</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Service</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Status</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Date</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-50">
                 {filtered.map((r) => {
                   const sc = statusConfig[r.status] || statusConfig.pending
                   return (
-                    <tr key={r.id} className="hover:bg-gray-50/50">
-                      <td className="px-4 py-3 text-gray-600">{r.referrerName}</td>
-                      <td className="px-4 py-3 font-medium text-gray-900">{r.clientName}</td>
-                      <td className="px-4 py-3 text-gray-600">{r.state}</td>
-                      <td className="px-4 py-3 text-gray-600 capitalize">{r.serviceNeeded === 'lawyer' ? 'Attorney' : r.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sc.bg} ${sc.text}`}>
+                    <tr key={r.id} className="hover:bg-gray-50/70 transition-colors duration-150">
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-2">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: 'linear-gradient(135deg, #c2410c, #ea580c)' }}>
+                            {r.referrerName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                          </span>
+                          <span className="text-gray-700 font-medium">{r.referrerName}</span>
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-gray-900">{r.clientName}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{r.caseType}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600">
+                          {r.state === 'FL' ? '🌴' : '❄️'} {r.state}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-gray-600">
+                        {r.serviceNeeded === 'lawyer' ? 'Attorney' : r.serviceNeeded === 'both' ? 'Both' : 'Clinic'}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${sc.bg} ${sc.text}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{formatDate(r.createdAt)}</td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-5 py-4 text-gray-400 text-xs whitespace-nowrap">{formatDate(r.createdAt)}</td>
+                      <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => openDetail(r)}
-                            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                            aria-label="View details"
+                            className="rounded-lg p-2 text-gray-400 hover:bg-gold/10 hover:text-gold transition-colors"
+                            aria-label="View & assign"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
@@ -300,186 +383,185 @@ export default function AdminReferrerReferralsPage() {
 
       {/* Assignment Modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-heading text-lg font-semibold text-gray-900">
-                Assign Referral
-              </h2>
-              <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {error && (
-              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
-            {/* Client info (read-only) */}
-            <div className="mb-5 rounded-lg bg-gray-50 p-4 text-sm space-y-1">
-              <p className="text-xs font-medium uppercase text-gray-400 mb-2">Client Information</p>
-              <p><span className="text-gray-500">Name:</span> <strong className="text-gray-900">{selected.clientName}</strong></p>
-              <p><span className="text-gray-500">Phone:</span> {selected.clientPhone}</p>
-              {selected.clientEmail && <p><span className="text-gray-500">Email:</span> {selected.clientEmail}</p>}
-              <p><span className="text-gray-500">Address:</span> {selected.clientAddress}</p>
-              <p><span className="text-gray-500">State:</span> {selected.state === 'FL' ? 'Florida' : 'Minnesota'}</p>
-              <p><span className="text-gray-500">Service:</span> {selected.serviceNeeded === 'lawyer' ? 'Attorney' : selected.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</p>
-              <p><span className="text-gray-500">Case Type:</span> {selected.caseType}</p>
-              {selected.notes && <p><span className="text-gray-500">Notes:</span> {selected.notes}</p>}
-              <p className="text-xs text-gray-400 pt-1">Referred by {selected.referrerName} on {formatDate(selected.createdAt)}</p>
-            </div>
-
-            <div className="space-y-4">
-              {/* Clinic assignment */}
-              {(selected.serviceNeeded === 'clinic' || selected.serviceNeeded === 'both') && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal header */}
+            <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Assign Clinic
-                    {assignClinicName && (
-                      <span className="ml-2 text-xs text-emerald-600 font-normal">
-                        Selected: {assignClinicName}
-                      </span>
-                    )}
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      value={clinicSearch}
-                      onChange={(e) => {
-                        setClinicSearch(e.target.value)
-                        if (e.target.value !== assignClinicName) {
-                          setAssignClinicId('')
-                          setAssignClinicName('')
-                        }
-                      }}
-                      className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                      placeholder={`Search clinics in ${selected.state}...`}
-                    />
-                    {showClinicDropdown && (
-                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                        {filteredClinicsForAssignment.length === 0 ? (
-                          <div className="px-4 py-3 text-sm text-gray-500">No clinics found</div>
-                        ) : (
-                          filteredClinicsForAssignment.slice(0, 20).map((c) => (
-                            <button
-                              key={c.id}
-                              type="button"
-                              onClick={() => {
-                                setAssignClinicId(c.id)
-                                setAssignClinicName(c.name)
-                                setClinicSearch(c.name)
-                              }}
-                              className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors border-b border-gray-50 last:border-0"
-                            >
-                              <p className="text-sm font-medium text-gray-900">{c.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{c.address}</p>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <h2 className="font-heading text-lg font-bold text-gray-900">Assign Referral</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Review details and assign a provider</p>
+                </div>
+                <button onClick={() => setSelected(null)} className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {error && (
+                <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-400 shrink-0" />
+                  {error}
                 </div>
               )}
 
-              {/* Lawyer assignment */}
-              {(selected.serviceNeeded === 'lawyer' || selected.serviceNeeded === 'both') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Assign Attorney
-                    {assignLawyerName && (
-                      <span className="ml-2 text-xs text-emerald-600 font-normal">
-                        Selected: {assignLawyerName}
-                      </span>
-                    )}
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      value={lawyerSearch}
-                      onChange={(e) => {
-                        setLawyerSearch(e.target.value)
-                        if (e.target.value !== assignLawyerName) {
-                          setAssignLawyerId('')
-                          setAssignLawyerName('')
-                        }
-                      }}
-                      className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                      placeholder={`Search attorneys in ${selected.state}...`}
-                    />
-                    {showLawyerDropdown && (
-                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                        {filteredLawyersForAssignment.length === 0 ? (
-                          <div className="px-4 py-3 text-sm text-gray-500">No attorneys found</div>
-                        ) : (
-                          filteredLawyersForAssignment.slice(0, 20).map((l) => (
-                            <button
-                              key={l.id}
-                              type="button"
-                              onClick={() => {
-                                setAssignLawyerId(l.id)
-                                setAssignLawyerName(l.name)
-                                setLawyerSearch(l.name)
-                              }}
-                              className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors border-b border-gray-50 last:border-0"
-                            >
-                              <p className="text-sm font-medium text-gray-900">{l.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{l.address}</p>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
+              {/* Client info card */}
+              <div className="rounded-xl border border-gray-100 overflow-hidden">
+                <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Client Information</p>
                 </div>
-              )}
-
-              {/* Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={assignStatus}
-                  onChange={(e) => setAssignStatus(e.target.value as ReferrerReferralStatus)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="assigned">Assigned</option>
-                  <option value="in_process">In Process</option>
-                  <option value="completed">Completed</option>
-                </select>
+                <div className="px-4 py-3 space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-400">Name</span><strong className="text-gray-900">{selected.clientName}</strong></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Phone</span><span className="text-gray-700">{selected.clientPhone}</span></div>
+                  {selected.clientEmail && <div className="flex justify-between"><span className="text-gray-400">Email</span><span className="text-gray-700">{selected.clientEmail}</span></div>}
+                  <div className="flex justify-between items-start gap-4"><span className="text-gray-400 shrink-0">Address</span><span className="text-gray-700 text-right">{selected.clientAddress}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">State</span><span className="text-gray-700">{selected.state === 'FL' ? 'Florida' : 'Minnesota'}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Service</span><span className="text-gray-700">{selected.serviceNeeded === 'lawyer' ? 'Attorney' : selected.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Case Type</span><span className="text-gray-700">{selected.caseType}</span></div>
+                  {selected.notes && <div className="pt-1"><span className="text-gray-400">Notes</span><p className="text-gray-700 mt-0.5">{selected.notes}</p></div>}
+                  <div className="pt-1 text-xs text-gray-300">Referred by {selected.referrerName} on {formatDate(selected.createdAt)}</div>
+                </div>
               </div>
 
-              {/* Admin Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes</label>
-                <textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 resize-none"
-                  placeholder="Internal notes..."
-                />
+              {/* Assignment fields */}
+              <div className="space-y-4">
+                {/* Clinic */}
+                {(selected.serviceNeeded === 'clinic' || selected.serviceNeeded === 'both') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Assign Clinic
+                      {assignClinicName && (
+                        <span className="ml-2 text-xs text-emerald-600 font-normal">
+                          Selected: {assignClinicName}
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={clinicSearch}
+                        onChange={(e) => {
+                          setClinicSearch(e.target.value)
+                          if (e.target.value !== assignClinicName) { setAssignClinicId(''); setAssignClinicName('') }
+                        }}
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-10 pr-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all"
+                        placeholder={`Search clinics in ${selected.state}...`}
+                      />
+                      {showClinicDropdown && (
+                        <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+                          {filteredClinicsForAssignment.length === 0 ? (
+                            <div className="px-4 py-3 text-sm text-gray-500">No clinics found in {selected.state}</div>
+                          ) : (
+                            filteredClinicsForAssignment.slice(0, 20).map((c) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                onClick={() => { setAssignClinicId(c.id); setAssignClinicName(c.name); setClinicSearch(c.name) }}
+                                className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors border-b border-gray-50 last:border-0"
+                              >
+                                <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{c.address}</p>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Lawyer */}
+                {(selected.serviceNeeded === 'lawyer' || selected.serviceNeeded === 'both') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Assign Attorney
+                      {assignLawyerName && (
+                        <span className="ml-2 text-xs text-emerald-600 font-normal">
+                          Selected: {assignLawyerName}
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={lawyerSearch}
+                        onChange={(e) => {
+                          setLawyerSearch(e.target.value)
+                          if (e.target.value !== assignLawyerName) { setAssignLawyerId(''); setAssignLawyerName('') }
+                        }}
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-10 pr-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all"
+                        placeholder={`Search attorneys in ${selected.state}...`}
+                      />
+                      {showLawyerDropdown && (
+                        <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+                          {filteredLawyersForAssignment.length === 0 ? (
+                            <div className="px-4 py-3 text-sm text-gray-500">No attorneys found in {selected.state}</div>
+                          ) : (
+                            filteredLawyersForAssignment.slice(0, 20).map((l) => (
+                              <button
+                                key={l.id}
+                                type="button"
+                                onClick={() => { setAssignLawyerId(l.id); setAssignLawyerName(l.name); setLawyerSearch(l.name) }}
+                                className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors border-b border-gray-50 last:border-0"
+                              >
+                                <p className="text-sm font-medium text-gray-900">{l.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{l.address}</p>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+                  <select
+                    value={assignStatus}
+                    onChange={(e) => setAssignStatus(e.target.value as ReferrerReferralStatus)}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="in_process">In Process</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                {/* Admin Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Admin Notes</label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all resize-none"
+                    placeholder="Internal notes about this referral..."
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            {/* Modal footer */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
               <button
                 onClick={() => setSelected(null)}
-                className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                className="rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-medium text-white hover:bg-gold-dark disabled:opacity-60 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-60 shadow-sm hover:shadow-md transition-all duration-200"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                Save
+                Save Changes
               </button>
             </div>
           </div>

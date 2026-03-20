@@ -6,6 +6,7 @@ import { usePathname, redirect } from 'next/navigation'
 import Image from 'next/image'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { RouteProgressBar } from './RouteProgressBar'
 
 const PAGE_TITLES: Record<string, string> = {
   '/professionals/map': 'Clinic Map',
@@ -31,6 +32,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     redirect('/admin/dashboard')
   }
 
+  // Redirect referrer away from map/referrals pages they can't access
+  if (status === 'authenticated' && session?.user?.role === 'referrer') {
+    if (pathname === '/professionals/map' || pathname === '/professionals/referrals') {
+      redirect('/professionals/refer')
+    }
+  }
+
   if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50" role="status">
@@ -53,6 +61,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+      <RouteProgressBar />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar onMenuToggle={() => setSidebarOpen((prev) => !prev)} pageTitle={pageTitle} />
