@@ -335,7 +335,7 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]
 }
 
 // Referrer Referrals
-const RREF_COLUMNS = 'id, referrer_id, referrer_name, state, client_name, client_phone, client_email, client_address, service_needed, case_type, notes, status, assigned_clinic_id, assigned_clinic_name, assigned_lawyer_id, assigned_lawyer_name, admin_notes, created_at, updated_at'
+const RREF_COLUMNS = 'id, referrer_id, referrer_name, state, client_name, client_phone, client_email, client_address, service_needed, case_type, notes, status, assigned_clinic_id, assigned_clinic_name, assigned_lawyer_id, assigned_lawyer_name, case_confirmed, admin_notes, created_at, updated_at'
 
 export async function getReferrerReferrals(): Promise<ReferrerReferral[]> {
   const { data, error } = await supabaseAdmin

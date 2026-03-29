@@ -46,6 +46,7 @@ export interface Lawyer {
 export type ReferralStatus = 'received' | 'in_process' | 'attended'
 
 export type ReferrerReferralStatus = 'pending' | 'assigned' | 'in_process' | 'completed'
+export type CaseConfirmedStatus = 'pending' | 'confirmed'
 export type ServiceNeeded = 'clinic' | 'lawyer' | 'both'
 
 export interface ReferrerReferral {
@@ -65,6 +66,7 @@ export interface ReferrerReferral {
   assignedClinicName?: string
   assignedLawyerId?: string
   assignedLawyerName?: string
+  caseConfirmed: CaseConfirmedStatus
   adminNotes: string
   createdAt: string
   updatedAt: string

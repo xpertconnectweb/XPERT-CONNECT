@@ -6,6 +6,7 @@ import { logActivity } from '@/lib/activity-log'
 import { sanitize } from '@/lib/sanitize'
 
 const VALID_STATUSES = ['pending', 'assigned', 'in_process', 'completed']
+const VALID_CASE_CONFIRMED = ['pending', 'confirmed']
 
 export async function PATCH(
   request: NextRequest,
@@ -40,6 +41,13 @@ export async function PATCH(
   if (body.assignedLawyerId !== undefined) {
     fields.assignedLawyerId = body.assignedLawyerId || null
     fields.assignedLawyerName = body.assignedLawyerName ? sanitize(body.assignedLawyerName) : null
+  }
+
+  if (body.caseConfirmed !== undefined) {
+    if (!VALID_CASE_CONFIRMED.includes(body.caseConfirmed)) {
+      return NextResponse.json({ error: 'Invalid case confirmed status' }, { status: 400 })
+    }
+    fields.caseConfirmed = body.caseConfirmed
   }
 
   if (body.adminNotes !== undefined) {
