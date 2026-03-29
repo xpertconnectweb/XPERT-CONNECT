@@ -1,14 +1,19 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { FileText, Clock, UserCheck, CheckCircle2, X, TrendingUp, Inbox } from 'lucide-react'
-import type { ReferrerReferral } from '@/types/professionals'
+import { FileText, Clock, UserCheck, CheckCircle2, X, TrendingUp, Inbox, User, Phone, Mail, MapPin, Briefcase, Shield, Calendar, MessageSquare, Scale } from 'lucide-react'
+import type { ReferrerReferral, CaseConfirmedStatus } from '@/types/professionals'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; text: string; dot: string }> = {
-  pending: { label: 'Pending', color: '#9ca3af', bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' },
+  pending: { label: 'Pending', color: '#f59e0b', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
   assigned: { label: 'Assigned', color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
   in_process: { label: 'In Process', color: '#f59e0b', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
   completed: { label: 'Completed', color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
+}
+
+const caseConfig: Record<string, { label: string; bg: string; text: string; dot: string; ring: string }> = {
+  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400', ring: 'ring-amber-600/20' },
+  confirmed: { label: 'Confirmed', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400', ring: 'ring-emerald-600/20' },
 }
 
 function formatDate(iso: string) {
@@ -17,6 +22,148 @@ function formatDate(iso: string) {
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+const statusGradient: Record<string, string> = {
+  pending: 'from-amber-400 to-amber-500',
+  assigned: 'from-blue-500 to-blue-600',
+  in_process: 'from-amber-500 to-amber-600',
+  completed: 'from-emerald-500 to-emerald-600',
+}
+
+/* ── Partner Detail Modal ── */
+function PartnerDetailModal({ referral, onClose }: { referral: ReferrerReferral; onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = '' }
+  }, [onClose])
+
+  const sc = statusConfig[referral.status] || statusConfig.pending
+  const cc = caseConfig[referral.caseConfirmed] || caseConfig.pending
+  const gradient = statusGradient[referral.status] || statusGradient.pending
+
+  const rows: { icon: typeof User; label: string; value: string | null | undefined }[] = [
+    { icon: User, label: 'Client', value: referral.clientName },
+    { icon: Phone, label: 'Phone', value: referral.clientPhone },
+    { icon: Mail, label: 'Email', value: referral.clientEmail },
+    { icon: MapPin, label: 'Address', value: referral.clientAddress },
+    { icon: Scale, label: 'State', value: referral.state === 'FL' ? 'Florida' : 'Minnesota' },
+    { icon: Briefcase, label: 'Service', value: referral.serviceNeeded === 'lawyer' ? 'Attorney' : referral.serviceNeeded === 'both' ? 'Both' : 'Clinic' },
+    { icon: Shield, label: 'Case Type', value: referral.caseType },
+    ...(referral.status !== 'pending' ? [{ icon: UserCheck, label: 'Assignment', value: 'Assigned' }] : []),
+    { icon: CheckCircle2, label: 'Case Confirmed', value: cc.label },
+    { icon: Calendar, label: 'Submitted', value: formatDateTime(referral.createdAt) },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl animate-modal-in overflow-hidden">
+        {/* Header */}
+        <div className="relative shrink-0 bg-gradient-to-r from-[#1a2a4a] to-[#2a3f6a] px-6 py-5">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] opacity-50" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <h2 className="font-heading text-lg font-bold text-white">Referral Details</h2>
+              <p className="text-sm text-white/50 mt-0.5">ID: {referral.id.slice(0, 8)}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition-all"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          {/* Status pill */}
+          <div className="relative mt-3">
+            <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${gradient} px-3.5 py-1.5 shadow-lg`}>
+              <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                {sc.label}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Body - scrollable */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0 divide-y divide-gray-100">
+          {rows.map(({ icon: Icon, label, value }) => {
+            if (!value) return null
+            if (label === 'Case Confirmed') {
+              return (
+                <div key={label} className="flex items-center gap-3 py-3.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50">
+                    <Icon className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+                    <span className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${cc.bg} ${cc.text} ${cc.ring}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${cc.dot}`} />
+                      {cc.label}
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <div key={label} className="flex items-center gap-3 py-3.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50">
+                  <Icon className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+                  <p className="text-sm font-medium text-gray-900 mt-0.5 truncate">{value}</p>
+                </div>
+              </div>
+            )
+          })}
+
+          {referral.notes && (
+            <div className="py-3.5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 mt-0.5">
+                  <MessageSquare className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Notes</p>
+                  <p className="text-sm text-gray-700 mt-1 leading-relaxed bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    {referral.notes}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+          <button
+            onClick={onClose}
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function MyReferralsPage() {
@@ -168,6 +315,13 @@ export default function MyReferralsPage() {
 
       {/* Table */}
       <div className="rounded-2xl bg-white shadow-sm border border-gray-200/80 overflow-hidden">
+        {/* Header bar */}
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, #fafbfc, #f5f6f8)' }}>
+          <h2 className="font-heading text-sm font-bold text-navy">My Referrals</h2>
+          <span className="text-[11px] font-medium text-gray-400 bg-white rounded-full px-2.5 py-0.5 border border-gray-200">
+            {referrals.length} total
+          </span>
+        </div>
         {referrals.length === 0 ? (
           <div className="py-20 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50">
@@ -179,21 +333,25 @@ export default function MyReferralsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left">
+                <tr className="border-b border-gray-100 text-left bg-gray-50/50">
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Client</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">State</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Service</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Case Type</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Status</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Case</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100/80">
                 {referrals.map((r) => {
                   const sc = statusConfig[r.status] || statusConfig.pending
+                  const cc = caseConfig[r.caseConfirmed] || caseConfig.pending
                   return (
                     <tr
                       key={r.id}
@@ -214,9 +372,15 @@ export default function MyReferralsPage() {
                       </td>
                       <td className="px-5 py-4 text-gray-600">{r.caseType}</td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${sc.bg} ${sc.text}`}>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${sc.bg} ${sc.text}`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${cc.bg} ${cc.text} ${cc.ring}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${cc.dot}`} />
+                          {cc.label}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-gray-400 text-xs whitespace-nowrap">{formatDate(r.createdAt)}</td>
@@ -226,124 +390,57 @@ export default function MyReferralsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-gray-100/60">
+            {referrals.map((r) => {
+              const sc = statusConfig[r.status] || statusConfig.pending
+              const cc = caseConfig[r.caseConfirmed] || caseConfig.pending
+              return (
+                <div
+                  key={r.id}
+                  className="relative p-5 space-y-3 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                  onClick={() => setDetail(r)}
+                >
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-gold/40" />
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{r.clientName}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{r.clientPhone}</p>
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${sc.bg} ${sc.text}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
+                      {sc.label}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Service</p>
+                      <p className="text-gray-700 mt-0.5">{r.serviceNeeded === 'lawyer' ? 'Attorney' : r.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Case Type</p>
+                      <p className="text-gray-700 mt-0.5">{r.caseType}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-400">{formatDate(r.createdAt)}</p>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${cc.bg} ${cc.text} ${cc.ring}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${cc.dot}`} />
+                      {cc.label}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          </>
         )}
       </div>
 
       {/* Detail Modal */}
       {detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setDetail(null)}>
-          <div
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header with gradient */}
-            <div className="relative overflow-hidden px-6 pt-6 pb-5">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white" />
-              <div className="relative flex items-center justify-between">
-                <div>
-                  <h2 className="font-heading text-lg font-bold text-gray-900">Referral Details</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">ID: {detail.id.slice(0, 16)}...</p>
-                </div>
-                <button onClick={() => setDetail(null)} className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="px-6 pb-6 space-y-4">
-              {/* Status badge */}
-              <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                <span className="text-sm text-gray-500">Current Status</span>
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${(statusConfig[detail.status] || statusConfig.pending).bg} ${(statusConfig[detail.status] || statusConfig.pending).text}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${(statusConfig[detail.status] || statusConfig.pending).dot}`} />
-                  {(statusConfig[detail.status] || statusConfig.pending).label}
-                </span>
-              </div>
-
-              {/* Client Info */}
-              <div className="rounded-xl border border-gray-100 overflow-hidden">
-                <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Client Information</p>
-                </div>
-                <div className="px-4 py-3 space-y-2.5">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Name</span>
-                    <span className="text-sm font-medium text-gray-900">{detail.clientName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Phone</span>
-                    <span className="text-sm text-gray-700">{detail.clientPhone}</span>
-                  </div>
-                  {detail.clientEmail && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Email</span>
-                      <span className="text-sm text-gray-700">{detail.clientEmail}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-start gap-4">
-                    <span className="text-sm text-gray-400 shrink-0">Address</span>
-                    <span className="text-sm text-gray-700 text-right">{detail.clientAddress}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Referral Info */}
-              <div className="rounded-xl border border-gray-100 overflow-hidden">
-                <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Referral Details</p>
-                </div>
-                <div className="px-4 py-3 space-y-2.5">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">State</span>
-                    <span className="text-sm text-gray-700">{detail.state === 'FL' ? 'Florida' : 'Minnesota'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Service</span>
-                    <span className="text-sm text-gray-700">{detail.serviceNeeded === 'lawyer' ? 'Attorney' : detail.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Case Type</span>
-                    <span className="text-sm text-gray-700">{detail.caseType}</span>
-                  </div>
-                  {detail.notes && (
-                    <div className="pt-1">
-                      <span className="text-sm text-gray-400">Notes</span>
-                      <p className="text-sm text-gray-700 mt-1 leading-relaxed">{detail.notes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Assignment (if assigned) */}
-              {(detail.assignedClinicName || detail.assignedLawyerName) && (
-                <div className="rounded-xl border border-emerald-100 overflow-hidden" style={{ background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)' }}>
-                  <div className="px-4 py-2.5 border-b border-emerald-100" style={{ background: 'rgba(16, 185, 129, 0.08)' }}>
-                    <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Assignment</p>
-                  </div>
-                  <div className="px-4 py-3 space-y-2.5">
-                    {detail.assignedClinicName && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-emerald-600/70">Clinic</span>
-                        <span className="text-sm font-medium text-emerald-800">{detail.assignedClinicName}</span>
-                      </div>
-                    )}
-                    {detail.assignedLawyerName && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-emerald-600/70">Attorney</span>
-                        <span className="text-sm font-medium text-emerald-800">{detail.assignedLawyerName}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Footer */}
-              <div className="pt-2 text-center">
-                <p className="text-xs text-gray-300">Submitted {formatDate(detail.createdAt)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PartnerDetailModal referral={detail} onClose={() => setDetail(null)} />
       )}
     </div>
   )

@@ -2,16 +2,21 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, Search, X, Trash2, Eye, FileText, Clock, UserCheck, CheckCircle2 } from 'lucide-react'
-import type { ReferrerReferral, ReferrerReferralStatus } from '@/types/professionals'
+import type { ReferrerReferral, ReferrerReferralStatus, CaseConfirmedStatus } from '@/types/professionals'
 
 interface ClinicOption { id: string; name: string; address: string }
 interface LawyerOption { id: string; name: string; address: string }
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  pending: { label: 'Pending', bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' },
+  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
   assigned: { label: 'Assigned', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
   in_process: { label: 'In Process', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
   completed: { label: 'Completed', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
+}
+
+const caseConfig: Record<string, { label: string; bg: string; text: string; dot: string; ring: string }> = {
+  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400', ring: 'ring-amber-600/20' },
+  confirmed: { label: 'Confirmed', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400', ring: 'ring-emerald-600/20' },
 }
 
 function formatDate(iso: string) {
@@ -36,6 +41,7 @@ export default function AdminReferrerReferralsPage() {
   const [assignLawyerId, setAssignLawyerId] = useState('')
   const [assignLawyerName, setAssignLawyerName] = useState('')
   const [assignStatus, setAssignStatus] = useState<ReferrerReferralStatus>('pending')
+  const [assignCaseConfirmed, setAssignCaseConfirmed] = useState<CaseConfirmedStatus>('pending')
   const [adminNotes, setAdminNotes] = useState('')
   const [clinicSearch, setClinicSearch] = useState('')
   const [lawyerSearch, setLawyerSearch] = useState('')
@@ -75,6 +81,15 @@ export default function AdminReferrerReferralsPage() {
     fetchLawyers()
   }, [fetchReferrals, fetchClinics, fetchLawyers])
 
+  // Escape key + body overflow lock for modal
+  useEffect(() => {
+    if (!selected) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null) }
+    document.addEventListener('keydown', handler)
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = '' }
+  }, [selected])
+
   // Stats
   const total = referrals.length
   const pendingCount = referrals.filter((r) => r.status === 'pending').length
@@ -88,6 +103,7 @@ export default function AdminReferrerReferralsPage() {
     setAssignLawyerId(r.assignedLawyerId || '')
     setAssignLawyerName(r.assignedLawyerName || '')
     setAssignStatus(r.status)
+    setAssignCaseConfirmed(r.caseConfirmed || 'pending')
     setAdminNotes(r.adminNotes || '')
     setClinicSearch(r.assignedClinicName || '')
     setLawyerSearch(r.assignedLawyerName || '')
@@ -109,6 +125,7 @@ export default function AdminReferrerReferralsPage() {
           assignedClinicName: assignClinicName || null,
           assignedLawyerId: assignLawyerId || null,
           assignedLawyerName: assignLawyerName || null,
+          caseConfirmed: assignCaseConfirmed,
           adminNotes,
         }),
       })
@@ -281,6 +298,13 @@ export default function AdminReferrerReferralsPage() {
 
       {/* Table */}
       <div className="rounded-2xl bg-white shadow-sm border border-gray-200/80 overflow-hidden">
+        {/* Header bar */}
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, #fafbfc, #f5f6f8)' }}>
+          <h2 className="font-heading text-sm font-bold text-navy">Partner Referrals</h2>
+          <span className="text-[11px] font-medium text-gray-400 bg-white rounded-full px-2.5 py-0.5 border border-gray-200">
+            {filtered.length} total
+          </span>
+        </div>
         {filtered.length === 0 ? (
           <div className="py-20 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50">
@@ -295,19 +319,21 @@ export default function AdminReferrerReferralsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left">
+                <tr className="border-b border-gray-100 text-left bg-gray-50/50">
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Referrer</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Client</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">State</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Service</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Status</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Case</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Date</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100/80">
                 {filtered.map((r) => {
                   const sc = statusConfig[r.status] || statusConfig.pending
+                  const cc = caseConfig[r.caseConfirmed] || caseConfig.pending
                   return (
                     <tr key={r.id} className="hover:bg-gray-50/70 transition-colors duration-150">
                       <td className="px-5 py-4">
@@ -331,9 +357,15 @@ export default function AdminReferrerReferralsPage() {
                         {r.serviceNeeded === 'lawyer' ? 'Attorney' : r.serviceNeeded === 'both' ? 'Both' : 'Clinic'}
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${sc.bg} ${sc.text}`}>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${sc.bg} ${sc.text}`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${cc.bg} ${cc.text} ${cc.ring}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${cc.dot}`} />
+                          {cc.label}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-gray-400 text-xs whitespace-nowrap">{formatDate(r.createdAt)}</td>
@@ -383,8 +415,8 @@ export default function AdminReferrerReferralsPage() {
 
       {/* Assignment Modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setSelected(null)}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-modal-in" onClick={(e) => e.stopPropagation()}>
             {/* Modal header */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
@@ -408,7 +440,7 @@ export default function AdminReferrerReferralsPage() {
 
               {/* Client info card */}
               <div className="rounded-xl border border-gray-100 overflow-hidden">
-                <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                <div className="px-4 py-2.5 border-b border-gray-100" style={{ background: 'linear-gradient(to bottom, #fafbfc, #f5f6f8)' }}>
                   <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Client Information</p>
                 </div>
                 <div className="px-4 py-3 space-y-2 text-sm">
@@ -530,6 +562,19 @@ export default function AdminReferrerReferralsPage() {
                     <option value="assigned">Assigned</option>
                     <option value="in_process">In Process</option>
                     <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                {/* Case Confirmed */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Case Confirmed</label>
+                  <select
+                    value={assignCaseConfirmed}
+                    onChange={(e) => setAssignCaseConfirmed(e.target.value as CaseConfirmedStatus)}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
                   </select>
                 </div>
 

@@ -17,7 +17,9 @@ export async function GET() {
   }
 
   if (session.user.role === 'referrer') {
-    return NextResponse.json(await getReferrerReferralsByReferrer(session.user.id))
+    const referrals = await getReferrerReferralsByReferrer(session.user.id)
+    const sanitized = referrals.map(({ assignedClinicId, assignedClinicName, assignedLawyerId, assignedLawyerName, ...rest }) => rest)
+    return NextResponse.json(sanitized)
   }
 
   return NextResponse.json([])
@@ -89,6 +91,7 @@ export async function POST(request: NextRequest) {
       caseType: cleanCase,
       notes: cleanNotes,
       status: 'pending',
+      caseConfirmed: 'pending',
       adminNotes: '',
       createdAt: now,
       updatedAt: now,
