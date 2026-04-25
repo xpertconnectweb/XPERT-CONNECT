@@ -52,6 +52,7 @@ pnpm-debug.log*
 ehthumbs.db
 Thumbs.db
 desktop.ini
+nul
 
 # TypeScript
 *.tsbuildinfo
@@ -64,9 +65,10 @@ desktop.ini
 *.log
 .cache/
 
+# Scripts with sensitive/personal data
+scripts/send-custom-email.mjs
+
 # Optional: Uncomment if you don't want to track lock files
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
-
-.vercel
