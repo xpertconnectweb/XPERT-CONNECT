@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "email:test": "node scripts/send-test-email.mjs",
+    "email:send": "node scripts/send-custom-email.mjs"
   },
   "dependencies": {
     "@sanity/client": "^7.14.1",
