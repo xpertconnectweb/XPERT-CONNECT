@@ -2,20 +2,17 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { usePathname, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Image from 'next/image'
-import { Sidebar } from './Sidebar'
-import { TopBar } from './TopBar'
-import { RouteProgressBar } from './RouteProgressBar'
+import { PartnerSidebar } from './PartnerSidebar'
+import { TopBar } from '../professionals/TopBar'
+import { RouteProgressBar } from '../professionals/RouteProgressBar'
 
 const PAGE_TITLES: Record<string, string> = {
-  '/professionals/map': 'Clinic Map',
-  '/professionals/referrals': 'Referrals',
-  '/professionals/refer': 'Refer a Client',
-  '/professionals/my-referrals': 'My Referrals',
+  '/partners/map': 'Clinic Map',
 }
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function PartnerShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -23,25 +20,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     },
   })
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const pathname = usePathname()
 
-  const pageTitle = PAGE_TITLES[pathname] || ''
+  const pageTitle = PAGE_TITLES['/partners/map'] || ''
 
-  // Redirect admin users to admin panel
-  if (status === 'authenticated' && session?.user?.role === 'admin') {
-    redirect('/admin/dashboard')
-  }
-
-  // Redirect partner users to partners portal
-  if (status === 'authenticated' && session?.user?.role === 'partner') {
-    redirect('/partners/map')
-  }
-
-  // Redirect referrer away from map/referrals pages they can't access
-  if (status === 'authenticated' && session?.user?.role === 'referrer') {
-    if (pathname === '/professionals/map' || pathname === '/professionals/referrals') {
-      redirect('/professionals/refer')
-    }
+  // Only partner and admin users can access
+  if (status === 'authenticated' && session?.user?.role !== 'partner' && session?.user?.role !== 'admin') {
+    redirect('/professionals/login')
   }
 
   if (status === 'loading') {
@@ -67,7 +51,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
       <RouteProgressBar />
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <PartnerSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar onMenuToggle={() => setSidebarOpen((prev) => !prev)} pageTitle={pageTitle} />
         <main className="flex-1 overflow-auto p-4 lg:p-6">

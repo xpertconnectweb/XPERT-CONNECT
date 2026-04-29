@@ -29,7 +29,11 @@ export async function GET() {
     const lawyers = userState
       ? await getLawyersByState(userState)
       : await getLawyers()
-    return NextResponse.json(lawyers, {
+
+    // Strip phone and address from response (hidden from non-admin users)
+    const sanitized = lawyers.map(({ phone, address, ...rest }) => rest)
+
+    return NextResponse.json(sanitized, {
       headers: {
         'Cache-Control': 'private, no-store',
       },

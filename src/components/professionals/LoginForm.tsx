@@ -38,6 +38,8 @@ export function LoginForm() {
       const session = await getSession()
       if (session?.user?.role === 'admin') {
         router.push('/admin/dashboard')
+      } else if (session?.user?.role === 'partner') {
+        router.push('/partners/map')
       } else if (session?.user?.role === 'referrer') {
         router.push('/professionals/refer')
       } else {

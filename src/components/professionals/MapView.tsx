@@ -75,10 +75,10 @@ type MapItemType = 'clinic' | 'lawyer'
 interface MapItem {
   id: string
   name: string
-  address: string
+  address?: string
   lat: number
   lng: number
-  phone: string
+  phone?: string
   email: string
   website?: string
   region?: string
@@ -215,11 +215,14 @@ function buildPopupContent(
       </div>
     </div>
     <div style="height:1px;background:#f1f5f9;margin:0 0 10px"></div>
-    <div style="font-size:12px;color:#475569;line-height:1.5">
-      <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px">
+    <div style="font-size:12px;color:#475569;line-height:1.5">`
+
+  if (item.address) {
+    html += `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px">
         <span style="color:#94a3b8;flex-shrink:0;margin-top:1px;font-size:13px">&#9906;</span>
         <span>${escapeHtml(item.address)}</span>
       </div>`
+  }
 
   if (item.phone) {
     html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
@@ -293,7 +296,7 @@ const PanelRow = memo(function PanelRow({
             <h3 className="font-semibold text-[13px] text-gray-900 leading-tight group-hover:text-navy transition-colors truncate">{item.name}</h3>
             <span className="text-[10px] text-gray-400 whitespace-nowrap flex-shrink-0 tabular-nums font-medium bg-gray-50 px-2 py-0.5 rounded-md">{item.distance.toFixed(1)} mi</span>
           </div>
-          <p className="text-[11px] text-gray-500 mt-1 leading-snug truncate">{item.address}</p>
+          {item.address && <p className="text-[11px] text-gray-500 mt-1 leading-snug truncate">{item.address}</p>}
           <div className="flex items-center gap-2 mt-2">
             <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${item.available ? 'text-emerald-600' : 'text-gray-400'}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${item.available ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-gray-300'}`} />
@@ -379,7 +382,17 @@ function VirtualPanelRow({
 }
 
 /* ═══════════════════════════════════════════════════════════ */
-export function MapView() {
+interface MapViewProps {
+  clinicsUrl?: string
+  lawyersUrl?: string
+  showLawyers?: boolean
+}
+
+export function MapView({
+  clinicsUrl = '/api/professionals/clinics',
+  lawyersUrl = '/api/professionals/lawyers',
+  showLawyers: showLawyersProp = true,
+}: MapViewProps = {}) {
   const { data: session } = useSession()
   const [clinics, setClinics] = useState<Clinic[]>([])
   const [lawyers, setLawyers] = useState<Lawyer[]>([])
@@ -391,7 +404,7 @@ export function MapView() {
   const [filterText, setFilterText] = useState('')
   const [showAvailableOnly, setShowAvailableOnly] = useState(false)
   const [showClinics, setShowClinics] = useState(true)
-  const [showLawyers, setShowLawyers] = useState(true)
+  const [showLawyers, setShowLawyers] = useState(showLawyersProp)
   const [locationQuery, setLocationQuery] = useState('')
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -416,17 +429,17 @@ export function MapView() {
   const fetchData = useCallback(async () => {
     setLoading(true); setError(false)
     try {
-      const [clinicsRes, lawyersRes] = await Promise.all([
-        fetch('/api/professionals/clinics'),
-        fetch('/api/professionals/lawyers'),
-      ])
+      const clinicsRes = await fetch(clinicsUrl)
       if (!clinicsRes.ok) throw new Error()
       setClinics(await clinicsRes.json())
-      if (lawyersRes.ok) {
-        setLawyers(await lawyersRes.json())
+      if (showLawyersProp) {
+        const lawyersRes = await fetch(lawyersUrl)
+        if (lawyersRes.ok) {
+          setLawyers(await lawyersRes.json())
+        }
       }
     } catch { setError(true) } finally { setLoading(false) }
-  }, [])
+  }, [clinicsUrl, lawyersUrl, showLawyersProp])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -488,7 +501,7 @@ export function MapView() {
         if (!c.lat || !c.lng || (c.lat === 0 && c.lng === 0)) continue
         if (showAvailableOnly && !c.available) continue
         if (query && !(
-          c.name.toLowerCase().includes(query) || c.address.toLowerCase().includes(query) ||
+          c.name.toLowerCase().includes(query) || (c.address && c.address.toLowerCase().includes(query)) ||
           c.specialties.some((s) => s.toLowerCase().includes(query)) ||
           (c.region && c.region.toLowerCase().includes(query)) || (c.county && c.county.toLowerCase().includes(query))
         )) continue
@@ -501,7 +514,7 @@ export function MapView() {
         if (!l.lat || !l.lng || (l.lat === 0 && l.lng === 0)) continue
         if (showAvailableOnly && !l.available) continue
         if (query && !(
-          l.name.toLowerCase().includes(query) || l.address.toLowerCase().includes(query) ||
+          l.name.toLowerCase().includes(query) || (l.address && l.address.toLowerCase().includes(query)) ||
           (l.practiceAreas || []).some((s) => s.toLowerCase().includes(query)) ||
           (l.region && l.region.toLowerCase().includes(query)) || (l.county && l.county.toLowerCase().includes(query))
         )) continue
@@ -657,14 +670,14 @@ export function MapView() {
                 Clinics
                 <span className={`ml-0.5 text-[10px] ${showClinics ? 'text-sky-100' : 'text-gray-300'}`}>{clinicCount}</span>
               </button>
-              <button
+              {showLawyersProp && <button
                 onClick={() => setShowLawyers(!showLawyers)}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showLawyers ? 'bg-red-500 text-white border-red-500 shadow-md shadow-red-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
               >
                 <Scale className="h-3 w-3" />
                 Attorneys
                 <span className={`ml-0.5 text-[10px] ${showLawyers ? 'text-red-100' : 'text-gray-300'}`}>{lawyerCount}</span>
-              </button>
+              </button>}
             </div>
           </div>
         </div>
