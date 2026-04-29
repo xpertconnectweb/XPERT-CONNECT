@@ -28,7 +28,11 @@ export async function GET() {
   const clinics = userState
     ? await getClinicsByState(userState)
     : await getClinics()
-  return NextResponse.json(clinics, {
+
+  // Strip phone and address from response (hidden from non-admin users)
+  const sanitized = clinics.map(({ phone, address, ...rest }) => rest)
+
+  return NextResponse.json(sanitized, {
     headers: {
       'Cache-Control': 'private, no-store',
     },

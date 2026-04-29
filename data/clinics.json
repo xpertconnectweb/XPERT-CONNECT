@@ -11978,5 +11978,131 @@
     "region": "Southwest Minnesota",
     "county": "Yellow Medicine",
     "available": true
+  },
+  {
+    "id": "c-687",
+    "name": "The Right Spinal Clinic",
+    "address": "4019 W Waters Ave Ste E, Tampa, FL 33614",
+    "lat": 28.0253003,
+    "lng": -82.4855578,
+    "phone": "(813) 392-2164",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@trspinalclinic.com",
+    "website": "trspinalclinic.com",
+    "region": "West Central Florida",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-688",
+    "name": "The Right Spinal Clinic",
+    "address": "129 S Pebble Beach Blvd Ste 201, Sun City Center, FL 33573",
+    "lat": 27.7109829,
+    "lng": -82.352327,
+    "phone": "(813) 392-2164",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@trspinalclinic.com",
+    "website": "trspinalclinic.com",
+    "region": "West Central Florida",
+    "county": "Hillsborough",
+    "available": true
+  },
+  {
+    "id": "c-689",
+    "name": "Body Therapy Wellness",
+    "address": "7157 Curtiss Ave, Sarasota, FL 34231",
+    "lat": 27.252542,
+    "lng": -82.4992578,
+    "phone": "(941) 222-1808",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@bodytherapywellness.com",
+    "website": "bodytherapywellness.com",
+    "region": "Southwest Florida",
+    "county": "Sarasota",
+    "available": true
+  },
+  {
+    "id": "c-690",
+    "name": "Body Therapy Wellness",
+    "address": "4434 5th St W, Bradenton, FL 34207",
+    "lat": 27.4615675,
+    "lng": -82.5671689,
+    "phone": "(941) 222-1808",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@bodytherapywellness.com",
+    "website": "bodytherapywellness.com",
+    "region": "Southwest Florida",
+    "county": "Manatee",
+    "available": true
+  },
+  {
+    "id": "c-691",
+    "name": "Revive Health Center",
+    "address": "20 Barkley Circle Suite 103, Fort Myers, FL 33907",
+    "lat": 26.5951969,
+    "lng": -81.8836499,
+    "phone": "(844) 303-5815",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@revivehealth.center",
+    "website": "revivehealthcenterfl.com",
+    "region": "Southwest Florida",
+    "county": "Lee",
+    "available": true
+  },
+  {
+    "id": "c-692",
+    "name": "Revive Health Center",
+    "address": "3847 Oakwater Circle Unit 4, Orlando, FL 32806",
+    "lat": 28.5043429,
+    "lng": -81.3657618,
+    "phone": "(844) 303-5815",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@revivehealth.center",
+    "website": "revivehealthcenterfl.com",
+    "region": "Central Florida",
+    "county": "Orange",
+    "available": true
+  },
+  {
+    "id": "c-693",
+    "name": "Professional Therapy Services",
+    "address": "9701 66th St N #9761, Pinellas Park, FL 33782",
+    "lat": 27.859529,
+    "lng": -82.728729,
+    "phone": "(727) 274-1553",
+    "specialties": [
+      "Chiropractic Care",
+      "Physical Therapy",
+      "Personal Injury"
+    ],
+    "email": "info@stpetetherapyservices.com",
+    "website": "stpetetherapyservices.com",
+    "region": "West Central Florida",
+    "county": "Pinellas",
+    "available": true
   }
 ]
