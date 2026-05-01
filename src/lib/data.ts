@@ -1,23 +1,8 @@
 import { supabaseAdmin } from './supabase'
 import { rowToModel, rowsToModels, modelToRow } from './mappers'
-import type { User, Clinic, Lawyer, Referral, ReferrerReferral } from '@/types/professionals'
+import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, NewsletterSubscriber } from '@/types/professionals'
 
-// Contact / Newsletter types
-export interface Contact {
-  id: number
-  name: string
-  email: string
-  phone: string
-  service: string
-  message: string
-  createdAt: string
-}
-
-export interface NewsletterSubscriber {
-  id: number
-  email: string
-  subscribedAt: string
-}
+export type { Contact, NewsletterSubscriber }
 
 // Users
 export async function getUsers(): Promise<User[]> {

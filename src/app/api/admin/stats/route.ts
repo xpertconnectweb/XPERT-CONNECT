@@ -1,18 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAdmin } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rowsToModels } from '@/lib/mappers'
 import type { Referral } from '@/types/professionals'
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if (session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const { error: authError } = await requireAdmin()
+  if (authError) return authError
 
   // Build date ranges for last 6 months
   const now = new Date()

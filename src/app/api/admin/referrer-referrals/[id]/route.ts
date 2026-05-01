@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAdmin } from '@/lib/api-auth'
 import { getReferrerReferralById, updateReferrerReferral, deleteReferrerReferral } from '@/lib/data'
 import { logActivity } from '@/lib/activity-log'
 import { sanitize } from '@/lib/sanitize'
-
-const VALID_STATUSES = ['pending', 'assigned', 'in_process', 'completed']
-const VALID_CASE_CONFIRMED = ['pending', 'confirmed']
+import { VALID_REFERRER_STATUSES, VALID_CASE_CONFIRMED } from '@/lib/validation'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { session, error: authError } = await requireAdmin()
+  if (authError) return authError
 
   const { id } = await params
   const existing = await getReferrerReferralById(id)
@@ -27,7 +22,7 @@ export async function PATCH(
   const fields: Record<string, unknown> = {}
 
   if (body.status) {
-    if (!VALID_STATUSES.includes(body.status)) {
+    if (!VALID_REFERRER_STATUSES.includes(body.status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
     fields.status = body.status
@@ -77,10 +72,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { session, error: authError } = await requireAdmin()
+  if (authError) return authError
 
   const { id } = await params
   const existing = await getReferrerReferralById(id)

@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAuth, requireAdmin } from '@/lib/api-auth'
 import { updateReferralStatus, getReferralById } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
-import type { ReferralStatus } from '@/types/professionals'
-
-const VALID_STATUSES: ReferralStatus[] = ['received', 'in_process', 'attended']
+import { VALID_REFERRAL_STATUSES } from '@/lib/validation'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { session, error } = await requireAuth()
+  if (error) return error
 
   const { id } = await params
 
@@ -23,7 +18,7 @@ export async function PATCH(
     const body = await request.json()
     const { status } = body
 
-    if (!status || !VALID_STATUSES.includes(status)) {
+    if (!status || !VALID_REFERRAL_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
@@ -49,7 +44,7 @@ export async function PATCH(
   const body = await request.json()
   const { status } = body
 
-  if (!status || !VALID_STATUSES.includes(status)) {
+  if (!status || !VALID_REFERRAL_STATUSES.includes(status)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
@@ -61,10 +56,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { error: authError } = await requireAdmin()
+  if (authError) return authError
 
   try {
     const { id } = await params

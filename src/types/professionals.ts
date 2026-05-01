@@ -1,5 +1,21 @@
 export type UserRole = 'lawyer' | 'clinic' | 'admin' | 'referrer' | 'partner'
 
+export interface Contact {
+  id: number
+  name: string
+  email: string
+  phone: string
+  service: string
+  message: string
+  createdAt: string
+}
+
+export interface NewsletterSubscriber {
+  id: number
+  email: string
+  subscribedAt: string
+}
+
 export interface User {
   id: string
   username: string

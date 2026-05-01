@@ -1,0 +1,15 @@
+export const US_DEFAULT_CENTER: [number, number] = [39.8, -89.5]
+export const US_DEFAULT_ZOOM = 5
+
+export const STATE_MAP_CONFIG: Record<string, { center: [number, number]; zoom: number }> = {
+  FL: { center: [27.8, -83.5], zoom: 7 },
+  MN: { center: [46.0, -94.5], zoom: 7 },
+}
+
+export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}

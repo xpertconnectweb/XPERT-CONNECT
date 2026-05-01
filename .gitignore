@@ -68,6 +68,9 @@ nul
 # Scripts with sensitive/personal data
 scripts/send-custom-email.mjs
 
+# Exported data (internal use only)
+data/abogados-lista-completa.csv
+
 # Optional: Uncomment if you don't want to track lock files
 # package-lock.json
 # yarn.lock

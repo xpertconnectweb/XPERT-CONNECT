@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAuth } from '@/lib/api-auth'
 import {
   getReferralsByLawyer,
   getReferralsByClinic,
@@ -15,10 +14,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { session, error } = await requireAuth()
+  if (error) return error
 
   const { role, id, clinicId } = session.user
 
@@ -38,14 +35,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if (session.user.role !== 'lawyer') {
-    return NextResponse.json({ error: 'Only lawyers can create referrals' }, { status: 403 })
-  }
+  const { session, error } = await requireAuth(['lawyer'])
+  if (error) return error
 
   const body = await request.json()
   const { clinicId, patientName, patientPhone, caseType, coverage, pip, notes } = body
