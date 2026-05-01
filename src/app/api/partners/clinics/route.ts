@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAuth } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { rowsToModels } from '@/lib/mappers'
 import { PARTNER_CLINIC_IDS } from '@/lib/partner-clinics'
@@ -9,14 +8,8 @@ import type { Clinic } from '@/types/professionals'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if (session.user.role !== 'partner' && session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const { error: authError } = await requireAuth(['partner', 'admin'])
+  if (authError) return authError
 
   const { data, error } = await supabaseAdmin
     .from('clinics')

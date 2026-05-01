@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAdmin } from '@/lib/api-auth'
 import { getUsers, createUser } from '@/lib/data'
 import { sanitize } from '@/lib/sanitize'
 import { logActivity } from '@/lib/activity-log'
+import { VALID_ROLES, EMAIL_RE, USERNAME_RE } from '@/lib/validation'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
-import type { UserRole } from '@/types/professionals'
-
-const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin', 'referrer']
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if (session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const { error: authError } = await requireAdmin()
+  if (authError) return authError
 
   const users = await getUsers()
   const safe = users.map(({ password: _, ...rest }) => rest)
@@ -27,13 +17,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  if (session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const { session, error: authError } = await requireAdmin()
+  if (authError) return authError
 
   const body = await request.json()
   const { name, username, password, role, email, firmName, clinicId, state } = body

@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAuth } from '@/lib/api-auth'
 import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/data'
 import { referrerReferralNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
+import { VALID_SERVICES, VALID_STATES } from '@/lib/validation'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 
-const VALID_SERVICES = ['clinic', 'lawyer', 'both']
-const VALID_STATES = ['FL', 'MN']
-
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { session, error } = await requireAuth()
+  if (error) return error
 
   if (session.user.role === 'referrer') {
     const referrals = await getReferrerReferralsByReferrer(session.user.id)
@@ -26,14 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if (session.user.role !== 'referrer') {
-    return NextResponse.json({ error: 'Only referrers can submit referrals' }, { status: 403 })
-  }
+  const { session, error } = await requireAuth(['referrer'])
+  if (error) return error
 
   const body = await request.json()
   const { state, clientName, clientPhone, clientEmail, clientAddress, serviceNeeded, caseType, notes } = body

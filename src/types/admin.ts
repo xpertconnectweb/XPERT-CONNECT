@@ -1,3 +1,19 @@
+export interface LogActivityParams {
+  userId: string
+  userName: string
+  action: ActivityAction
+  targetType?: string
+  targetId?: string
+  targetName?: string
+  details?: Record<string, unknown>
+}
+
+export interface EmailOptions {
+  to: string
+  subject: string
+  html: string
+}
+
 export type ActivityAction =
   | 'clinic_created'
   | 'clinic_updated'

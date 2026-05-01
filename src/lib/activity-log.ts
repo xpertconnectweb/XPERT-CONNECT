@@ -1,15 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase'
-import type { ActivityAction } from '@/types/admin'
-
-interface LogActivityParams {
-  userId: string
-  userName: string
-  action: ActivityAction
-  targetType?: string
-  targetId?: string
-  targetName?: string
-  details?: Record<string, unknown>
-}
+import type { LogActivityParams } from '@/types/admin'
 
 /**
  * Fire-and-forget activity logger. Never throws.
