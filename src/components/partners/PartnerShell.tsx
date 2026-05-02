@@ -5,6 +5,9 @@ import { PartnerSidebar } from './PartnerSidebar'
 import { TopBar } from '../professionals/TopBar'
 
 const PAGE_TITLES: Record<string, string> = {
+  '/partners/dashboard': 'Dashboard',
+  '/partners/referrals': 'My Referrals',
+  '/partners/referrals/new': 'New Referral',
   '/partners/map': 'Clinic Map',
 }
 

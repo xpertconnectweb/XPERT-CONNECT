@@ -1,6 +1,6 @@
 'use client'
 
-import { Map } from 'lucide-react'
+import { LayoutDashboard, FileText, PlusCircle, Map } from 'lucide-react'
 import { BaseSidebar } from '@/components/shared/BaseSidebar'
 import type { NavSection } from '@/components/shared/BaseSidebar'
 
@@ -8,7 +8,10 @@ const navSections: NavSection[] = [
   {
     label: 'Navigation',
     items: [
-      { href: '/partners/map', label: 'Map', icon: Map },
+      { href: '/partners/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/partners/referrals', label: 'My Referrals', icon: FileText },
+      { href: '/partners/referrals/new', label: 'New Referral', icon: PlusCircle },
+      { href: '/partners/map', label: 'Clinic Map', icon: Map },
     ],
   },
 ]
@@ -23,7 +26,7 @@ export function PartnerSidebar({ isOpen, onClose }: PartnerSidebarProps) {
     <BaseSidebar
       isOpen={isOpen}
       onClose={onClose}
-      logoHref="/partners/map"
+      logoHref="/partners/dashboard"
       ariaLabel="Partners navigation"
       navSections={navSections}
     />
