@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function PartnerDashboardPage() {
-  redirect('/partners/map')
+  redirect('/partners/dashboard')
 }
