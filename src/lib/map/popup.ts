@@ -1,4 +1,3 @@
-import type { Clinic } from '@/types/professionals'
 import type { MapItem } from './types'
 
 function escapeHtml(str: string): string {
@@ -9,8 +8,8 @@ function escapeHtml(str: string): string {
 
 export function buildPopupContent(
   item: MapItem,
-  isLawyer: boolean,
-  onReferral: (c: Clinic) => void,
+  userRole: string | undefined,
+  onReferral: (target: MapItem) => void,
 ): HTMLElement {
   const container = document.createElement('div')
   container.style.cssText = 'min-width:260px;max-width:310px;font-family:system-ui,-apple-system,sans-serif;'
@@ -75,13 +74,18 @@ export function buildPopupContent(
 
   container.innerHTML = html
 
-  if (isLawyer && item.type === 'clinic' && item.available) {
+  // Lawyer user → click on a clinic marker shows Send Referral.
+  // Clinic user → click on a lawyer marker shows Refer Patient.
+  const lawyerCanReferToClinic = userRole === 'lawyer' && item.type === 'clinic'
+  const clinicCanReferToLawyer = userRole === 'clinic' && item.type === 'lawyer'
+
+  if ((lawyerCanReferToClinic || clinicCanReferToLawyer) && item.available) {
     const btn = document.createElement('button')
-    btn.textContent = 'Send Referral'
+    btn.textContent = clinicCanReferToLawyer ? 'Refer Patient' : 'Send Referral'
     btn.style.cssText = 'width:100%;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#d4a84b,#c4982f);color:#fff;font-weight:700;font-size:13px;letter-spacing:0.01em;box-shadow:0 2px 8px rgba(212,168,75,0.35);'
-    btn.addEventListener('click', () => onReferral(item as unknown as Clinic))
+    btn.addEventListener('click', () => onReferral(item))
     container.appendChild(btn)
-  } else if (isLawyer && item.type === 'clinic' && !item.available) {
+  } else if ((lawyerCanReferToClinic || clinicCanReferToLawyer) && !item.available) {
     const p = document.createElement('p')
     p.textContent = 'Not accepting referrals'
     p.style.cssText = 'font-size:11px;text-align:center;color:#9ca3af;font-style:italic;margin:0;'

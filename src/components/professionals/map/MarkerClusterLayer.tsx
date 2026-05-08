@@ -4,19 +4,18 @@ import { useEffect, useRef } from 'react'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet.markercluster'
-import type { Clinic } from '@/types/professionals'
 import type { MapItem } from '@/lib/map/types'
 import { clinicAvailIcon, clinicUnavailIcon, lawyerAvailIcon, lawyerUnavailIcon, createClusterIcon } from '@/lib/map/icons'
 import { buildPopupContent } from '@/lib/map/popup'
 
 export function MarkerClusterLayer({
   items,
-  isLawyer,
+  userRole,
   onReferral,
 }: {
   items: MapItem[]
-  isLawyer: boolean
-  onReferral: (c: Clinic) => void
+  userRole: string | undefined
+  onReferral: (target: MapItem) => void
 }) {
   const map = useMap()
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
@@ -50,7 +49,7 @@ export function MarkerClusterLayer({
         itemType: item.type,
       } as L.MarkerOptions & { itemType: string })
 
-      marker.bindPopup(() => buildPopupContent(item, isLawyer, onReferral), {
+      marker.bindPopup(() => buildPopupContent(item, userRole, onReferral), {
         minWidth: 260,
         maxWidth: 310,
         className: 'premium-popup',
@@ -68,7 +67,7 @@ export function MarkerClusterLayer({
     return () => {
       map.removeLayer(group)
     }
-  }, [map, items, isLawyer, onReferral])
+  }, [map, items, userRole, onReferral])
 
   return null
 }

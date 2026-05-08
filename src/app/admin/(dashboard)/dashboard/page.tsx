@@ -132,8 +132,13 @@ function truncate(str: string, max: number): string {
   return str.length > max ? str.slice(0, max) + '...' : str
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipShape {
+  active?: boolean
+  label?: string | number
+  payload?: { value: number | string }[]
+}
+
+function CustomTooltip({ active, payload, label }: TooltipShape) {
   if (!active || !payload?.length) return null
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg">

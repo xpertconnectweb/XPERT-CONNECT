@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Pencil, Trash2, X, Loader2, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Loader2, Search, AlertTriangle, RefreshCw } from 'lucide-react'
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import type { UserRole } from '@/types/professionals'
@@ -14,6 +14,7 @@ interface UserRow {
   email: string
   firmName?: string
   clinicId?: string
+  lawyerId?: string
   state?: string
   createdAt?: string
 }
@@ -24,6 +25,13 @@ interface ClinicOption {
   address: string
 }
 
+interface LawyerOption {
+  id: string
+  name: string
+  region?: string
+  county?: string
+}
+
 interface UserForm {
   name: string
   username: string
@@ -32,6 +40,7 @@ interface UserForm {
   email: string
   firmName: string
   clinicId: string
+  lawyerId: string
   state: string
 }
 
@@ -43,13 +52,16 @@ const emptyForm: UserForm = {
   email: '',
   firmName: '',
   clinicId: '',
+  lawyerId: '',
   state: '',
 }
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [clinics, setClinics] = useState<ClinicOption[]>([])
+  const [lawyerFirms, setLawyerFirms] = useState<LawyerOption[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string>('')
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<UserForm>(emptyForm)
@@ -57,43 +69,79 @@ export default function AdminUsersPage() {
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [clinicSearch, setClinicSearch] = useState('')
+  const [lawyerSearch, setLawyerSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
 
-  const fetchUsers = useCallback(async () => {
+  // Defensive fetcher: never throws to a render boundary, surfaces a
+  // human-readable error string that we can display inline.
+  async function safeFetchJson<T>(url: string, label: string): Promise<{ data?: T; error?: string }> {
     try {
-      const res = await fetch('/api/admin/users')
-      if (!res.ok) throw new Error('Failed to fetch users')
+      const res = await fetch(url)
+      if (!res.ok) {
+        let detail = `${res.status} ${res.statusText}`
+        try {
+          const body = await res.json()
+          if (body?.error) detail = `${body.error} (HTTP ${res.status})`
+        } catch { /* non-JSON response */ }
+        return { error: `${label}: ${detail}` }
+      }
       const data = await res.json()
-      setUsers(data)
+      return { data: data as T }
     } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
+      return { error: `${label}: ${err instanceof Error ? err.message : 'network error'}` }
     }
+  }
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true)
+    setLoadError('')
+
+    const [u, c, l] = await Promise.all([
+      safeFetchJson<UserRow[]>('/api/admin/users', 'Users'),
+      safeFetchJson<ClinicOption[]>('/api/professionals/clinics', 'Clinics'),
+      safeFetchJson<LawyerOption[]>('/api/professionals/lawyers', 'Lawyer firms'),
+    ])
+
+    const errors: string[] = []
+    if (u.error) errors.push(u.error); else setUsers(Array.isArray(u.data) ? u.data : [])
+    if (c.error) errors.push(c.error)
+    else setClinics(
+      (Array.isArray(c.data) ? c.data : []).map((c) => ({
+        id: c.id, name: c.name, address: c.address ?? '',
+      }))
+    )
+    if (l.error) errors.push(l.error)
+    else setLawyerFirms(
+      (Array.isArray(l.data) ? l.data : []).map((l) => ({
+        id: l.id, name: l.name, region: l.region, county: l.county,
+      }))
+    )
+
+    if (errors.length > 0) setLoadError(errors.join(' · '))
+    setLoading(false)
   }, [])
 
-  const fetchClinics = useCallback(async () => {
-    const res = await fetch('/api/professionals/clinics')
-    if (res.ok) {
-      const data = await res.json()
-      setClinics(data.map((c: ClinicOption) => ({ id: c.id, name: c.name, address: c.address })))
-    }
+  const fetchUsers = useCallback(async () => {
+    const u = await safeFetchJson<UserRow[]>('/api/admin/users', 'Users')
+    if (u.error) setLoadError(u.error)
+    else setUsers(Array.isArray(u.data) ? u.data : [])
   }, [])
 
   useEffect(() => {
-    fetchUsers()
-    fetchClinics()
-  }, [fetchUsers, fetchClinics])
+    fetchAll()
+  }, [fetchAll])
 
   // Build a map of clinicId -> clinicName for the table
   const clinicNameMap = new Map(clinics.map((c) => [c.id, c.name]))
+  const lawyerNameMap = new Map(lawyerFirms.map((l) => [l.id, l.name]))
 
   const openCreate = () => {
     setEditingId(null)
     setForm(emptyForm)
     setClinicSearch('')
+    setLawyerSearch('')
     setError('')
     setShowModal(true)
   }
@@ -108,14 +156,11 @@ export default function AdminUsersPage() {
       email: user.email,
       firmName: user.firmName || '',
       clinicId: user.clinicId || '',
+      lawyerId: user.lawyerId || '',
       state: user.state || '',
     })
-    // Pre-fill clinic search with current clinic name
-    if (user.clinicId) {
-      setClinicSearch(clinicNameMap.get(user.clinicId) || '')
-    } else {
-      setClinicSearch('')
-    }
+    setClinicSearch(user.clinicId ? clinicNameMap.get(user.clinicId) || '' : '')
+    setLawyerSearch(user.lawyerId ? lawyerNameMap.get(user.lawyerId) || '' : '')
     setError('')
     setShowModal(true)
   }
@@ -143,6 +188,7 @@ export default function AdminUsersPage() {
         if (form.role === 'lawyer') {
           body.firmName = form.firmName
           body.state = form.state
+          body.lawyerId = form.lawyerId
         }
         if (form.role === 'clinic') body.clinicId = form.clinicId
 
@@ -276,6 +322,23 @@ export default function AdminUsersPage() {
         </button>
       </div>
 
+      {loadError && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">Some data failed to load</p>
+            <p className="text-xs text-amber-800 mt-1 break-words font-mono">{loadError}</p>
+          </div>
+          <button
+            onClick={fetchAll}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-colors shrink-0"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Users table */}
       <div className="rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
@@ -285,7 +348,7 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 w-10">
                   <input
                     type="checkbox"
-                    checked={users.length > 0 && users.every((u) => selectedIds.has(u.id))}
+                    checked={Array.isArray(users) && users.length > 0 && users.every((u) => selectedIds.has(u.id))}
                     onChange={toggleSelectAll}
                     className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
                   />
@@ -299,7 +362,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {users.map((user) => (
+              {(Array.isArray(users) ? users : []).map((user) => (
                 <tr key={user.id} className={`hover:bg-gray-50/50 ${selectedIds.has(user.id) ? 'bg-gold/5' : ''}`}>
                   <td className="px-4 py-3">
                     <input
@@ -330,7 +393,13 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 text-gray-500 text-xs">
                     {user.role === 'lawyer' && (
                       <span>
-                        {user.firmName || '—'}
+                        {user.lawyerId
+                          ? (lawyerNameMap.get(user.lawyerId) || user.firmName || '—')
+                          : (
+                            <span className="inline-flex items-center gap-1 text-amber-600">
+                              ⚠ Not linked to firm
+                            </span>
+                          )}
                         {user.state && (
                           <span className="ml-2 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
                             {user.state}
@@ -462,8 +531,9 @@ export default function AdminUsersPage() {
                   value={form.role}
                   onChange={(e) => {
                     const newRole = e.target.value as UserRole
-                    setForm({ ...form, role: newRole, clinicId: '', firmName: '', state: '' })
+                    setForm({ ...form, role: newRole, clinicId: '', lawyerId: '', firmName: '', state: '' })
                     setClinicSearch('')
+                    setLawyerSearch('')
                   }}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
                 >
@@ -488,7 +558,74 @@ export default function AdminUsersPage() {
               {form.role === 'lawyer' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Firm Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Linked Firm
+                      {form.lawyerId && (
+                        <span className="ml-2 text-xs text-emerald-600 font-normal">
+                          Selected: {lawyerNameMap.get(form.lawyerId)}
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={lawyerSearch}
+                        onChange={(e) => {
+                          setLawyerSearch(e.target.value)
+                          const selectedName = form.lawyerId ? lawyerNameMap.get(form.lawyerId) : null
+                          if (e.target.value !== selectedName) {
+                            setForm({ ...form, lawyerId: '' })
+                          }
+                        }}
+                        className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                        placeholder="Search firm by name or region..."
+                      />
+                      {(() => {
+                        const selectedName = form.lawyerId ? lawyerNameMap.get(form.lawyerId) : null
+                        const showLawyerDropdown = lawyerSearch.trim() !== '' && lawyerSearch !== selectedName
+                        if (!showLawyerDropdown) return null
+                        const q = lawyerSearch.toLowerCase()
+                        const filtered = lawyerFirms.filter(
+                          (l) =>
+                            l.name.toLowerCase().includes(q) ||
+                            (l.region && l.region.toLowerCase().includes(q)) ||
+                            (l.county && l.county.toLowerCase().includes(q))
+                        )
+                        return (
+                          <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                            {filtered.length === 0 ? (
+                              <div className="px-4 py-3 text-sm text-gray-500">No firms found</div>
+                            ) : (
+                              filtered.slice(0, 20).map((l) => (
+                                <button
+                                  key={l.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setForm({ ...form, lawyerId: l.id })
+                                    setLawyerSearch(l.name)
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors border-b border-gray-50 last:border-0"
+                                >
+                                  <p className="text-sm font-medium text-gray-900">{l.name}</p>
+                                  {(l.region || l.county) && (
+                                    <p className="text-xs text-gray-500 truncate">
+                                      {[l.region, l.county && `${l.county} County`].filter(Boolean).join(' · ')}
+                                    </p>
+                                  )}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-400">
+                      Required for the attorney to see/manage referrals targeted at the firm.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Firm Name (legacy display)</label>
                     <input
                       type="text"
                       value={form.firmName}

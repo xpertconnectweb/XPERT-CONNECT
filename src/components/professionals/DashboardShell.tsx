@@ -6,7 +6,9 @@ import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 
 const PAGE_TITLES: Record<string, string> = {
+  '/professionals': 'Dashboard',
   '/professionals/map': 'Clinic Map',
+  '/professionals/specialists': 'Specialists',
   '/professionals/referrals': 'Referrals',
   '/professionals/refer': 'Refer a Client',
   '/professionals/my-referrals': 'My Referrals',
@@ -23,9 +25,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         if (session.user.role === 'admin') redirect('/admin/dashboard')
         if (session.user.role === 'partner') redirect('/partners/map')
         if (session.user.role === 'referrer') {
-          if (pathname === '/professionals/map' || pathname === '/professionals/referrals') {
+          if (
+            pathname === '/professionals/map' ||
+            pathname === '/professionals/referrals' ||
+            pathname === '/professionals/specialists' ||
+            pathname === '/professionals'
+          ) {
             redirect('/professionals/refer')
           }
+        }
+        // /specialists is clinic-only; lawyers go to map.
+        if (session.user.role === 'lawyer' && pathname === '/professionals/specialists') {
+          redirect('/professionals/map')
         }
       }}
     >

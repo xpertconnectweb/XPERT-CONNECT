@@ -4,11 +4,14 @@ import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, Newslet
 
 export type { Contact, NewsletterSubscriber }
 
+const USER_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state'
+const REFERRAL_COLUMNS = 'id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, created_by_user_id, creator_role, patient_name, patient_phone, case_type, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
+
 // Users
 export async function getUsers(): Promise<User[]> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
+    .select(USER_COLUMNS)
   if (error) {
     console.error('getUsers error:', error)
     return []
@@ -21,7 +24,7 @@ export async function getUserByUsername(
 ): Promise<User | undefined> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
+    .select(USER_COLUMNS)
     .eq('username', username)
     .single()
   if (error || !data) return undefined
@@ -148,7 +151,7 @@ export async function deleteLawyer(id: string): Promise<boolean> {
 export async function getReferrals(): Promise<Referral[]> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
+    .select(REFERRAL_COLUMNS)
     .order('created_at', { ascending: false })
   if (error) {
     console.error('getReferrals error:', error)
@@ -157,16 +160,23 @@ export async function getReferrals(): Promise<Referral[]> {
   return rowsToModels<Referral>(data)
 }
 
-export async function getReferralsByLawyer(
-  lawyerId: string
+/**
+ * Returns all referrals where the given lawyer ENTITY (firm) is involved.
+ * `lawyerEntityId` must be a `lawyers.id` — a lawyer USER's id won't match.
+ *
+ * Lawyer users are linked to their firm via `users.lawyer_id`; pass
+ * `session.user.lawyerId` (NOT `session.user.id`).
+ */
+export async function getReferralsByLawyerEntity(
+  lawyerEntityId: string
 ): Promise<Referral[]> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
-    .eq('lawyer_id', lawyerId)
+    .select(REFERRAL_COLUMNS)
+    .eq('lawyer_id', lawyerEntityId)
     .order('created_at', { ascending: false })
   if (error) {
-    console.error('getReferralsByLawyer error:', error)
+    console.error('getReferralsByLawyerEntity error:', error)
     return []
   }
   return rowsToModels<Referral>(data)
@@ -177,7 +187,7 @@ export async function getReferralsByClinic(
 ): Promise<Referral[]> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
+    .select(REFERRAL_COLUMNS)
     .eq('clinic_id', clinicId)
     .order('created_at', { ascending: false })
   if (error) {
@@ -192,7 +202,7 @@ export async function getReferralById(
 ): Promise<Referral | undefined> {
   const { data, error } = await supabaseAdmin
     .from('referrals')
-    .select('id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, patient_name, patient_phone, case_type, coverage, pip, notes, status, created_at, updated_at')
+    .select(REFERRAL_COLUMNS)
     .eq('id', id)
     .single()
   if (error || !data) return undefined
@@ -230,13 +240,48 @@ export async function updateReferralStatus(
   return rowToModel<Referral>(data)
 }
 
+export type ReferralPatch = Partial<Pick<Referral,
+  'status' | 'insuranceCompany' | 'claimNumber' |
+  'adjusterName' | 'adjusterPhone' | 'adjusterEmail'
+>>
+
+export async function updateReferralFields(
+  id: string,
+  patch: ReferralPatch
+): Promise<Referral | null> {
+  // updated_at is set by the trg_referrals_updated_at trigger.
+  const row = modelToRow(patch)
+  const { data, error } = await supabaseAdmin
+    .from('referrals')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) {
+    console.error('updateReferralFields error:', error)
+    return null
+  }
+  return rowToModel<Referral>(data)
+}
+
 // Get clinic users linked to a specific clinic
 export async function getUsersByClinicId(clinicId: string): Promise<User[]> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
+    .select(USER_COLUMNS)
     .eq('clinic_id', clinicId)
     .eq('role', 'clinic')
+  if (error || !data) return []
+  return rowsToModels<User>(data)
+}
+
+// Get lawyer users linked to a specific lawyer entity (firm)
+export async function getLawyerUsersByEntityId(lawyerEntityId: string): Promise<User[]> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select(USER_COLUMNS)
+    .eq('lawyer_id', lawyerEntityId)
+    .eq('role', 'lawyer')
   if (error || !data) return []
   return rowsToModels<User>(data)
 }
@@ -245,7 +290,7 @@ export async function getUsersByClinicId(clinicId: string): Promise<User[]> {
 export async function getUserById(id: string): Promise<User | undefined> {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, username, password, name, role, clinic_id, firm_name, email, state')
+    .select(USER_COLUMNS)
     .eq('id', id)
     .single()
   if (error || !data) return undefined

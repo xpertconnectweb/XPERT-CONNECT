@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { Map, FileText, UserPlus } from 'lucide-react'
+import { Map, FileText, UserPlus, LayoutDashboard, Scale } from 'lucide-react'
 import { BaseSidebar } from '@/components/shared/BaseSidebar'
 import type { NavSection } from '@/components/shared/BaseSidebar'
 
@@ -25,6 +25,18 @@ const referrerSections: NavSection[] = [
   },
 ]
 
+const clinicSections: NavSection[] = [
+  {
+    label: 'Navigation',
+    items: [
+      { href: '/professionals', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/professionals/specialists', label: 'Specialists', icon: Scale },
+      { href: '/professionals/map', label: 'Map', icon: Map },
+      { href: '/professionals/referrals', label: 'Referrals', icon: FileText },
+    ],
+  },
+]
+
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
@@ -32,15 +44,25 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { data: session } = useSession()
-  const isReferrer = session?.user?.role === 'referrer'
+  const role = session?.user?.role
+
+  let sections: NavSection[] = defaultSections
+  let logoHref = '/professionals/map'
+  if (role === 'referrer') {
+    sections = referrerSections
+    logoHref = '/professionals/refer'
+  } else if (role === 'clinic') {
+    sections = clinicSections
+    logoHref = '/professionals'
+  }
 
   return (
     <BaseSidebar
       isOpen={isOpen}
       onClose={onClose}
-      logoHref={isReferrer ? '/professionals/refer' : '/professionals/map'}
+      logoHref={logoHref}
       ariaLabel="Dashboard navigation"
-      navSections={isReferrer ? referrerSections : defaultSections}
+      navSections={sections}
     />
   )
 }

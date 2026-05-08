@@ -15,6 +15,12 @@ node_modules/
 
 # Testing
 /coverage/
+.vitest-cache/
+/playwright-report/
+/test-results/
+
+# Lint cache
+.eslintcache
 
 # Environment files
 .env

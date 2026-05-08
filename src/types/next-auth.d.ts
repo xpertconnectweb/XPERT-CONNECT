@@ -7,6 +7,7 @@ declare module 'next-auth' {
       id: string
       role: UserRole
       clinicId?: string
+      lawyerId?: string
       firmName?: string
       username: string
       state?: string
@@ -17,6 +18,7 @@ declare module 'next-auth' {
     id: string
     role: UserRole
     clinicId?: string
+    lawyerId?: string
     firmName?: string
     username: string
     state?: string
@@ -28,6 +30,7 @@ declare module 'next-auth/jwt' {
     id: string
     role: UserRole
     clinicId?: string
+    lawyerId?: string
     firmName?: string
     username: string
     state?: string

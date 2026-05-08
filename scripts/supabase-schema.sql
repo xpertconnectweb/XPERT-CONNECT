@@ -4,13 +4,16 @@
 -- =============================================================
 
 -- 1. Users table
+-- lawyer_id links a `role='lawyer'` user account to its firm
+-- (lawyers.id). FK added below after the lawyers table is created.
 CREATE TABLE IF NOT EXISTS users (
   id          TEXT PRIMARY KEY,
   username    TEXT UNIQUE NOT NULL,
   password    TEXT NOT NULL,
   name        TEXT NOT NULL,
-  role        TEXT NOT NULL CHECK (role IN ('lawyer', 'clinic', 'admin')),
+  role        TEXT NOT NULL CHECK (role IN ('lawyer', 'clinic', 'admin', 'partner', 'referrer')),
   clinic_id   TEXT,
+  lawyer_id   TEXT,
   firm_name   TEXT,
   email       TEXT NOT NULL,
   state       TEXT,
@@ -55,24 +58,46 @@ CREATE TABLE IF NOT EXISTS lawyers (
   updated_at     TIMESTAMPTZ DEFAULT now()
 );
 
--- 4. Referrals table (FKs to users and clinics)
+-- 4. Referrals table.
+-- lawyer_id always references the lawyer ENTITY (firms in
+-- `lawyers`). created_by_user_id records the originating user
+-- and creator_role its role at creation time.
 CREATE TABLE IF NOT EXISTS referrals (
-  id             TEXT PRIMARY KEY,
-  lawyer_id      TEXT NOT NULL REFERENCES users(id),
-  lawyer_name    TEXT NOT NULL,
-  lawyer_firm    TEXT NOT NULL DEFAULT '',
-  clinic_id      TEXT NOT NULL REFERENCES clinics(id),
-  clinic_name    TEXT NOT NULL,
-  patient_name   TEXT NOT NULL,
-  patient_phone  TEXT NOT NULL,
-  case_type      TEXT NOT NULL,
-  coverage       TEXT NOT NULL DEFAULT '',
-  pip            TEXT NOT NULL DEFAULT '',
-  notes          TEXT NOT NULL DEFAULT '',
-  status         TEXT NOT NULL CHECK (status IN ('received', 'in_process', 'attended')) DEFAULT 'received',
-  created_at     TIMESTAMPTZ DEFAULT now(),
-  updated_at     TIMESTAMPTZ DEFAULT now()
+  id                  TEXT PRIMARY KEY,
+  lawyer_id           TEXT NOT NULL REFERENCES lawyers(id),
+  lawyer_name         TEXT NOT NULL,
+  lawyer_firm         TEXT NOT NULL DEFAULT '',
+  clinic_id           TEXT NOT NULL REFERENCES clinics(id),
+  clinic_name         TEXT NOT NULL,
+  created_by_user_id  TEXT REFERENCES users(id) ON DELETE SET NULL,
+  creator_role        TEXT CHECK (creator_role IS NULL OR creator_role IN ('lawyer', 'clinic', 'admin')),
+  patient_name        TEXT NOT NULL,
+  patient_phone       TEXT NOT NULL,
+  case_type           TEXT NOT NULL,
+  coverage            TEXT,
+  pip                 TEXT,
+  insurance_company   TEXT,
+  claim_number        TEXT,
+  adjuster_name       TEXT,
+  adjuster_phone      TEXT,
+  adjuster_email      TEXT,
+  notes               TEXT NOT NULL DEFAULT '',
+  status              TEXT NOT NULL CHECK (status IN ('received', 'in_process', 'attended')) DEFAULT 'received',
+  created_at          TIMESTAMPTZ DEFAULT now(),
+  updated_at          TIMESTAMPTZ DEFAULT now()
 );
+
+-- Now that the lawyers table exists, attach the FK on users.lawyer_id.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'users_lawyer_id_fkey'
+  ) THEN
+    ALTER TABLE users
+      ADD CONSTRAINT users_lawyer_id_fkey
+      FOREIGN KEY (lawyer_id) REFERENCES lawyers(id);
+  END IF;
+END$$;
 
 -- 4. Contacts table (public form submissions)
 CREATE TABLE IF NOT EXISTS contacts (

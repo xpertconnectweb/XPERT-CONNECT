@@ -27,6 +27,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: user.role,
           clinicId: user.clinicId,
+          lawyerId: user.lawyerId,
           firmName: user.firmName,
           username: user.username,
           state: user.state,
@@ -44,6 +45,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.clinicId = user.clinicId
+        token.lawyerId = user.lawyerId
         token.firmName = user.firmName
         token.username = user.username
         token.state = user.state
@@ -57,6 +59,7 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) {
             token.role = dbUser.role
             token.clinicId = dbUser.clinicId
+            token.lawyerId = dbUser.lawyerId
             token.firmName = dbUser.firmName
             token.state = dbUser.state
             token.name = dbUser.name
@@ -73,6 +76,7 @@ export const authOptions: NextAuthOptions = {
       session.user.id = token.id
       session.user.role = token.role
       session.user.clinicId = token.clinicId
+      session.user.lawyerId = token.lawyerId
       session.user.firmName = token.firmName
       session.user.username = token.username
       session.user.state = token.state
