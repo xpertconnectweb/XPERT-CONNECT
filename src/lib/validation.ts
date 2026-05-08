@@ -9,3 +9,13 @@ export const VALID_REFERRER_STATUSES: ReferrerReferralStatus[] = ['pending', 'as
 export const VALID_CASE_CONFIRMED: CaseConfirmedStatus[] = ['pending', 'confirmed']
 export const VALID_SERVICES: ServiceNeeded[] = ['clinic', 'lawyer', 'both']
 export const VALID_STATES = ['FL', 'MN'] as const
+
+export const REFERRAL_MUTABLE_FIELDS = [
+  'status',
+  'insuranceCompany',
+  'claimNumber',
+  'adjusterName',
+  'adjusterPhone',
+  'adjusterEmail',
+] as const
+export type ReferralMutableField = typeof REFERRAL_MUTABLE_FIELDS[number]

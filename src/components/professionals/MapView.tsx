@@ -11,6 +11,7 @@ import {
   Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale,
 } from 'lucide-react'
 import { ReferralFormModal } from './ReferralFormModal'
+import { ClinicReferralFormModal } from './ClinicReferralFormModal'
 import { MarkerClusterLayer } from './map/MarkerClusterLayer'
 import { VirtualPanelList } from './map/VirtualPanelList'
 import { clinicAvailIcon } from '@/lib/map/icons'
@@ -32,12 +33,14 @@ interface MapViewProps {
   clinicsUrl?: string
   lawyersUrl?: string
   showLawyers?: boolean
+  showClinics?: boolean
 }
 
 export function MapView({
   clinicsUrl = '/api/professionals/clinics',
   lawyersUrl = '/api/professionals/lawyers',
   showLawyers: showLawyersProp = true,
+  showClinics: showClinicsProp = true,
 }: MapViewProps = {}) {
   const { data: session } = useSession()
   const [clinics, setClinics] = useState<Clinic[]>([])
@@ -45,11 +48,13 @@ export function MapView({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null)
+  const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showClinicModal, setShowClinicModal] = useState(false)
 
   const [filterText, setFilterText] = useState('')
   const [showAvailableOnly, setShowAvailableOnly] = useState(false)
-  const [showClinics, setShowClinics] = useState(true)
+  const [showClinics, setShowClinics] = useState(showClinicsProp)
   const [showLawyers, setShowLawyers] = useState(showLawyersProp)
   const [locationQuery, setLocationQuery] = useState('')
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([])
@@ -75,9 +80,11 @@ export function MapView({
   const fetchData = useCallback(async () => {
     setLoading(true); setError(false)
     try {
-      const clinicsRes = await fetch(clinicsUrl)
-      if (!clinicsRes.ok) throw new Error()
-      setClinics(await clinicsRes.json())
+      if (showClinicsProp) {
+        const clinicsRes = await fetch(clinicsUrl)
+        if (!clinicsRes.ok) throw new Error()
+        setClinics(await clinicsRes.json())
+      }
       if (showLawyersProp) {
         const lawyersRes = await fetch(lawyersUrl)
         if (lawyersRes.ok) {
@@ -85,7 +92,7 @@ export function MapView({
         }
       }
     } catch { setError(true) } finally { setLoading(false) }
-  }, [clinicsUrl, lawyersUrl, showLawyersProp])
+  }, [clinicsUrl, lawyersUrl, showLawyersProp, showClinicsProp])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -195,13 +202,23 @@ export function MapView({
     return { clinicCount: clinics, lawyerCount: lawyers }
   }, [validItems])
 
-  const handleReferral = useCallback((clinic: Clinic) => { mapRef.current?.closePopup(); setSelectedClinic(clinic); setShowModal(true) }, [])
+  const handleReferral = useCallback((target: MapItem) => {
+    mapRef.current?.closePopup()
+    if (target.type === 'lawyer') {
+      setSelectedLawyer(target as unknown as Lawyer)
+      setShowClinicModal(true)
+    } else {
+      setSelectedClinic(target as unknown as Clinic)
+      setShowModal(true)
+    }
+  }, [])
   const handleCloseModal = useCallback(() => { setShowModal(false); setSelectedClinic(null) }, [])
+  const handleCloseClinicModal = useCallback(() => { setShowClinicModal(false); setSelectedLawyer(null) }, [])
   const handleClearFilter = useCallback(() => { setFilterText(''); filterInputRef.current?.focus() }, [])
   const handleMapMoveEnd = useCallback(() => { if (mapRef.current) { const c = mapRef.current.getCenter(); setMapCenter([c.lat, c.lng]) } }, [])
   const handleFocusItem = useCallback((item: MapItem) => { mapRef.current?.setView([item.lat, item.lng], 14); setShowPanel(false) }, [])
 
-  const isLawyer = session?.user?.role === 'lawyer'
+  const userRole = session?.user?.role
 
   /* ── Loading state ── */
   if (loading) return (
@@ -244,7 +261,7 @@ export function MapView({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MarkerClusterLayer items={itemsWithDistance} isLawyer={isLawyer} onReferral={handleReferral} />
+        <MarkerClusterLayer items={itemsWithDistance} userRole={userRole} onReferral={handleReferral} />
       </MapContainer>
 
       {/* ═══ CONTROLS PANEL (top-left) ═══ */}
@@ -308,14 +325,14 @@ export function MapView({
 
             {/* Type toggles + counts */}
             <div className="flex items-center gap-2">
-              <button
+              {showClinicsProp && <button
                 onClick={() => setShowClinics(!showClinics)}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showClinics ? 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
               >
                 <Building2 className="h-3 w-3" />
                 Clinics
                 <span className={`ml-0.5 text-[10px] ${showClinics ? 'text-sky-100' : 'text-gray-300'}`}>{clinicCount}</span>
-              </button>
+              </button>}
               {showLawyersProp && <button
                 onClick={() => setShowLawyers(!showLawyers)}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showLawyers ? 'bg-red-500 text-white border-red-500 shadow-md shadow-red-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
@@ -361,8 +378,9 @@ export function MapView({
         <VirtualPanelList items={panelItems} onFocus={handleFocusItem} />
       </div>
 
-      {/* ═══ REFERRAL MODAL ═══ */}
+      {/* ═══ REFERRAL MODALS ═══ */}
       {showModal && selectedClinic && <ReferralFormModal clinic={selectedClinic} onClose={handleCloseModal} />}
+      {showClinicModal && selectedLawyer && <ClinicReferralFormModal lawyer={selectedLawyer} onClose={handleCloseClinicModal} />}
     </div>
   )
 }

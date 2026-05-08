@@ -238,11 +238,18 @@ export function ReferralsView() {
       )}
 
       {isClinic && (
-        <ReferralTable referrals={referrals} onStatusChange={handleStatusChange} />
+        <ReferralTable
+          referrals={referrals}
+          onStatusChange={handleStatusChange}
+          onUpdate={(updated) => setReferrals((prev) => prev.map((r) => r.id === updated.id ? updated : r))}
+        />
       )}
 
       {isLawyer && (
-        <ReferralList referrals={referrals} />
+        <ReferralList
+          referrals={referrals}
+          onUpdate={(updated) => setReferrals((prev) => prev.map((r) => r.id === updated.id ? updated : r))}
+        />
       )}
     </div>
   )

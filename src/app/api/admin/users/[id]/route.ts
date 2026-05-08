@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
-import { getUserById, updateUser, deleteUser } from '@/lib/data'
+import { getUserById, updateUser, deleteUser, getLawyerById, getClinicById } from '@/lib/data'
 import { sanitize } from '@/lib/sanitize'
 import { logActivity } from '@/lib/activity-log'
 import { VALID_ROLES, EMAIL_RE, USERNAME_RE } from '@/lib/validation'
@@ -59,8 +59,37 @@ export async function PATCH(
   }
 
   if (body.firmName !== undefined) fields.firmName = sanitize(body.firmName || '') || null
-  if (body.clinicId !== undefined) fields.clinicId = body.clinicId || null
   if (body.state !== undefined) fields.state = body.state || null
+
+  if (body.clinicId !== undefined) {
+    if (body.clinicId) {
+      const clinic = await getClinicById(body.clinicId)
+      if (!clinic) {
+        return NextResponse.json({ error: 'Clinic not found' }, { status: 400 })
+      }
+      fields.clinicId = clinic.id
+    } else {
+      fields.clinicId = null
+    }
+  }
+
+  if (body.lawyerId !== undefined) {
+    if (body.lawyerId) {
+      const lawyer = await getLawyerById(body.lawyerId)
+      if (!lawyer) {
+        return NextResponse.json({ error: 'Lawyer firm not found' }, { status: 400 })
+      }
+      fields.lawyerId = lawyer.id
+    } else {
+      fields.lawyerId = null
+    }
+  }
+
+  // If the role is being changed away from lawyer/clinic, clear the
+  // corresponding link to keep the data model consistent.
+  const finalRole = (fields.role as string | undefined) ?? existing.role
+  if (finalRole !== 'lawyer' && fields.lawyerId === undefined) fields.lawyerId = null
+  if (finalRole !== 'clinic' && fields.clinicId === undefined) fields.clinicId = null
 
   const updated = await updateUser(id, fields)
   if (!updated) {

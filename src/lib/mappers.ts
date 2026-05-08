@@ -16,8 +16,7 @@ export function rowToModel<T>(row: Record<string, unknown>): T {
   return result as T
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function modelToRow(model: any): Record<string, unknown> {
+export function modelToRow<T extends object>(model: T): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(model)) {
     result[camelToSnake(key)] = value

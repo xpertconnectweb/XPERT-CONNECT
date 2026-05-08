@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
-import { getUsers, createUser } from '@/lib/data'
+import { getUsers, createUser, getLawyerById, getClinicById } from '@/lib/data'
 import { sanitize } from '@/lib/sanitize'
 import { logActivity } from '@/lib/activity-log'
 import { VALID_ROLES, EMAIL_RE, USERNAME_RE } from '@/lib/validation'
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   if (authError) return authError
 
   const body = await request.json()
-  const { name, username, password, role, email, firmName, clinicId, state } = body
+  const { name, username, password, role, email, firmName, clinicId, lawyerId, state } = body
 
   if (!name || !username || !password || !role || !email) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -48,6 +48,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
   }
 
+  // Validate optional FK references before creating the user
+  let resolvedClinicId: string | undefined
+  if (role === 'clinic' && clinicId) {
+    const clinic = await getClinicById(clinicId)
+    if (!clinic) return NextResponse.json({ error: 'Clinic not found' }, { status: 400 })
+    resolvedClinicId = clinic.id
+  }
+
+  let resolvedLawyerId: string | undefined
+  if (role === 'lawyer' && lawyerId) {
+    const lawyer = await getLawyerById(lawyerId)
+    if (!lawyer) return NextResponse.json({ error: 'Lawyer firm not found' }, { status: 400 })
+    resolvedLawyerId = lawyer.id
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10)
 
   try {
@@ -59,7 +74,8 @@ export async function POST(request: NextRequest) {
       role,
       email,
       firmName: role === 'lawyer' ? sanitize(firmName || '') || undefined : undefined,
-      clinicId: role === 'clinic' ? clinicId : undefined,
+      clinicId: resolvedClinicId,
+      lawyerId: resolvedLawyerId,
       state: role === 'lawyer' && state ? state : undefined,
     })
 

@@ -66,7 +66,7 @@ export function Footer() {
               />
             </Link>
             <p className="text-white/75 mb-6 leading-relaxed">
-              We don't sell contacts. We create trusted connections.
+              We don&apos;t sell contacts. We create trusted connections.
               Connecting clients with verified professionals since 2004.
             </p>
 

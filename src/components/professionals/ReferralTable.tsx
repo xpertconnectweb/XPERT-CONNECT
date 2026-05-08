@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { StatusBadge } from './StatusBadge'
 import {
   Loader2,
@@ -18,6 +19,12 @@ import {
   Clock,
   MessageSquare,
   Building2,
+  Hash,
+  Contact,
+  Mail,
+  Pencil,
+  Save,
+  CheckCircle2,
 } from 'lucide-react'
 import type { Referral, ReferralStatus } from '@/types/professionals'
 
@@ -46,14 +53,80 @@ function formatDateTime(iso: string): string {
   })
 }
 
+type InsuranceField = 'insuranceCompany' | 'claimNumber' | 'adjusterName' | 'adjusterPhone' | 'adjusterEmail'
+
+const INSURANCE_FIELDS: { key: InsuranceField; label: string; icon: typeof User; type: string; placeholder: string }[] = [
+  { key: 'insuranceCompany', label: 'Insurance Company', icon: Building2, type: 'text', placeholder: 'e.g. State Farm' },
+  { key: 'claimNumber', label: 'Claim Number', icon: Hash, type: 'text', placeholder: 'Claim #' },
+  { key: 'adjusterName', label: 'Adjuster Name', icon: Contact, type: 'text', placeholder: 'Adjuster full name' },
+  { key: 'adjusterPhone', label: 'Adjuster Phone', icon: Phone, type: 'tel', placeholder: '(305) 555-0000' },
+  { key: 'adjusterEmail', label: 'Adjuster Email', icon: Mail, type: 'email', placeholder: 'adjuster@insurance.com' },
+]
+
 /* ── Detail Modal ── */
-function ReferralDetailModal({ referral, onClose }: { referral: Referral; onClose: () => void }) {
+function ReferralDetailModal({
+  referral,
+  onClose,
+  onUpdate,
+}: {
+  referral: Referral
+  onClose: () => void
+  onUpdate?: (updated: Referral) => void
+}) {
+  const { data: session } = useSession()
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [savedFlash, setSavedFlash] = useState(false)
+  const [draft, setDraft] = useState<Record<InsuranceField, string>>({
+    insuranceCompany: referral.insuranceCompany ?? '',
+    claimNumber: referral.claimNumber ?? '',
+    adjusterName: referral.adjusterName ?? '',
+    adjusterPhone: referral.adjusterPhone ?? '',
+    adjusterEmail: referral.adjusterEmail ?? '',
+  })
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handler)
     document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = '' }
   }, [onClose])
+
+  const role = session?.user?.role
+  // Mirror the backend authorization in src/app/api/professionals/referrals/[id]/route.ts:
+  // a lawyer can edit a referral only if they belong to the SAME firm
+  // (entity), not because their user.id matches.
+  const canEdit =
+    role === 'admin' ||
+    (role === 'lawyer' && !!session?.user?.lawyerId && session.user.lawyerId === referral.lawyerId) ||
+    (role === 'clinic' && session?.user?.clinicId === referral.clinicId)
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveError('')
+    try {
+      const res = await fetch(`/api/professionals/referrals/${referral.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draft),
+      })
+      if (!res.ok) {
+        let msg = 'Failed to save changes'
+        try { msg = (await res.json()).error || msg } catch {}
+        throw new Error(msg)
+      }
+      const updated: Referral = await res.json()
+      onUpdate?.(updated)
+      setSavedFlash(true)
+      setEditing(false)
+      setTimeout(() => setSavedFlash(false), 2000)
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save changes')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const statusColor = {
     received: 'from-blue-500 to-blue-600',
@@ -67,11 +140,14 @@ function ReferralDetailModal({ referral, onClose }: { referral: Referral; onClos
     { icon: Scale, label: 'Lawyer', value: referral.lawyerName },
     { icon: Building2, label: 'Firm', value: referral.lawyerFirm },
     { icon: Briefcase, label: 'Case Type', value: referral.caseType },
-    { icon: Shield, label: 'Coverage', value: referral.coverage },
-    { icon: FileCheck, label: 'PIP', value: referral.pip },
+    { icon: Shield, label: 'Coverage', value: referral.coverage ?? '' },
+    { icon: FileCheck, label: 'PIP', value: referral.pip ?? '' },
     { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },
     { icon: Clock, label: 'Updated', value: formatDateTime(referral.updatedAt) },
   ]
+
+  const inputBase =
+    'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all'
 
   return (
     <div
@@ -122,6 +198,64 @@ function ReferralDetailModal({ referral, onClose }: { referral: Referral; onClos
             </div>
           ))}
 
+          {/* Insurance + Adjuster section */}
+          <div className="pt-4 pb-2">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                <Contact className="h-3.5 w-3.5 text-gray-400" />
+                Insurance &amp; Adjuster
+              </h3>
+              {canEdit && !editing && (
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit
+                </button>
+              )}
+              {savedFlash && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Saved
+                </span>
+              )}
+            </div>
+
+            {saveError && (
+              <p className="text-xs text-red-600 mb-2">{saveError}</p>
+            )}
+
+            <div className="space-y-2">
+              {INSURANCE_FIELDS.map(({ key, label, icon: Icon, type, placeholder }) => (
+                <div key={key} className="flex items-center gap-3 py-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50">
+                    <Icon className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider" htmlFor={`field-${key}`}>{label}</label>
+                    {editing ? (
+                      <input
+                        id={`field-${key}`}
+                        type={type}
+                        value={draft[key]}
+                        placeholder={placeholder}
+                        maxLength={key === 'adjusterEmail' ? 100 : key === 'adjusterPhone' ? 20 : 100}
+                        onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value }))}
+                        className={`${inputBase} mt-1`}
+                      />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-900 mt-0.5 truncate">
+                        {referral[key] || '—'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {referral.notes && (
             <div className="py-3.5">
               <div className="flex items-start gap-3">
@@ -140,13 +274,42 @@ function ReferralDetailModal({ referral, onClose }: { referral: Referral; onClos
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-          <button
-            onClick={onClose}
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
-          >
-            Close
-          </button>
+        <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3">
+          {editing ? (
+            <>
+              <button
+                onClick={() => {
+                  setEditing(false)
+                  setSaveError('')
+                  setDraft({
+                    insuranceCompany: referral.insuranceCompany ?? '',
+                    claimNumber: referral.claimNumber ?? '',
+                    adjusterName: referral.adjusterName ?? '',
+                    adjusterPhone: referral.adjusterPhone ?? '',
+                    adjusterEmail: referral.adjusterEmail ?? '',
+                  })
+                }}
+                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex-[1.4] inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#d4a84b] to-[#c49a3f] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:shadow-md hover:shadow-gold/20 disabled:opacity-60 transition-all"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Save Changes
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+            >
+              Close
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -157,9 +320,10 @@ function ReferralDetailModal({ referral, onClose }: { referral: Referral; onClos
 interface ReferralTableProps {
   referrals: Referral[]
   onStatusChange: (id: string, status: ReferralStatus) => Promise<void>
+  onUpdate?: (updated: Referral) => void
 }
 
-export function ReferralTable({ referrals, onStatusChange }: ReferralTableProps) {
+export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralTableProps) {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [selected, setSelected] = useState<Referral | null>(null)
 
@@ -324,7 +488,14 @@ export function ReferralTable({ referrals, onStatusChange }: ReferralTableProps)
 
       {/* Detail Modal */}
       {selected && (
-        <ReferralDetailModal referral={selected} onClose={() => setSelected(null)} />
+        <ReferralDetailModal
+          referral={selected}
+          onClose={() => setSelected(null)}
+          onUpdate={(updated) => {
+            onUpdate?.(updated)
+            setSelected(updated)
+          }}
+        />
       )}
     </>
   )

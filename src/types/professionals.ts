@@ -22,8 +22,9 @@ export interface User {
   password: string // bcrypt hash
   name: string
   role: UserRole
-  clinicId?: string // only for clinic users
-  firmName?: string // only for lawyer users
+  clinicId?: string // only for clinic users — links to clinics(id)
+  lawyerId?: string // only for lawyer users — links to lawyers(id) (firm)
+  firmName?: string // legacy free-form firm name (now denormalized from lawyers.name when linked)
   email: string
   state?: string // state filter for lawyers (e.g. 'FL', 'MN')
 }
@@ -88,18 +89,27 @@ export interface ReferrerReferral {
   updatedAt: string
 }
 
+export type ReferralCreatorRole = 'lawyer' | 'clinic' | 'admin'
+
 export interface Referral {
   id: string
-  lawyerId: string
+  lawyerId: string // lawyers(id) — the firm involved
   lawyerName: string
   lawyerFirm: string
-  clinicId: string
+  clinicId: string // clinics(id) — the clinic involved
   clinicName: string
+  createdByUserId?: string // users(id) — who initiated
+  creatorRole?: ReferralCreatorRole
   patientName: string
   patientPhone: string
   caseType: string
-  coverage: string
-  pip: string
+  coverage?: string
+  pip?: string
+  insuranceCompany?: string
+  claimNumber?: string
+  adjusterName?: string
+  adjusterPhone?: string
+  adjusterEmail?: string
   notes: string
   status: ReferralStatus
   createdAt: string
