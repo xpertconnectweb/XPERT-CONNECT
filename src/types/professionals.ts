@@ -91,13 +91,19 @@ export interface ReferrerReferral {
 
 export type ReferralCreatorRole = 'lawyer' | 'clinic' | 'admin'
 
+export type ReferralKind = 'lawyer' | 'medical_specialist'
+
 export interface Referral {
   id: string
-  lawyerId: string // lawyers(id) — the firm involved
-  lawyerName: string
-  lawyerFirm: string
-  clinicId: string // clinics(id) — the clinic involved
+  referralKind: ReferralKind
+  lawyerId: string | null // lawyers(id) — null for medical-specialist referrals
+  lawyerName: string | null
+  lawyerFirm: string | null
+  clinicId: string // clinics(id) — the SOURCE clinic
   clinicName: string
+  targetClinicId?: string | null // destination clinic for medical referrals
+  targetClinicName?: string | null
+  specialistType?: string | null // e.g. "Orthopedist", "Neurologist"
   createdByUserId?: string // users(id) — who initiated
   creatorRole?: ReferralCreatorRole
   patientName: string

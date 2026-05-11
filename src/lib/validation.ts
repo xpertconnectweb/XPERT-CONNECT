@@ -1,4 +1,5 @@
-import type { UserRole, ReferralStatus, ReferrerReferralStatus, CaseConfirmedStatus, ServiceNeeded } from '@/types/professionals'
+import type { UserRole, ReferralStatus, ReferrerReferralStatus, CaseConfirmedStatus, ServiceNeeded, ReferralKind } from '@/types/professionals'
+import { MEDICAL_SPECIALTY_TYPES, type MedicalSpecialtyType } from './medical-specialties'
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
@@ -9,6 +10,8 @@ export const VALID_REFERRER_STATUSES: ReferrerReferralStatus[] = ['pending', 'as
 export const VALID_CASE_CONFIRMED: CaseConfirmedStatus[] = ['pending', 'confirmed']
 export const VALID_SERVICES: ServiceNeeded[] = ['clinic', 'lawyer', 'both']
 export const VALID_STATES = ['FL', 'MN'] as const
+export const VALID_REFERRAL_KINDS: ReferralKind[] = ['lawyer', 'medical_specialist']
+export const VALID_MEDICAL_SPECIALTIES: readonly MedicalSpecialtyType[] = MEDICAL_SPECIALTY_TYPES
 
 export const REFERRAL_MUTABLE_FIELDS = [
   'status',

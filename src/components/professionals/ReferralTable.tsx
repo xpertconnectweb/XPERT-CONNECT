@@ -134,17 +134,28 @@ function ReferralDetailModal({
     attended: 'from-emerald-500 to-emerald-600',
   }[referral.status]
 
-  const rows = [
-    { icon: User, label: 'Patient', value: referral.patientName },
-    { icon: Phone, label: 'Phone', value: referral.patientPhone },
-    { icon: Scale, label: 'Lawyer', value: referral.lawyerName },
-    { icon: Building2, label: 'Firm', value: referral.lawyerFirm },
-    { icon: Briefcase, label: 'Case Type', value: referral.caseType },
-    { icon: Shield, label: 'Coverage', value: referral.coverage ?? '' },
-    { icon: FileCheck, label: 'PIP', value: referral.pip ?? '' },
-    { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },
-    { icon: Clock, label: 'Updated', value: formatDateTime(referral.updatedAt) },
-  ]
+  const isMedical = referral.referralKind === 'medical_specialist'
+  const rows = isMedical
+    ? [
+        { icon: User, label: 'Patient', value: referral.patientName },
+        { icon: Phone, label: 'Phone', value: referral.patientPhone },
+        { icon: Scale, label: 'Specialist Type', value: referral.specialistType ?? '' },
+        { icon: Building2, label: 'Target Clinic', value: referral.targetClinicName ?? '' },
+        { icon: Briefcase, label: 'Case Type', value: referral.caseType },
+        { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },
+        { icon: Clock, label: 'Updated', value: formatDateTime(referral.updatedAt) },
+      ]
+    : [
+        { icon: User, label: 'Patient', value: referral.patientName },
+        { icon: Phone, label: 'Phone', value: referral.patientPhone },
+        { icon: Scale, label: 'Lawyer', value: referral.lawyerName ?? '' },
+        { icon: Building2, label: 'Firm', value: referral.lawyerFirm ?? '' },
+        { icon: Briefcase, label: 'Case Type', value: referral.caseType },
+        { icon: Shield, label: 'Coverage', value: referral.coverage ?? '' },
+        { icon: FileCheck, label: 'PIP', value: referral.pip ?? '' },
+        { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },
+        { icon: Clock, label: 'Updated', value: formatDateTime(referral.updatedAt) },
+      ]
 
   const inputBase =
     'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all'
@@ -362,7 +373,8 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Patient</th>
-                <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Lawyer</th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Destination</th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Kind</th>
                 <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Case Type</th>
                 <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Date</th>
                 <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Status</th>
@@ -374,6 +386,13 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
               {referrals.map((ref) => {
                 const currentIdx = STATUS_FLOW.indexOf(ref.status)
                 const nextStatus = currentIdx < STATUS_FLOW.length - 1 ? STATUS_FLOW[currentIdx + 1] : null
+                const isMed = ref.referralKind === 'medical_specialist'
+                const destName = isMed
+                  ? (ref.targetClinicName || ref.specialistType || '—')
+                  : (ref.lawyerName || '—')
+                const destSub = isMed
+                  ? (ref.targetClinicName ? ref.specialistType ?? '' : '')
+                  : (ref.lawyerFirm ?? '')
                 return (
                   <tr key={ref.id} className="group hover:bg-gray-50/50 transition-colors">
                     <td className="px-5 py-4">
@@ -381,10 +400,20 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                       <p className="text-[11px] text-gray-400 mt-0.5">{ref.patientPhone}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="text-gray-700">{ref.lawyerName}</p>
-                      {ref.lawyerFirm && (
-                        <p className="text-[11px] text-gray-400 mt-0.5">{ref.lawyerFirm}</p>
+                      <p className="text-gray-700">{destName}</p>
+                      {destSub && (
+                        <p className="text-[11px] text-gray-400 mt-0.5">{destSub}</p>
                       )}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                          isMed ? 'bg-teal-50 text-teal-700' : 'bg-amber-50 text-amber-700'
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${isMed ? 'bg-teal-400' : 'bg-amber-400'}`} />
+                        {isMed ? 'Medical' : 'Legal'}
+                      </span>
                     </td>
                     <td className="px-5 py-4 text-gray-600 text-xs">{ref.caseType}</td>
                     <td className="px-5 py-4 text-gray-400 whitespace-nowrap text-xs">{formatDate(ref.createdAt)}</td>
@@ -454,8 +483,14 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Lawyer</p>
-                    <p className="text-gray-700 mt-0.5">{ref.lawyerName}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                      {ref.referralKind === 'medical_specialist' ? 'Specialist' : 'Lawyer'}
+                    </p>
+                    <p className="text-gray-700 mt-0.5">
+                      {ref.referralKind === 'medical_specialist'
+                        ? (ref.targetClinicName || ref.specialistType || '—')
+                        : (ref.lawyerName || '—')}
+                    </p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Case</p>

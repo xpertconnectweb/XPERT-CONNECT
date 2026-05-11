@@ -146,6 +146,7 @@ export function fakeLawyer(overrides: Partial<{ id: string; name: string; email:
 export function fakeReferral(overrides: Partial<Referral> = {}): Referral {
   return {
     id: 'ref-test-1',
+    referralKind: 'lawyer',
     lawyerId: 'l-001',
     lawyerName: 'Test Firm',
     lawyerFirm: 'Test Firm',
