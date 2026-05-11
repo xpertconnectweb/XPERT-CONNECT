@@ -42,6 +42,8 @@ export function LoginForm() {
         router.push('/partners/map')
       } else if (session?.user?.role === 'referrer') {
         router.push('/professionals/refer')
+      } else if (session?.user?.role === 'clinic') {
+        router.push('/professionals')
       } else {
         router.push('/professionals/map')
       }
