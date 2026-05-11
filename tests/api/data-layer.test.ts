@@ -13,7 +13,7 @@ function buildSupabaseMock() {
 
   function makeChain() {
     const chain: Record<string, unknown> = {}
-    const methods = ['select', 'eq', 'ilike', 'order', 'insert', 'update', 'delete']
+    const methods = ['select', 'eq', 'or', 'ilike', 'order', 'insert', 'update', 'delete']
     for (const method of methods) {
       chain[method] = (...args: unknown[]) => {
         calls.push({ method, args })
@@ -138,10 +138,10 @@ describe('getReferralsByLawyerEntity', () => {
 })
 
 describe('getReferralsByClinic', () => {
-  it('queries by clinic_id', async () => {
+  it('queries by clinic_id OR target_clinic_id (so target clinics see incoming medical referrals)', async () => {
     await getReferralsByClinic('c-001')
-    const eqCall = supabaseMock.calls.find((c) => c.method === 'eq')
-    expect(eqCall?.args).toEqual(['clinic_id', 'c-001'])
+    const orCall = supabaseMock.calls.find((c) => c.method === 'or')
+    expect(orCall?.args[0]).toBe('clinic_id.eq.c-001,target_clinic_id.eq.c-001')
   })
 })
 
@@ -223,6 +223,7 @@ describe('createReferral', () => {
     })
     await createReferral({
       id: 'ref-new',
+      referralKind: 'lawyer',
       lawyerId: 'l-001',
       lawyerName: 'Firm',
       lawyerFirm: 'Firm',

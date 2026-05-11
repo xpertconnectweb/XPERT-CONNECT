@@ -59,16 +59,22 @@ CREATE TABLE IF NOT EXISTS lawyers (
 );
 
 -- 4. Referrals table.
--- lawyer_id always references the lawyer ENTITY (firms in
--- `lawyers`). created_by_user_id records the originating user
--- and creator_role its role at creation time.
+-- referral_kind = 'lawyer'              → lawyer_id points at lawyers(id) (firm)
+-- referral_kind = 'medical_specialist'  → target_clinic_id may point at clinics(id);
+--                                         lawyer_id/lawyer_name/lawyer_firm are NULL
+-- created_by_user_id records the originating user and creator_role
+-- its role at creation time.
 CREATE TABLE IF NOT EXISTS referrals (
   id                  TEXT PRIMARY KEY,
-  lawyer_id           TEXT NOT NULL REFERENCES lawyers(id),
-  lawyer_name         TEXT NOT NULL,
-  lawyer_firm         TEXT NOT NULL DEFAULT '',
+  referral_kind       TEXT NOT NULL DEFAULT 'lawyer' CHECK (referral_kind IN ('lawyer', 'medical_specialist')),
+  lawyer_id           TEXT REFERENCES lawyers(id),
+  lawyer_name         TEXT,
+  lawyer_firm         TEXT,
   clinic_id           TEXT NOT NULL REFERENCES clinics(id),
   clinic_name         TEXT NOT NULL,
+  target_clinic_id    TEXT REFERENCES clinics(id) ON DELETE SET NULL,
+  target_clinic_name  TEXT,
+  specialist_type     TEXT,
   created_by_user_id  TEXT REFERENCES users(id) ON DELETE SET NULL,
   creator_role        TEXT CHECK (creator_role IS NULL OR creator_role IN ('lawyer', 'clinic', 'admin')),
   patient_name        TEXT NOT NULL,
@@ -86,6 +92,9 @@ CREATE TABLE IF NOT EXISTS referrals (
   created_at          TIMESTAMPTZ DEFAULT now(),
   updated_at          TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS idx_referrals_referral_kind   ON referrals(referral_kind);
+CREATE INDEX IF NOT EXISTS idx_referrals_target_clinic_id ON referrals(target_clinic_id);
 
 -- Now that the lawyers table exists, attach the FK on users.lawyer_id.
 DO $$

@@ -14,10 +14,12 @@ import {
   referralCreatedEmail,
   internalNotificationEmail,
   clinicToLawyerReferralEmail,
+  clinicToMedicalSpecialistReferralEmail,
   type ReferralExtras,
 } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
-import { EMAIL_RE } from '@/lib/validation'
+import { EMAIL_RE, VALID_MEDICAL_SPECIALTIES } from '@/lib/validation'
+import type { MedicalSpecialtyType } from '@/lib/medical-specialties'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 import type { Referral } from '@/types/professionals'
@@ -119,6 +121,9 @@ export async function POST(request: NextRequest) {
   if (session.user.role === 'lawyer') {
     return await handleLawyerToClinic({ session, body, cleanName, cleanPhone, cleanCase, cleanNotes, extras, now })
   }
+  if (body.referralKind === 'medical_specialist') {
+    return await handleClinicToMedicalSpecialist({ session, body, cleanName, cleanPhone, cleanCase, cleanNotes, extras, now })
+  }
   return await handleClinicToLawyer({ session, body, cleanName, cleanPhone, cleanCase, cleanNotes, extras, now })
 }
 
@@ -178,6 +183,7 @@ async function handleLawyerToClinic(args: CreateArgs) {
   try {
     referral = await createReferral({
       id: `ref-${uuidv4()}`,
+      referralKind: 'lawyer',
       lawyerId: lawyerEntity.id,
       lawyerName,
       lawyerFirm,
@@ -287,6 +293,7 @@ async function handleClinicToLawyer(args: CreateArgs) {
   try {
     referral = await createReferral({
       id: `ref-${uuidv4()}`,
+      referralKind: 'lawyer',
       lawyerId: lawyer.id,
       lawyerName: lawyer.name,
       lawyerFirm: lawyer.name,
@@ -354,6 +361,123 @@ async function handleClinicToLawyer(args: CreateArgs) {
           clinic.name,
           '',
           lawyer.name,
+          cleanName,
+          cleanCase,
+          now,
+          extras,
+          'clinic-to-lawyer'
+        )
+      } catch (err) {
+        console.error('Internal email failed:', err)
+      }
+    })()
+  )
+
+  return NextResponse.json(referral, { status: 201 })
+}
+
+async function handleClinicToMedicalSpecialist(args: CreateArgs) {
+  const { session, body, cleanName, cleanPhone, cleanCase, cleanNotes, extras, now } = args
+  const clinicId = session.user.clinicId
+
+  if (!clinicId) {
+    return NextResponse.json({ error: 'Your account is not linked to a clinic' }, { status: 403 })
+  }
+
+  const specialistType = typeof body.specialistType === 'string' ? body.specialistType : ''
+  if (!specialistType) {
+    return NextResponse.json({ error: 'specialistType is required' }, { status: 400 })
+  }
+  if (!VALID_MEDICAL_SPECIALTIES.includes(specialistType as MedicalSpecialtyType)) {
+    return NextResponse.json({ error: 'Invalid specialistType' }, { status: 400 })
+  }
+
+  const sourceClinic = await getClinicById(clinicId)
+  if (!sourceClinic) {
+    return NextResponse.json({ error: 'Originating clinic not found' }, { status: 404 })
+  }
+
+  const rawTargetId = typeof body.targetClinicId === 'string' ? body.targetClinicId.trim() : ''
+  let targetClinicId: string | null = null
+  let targetClinicName: string | null = null
+  let targetClinicEmail = ''
+
+  if (rawTargetId) {
+    if (rawTargetId === clinicId) {
+      return NextResponse.json({ error: 'Cannot refer to your own clinic' }, { status: 400 })
+    }
+    const targetClinic = await getClinicById(rawTargetId)
+    if (!targetClinic) {
+      return NextResponse.json({ error: 'Target clinic not found' }, { status: 404 })
+    }
+    targetClinicId = targetClinic.id
+    targetClinicName = targetClinic.name
+    targetClinicEmail = targetClinic.email
+  }
+
+  let referral: Referral
+  try {
+    referral = await createReferral({
+      id: `ref-${uuidv4()}`,
+      referralKind: 'medical_specialist',
+      lawyerId: null,
+      lawyerName: null,
+      lawyerFirm: null,
+      clinicId: sourceClinic.id,
+      clinicName: sourceClinic.name,
+      targetClinicId,
+      targetClinicName,
+      specialistType,
+      createdByUserId: session.user.id,
+      creatorRole: 'clinic',
+      patientName: cleanName,
+      patientPhone: cleanPhone,
+      caseType: cleanCase,
+      coverage: extras.coverage,
+      pip: extras.pip,
+      insuranceCompany: extras.insuranceCompany,
+      claimNumber: extras.claimNumber,
+      adjusterName: extras.adjusterName,
+      adjusterPhone: extras.adjusterPhone,
+      adjusterEmail: extras.adjusterEmail,
+      notes: cleanNotes,
+      status: 'received',
+      createdAt: now,
+      updatedAt: now,
+    })
+  } catch (err) {
+    console.error('POST /referrals (clinic→medical_specialist) createReferral failed:', err)
+    return NextResponse.json(
+      { error: 'Failed to create referral. Please try again.' },
+      { status: 500 }
+    )
+  }
+
+  waitUntil(
+    (async () => {
+      try {
+        if (targetClinicEmail) {
+          try {
+            await clinicToMedicalSpecialistReferralEmail(
+              targetClinicName ?? '',
+              targetClinicEmail,
+              sourceClinic.name,
+              specialistType,
+              cleanName,
+              cleanPhone,
+              cleanCase,
+              extras
+            )
+            await new Promise((resolve) => setTimeout(resolve, 600))
+          } catch (err) {
+            console.error(`Target clinic email to ${targetClinicEmail} failed:`, err)
+          }
+        }
+
+        await internalNotificationEmail(
+          sourceClinic.name,
+          '',
+          targetClinicName ?? `${specialistType} (unassigned)`,
           cleanName,
           cleanCase,
           now,

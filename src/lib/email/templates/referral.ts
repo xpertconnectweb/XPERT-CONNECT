@@ -147,6 +147,69 @@ export function internalNotificationEmail(
   })
 }
 
+/** Email sent to a target medical clinic when another clinic refers a patient */
+export function clinicToMedicalSpecialistReferralEmail(
+  targetClinicName: string,
+  targetClinicEmail: string,
+  sourceClinicName: string,
+  specialistType: string,
+  patientName: string,
+  patientPhone: string,
+  caseType: string,
+  extras?: ReferralExtras
+) {
+  const safe = {
+    targetClinicName: escapeHtml(targetClinicName || 'Clinic'),
+    sourceClinicName: escapeHtml(sourceClinicName),
+    specialistType: escapeHtml(specialistType),
+    patientName: escapeHtml(patientName),
+    patientPhone: escapeHtml(patientPhone),
+    caseType: escapeHtml(caseType),
+  }
+
+  return sendEmail({
+    to: targetClinicEmail,
+    subject: `New ${safe.specialistType} referral from ${safe.sourceClinicName} | Xpert Connect`,
+    html: wrapInLayout(`
+      ${logoBar()}
+      ${headerBanner('New Medical Specialist Referral', 'A clinic has referred a patient to your team', 'linear-gradient(135deg,#0f766e 0%,#14b8a6 50%,#10b981 100%)', '&#127973;')}
+
+      <div style="padding:36px 32px;">
+        <p style="font-size:16px;color:#1f2937;line-height:1.7;margin:0 0 8px 0;">
+          Dear <strong>${safe.targetClinicName}</strong>,
+        </p>
+        <p style="font-size:15px;color:#4b5563;line-height:1.7;margin:0 0 28px 0;">
+          <strong style="color:#1f2937;">${safe.sourceClinicName}</strong> has referred a patient who needs a <strong style="color:#1f2937;">${safe.specialistType}</strong>. Please review the details below and reach out to the patient directly.
+        </p>
+
+        ${detailsCard('Referral Details', 'linear-gradient(135deg,#0f766e 0%,#14b8a6 100%)', [
+          { label: 'Patient', value: safe.patientName },
+          { label: 'Patient Phone', value: safe.patientPhone },
+          { label: 'Specialist Needed', value: safe.specialistType },
+          { label: 'Case Type', value: safe.caseType },
+          { label: 'Referring Clinic', value: safe.sourceClinicName },
+          ...extrasRows(extras),
+        ])}
+
+        ${ctaButton('Open Patient Referral', `${COMPANY_DOMAIN}/professionals/referrals`, 'linear-gradient(135deg,#0f766e 0%,#14b8a6 100%)', 'rgba(20,184,166,0.35)')}
+
+        <div style="border-top:1px solid #e5e7eb;margin:28px 0;"></div>
+
+        <p style="font-size:14px;color:#6b7280;line-height:1.7;margin:0;">
+          If you have any questions, please contact us at <a href="mailto:${COMPANY_EMAIL}" style="color:#0f766e;text-decoration:none;font-weight:500;">${COMPANY_EMAIL}</a>
+        </p>
+
+        <p style="font-size:14px;color:#6b7280;line-height:1.7;margin:20px 0 0 0;">
+          Best regards,<br>
+          <strong style="color:#1f2937;">The Xpert Connect Team</strong>
+        </p>
+      </div>
+
+      ${footer('This is an automated notification. Please do not reply directly to this email.')}
+    `),
+  })
+}
+
 /** Email sent to a specialist (lawyer) when a clinic refers a patient */
 export function clinicToLawyerReferralEmail(
   lawyerName: string,

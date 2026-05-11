@@ -105,7 +105,7 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
       const res = await fetch('/api/professionals/referrals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lawyerId, ...form }),
+        body: JSON.stringify({ referralKind: 'lawyer', lawyerId, ...form }),
       })
 
       if (!res.ok) {

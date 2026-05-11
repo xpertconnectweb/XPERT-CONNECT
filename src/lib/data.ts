@@ -5,7 +5,7 @@ import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, Newslet
 export type { Contact, NewsletterSubscriber }
 
 const USER_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state'
-const REFERRAL_COLUMNS = 'id, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, created_by_user_id, creator_role, patient_name, patient_phone, case_type, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
+const REFERRAL_COLUMNS = 'id, referral_kind, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, target_clinic_id, target_clinic_name, specialist_type, created_by_user_id, creator_role, patient_name, patient_phone, case_type, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
 
 // Users
 export async function getUsers(): Promise<User[]> {
@@ -185,10 +185,12 @@ export async function getReferralsByLawyerEntity(
 export async function getReferralsByClinic(
   clinicId: string
 ): Promise<Referral[]> {
+  // Match referrals where the clinic is either the SOURCE (`clinic_id`)
+  // or the TARGET of a medical-specialist referral (`target_clinic_id`).
   const { data, error } = await supabaseAdmin
     .from('referrals')
     .select(REFERRAL_COLUMNS)
-    .eq('clinic_id', clinicId)
+    .or(`clinic_id.eq.${clinicId},target_clinic_id.eq.${clinicId}`)
     .order('created_at', { ascending: false })
   if (error) {
     console.error('getReferralsByClinic error:', error)
