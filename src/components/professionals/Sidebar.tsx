@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { Map, FileText, UserPlus, LayoutDashboard, Scale } from 'lucide-react'
+import { Map, FileText, UserPlus, LayoutDashboard, Stethoscope } from 'lucide-react'
 import { BaseSidebar } from '@/components/shared/BaseSidebar'
 import type { NavSection } from '@/components/shared/BaseSidebar'
 
@@ -30,7 +30,7 @@ const clinicSections: NavSection[] = [
     label: 'Navigation',
     items: [
       { href: '/professionals', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/professionals/specialists', label: 'Specialists', icon: Scale },
+      { href: '/professionals/specialists', label: 'Specialists', icon: Stethoscope },
       { href: '/professionals/map', label: 'Map', icon: Map },
       { href: '/professionals/referrals', label: 'Referrals', icon: FileText },
     ],

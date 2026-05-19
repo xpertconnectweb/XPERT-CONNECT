@@ -27,7 +27,6 @@ vi.mock('@/lib/email', () => ({
   referralCreatedEmail: vi.fn().mockResolvedValue(undefined),
   internalNotificationEmail: vi.fn().mockResolvedValue(undefined),
   clinicToLawyerReferralEmail: vi.fn().mockResolvedValue(undefined),
-  clinicToMedicalSpecialistReferralEmail: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { POST } from '@/app/api/professionals/referrals/route'
@@ -55,47 +54,19 @@ beforeEach(() => {
 })
 
 describe('POST /api/professionals/referrals — clinic → medical specialist', () => {
-  it('requires specialistType when referralKind is medical_specialist', async () => {
+  it('creates referral with only patient + case info — XPERT will match', async () => {
     const res = await POST(
       buildRequest({
         referralKind: 'medical_specialist',
         patientName: 'John Doe',
         patientPhone: '305-555-0000',
         caseType: 'Auto',
-      })
-    )
-    expect(res.status).toBe(400)
-    expect((await res.json()).error).toMatch(/specialistType/)
-  })
-
-  it('rejects invalid specialistType values', async () => {
-    const res = await POST(
-      buildRequest({
-        referralKind: 'medical_specialist',
-        patientName: 'John Doe',
-        patientPhone: '305-555-0000',
-        caseType: 'Auto',
-        specialistType: 'NotARealSpecialty',
-      })
-    )
-    expect(res.status).toBe(400)
-    expect((await res.json()).error).toMatch(/Invalid specialistType/)
-  })
-
-  it('creates referral when targetClinicId is omitted (XPERT will match)', async () => {
-    const res = await POST(
-      buildRequest({
-        referralKind: 'medical_specialist',
-        patientName: 'John Doe',
-        patientPhone: '305-555-0000',
-        caseType: 'Auto',
-        specialistType: 'Orthopedist',
       })
     )
     expect(res.status).toBe(201)
     const saved = mockedData.createReferral.mock.calls[0][0]
     expect(saved.referralKind).toBe('medical_specialist')
-    expect(saved.specialistType).toBe('Orthopedist')
+    expect(saved.specialistType).toBeNull()
     expect(saved.targetClinicId).toBeNull()
     expect(saved.targetClinicName).toBeNull()
     expect(saved.lawyerId).toBeNull()
@@ -104,50 +75,22 @@ describe('POST /api/professionals/referrals — clinic → medical specialist', 
     expect(saved.creatorRole).toBe('clinic')
   })
 
-  it('resolves targetClinicName when targetClinicId is provided', async () => {
+  it('ignores legacy specialistType / targetClinicId in the body', async () => {
     const res = await POST(
       buildRequest({
         referralKind: 'medical_specialist',
         patientName: 'John Doe',
         patientPhone: '305-555-0000',
         caseType: 'Auto',
-        specialistType: 'Chiropractor',
+        specialistType: 'Orthopedist',
         targetClinicId: 'c-002',
       })
     )
     expect(res.status).toBe(201)
     const saved = mockedData.createReferral.mock.calls[0][0]
-    expect(saved.targetClinicId).toBe('c-002')
-    expect(saved.targetClinicName).toBe('Target Clinic')
-  })
-
-  it('returns 404 when targetClinicId does not exist', async () => {
-    const res = await POST(
-      buildRequest({
-        referralKind: 'medical_specialist',
-        patientName: 'John Doe',
-        patientPhone: '305-555-0000',
-        caseType: 'Auto',
-        specialistType: 'Chiropractor',
-        targetClinicId: 'c-missing',
-      })
-    )
-    expect(res.status).toBe(404)
-  })
-
-  it('rejects referring to your own clinic', async () => {
-    const res = await POST(
-      buildRequest({
-        referralKind: 'medical_specialist',
-        patientName: 'John Doe',
-        patientPhone: '305-555-0000',
-        caseType: 'Auto',
-        specialistType: 'Chiropractor',
-        targetClinicId: 'c-001',
-      })
-    )
-    expect(res.status).toBe(400)
-    expect((await res.json()).error).toMatch(/own clinic/i)
+    expect(saved.specialistType).toBeNull()
+    expect(saved.targetClinicId).toBeNull()
+    expect(saved.targetClinicName).toBeNull()
   })
 
   it('does NOT take the medical branch when referralKind is omitted (regression)', async () => {
