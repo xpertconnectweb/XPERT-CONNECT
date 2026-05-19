@@ -24,7 +24,7 @@ function formatDate(iso: string): string {
 
 function destinationLabel(ref: Referral): string {
   if (ref.referralKind === 'medical_specialist') {
-    return ref.targetClinicName || ref.specialistType || '—'
+    return ref.targetClinicName || ref.specialistType || 'Medical specialist'
   }
   return ref.lawyerName || '—'
 }
@@ -65,7 +65,7 @@ export function ClinicDashboard({ recentReferrals }: ClinicDashboardProps) {
                 Refer to Medical Specialist
               </h2>
               <p className="mt-2 text-sm text-white/70 leading-relaxed">
-                Send a patient to an orthopedist, neurologist, chiropractor or other medical specialist.
+                Send a patient to an orthopedist, neurologist or other medical specialist.
               </p>
             </div>
 

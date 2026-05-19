@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Send, Loader2, CheckCircle, User, Phone, Briefcase, Shield, FileCheck, StickyNote } from 'lucide-react'
+import {
+  X, Send, Loader2, CheckCircle, User, Phone, Briefcase, Shield,
+  FileCheck, StickyNote, Building2, Hash, Contact, Mail,
+} from 'lucide-react'
 import type { Clinic } from '@/types/professionals'
 
 const CASE_TYPES = [
@@ -26,27 +29,30 @@ const PIP_OPTIONS = ['Yes', 'No', 'N/A']
 interface ReferralFormModalProps {
   clinic: Clinic
   onClose: () => void
+  onCreated?: () => void
 }
 
-export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
+export function ReferralFormModal({ clinic, onClose, onCreated }: ReferralFormModalProps) {
   const [form, setForm] = useState({
     patientName: '',
     patientPhone: '',
     caseType: '',
     coverage: '',
     pip: '',
+    insuranceCompany: '',
+    claimNumber: '',
+    adjusterName: '',
+    adjusterPhone: '',
+    adjusterEmail: '',
     notes: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const nameInputRef = useRef<HTMLInputElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
 
-  // Autofocus first field + trap Escape key
   useEffect(() => {
     nameInputRef.current?.focus()
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
@@ -54,7 +60,6 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
-  // Prevent body scroll while modal open
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -69,10 +74,7 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
       const res = await fetch('/api/professionals/referrals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clinicId: clinic.id,
-          ...form,
-        }),
+        body: JSON.stringify({ clinicId: clinic.id, ...form }),
       })
 
       if (!res.ok) {
@@ -80,13 +82,12 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
         try {
           const data = await res.json()
           message = data.error || message
-        } catch {
-          // Server returned non-JSON response
-        }
+        } catch {}
         throw new Error(message)
       }
 
       setSuccess(true)
+      onCreated?.()
       setTimeout(onClose, 1500)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -99,7 +100,7 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
     if (e.target === e.currentTarget) onClose()
   }
 
-  const updateField = (field: string, value: string) => {
+  const updateField = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -107,6 +108,18 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
     'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200'
   const selectBase =
     'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm text-gray-900 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200 appearance-none cursor-pointer'
+
+  const sectionLabel = (icon: React.ReactNode, text: string) => (
+    <div className="flex items-center gap-2 pt-2">
+      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gold/10 text-gold">{icon}</div>
+      <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-700">{text}</h3>
+      <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent" />
+    </div>
+  )
+
+  const optionalTag = (
+    <span className="text-xs font-normal normal-case tracking-normal text-gray-400">(optional)</span>
+  )
 
   return (
     <div
@@ -116,22 +129,21 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div ref={modalRef} className="relative z-[10001] w-full max-w-lg rounded-2xl bg-white shadow-2xl animate-modal-in overflow-hidden">
-        {/* Header with gradient accent */}
-        <div className="relative bg-gradient-to-r from-[#1a2a4a] to-[#2a3f6a] px-6 py-5">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvc3ZnPg==')] opacity-50" />
-          <div className="relative flex items-center justify-between">
+      <div className="relative z-[10001] w-full max-w-[min(36rem,calc(100vw-2rem))] max-h-[min(92vh,calc(100vh-2rem))] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-modal-in">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#92400e] via-[#b45309] to-[#d97706] px-6 py-5">
+          <div className="flex items-center justify-between">
             <div>
               <h2 id="modal-title" className="font-heading text-lg font-bold text-white">
                 New Referral
               </h2>
-              <p className="text-sm text-white/60 mt-0.5">
-                Sending to <span className="text-gold font-medium">{clinic.name}</span>
+              <p className="text-sm text-white/70 mt-0.5">
+                Sending to <span className="text-amber-100 font-medium">{clinic.name}</span>
               </p>
             </div>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition-all duration-200"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/15 hover:text-white transition-all duration-200"
               aria-label="Close modal"
             >
               <X className="h-5 w-5" />
@@ -146,15 +158,11 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 mb-4 ring-4 ring-emerald-100">
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
-              <h3 className="font-heading text-lg font-bold text-navy mb-1">
-                Referral Sent!
-              </h3>
-              <p className="text-sm text-gray-500">
-                The clinic has been notified successfully.
-              </p>
+              <h3 className="font-heading text-lg font-bold text-navy mb-1">Referral Sent!</h3>
+              <p className="text-sm text-gray-500">The clinic has been notified successfully.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700" role="alert">
                   <div className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
@@ -162,7 +170,8 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                 </div>
               )}
 
-              {/* Patient Name */}
+              {sectionLabel(<User className="h-3.5 w-3.5" />, 'Patient')}
+
               <div>
                 <label htmlFor="patientName" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   <User className="h-3.5 w-3.5" />
@@ -181,7 +190,6 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                 />
               </div>
 
-              {/* Patient Phone */}
               <div>
                 <label htmlFor="patientPhone" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   <Phone className="h-3.5 w-3.5" />
@@ -199,7 +207,6 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                 />
               </div>
 
-              {/* Case Type */}
               <div>
                 <label htmlFor="caseType" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   <Briefcase className="h-3.5 w-3.5" />
@@ -224,17 +231,49 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                 </div>
               </div>
 
-              {/* Coverage + PIP row */}
-              <div className="grid grid-cols-2 gap-4">
+              {sectionLabel(<Shield className="h-3.5 w-3.5" />, 'Insurance')}
+
+              <div>
+                <label htmlFor="insuranceCompany" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Building2 className="h-3.5 w-3.5" />
+                  Insurance Company {optionalTag}
+                </label>
+                <input
+                  id="insuranceCompany"
+                  type="text"
+                  maxLength={100}
+                  value={form.insuranceCompany}
+                  onChange={(e) => updateField('insuranceCompany', e.target.value)}
+                  className={inputBase}
+                  placeholder="e.g. State Farm, GEICO"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="claimNumber" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Hash className="h-3.5 w-3.5" />
+                  Claim Number {optionalTag}
+                </label>
+                <input
+                  id="claimNumber"
+                  type="text"
+                  maxLength={60}
+                  value={form.claimNumber}
+                  onChange={(e) => updateField('claimNumber', e.target.value)}
+                  className={inputBase}
+                  placeholder="Claim #"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="coverage" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     <Shield className="h-3.5 w-3.5" />
-                    Coverage <span className="text-red-400">*</span>
+                    Coverage {optionalTag}
                   </label>
                   <div className="relative">
                     <select
                       id="coverage"
-                      required
                       value={form.coverage}
                       onChange={(e) => updateField('coverage', e.target.value)}
                       className={selectBase}
@@ -249,16 +288,14 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                     </div>
                   </div>
                 </div>
-
                 <div>
                   <label htmlFor="pip" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     <FileCheck className="h-3.5 w-3.5" />
-                    PIP <span className="text-red-400">*</span>
+                    PIP {optionalTag}
                   </label>
                   <div className="relative">
                     <select
                       id="pip"
-                      required
                       value={form.pip}
                       onChange={(e) => updateField('pip', e.target.value)}
                       className={selectBase}
@@ -275,11 +312,65 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                 </div>
               </div>
 
-              {/* Notes */}
+              {sectionLabel(<Contact className="h-3.5 w-3.5" />, 'Adjuster')}
+
+              <p className="text-[11px] text-gray-400 -mt-2">
+                Editable later by you, the assigned clinic, and admin.
+              </p>
+
+              <div>
+                <label htmlFor="adjusterName" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Contact className="h-3.5 w-3.5" />
+                  Adjuster Name {optionalTag}
+                </label>
+                <input
+                  id="adjusterName"
+                  type="text"
+                  maxLength={100}
+                  value={form.adjusterName}
+                  onChange={(e) => updateField('adjusterName', e.target.value)}
+                  className={inputBase}
+                  placeholder="Adjuster full name"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="adjusterPhone" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <Phone className="h-3.5 w-3.5" />
+                    Adjuster Phone {optionalTag}
+                  </label>
+                  <input
+                    id="adjusterPhone"
+                    type="tel"
+                    maxLength={20}
+                    value={form.adjusterPhone}
+                    onChange={(e) => updateField('adjusterPhone', e.target.value)}
+                    className={inputBase}
+                    placeholder="(305) 555-0000"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="adjusterEmail" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <Mail className="h-3.5 w-3.5" />
+                    Adjuster Email {optionalTag}
+                  </label>
+                  <input
+                    id="adjusterEmail"
+                    type="email"
+                    maxLength={100}
+                    value={form.adjusterEmail}
+                    onChange={(e) => updateField('adjusterEmail', e.target.value)}
+                    className={inputBase}
+                    placeholder="adjuster@insurance.com"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label htmlFor="notes" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   <StickyNote className="h-3.5 w-3.5" />
-                  Notes <span className="text-xs font-normal normal-case tracking-normal text-gray-400">(optional)</span>
+                  Notes {optionalTag}
                 </label>
                 <textarea
                   id="notes"
@@ -293,10 +384,8 @@ export function ReferralFormModal({ clinic, onClose }: ReferralFormModalProps) {
                 <p className="text-[11px] text-gray-400 mt-1.5 text-right tabular-nums">{form.notes.length}/500</p>
               </div>
 
-              {/* Divider */}
               <div className="h-px bg-gray-100" />
 
-              {/* Actions */}
               <div className="flex gap-3">
                 <button
                   type="button"

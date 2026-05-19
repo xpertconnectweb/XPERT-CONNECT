@@ -139,8 +139,6 @@ function ReferralDetailModal({
     ? [
         { icon: User, label: 'Patient', value: referral.patientName },
         { icon: Phone, label: 'Phone', value: referral.patientPhone },
-        { icon: Scale, label: 'Specialist Type', value: referral.specialistType ?? '' },
-        { icon: Building2, label: 'Target Clinic', value: referral.targetClinicName ?? '' },
         { icon: Briefcase, label: 'Case Type', value: referral.caseType },
         { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },
         { icon: Clock, label: 'Updated', value: formatDateTime(referral.updatedAt) },
@@ -388,7 +386,7 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                 const nextStatus = currentIdx < STATUS_FLOW.length - 1 ? STATUS_FLOW[currentIdx + 1] : null
                 const isMed = ref.referralKind === 'medical_specialist'
                 const destName = isMed
-                  ? (ref.targetClinicName || ref.specialistType || '—')
+                  ? (ref.targetClinicName || ref.specialistType || 'Medical specialist')
                   : (ref.lawyerName || '—')
                 const destSub = isMed
                   ? (ref.targetClinicName ? ref.specialistType ?? '' : '')
@@ -488,7 +486,7 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                     </p>
                     <p className="text-gray-700 mt-0.5">
                       {ref.referralKind === 'medical_specialist'
-                        ? (ref.targetClinicName || ref.specialistType || '—')
+                        ? (ref.targetClinicName || ref.specialistType || 'Medical specialist')
                         : (ref.lawyerName || '—')}
                     </p>
                   </div>

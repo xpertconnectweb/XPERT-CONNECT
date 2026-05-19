@@ -3,10 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   X, Send, Loader2, CheckCircle, User, Phone, Briefcase, StickyNote,
-  Stethoscope, Building2,
+  Stethoscope,
 } from 'lucide-react'
-import type { Clinic } from '@/types/professionals'
-import { MEDICAL_SPECIALTY_TYPES, type MedicalSpecialtyType } from '@/lib/medical-specialties'
 
 const CASE_TYPES = [
   'Auto Accident',
@@ -17,8 +15,6 @@ const CASE_TYPES = [
   'Other',
 ]
 
-type ClinicOption = Pick<Clinic, 'id' | 'name' | 'region' | 'county' | 'specialties'>
-
 interface MedicalSpecialistReferralModalProps {
   onClose: () => void
   onCreated?: () => void
@@ -28,13 +24,9 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
   const [form, setForm] = useState({
     patientName: '',
     patientPhone: '',
-    specialistType: '' as MedicalSpecialtyType | '',
     caseType: '',
-    targetClinicId: '',
     notes: '',
   })
-  const [clinicOptions, setClinicOptions] = useState<ClinicOption[]>([])
-  const [loadingClinics, setLoadingClinics] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -54,40 +46,9 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  // Load clinics whenever specialty changes.
-  useEffect(() => {
-    if (!form.specialistType) {
-      setClinicOptions([])
-      return
-    }
-    let cancelled = false
-    setLoadingClinics(true)
-    fetch(`/api/professionals/clinics?specialty=${encodeURIComponent(form.specialistType)}`)
-      .then((res) => res.ok ? res.json() : Promise.reject(new Error('Failed to load clinics')))
-      .then((data: ClinicOption[]) => {
-        if (!cancelled) {
-          setClinicOptions(data)
-          // Reset target if the previously selected clinic is no longer in the filtered list
-          if (form.targetClinicId && !data.some((c) => c.id === form.targetClinicId)) {
-            setForm((prev) => ({ ...prev, targetClinicId: '' }))
-          }
-        }
-      })
-      .catch(() => { /* swallow — picker is optional */ })
-      .finally(() => { if (!cancelled) setLoadingClinics(false) })
-    return () => { cancelled = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.specialistType])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (!form.specialistType) {
-      setError('Please select a specialist type')
-      return
-    }
-
     setLoading(true)
     try {
       const res = await fetch('/api/professionals/referrals', {
@@ -97,9 +58,7 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
           referralKind: 'medical_specialist',
           patientName: form.patientName,
           patientPhone: form.patientPhone,
-          caseType: form.caseType || form.specialistType,
-          specialistType: form.specialistType,
-          targetClinicId: form.targetClinicId || undefined,
+          caseType: form.caseType || 'Medical Specialist',
           notes: form.notes,
         }),
       })
@@ -165,7 +124,7 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                 Refer to Medical Specialist
               </h2>
               <p className="text-sm text-white/70 mt-0.5">
-                Send a patient to a medical specialist
+                Send a patient to a medical specialist — XPERT will match
               </p>
             </div>
             <button
@@ -186,7 +145,7 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <h3 className="font-heading text-lg font-bold text-navy mb-1">Referral Sent!</h3>
-              <p className="text-sm text-gray-500">The medical specialist has been notified.</p>
+              <p className="text-sm text-gray-500">XPERT will match a specialist and follow up.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -196,69 +155,6 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                   {error}
                 </div>
               )}
-
-              {sectionLabel(<Stethoscope className="h-3.5 w-3.5" />, 'Specialist')}
-
-              <div>
-                <label htmlFor="specialistType" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  <Stethoscope className="h-3.5 w-3.5" />
-                  Specialist Type <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    id="specialistType"
-                    required
-                    value={form.specialistType}
-                    onChange={(e) => updateField('specialistType', e.target.value as MedicalSpecialtyType)}
-                    className={selectBase}
-                  >
-                    <option value="">Select a specialist type</option>
-                    {MEDICAL_SPECIALTY_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="targetClinicId" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  <Building2 className="h-3.5 w-3.5" />
-                  Target Clinic {optionalTag}
-                </label>
-                <div className="relative">
-                  <select
-                    id="targetClinicId"
-                    value={form.targetClinicId}
-                    onChange={(e) => updateField('targetClinicId', e.target.value)}
-                    disabled={!form.specialistType || loadingClinics}
-                    className={selectBase}
-                  >
-                    <option value="">
-                      {!form.specialistType
-                        ? 'Pick a specialist type first'
-                        : loadingClinics
-                          ? 'Loading clinics...'
-                          : clinicOptions.length === 0
-                            ? 'No clinics in your state match — leave empty and XPERT will match'
-                            : 'Let XPERT match (optional)'}
-                    </option>
-                    {clinicOptions.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}{c.region ? ` — ${c.region}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </div>
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1.5">
-                  Leave empty if you want XPERT to match a clinic for you.
-                </p>
-              </div>
 
               {sectionLabel(<User className="h-3.5 w-3.5" />, 'Patient')}
 
@@ -297,6 +193,8 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                 />
               </div>
 
+              {sectionLabel(<Stethoscope className="h-3.5 w-3.5" />, 'Case')}
+
               <div>
                 <label htmlFor="caseType" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   <Briefcase className="h-3.5 w-3.5" />
@@ -309,7 +207,7 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                     onChange={(e) => updateField('caseType', e.target.value)}
                     className={selectBase}
                   >
-                    <option value="">Defaults to the specialist type</option>
+                    <option value="">Select case type</option>
                     {CASE_TYPES.map((type) => (
                       <option key={type} value={type}>{type}</option>
                     ))}

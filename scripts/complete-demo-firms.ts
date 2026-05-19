@@ -116,7 +116,7 @@ async function main() {
 
   if (apply) {
     console.log(c.bold('Demo firms ready.'))
-    console.log(c.dim('\nNext: visit /professionals/specialists logged in as a clinic to see them in the list.'))
+    console.log(c.dim('\nNext: log in as a clinic and open the "Refer to Lawyer" CTA on /professionals to see them in the picker.'))
   }
 }
 
