@@ -8,10 +8,11 @@ import L from 'leaflet'
 import { useSession } from 'next-auth/react'
 import {
   AlertTriangle, RefreshCw, Search, X, MapPin,
-  Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale,
+  Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale, Stethoscope,
 } from 'lucide-react'
 import { ReferralFormModal } from './ReferralFormModal'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
+import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
 import { MarkerClusterLayer } from './map/MarkerClusterLayer'
 import { VirtualPanelList } from './map/VirtualPanelList'
 import { clinicAvailIcon } from '@/lib/map/icons'
@@ -49,8 +50,10 @@ export function MapView({
   const [error, setError] = useState(false)
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null)
   const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null)
+  const [selectedTargetClinic, setSelectedTargetClinic] = useState<Clinic | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [showClinicModal, setShowClinicModal] = useState(false)
+  const [showSpecialistModal, setShowSpecialistModal] = useState(false)
 
   const [filterText, setFilterText] = useState('')
   const [showAvailableOnly, setShowAvailableOnly] = useState(false)
@@ -144,6 +147,9 @@ export function MapView({
     setLocationLabel(''); setLocationQuery(''); setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
   }, [initialCenter, initialZoom])
 
+  const viewerClinicId = session?.user?.role === 'clinic' ? session?.user?.clinicId : undefined
+  const isClinicViewer = session?.user?.role === 'clinic'
+
   // Build unified MapItem list
   const validItems: MapItem[] = useMemo(() => {
     const query = filterText.toLowerCase().trim()
@@ -152,6 +158,12 @@ export function MapView({
     if (showClinics) {
       for (const c of clinics) {
         if (!c.lat || !c.lng || (c.lat === 0 && c.lng === 0)) continue
+        // Don't show the clinic to itself when browsing as a clinic user.
+        if (viewerClinicId && c.id === viewerClinicId) continue
+        // For clinic viewers, hide chiropractic-only clinics (consistent with
+        // SpecialistsList) — they're the referrer's own specialty.
+        if (isClinicViewer && c.specialties && c.specialties.length > 0 &&
+            c.specialties.every((s) => /chiroprac/i.test(s))) continue
         if (showAvailableOnly && !c.available) continue
         if (query && !(
           c.name.toLowerCase().includes(query) || (c.address && c.address.toLowerCase().includes(query)) ||
@@ -207,13 +219,19 @@ export function MapView({
     if (target.type === 'lawyer') {
       setSelectedLawyer(target as unknown as Lawyer)
       setShowClinicModal(true)
+    } else if (isClinicViewer) {
+      // Clinic referring a patient to ANOTHER clinic (medical specialist).
+      setSelectedTargetClinic(target as unknown as Clinic)
+      setShowSpecialistModal(true)
     } else {
+      // Lawyer referring a patient to a clinic.
       setSelectedClinic(target as unknown as Clinic)
       setShowModal(true)
     }
-  }, [])
+  }, [isClinicViewer])
   const handleCloseModal = useCallback(() => { setShowModal(false); setSelectedClinic(null) }, [])
   const handleCloseClinicModal = useCallback(() => { setShowClinicModal(false); setSelectedLawyer(null) }, [])
+  const handleCloseSpecialistModal = useCallback(() => { setShowSpecialistModal(false); setSelectedTargetClinic(null) }, [])
   const handleClearFilter = useCallback(() => { setFilterText(''); filterInputRef.current?.focus() }, [])
   const handleMapMoveEnd = useCallback(() => { if (mapRef.current) { const c = mapRef.current.getCenter(); setMapCenter([c.lat, c.lng]) } }, [])
   const handleFocusItem = useCallback((item: MapItem) => { mapRef.current?.setView([item.lat, item.lng], 14); setShowPanel(false) }, [])
@@ -327,11 +345,11 @@ export function MapView({
             <div className="flex items-center gap-2">
               {showClinicsProp && <button
                 onClick={() => setShowClinics(!showClinics)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showClinics ? 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showClinics ? (isClinicViewer ? 'bg-teal-500 text-white border-teal-500 shadow-md shadow-teal-500/25' : 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/25') : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
               >
-                <Building2 className="h-3 w-3" />
-                Clinics
-                <span className={`ml-0.5 text-[10px] ${showClinics ? 'text-sky-100' : 'text-gray-300'}`}>{clinicCount}</span>
+                {isClinicViewer ? <Stethoscope className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
+                {isClinicViewer ? 'Specialists' : 'Clinics'}
+                <span className={`ml-0.5 text-[10px] ${showClinics ? (isClinicViewer ? 'text-teal-100' : 'text-sky-100') : 'text-gray-300'}`}>{clinicCount}</span>
               </button>}
               {showLawyersProp && <button
                 onClick={() => setShowLawyers(!showLawyers)}
@@ -381,6 +399,12 @@ export function MapView({
       {/* ═══ REFERRAL MODALS ═══ */}
       {showModal && selectedClinic && <ReferralFormModal clinic={selectedClinic} onClose={handleCloseModal} />}
       {showClinicModal && selectedLawyer && <ClinicReferralFormModal lawyer={selectedLawyer} onClose={handleCloseClinicModal} />}
+      {showSpecialistModal && selectedTargetClinic && (
+        <MedicalSpecialistReferralModal
+          targetClinic={selectedTargetClinic}
+          onClose={handleCloseSpecialistModal}
+        />
+      )}
     </div>
   )
 }

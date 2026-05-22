@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   X, Send, Loader2, CheckCircle, User, Phone, Briefcase, Shield,
-  FileCheck, StickyNote, Building2, Hash, Contact, Mail,
+  FileCheck, StickyNote, Building2, Hash, Contact, Mail, Calendar,
 } from 'lucide-react'
 import type { Clinic } from '@/types/professionals'
 
@@ -32,11 +32,14 @@ interface ReferralFormModalProps {
   onCreated?: () => void
 }
 
+const TODAY_ISO = new Date().toISOString().slice(0, 10)
+
 export function ReferralFormModal({ clinic, onClose, onCreated }: ReferralFormModalProps) {
   const [form, setForm] = useState({
     patientName: '',
     patientPhone: '',
     caseType: '',
+    accidentDate: '',
     coverage: '',
     pip: '',
     insuranceCompany: '',
@@ -229,6 +232,22 @@ export function ReferralFormModal({ clinic, onClose, onCreated }: ReferralFormMo
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="accidentDate" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Date of Accident <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="accidentDate"
+                  type="date"
+                  required
+                  max={TODAY_ISO}
+                  value={form.accidentDate}
+                  onChange={(e) => updateField('accidentDate', e.target.value)}
+                  className={inputBase}
+                />
               </div>
 
               {sectionLabel(<Shield className="h-3.5 w-3.5" />, 'Insurance')}

@@ -53,6 +53,15 @@ function formatDateTime(iso: string): string {
   })
 }
 
+// Render a YYYY-MM-DD accident date without timezone drift.
+function formatAccidentDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+  })
+}
+
 type InsuranceField = 'insuranceCompany' | 'claimNumber' | 'adjusterName' | 'adjusterPhone' | 'adjusterEmail'
 
 const INSURANCE_FIELDS: { key: InsuranceField; label: string; icon: typeof User; type: string; placeholder: string }[] = [
@@ -135,11 +144,15 @@ function ReferralDetailModal({
   }[referral.status]
 
   const isMedical = referral.referralKind === 'medical_specialist'
+  const accidentRow = referral.accidentDate
+    ? [{ icon: Calendar, label: 'Date of Accident', value: formatAccidentDate(referral.accidentDate) }]
+    : []
   const rows = isMedical
     ? [
         { icon: User, label: 'Patient', value: referral.patientName },
         { icon: Phone, label: 'Phone', value: referral.patientPhone },
         { icon: Briefcase, label: 'Case Type', value: referral.caseType },
+        ...accidentRow,
         { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },
         { icon: Clock, label: 'Updated', value: formatDateTime(referral.updatedAt) },
       ]
@@ -149,6 +162,7 @@ function ReferralDetailModal({
         { icon: Scale, label: 'Lawyer', value: referral.lawyerName ?? '' },
         { icon: Building2, label: 'Firm', value: referral.lawyerFirm ?? '' },
         { icon: Briefcase, label: 'Case Type', value: referral.caseType },
+        ...accidentRow,
         { icon: Shield, label: 'Coverage', value: referral.coverage ?? '' },
         { icon: FileCheck, label: 'PIP', value: referral.pip ?? '' },
         { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },

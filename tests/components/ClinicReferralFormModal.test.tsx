@@ -28,16 +28,16 @@ describe('ClinicReferralFormModal', () => {
       <ClinicReferralFormModal lawyer={fakeLawyer} onClose={() => {}} />
     )
     expect(
-      screen.getByRole('heading', { name: /Refer to Specialist/i })
+      screen.getByRole('heading', { name: /Refer to Lawyer/i })
     ).toBeInTheDocument()
     expect(screen.getByText('Big Firm')).toBeInTheDocument()
-    // No specialist picker should be rendered when lawyer is pre-selected
+    // No lawyer picker should be rendered when lawyer is pre-selected
     expect(
-      screen.queryByRole('combobox', { name: /Specialist/i })
+      screen.queryByRole('combobox', { name: /Lawyer/i })
     ).not.toBeInTheDocument()
   })
 
-  it('shows specialist picker when no lawyer is pre-selected', async () => {
+  it('shows lawyer picker when no lawyer is pre-selected', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -47,7 +47,7 @@ describe('ClinicReferralFormModal', () => {
     )
     render(<ClinicReferralFormModal onClose={() => {}} />)
     expect(
-      await screen.findByRole('combobox', { name: /Specialist/i })
+      await screen.findByRole('combobox', { name: /Lawyer/i })
     ).toBeInTheDocument()
   })
 
@@ -76,6 +76,7 @@ describe('ClinicReferralFormModal', () => {
       screen.getByLabelText(/Case Type/i),
       'Auto Accident'
     )
+    await user.type(screen.getByLabelText(/Date of Accident/i), '2026-05-10')
 
     await user.click(screen.getByRole('button', { name: /Send Referral/i }))
 
@@ -90,6 +91,7 @@ describe('ClinicReferralFormModal', () => {
       patientName: 'John Doe',
       patientPhone: '305-555-0000',
       caseType: 'Auto Accident',
+      accidentDate: '2026-05-10',
     })
   })
 
@@ -111,6 +113,7 @@ describe('ClinicReferralFormModal', () => {
       screen.getByLabelText(/Case Type/i),
       'Auto Accident'
     )
+    await user.type(screen.getByLabelText(/Date of Accident/i), '2026-05-10')
     await user.click(screen.getByRole('button', { name: /Send Referral/i }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -143,6 +146,7 @@ describe('ClinicReferralFormModal', () => {
       screen.getByLabelText(/Case Type/i),
       'Auto Accident'
     )
+    await user.type(screen.getByLabelText(/Date of Accident/i), '2026-05-10')
     await user.click(screen.getByRole('button', { name: /Send Referral/i }))
 
     await screen.findByRole('alert')

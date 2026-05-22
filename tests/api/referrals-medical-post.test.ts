@@ -27,6 +27,7 @@ vi.mock('@/lib/email', () => ({
   referralCreatedEmail: vi.fn().mockResolvedValue(undefined),
   internalNotificationEmail: vi.fn().mockResolvedValue(undefined),
   clinicToLawyerReferralEmail: vi.fn().mockResolvedValue(undefined),
+  clinicToMedicalSpecialistReferralEmail: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { POST } from '@/app/api/professionals/referrals/route'
@@ -51,22 +52,26 @@ beforeEach(() => {
   mockedData.createReferral.mockResolvedValue(
     fakeReferral({ referralKind: 'medical_specialist', creatorRole: 'clinic' })
   )
+  // Default: no users linked to either clinic. Tests that target a clinic
+  // can override this in-test.
+  mockedData.getUsersByClinicId.mockResolvedValue([])
 })
 
 describe('POST /api/professionals/referrals — clinic → medical specialist', () => {
-  it('creates referral with only patient + case info — XPERT will match', async () => {
+  it('creates referral with declared specialty — XPERT will match the clinic', async () => {
     const res = await POST(
       buildRequest({
         referralKind: 'medical_specialist',
         patientName: 'John Doe',
         patientPhone: '305-555-0000',
         caseType: 'Auto',
+        specialistType: 'Orthopedist',
       })
     )
     expect(res.status).toBe(201)
     const saved = mockedData.createReferral.mock.calls[0][0]
     expect(saved.referralKind).toBe('medical_specialist')
-    expect(saved.specialistType).toBeNull()
+    expect(saved.specialistType).toBe('Orthopedist')
     expect(saved.targetClinicId).toBeNull()
     expect(saved.targetClinicName).toBeNull()
     expect(saved.lawyerId).toBeNull()
@@ -75,22 +80,79 @@ describe('POST /api/professionals/referrals — clinic → medical specialist', 
     expect(saved.creatorRole).toBe('clinic')
   })
 
-  it('ignores legacy specialistType / targetClinicId in the body', async () => {
+  it('rejects missing specialistType with 400', async () => {
     const res = await POST(
       buildRequest({
         referralKind: 'medical_specialist',
         patientName: 'John Doe',
         patientPhone: '305-555-0000',
         caseType: 'Auto',
-        specialistType: 'Orthopedist',
+      })
+    )
+    expect(res.status).toBe(400)
+    expect(mockedData.createReferral).not.toHaveBeenCalled()
+  })
+
+  it('rejects an unknown specialty value with 400', async () => {
+    const res = await POST(
+      buildRequest({
+        referralKind: 'medical_specialist',
+        patientName: 'John Doe',
+        patientPhone: '305-555-0000',
+        caseType: 'Auto',
+        specialistType: 'Wizard',
+      })
+    )
+    expect(res.status).toBe(400)
+    expect(mockedData.createReferral).not.toHaveBeenCalled()
+  })
+
+  it('persists targetClinicId when provided (clinic picked a specialist from the map)', async () => {
+    const res = await POST(
+      buildRequest({
+        referralKind: 'medical_specialist',
+        patientName: 'John Doe',
+        patientPhone: '305-555-0000',
+        caseType: 'Auto',
+        specialistType: 'Neurologist',
         targetClinicId: 'c-002',
       })
     )
     expect(res.status).toBe(201)
     const saved = mockedData.createReferral.mock.calls[0][0]
-    expect(saved.specialistType).toBeNull()
-    expect(saved.targetClinicId).toBeNull()
-    expect(saved.targetClinicName).toBeNull()
+    expect(saved.specialistType).toBe('Neurologist')
+    expect(saved.targetClinicId).toBe('c-002')
+    expect(saved.targetClinicName).toBe('Target Clinic')
+  })
+
+  it('rejects targetClinicId equal to the source clinic with 400', async () => {
+    const res = await POST(
+      buildRequest({
+        referralKind: 'medical_specialist',
+        patientName: 'John Doe',
+        patientPhone: '305-555-0000',
+        caseType: 'Auto',
+        specialistType: 'Neurologist',
+        targetClinicId: 'c-001',
+      })
+    )
+    expect(res.status).toBe(400)
+    expect(mockedData.createReferral).not.toHaveBeenCalled()
+  })
+
+  it('rejects unknown targetClinicId with 404', async () => {
+    const res = await POST(
+      buildRequest({
+        referralKind: 'medical_specialist',
+        patientName: 'John Doe',
+        patientPhone: '305-555-0000',
+        caseType: 'Auto',
+        specialistType: 'Neurologist',
+        targetClinicId: 'c-ghost',
+      })
+    )
+    expect(res.status).toBe(404)
+    expect(mockedData.createReferral).not.toHaveBeenCalled()
   })
 
   it('does NOT take the medical branch when referralKind is omitted (regression)', async () => {

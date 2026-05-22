@@ -15,7 +15,8 @@ export function referrerReferralNotificationEmail(
   serviceNeeded: string,
   caseType: string,
   notes: string,
-  createdAt: string
+  createdAt: string,
+  accidentDate?: string
 ) {
   const safe = {
     referrerName: escapeHtml(referrerName),
@@ -32,12 +33,26 @@ export function referrerReferralNotificationEmail(
   const serviceLabel = safe.serviceNeeded === 'clinic' ? 'Clinic' : safe.serviceNeeded === 'lawyer' ? 'Attorney' : 'Both'
   const stateLabel = safe.state === 'FL' ? 'Florida' : safe.state === 'MN' ? 'Minnesota' : safe.state
 
+  // Render YYYY-MM-DD as a friendly date without timezone drift.
+  let accidentDateLabel = ''
+  if (accidentDate) {
+    const [y, m, d] = accidentDate.split('-').map(Number)
+    if (y && m && d) {
+      accidentDateLabel = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+      })
+    } else {
+      accidentDateLabel = accidentDate
+    }
+  }
+
   const rows = [
     { label: 'Client', value: safe.clientName },
     { label: 'Phone', value: safe.clientPhone },
     { label: 'Address', value: safe.clientAddress },
     { label: 'Service', value: serviceLabel },
     { label: 'Case Type', value: safe.caseType },
+    ...(accidentDateLabel ? [{ label: 'Date of Accident', value: escapeHtml(accidentDateLabel) }] : []),
     ...(safe.notes ? [{ label: 'Notes', value: safe.notes }] : []),
     { label: 'Timestamp', value: `${dateStr} (ET)` },
   ]

@@ -14,10 +14,12 @@ import {
   referralCreatedEmail,
   internalNotificationEmail,
   clinicToLawyerReferralEmail,
+  clinicToMedicalSpecialistReferralEmail,
   type ReferralExtras,
 } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
-import { EMAIL_RE } from '@/lib/validation'
+import { EMAIL_RE, isValidIsoDate } from '@/lib/validation'
+import { MEDICAL_SPECIALTY_TYPES } from '@/lib/medical-specialties'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 import type { Referral } from '@/types/professionals'
@@ -53,6 +55,7 @@ export async function GET() {
 function pickExtras(body: Record<string, unknown>): ReferralExtras {
   const pickStr = (k: string) => (typeof body[k] === 'string' ? sanitize(body[k] as string) : '')
   return {
+    accidentDate: pickStr('accidentDate') || undefined,
     coverage: pickStr('coverage') || undefined,
     pip: pickStr('pip') || undefined,
     insuranceCompany: pickStr('insuranceCompany') || undefined,
@@ -77,6 +80,9 @@ function validateExtras(extras: ReferralExtras): NextResponse | null {
   }
   if (extras.adjusterPhone && !isValidPhone(extras.adjusterPhone)) {
     return NextResponse.json({ error: 'Invalid adjuster phone format' }, { status: 400 })
+  }
+  if (extras.accidentDate && !isValidIsoDate(extras.accidentDate)) {
+    return NextResponse.json({ error: 'Invalid accident date format (expected YYYY-MM-DD)' }, { status: 400 })
   }
   return null
 }
@@ -192,6 +198,7 @@ async function handleLawyerToClinic(args: CreateArgs) {
       patientName: cleanName,
       patientPhone: cleanPhone,
       caseType: cleanCase,
+      accidentDate: extras.accidentDate,
       coverage: extras.coverage,
       pip: extras.pip,
       insuranceCompany: extras.insuranceCompany,
@@ -302,6 +309,7 @@ async function handleClinicToLawyer(args: CreateArgs) {
       patientName: cleanName,
       patientPhone: cleanPhone,
       caseType: cleanCase,
+      accidentDate: extras.accidentDate,
       coverage: extras.coverage,
       pip: extras.pip,
       insuranceCompany: extras.insuranceCompany,
@@ -375,16 +383,42 @@ async function handleClinicToLawyer(args: CreateArgs) {
 }
 
 async function handleClinicToMedicalSpecialist(args: CreateArgs) {
-  const { session, cleanName, cleanPhone, cleanCase, cleanNotes, extras, now } = args
+  const { session, body, cleanName, cleanPhone, cleanCase, cleanNotes, extras, now } = args
   const clinicId = session.user.clinicId
 
   if (!clinicId) {
     return NextResponse.json({ error: 'Your account is not linked to a clinic' }, { status: 403 })
   }
 
+  const rawSpecialistType = typeof body.specialistType === 'string'
+    ? sanitize(body.specialistType)
+    : ''
+
+  if (!rawSpecialistType) {
+    return NextResponse.json({ error: 'specialistType is required' }, { status: 400 })
+  }
+  if (!(MEDICAL_SPECIALTY_TYPES as readonly string[]).includes(rawSpecialistType)) {
+    return NextResponse.json({ error: 'Invalid specialist type' }, { status: 400 })
+  }
+
   const sourceClinic = await getClinicById(clinicId)
   if (!sourceClinic) {
     return NextResponse.json({ error: 'Originating clinic not found' }, { status: 404 })
+  }
+
+  // Optional pre-selected destination clinic (set when the originator picked a
+  // specific specialist from the map). Must exist and must not be the source
+  // clinic itself.
+  const rawTargetClinicId = typeof body.targetClinicId === 'string' ? sanitize(body.targetClinicId) : ''
+  let targetClinic: Awaited<ReturnType<typeof getClinicById>> | undefined
+  if (rawTargetClinicId) {
+    if (rawTargetClinicId === sourceClinic.id) {
+      return NextResponse.json({ error: 'Cannot refer to your own clinic' }, { status: 400 })
+    }
+    targetClinic = await getClinicById(rawTargetClinicId)
+    if (!targetClinic) {
+      return NextResponse.json({ error: 'Target clinic not found' }, { status: 404 })
+    }
   }
 
   let referral: Referral
@@ -397,14 +431,15 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
       lawyerFirm: null,
       clinicId: sourceClinic.id,
       clinicName: sourceClinic.name,
-      targetClinicId: null,
-      targetClinicName: null,
-      specialistType: null,
+      targetClinicId: targetClinic?.id ?? null,
+      targetClinicName: targetClinic?.name ?? null,
+      specialistType: rawSpecialistType,
       createdByUserId: session.user.id,
       creatorRole: 'clinic',
       patientName: cleanName,
       patientPhone: cleanPhone,
       caseType: cleanCase,
+      accidentDate: extras.accidentDate,
       coverage: extras.coverage,
       pip: extras.pip,
       insuranceCompany: extras.insuranceCompany,
@@ -425,13 +460,49 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
     )
   }
 
+  // Collect target-clinic emails (entity + linked users) when a destination
+  // was pre-selected. Falls back to admin-only notification when none.
+  let targetEmails: string[] = []
+  if (targetClinic) {
+    const emailSet = new Set<string>()
+    if (targetClinic.email) emailSet.add(targetClinic.email)
+    const targetUsers = await getUsersByClinicId(targetClinic.id)
+    targetUsers.forEach((u) => { if (u.email) emailSet.add(u.email) })
+    targetEmails = Array.from(emailSet)
+  }
+
+  const recipientLabel = targetClinic?.name ?? 'Medical specialist (XPERT will match)'
+
   waitUntil(
     (async () => {
       try {
+        for (const email of targetEmails) {
+          try {
+            await clinicToMedicalSpecialistReferralEmail(
+              targetClinic!.name,
+              email,
+              sourceClinic.name,
+              rawSpecialistType,
+              cleanName,
+              cleanPhone,
+              cleanCase,
+              extras
+            )
+            if (targetEmails.indexOf(email) < targetEmails.length - 1) {
+              await new Promise((resolve) => setTimeout(resolve, 600))
+            }
+          } catch (err) {
+            console.error(`Specialist clinic email to ${email} failed:`, err)
+          }
+        }
+        if (targetEmails.length > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 600))
+        }
+
         await internalNotificationEmail(
           sourceClinic.name,
           '',
-          'Medical specialist (XPERT will match)',
+          recipientLabel,
           cleanName,
           cleanCase,
           now,

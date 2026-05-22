@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   X, Send, Loader2, CheckCircle, User, Phone, Briefcase, StickyNote,
-  Stethoscope,
+  Stethoscope, Shield, FileCheck, Building2, Hash, Contact, Mail, Calendar,
 } from 'lucide-react'
+import { MEDICAL_SPECIALTY_TYPES } from '@/lib/medical-specialties'
+import type { Clinic } from '@/types/professionals'
+
+type TargetClinicOption = Pick<Clinic, 'id' | 'name' | 'specialties' | 'region' | 'county'>
 
 const CASE_TYPES = [
   'Auto Accident',
@@ -15,16 +19,58 @@ const CASE_TYPES = [
   'Other',
 ]
 
+const COVERAGE_OPTIONS = [
+  '10/20k',
+  '25/50k',
+  '50/100k',
+  '100/300k',
+  '250/500k',
+  '1M+',
+]
+
+const PIP_OPTIONS = ['Yes', 'No', 'N/A']
+
 interface MedicalSpecialistReferralModalProps {
+  /** When provided, the destination is pre-selected and locked. The specialty
+   * defaults to the target's first known medical specialty when matchable. */
+  targetClinic?: TargetClinicOption
   onClose: () => void
   onCreated?: () => void
 }
 
-export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSpecialistReferralModalProps) {
+const TODAY_ISO = new Date().toISOString().slice(0, 10)
+
+function inferSpecialty(target?: TargetClinicOption): string {
+  if (!target?.specialties) return ''
+  const knownSet = new Set<string>(MEDICAL_SPECIALTY_TYPES as readonly string[])
+  // Prefer an exact-listed specialty; otherwise fall back to a case-insensitive match.
+  const direct = target.specialties.find((s) => knownSet.has(s))
+  if (direct) return direct
+  const lc = target.specialties.find((s) =>
+    (MEDICAL_SPECIALTY_TYPES as readonly string[]).some((k) => k.toLowerCase() === s.toLowerCase())
+  )
+  if (lc) {
+    return (MEDICAL_SPECIALTY_TYPES as readonly string[]).find(
+      (k) => k.toLowerCase() === lc.toLowerCase()
+    ) ?? ''
+  }
+  return ''
+}
+
+export function MedicalSpecialistReferralModal({ targetClinic, onClose, onCreated }: MedicalSpecialistReferralModalProps) {
   const [form, setForm] = useState({
     patientName: '',
     patientPhone: '',
+    specialistType: inferSpecialty(targetClinic),
     caseType: '',
+    accidentDate: '',
+    coverage: '',
+    pip: '',
+    insuranceCompany: '',
+    claimNumber: '',
+    adjusterName: '',
+    adjusterPhone: '',
+    adjusterEmail: '',
     notes: '',
   })
   const [loading, setLoading] = useState(false)
@@ -49,6 +95,12 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!form.specialistType) {
+      setError('Please select a specialty')
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch('/api/professionals/referrals', {
@@ -58,8 +110,18 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
           referralKind: 'medical_specialist',
           patientName: form.patientName,
           patientPhone: form.patientPhone,
+          specialistType: form.specialistType,
           caseType: form.caseType || 'Medical Specialist',
+          accidentDate: form.accidentDate,
+          coverage: form.coverage,
+          pip: form.pip,
+          insuranceCompany: form.insuranceCompany,
+          claimNumber: form.claimNumber,
+          adjusterName: form.adjusterName,
+          adjusterPhone: form.adjusterPhone,
+          adjusterEmail: form.adjusterEmail,
           notes: form.notes,
+          ...(targetClinic ? { targetClinicId: targetClinic.id } : {}),
         }),
       })
 
@@ -124,7 +186,9 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                 Refer to Medical Specialist
               </h2>
               <p className="text-sm text-white/70 mt-0.5">
-                Send a patient to a medical specialist — XPERT will match
+                {targetClinic
+                  ? <>Sending to <span className="text-teal-100 font-medium">{targetClinic.name}</span></>
+                  : 'Send a patient to a medical specialist — XPERT will match'}
               </p>
             </div>
             <button
@@ -145,7 +209,11 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <h3 className="font-heading text-lg font-bold text-navy mb-1">Referral Sent!</h3>
-              <p className="text-sm text-gray-500">XPERT will match a specialist and follow up.</p>
+              <p className="text-sm text-gray-500">
+                {targetClinic
+                  ? `${targetClinic.name} has been notified.`
+                  : 'XPERT will match a specialist and follow up.'}
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -193,12 +261,36 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                 />
               </div>
 
-              {sectionLabel(<Stethoscope className="h-3.5 w-3.5" />, 'Case')}
+              {sectionLabel(<Stethoscope className="h-3.5 w-3.5" />, 'Referral')}
+
+              <div>
+                <label htmlFor="specialistType" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Stethoscope className="h-3.5 w-3.5" />
+                  Specialty <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    id="specialistType"
+                    required
+                    value={form.specialistType}
+                    onChange={(e) => updateField('specialistType', e.target.value)}
+                    className={selectBase}
+                  >
+                    <option value="">Select specialty</option>
+                    {MEDICAL_SPECIALTY_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <label htmlFor="caseType" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   <Briefcase className="h-3.5 w-3.5" />
-                  Reason / Case Type {optionalTag}
+                  Case Type {optionalTag}
                 </label>
                 <div className="relative">
                   <select
@@ -215,6 +307,157 @@ export function MedicalSpecialistReferralModal({ onClose, onCreated }: MedicalSp
                   <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </div>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="accidentDate" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Date of Accident {optionalTag}
+                </label>
+                <input
+                  id="accidentDate"
+                  type="date"
+                  max={TODAY_ISO}
+                  value={form.accidentDate}
+                  onChange={(e) => updateField('accidentDate', e.target.value)}
+                  className={inputBase}
+                />
+              </div>
+
+              {sectionLabel(<Shield className="h-3.5 w-3.5" />, 'Insurance')}
+
+              <div>
+                <label htmlFor="insuranceCompany" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Building2 className="h-3.5 w-3.5" />
+                  Insurance Company {optionalTag}
+                </label>
+                <input
+                  id="insuranceCompany"
+                  type="text"
+                  maxLength={100}
+                  value={form.insuranceCompany}
+                  onChange={(e) => updateField('insuranceCompany', e.target.value)}
+                  className={inputBase}
+                  placeholder="e.g. State Farm, GEICO"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="claimNumber" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Hash className="h-3.5 w-3.5" />
+                  Claim Number {optionalTag}
+                </label>
+                <input
+                  id="claimNumber"
+                  type="text"
+                  maxLength={60}
+                  value={form.claimNumber}
+                  onChange={(e) => updateField('claimNumber', e.target.value)}
+                  className={inputBase}
+                  placeholder="Claim #"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="coverage" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <Shield className="h-3.5 w-3.5" />
+                    Coverage {optionalTag}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="coverage"
+                      value={form.coverage}
+                      onChange={(e) => updateField('coverage', e.target.value)}
+                      className={selectBase}
+                    >
+                      <option value="">Select</option>
+                      {COVERAGE_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="pip" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <FileCheck className="h-3.5 w-3.5" />
+                    PIP {optionalTag}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="pip"
+                      value={form.pip}
+                      onChange={(e) => updateField('pip', e.target.value)}
+                      className={selectBase}
+                    >
+                      <option value="">Select</option>
+                      {PIP_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {sectionLabel(<Contact className="h-3.5 w-3.5" />, 'Adjuster')}
+
+              <p className="text-[11px] text-gray-400 -mt-2">
+                Editable later by you, the assigned specialist, and admin.
+              </p>
+
+              <div>
+                <label htmlFor="adjusterName" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Contact className="h-3.5 w-3.5" />
+                  Adjuster Name {optionalTag}
+                </label>
+                <input
+                  id="adjusterName"
+                  type="text"
+                  maxLength={100}
+                  value={form.adjusterName}
+                  onChange={(e) => updateField('adjusterName', e.target.value)}
+                  className={inputBase}
+                  placeholder="Adjuster full name"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="adjusterPhone" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <Phone className="h-3.5 w-3.5" />
+                    Adjuster Phone {optionalTag}
+                  </label>
+                  <input
+                    id="adjusterPhone"
+                    type="tel"
+                    maxLength={20}
+                    value={form.adjusterPhone}
+                    onChange={(e) => updateField('adjusterPhone', e.target.value)}
+                    className={inputBase}
+                    placeholder="(305) 555-0000"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="adjusterEmail" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <Mail className="h-3.5 w-3.5" />
+                    Adjuster Email {optionalTag}
+                  </label>
+                  <input
+                    id="adjusterEmail"
+                    type="email"
+                    maxLength={100}
+                    value={form.adjusterEmail}
+                    onChange={(e) => updateField('adjusterEmail', e.target.value)}
+                    className={inputBase}
+                    placeholder="adjuster@insurance.com"
+                  />
                 </div>
               </div>
 

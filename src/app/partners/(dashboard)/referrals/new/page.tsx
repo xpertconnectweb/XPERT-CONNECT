@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Send, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
+const TODAY_ISO = new Date().toISOString().slice(0, 10)
+
 export default function NewReferralPage() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -17,6 +19,7 @@ export default function NewReferralPage() {
   const [state, setState] = useState('')
   const [serviceNeeded, setServiceNeeded] = useState('')
   const [caseType, setCaseType] = useState('')
+  const [accidentDate, setAccidentDate] = useState('')
   const [notes, setNotes] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +27,7 @@ export default function NewReferralPage() {
     setSaving(true)
     setError('')
 
-    if (!clientName.trim() || !clientPhone.trim() || !state || !serviceNeeded || !caseType.trim()) {
+    if (!clientName.trim() || !clientPhone.trim() || !state || !serviceNeeded || !caseType.trim() || !accidentDate) {
       setError('Please fill in all required fields')
       setSaving(false)
       return
@@ -42,6 +45,7 @@ export default function NewReferralPage() {
           state,
           serviceNeeded,
           caseType: caseType.trim(),
+          accidentDate,
           notes: notes.trim(),
         }),
       })
@@ -168,17 +172,31 @@ export default function NewReferralPage() {
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>
-              Case Type <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={caseType}
-              onChange={(e) => setCaseType(e.target.value)}
-              className={inputClass}
-              placeholder="e.g. Personal Injury, Workers Comp..."
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className={labelClass}>
+                Case Type <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={caseType}
+                onChange={(e) => setCaseType(e.target.value)}
+                className={inputClass}
+                placeholder="e.g. Personal Injury, Workers Comp..."
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                Date of Accident <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="date"
+                max={TODAY_ISO}
+                value={accidentDate}
+                onChange={(e) => setAccidentDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
           </div>
 
           <div>

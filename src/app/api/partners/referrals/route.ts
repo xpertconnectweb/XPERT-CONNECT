@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/data'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
-import { EMAIL_RE, VALID_SERVICES, VALID_STATES } from '@/lib/validation'
+import { EMAIL_RE, VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
 import type { ReferrerReferral } from '@/types/professionals'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   if (authError) return authError
 
   const body = await request.json()
-  const { clientName, clientPhone, clientEmail, clientAddress, state, serviceNeeded, caseType, notes } = body
+  const { clientName, clientPhone, clientEmail, clientAddress, state, serviceNeeded, caseType, accidentDate, notes } = body
 
   if (!clientName?.trim()) {
     return NextResponse.json({ error: 'Client name is required' }, { status: 400 })
@@ -54,6 +54,10 @@ export async function POST(request: NextRequest) {
   if (!caseType?.trim()) {
     return NextResponse.json({ error: 'Case type is required' }, { status: 400 })
   }
+  const cleanAccidentDate = typeof accidentDate === 'string' ? sanitize(accidentDate) : ''
+  if (cleanAccidentDate && !isValidIsoDate(cleanAccidentDate)) {
+    return NextResponse.json({ error: 'Invalid accident date format (expected YYYY-MM-DD)' }, { status: 400 })
+  }
 
   const now = new Date().toISOString()
   const referral: ReferrerReferral = {
@@ -67,6 +71,7 @@ export async function POST(request: NextRequest) {
     clientAddress: clientAddress ? sanitize(clientAddress) : '',
     serviceNeeded,
     caseType: sanitize(caseType),
+    accidentDate: cleanAccidentDate || undefined,
     notes: notes ? sanitize(notes) : '',
     status: 'pending',
     caseConfirmed: 'pending',

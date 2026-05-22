@@ -5,7 +5,7 @@ import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, Newslet
 export type { Contact, NewsletterSubscriber }
 
 const USER_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state'
-const REFERRAL_COLUMNS = 'id, referral_kind, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, target_clinic_id, target_clinic_name, specialist_type, created_by_user_id, creator_role, patient_name, patient_phone, case_type, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
+const REFERRAL_COLUMNS = 'id, referral_kind, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, target_clinic_id, target_clinic_name, specialist_type, created_by_user_id, creator_role, patient_name, patient_phone, case_type, accident_date, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
 
 // Users
 export async function getUsers(): Promise<User[]> {
@@ -367,7 +367,7 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]
 }
 
 // Referrer Referrals
-const RREF_COLUMNS = 'id, referrer_id, referrer_name, state, client_name, client_phone, client_email, client_address, service_needed, case_type, notes, status, assigned_clinic_id, assigned_clinic_name, assigned_lawyer_id, assigned_lawyer_name, case_confirmed, admin_notes, created_at, updated_at'
+const RREF_COLUMNS = 'id, referrer_id, referrer_name, state, client_name, client_phone, client_email, client_address, service_needed, case_type, accident_date, notes, status, assigned_clinic_id, assigned_clinic_name, assigned_lawyer_id, assigned_lawyer_name, case_confirmed, admin_notes, created_at, updated_at'
 
 export async function getReferrerReferrals(): Promise<ReferrerReferral[]> {
   const { data, error } = await supabaseAdmin

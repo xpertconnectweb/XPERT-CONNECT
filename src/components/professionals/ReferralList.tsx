@@ -56,6 +56,15 @@ function formatDateTime(iso: string): string {
   })
 }
 
+// Render a YYYY-MM-DD accident date without timezone drift.
+function formatAccidentDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+  })
+}
+
 function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
   if (seconds < 60) return 'just now'
@@ -142,6 +151,9 @@ function ReferralDetailModal({
     { icon: Phone, label: 'Phone', value: referral.patientPhone },
     { icon: Building2, label: 'Clinic', value: referral.clinicName },
     { icon: Briefcase, label: 'Case Type', value: referral.caseType },
+    ...(referral.accidentDate
+      ? [{ icon: Calendar, label: 'Date of Accident', value: formatAccidentDate(referral.accidentDate) }]
+      : []),
     { icon: Shield, label: 'Coverage', value: referral.coverage ?? '' },
     { icon: FileCheck, label: 'PIP', value: referral.pip ?? '' },
     { icon: Calendar, label: 'Created', value: formatDateTime(referral.createdAt) },

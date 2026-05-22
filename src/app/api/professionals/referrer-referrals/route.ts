@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/api-auth'
 import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/data'
 import { referrerReferralNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
-import { VALID_SERVICES, VALID_STATES } from '@/lib/validation'
+import { VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   if (error) return error
 
   const body = await request.json()
-  const { state, clientName, clientPhone, clientEmail, clientAddress, serviceNeeded, caseType, notes } = body
+  const { state, clientName, clientPhone, clientEmail, clientAddress, serviceNeeded, caseType, accidentDate, notes } = body
 
   if (!state || !clientName || !clientPhone || !clientAddress || !serviceNeeded || !caseType) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -45,6 +45,10 @@ export async function POST(request: NextRequest) {
   const cleanAddress = sanitize(clientAddress)
   const cleanCase = sanitize(caseType)
   const cleanNotes = sanitize(notes || '')
+  const cleanAccidentDate = typeof accidentDate === 'string' ? sanitize(accidentDate) : ''
+  if (cleanAccidentDate && !isValidIsoDate(cleanAccidentDate)) {
+    return NextResponse.json({ error: 'Invalid accident date format (expected YYYY-MM-DD)' }, { status: 400 })
+  }
 
   if (cleanName.length < 2 || cleanName.length > 100) {
     return NextResponse.json({ error: 'Client name must be 2-100 characters' }, { status: 400 })
@@ -78,6 +82,7 @@ export async function POST(request: NextRequest) {
       clientAddress: cleanAddress,
       serviceNeeded,
       caseType: cleanCase,
+      accidentDate: cleanAccidentDate || undefined,
       notes: cleanNotes,
       status: 'pending',
       caseConfirmed: 'pending',
@@ -105,7 +110,8 @@ export async function POST(request: NextRequest) {
           serviceNeeded,
           cleanCase,
           cleanNotes,
-          now
+          now,
+          cleanAccidentDate || undefined
         )
         console.log('Partner referral internal notification sent')
       } catch (err) {

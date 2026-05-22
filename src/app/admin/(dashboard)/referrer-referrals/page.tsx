@@ -23,6 +23,15 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+// Render a YYYY-MM-DD accident date without timezone drift.
+function formatAccidentDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+  })
+}
+
 export default function AdminReferrerReferralsPage() {
   const [referrals, setReferrals] = useState<ReferrerReferral[]>([])
   const [clinics, setClinics] = useState<ClinicOption[]>([])
@@ -451,6 +460,9 @@ export default function AdminReferrerReferralsPage() {
                   <div className="flex justify-between"><span className="text-gray-400">State</span><span className="text-gray-700">{selected.state === 'FL' ? 'Florida' : 'Minnesota'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Service</span><span className="text-gray-700">{selected.serviceNeeded === 'lawyer' ? 'Attorney' : selected.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Case Type</span><span className="text-gray-700">{selected.caseType}</span></div>
+                  {selected.accidentDate && (
+                    <div className="flex justify-between"><span className="text-gray-400">Date of Accident</span><span className="text-gray-700">{formatAccidentDate(selected.accidentDate)}</span></div>
+                  )}
                   {selected.notes && <div className="pt-1"><span className="text-gray-400">Notes</span><p className="text-gray-700 mt-0.5">{selected.notes}</p></div>}
                   <div className="pt-1 text-xs text-gray-300">Referred by {selected.referrerName} on {formatDate(selected.createdAt)}</div>
                 </div>

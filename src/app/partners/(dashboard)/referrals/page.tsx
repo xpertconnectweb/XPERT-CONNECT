@@ -15,6 +15,7 @@ interface PartnerReferral {
   clientAddress: string
   serviceNeeded: string
   caseType: string
+  accidentDate?: string
   notes: string
   status: string
   assignedClinicId?: string
@@ -43,6 +44,15 @@ function formatDate(iso: string): string {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+  })
+}
+
+// Render a YYYY-MM-DD accident date without timezone drift.
+function formatAccidentDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
   })
 }
 
@@ -326,6 +336,9 @@ export default function PartnerReferralsPage() {
                   <div className="flex justify-between"><span className="text-gray-400">State</span><span className="text-gray-700">{selected.state === 'FL' ? 'Florida' : 'Minnesota'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Service</span><span className="text-gray-700">{selected.serviceNeeded === 'lawyer' ? 'Attorney' : selected.serviceNeeded === 'both' ? 'Both' : 'Clinic'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Case Type</span><span className="text-gray-700">{selected.caseType}</span></div>
+                  {selected.accidentDate && (
+                    <div className="flex justify-between"><span className="text-gray-400">Date of Accident</span><span className="text-gray-700">{formatAccidentDate(selected.accidentDate)}</span></div>
+                  )}
                   {selected.notes && (
                     <div className="pt-1">
                       <span className="text-gray-400">Notes</span>

@@ -1,7 +1,6 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useSession } from 'next-auth/react'
 
 const MapView = dynamic(
   () => import('@/components/professionals/MapView').then((mod) => mod.MapView),
@@ -16,13 +15,9 @@ const MapView = dynamic(
 )
 
 export default function MapPage() {
-  const { data: session } = useSession()
-  const isClinic = session?.user?.role === 'clinic'
-
-  // Clinic users only see specialists (lawyers) — never other chiros.
   return (
     <div className="-m-4 lg:-m-6">
-      <MapView showClinics={!isClinic} showLawyers={true} />
+      <MapView showClinics={true} showLawyers={false} />
     </div>
   )
 }

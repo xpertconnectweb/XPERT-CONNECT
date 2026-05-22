@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   X, Send, Loader2, CheckCircle, User, Phone, Briefcase, Shield,
-  FileCheck, StickyNote, Building2, Hash, Contact, Mail, Scale,
+  FileCheck, StickyNote, Building2, Hash, Contact, Mail, Scale, Calendar,
 } from 'lucide-react'
 import type { Lawyer } from '@/types/professionals'
 
@@ -29,18 +29,21 @@ const PIP_OPTIONS = ['Yes', 'No', 'N/A']
 type LawyerOption = Pick<Lawyer, 'id' | 'name' | 'region' | 'county'>
 
 interface ClinicReferralFormModalProps {
-  /** When provided, the specialist is pre-selected and locked. Otherwise a picker is shown. */
+  /** When provided, the lawyer is pre-selected and locked. Otherwise a picker is shown. */
   lawyer?: LawyerOption
   onClose: () => void
   /** Fired after a successful POST so callers can refresh their data. */
   onCreated?: () => void
 }
 
+const TODAY_ISO = new Date().toISOString().slice(0, 10)
+
 export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicReferralFormModalProps) {
   const [form, setForm] = useState({
     patientName: '',
     patientPhone: '',
     caseType: '',
+    accidentDate: '',
     coverage: '',
     pip: '',
     insuranceCompany: '',
@@ -77,12 +80,12 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
     let cancelled = false
     setLoadingLawyers(true)
     fetch('/api/professionals/lawyers')
-      .then((res) => res.ok ? res.json() : Promise.reject(new Error('Failed to load specialists')))
+      .then((res) => res.ok ? res.json() : Promise.reject(new Error('Failed to load lawyers')))
       .then((data: LawyerOption[]) => {
         if (!cancelled) setLawyerOptions(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load specialists')
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load lawyers')
       })
       .finally(() => {
         if (!cancelled) setLoadingLawyers(false)
@@ -96,7 +99,7 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
 
     const lawyerId = lawyer?.id ?? selectedLawyerId
     if (!lawyerId) {
-      setError('Please select a specialist')
+      setError('Please select a lawyer')
       return
     }
 
@@ -166,12 +169,12 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
           <div className="flex items-center justify-between">
             <div>
               <h2 id="clinic-referral-title" className="font-heading text-lg font-bold text-white">
-                Refer to Specialist
+                Refer to Lawyer
               </h2>
               <p className="text-sm text-white/70 mt-0.5">
                 {lawyer
                   ? <>Sending to <span className="text-amber-100 font-medium">{lawyer.name}</span></>
-                  : 'Send a patient referral to a specialist'}
+                  : 'Send a patient referral to a lawyer'}
               </p>
             </div>
             <button
@@ -192,7 +195,7 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <h3 className="font-heading text-lg font-bold text-navy mb-1">Referral Sent!</h3>
-              <p className="text-sm text-gray-500">The specialist has been notified successfully.</p>
+              <p className="text-sm text-gray-500">The lawyer has been notified successfully.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -203,23 +206,23 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
                 </div>
               )}
 
-              {/* Specialist picker (only when not pre-selected) */}
+              {/* Lawyer picker (only when not pre-selected) */}
               {!lawyer && (
                 <div>
-                  <label htmlFor="specialist" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <label htmlFor="lawyer" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     <Scale className="h-3.5 w-3.5" />
-                    Specialist <span className="text-red-400">*</span>
+                    Lawyer <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
                     <select
-                      id="specialist"
+                      id="lawyer"
                       required
                       disabled={loadingLawyers}
                       value={selectedLawyerId}
                       onChange={(e) => setSelectedLawyerId(e.target.value)}
                       className={selectBase}
                     >
-                      <option value="">{loadingLawyers ? 'Loading specialists...' : 'Select a specialist'}</option>
+                      <option value="">{loadingLawyers ? 'Loading lawyers...' : 'Select a lawyer'}</option>
                       {lawyerOptions.map((l) => (
                         <option key={l.id} value={l.id}>
                           {l.name}{l.region ? ` — ${l.region}` : ''}
@@ -292,6 +295,22 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="accidentDate" className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Date of Accident <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="accidentDate"
+                  type="date"
+                  required
+                  max={TODAY_ISO}
+                  value={form.accidentDate}
+                  onChange={(e) => updateField('accidentDate', e.target.value)}
+                  className={inputBase}
+                />
               </div>
 
               {sectionLabel(<Shield className="h-3.5 w-3.5" />, 'Insurance')}
@@ -378,7 +397,7 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
               {sectionLabel(<Contact className="h-3.5 w-3.5" />, 'Adjuster')}
 
               <p className="text-[11px] text-gray-400 -mt-2">
-                Editable later by you, the assigned specialist, and admin.
+                Editable later by you, the assigned lawyer, and admin.
               </p>
 
               <div>

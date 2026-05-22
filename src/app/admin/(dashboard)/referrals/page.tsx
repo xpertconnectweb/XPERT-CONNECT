@@ -12,11 +12,21 @@ interface ReferralRow {
   patientName: string
   patientPhone: string
   caseType: string
+  accidentDate?: string
   coverage: string
   pip: string
   notes: string
   status: ReferralStatus
   createdAt: string
+}
+
+// Render a YYYY-MM-DD accident date without timezone drift.
+function formatAccidentDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+  })
 }
 
 const statusColors: Record<string, string> = {
@@ -282,13 +292,21 @@ export default function AdminReferralsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Coverage</label>
-                  <p className="text-gray-900">{selectedReferral.coverage}</p>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Date of Accident</label>
+                  <p className="text-gray-900">{selectedReferral.accidentDate ? formatAccidentDate(selectedReferral.accidentDate) : '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">PIP</label>
-                  <p className="text-gray-900">{selectedReferral.pip}</p>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Coverage</label>
+                  <p className="text-gray-900">{selectedReferral.coverage || '—'}</p>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">PIP</label>
+                  <p className="text-gray-900">{selectedReferral.pip || '—'}</p>
+                </div>
+                <div />
               </div>
 
               <div>

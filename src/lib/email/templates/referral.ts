@@ -6,6 +6,7 @@ import {
 } from '../base'
 
 export interface ReferralExtras {
+  accidentDate?: string // YYYY-MM-DD
   coverage?: string
   pip?: string
   insuranceCompany?: string
@@ -15,11 +16,22 @@ export interface ReferralExtras {
   adjusterEmail?: string
 }
 
+function formatAccidentDate(iso: string): string {
+  // Parse YYYY-MM-DD without timezone shift (use UTC to avoid local-tz drift)
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  return dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+}
+
 function extrasRows(extras: ReferralExtras | undefined): { label: string; value: string }[] {
   if (!extras) return []
   const rows: { label: string; value: string }[] = []
   const push = (label: string, raw?: string) => {
     if (raw && raw.trim()) rows.push({ label, value: escapeHtml(raw) })
+  }
+  if (extras.accidentDate && extras.accidentDate.trim()) {
+    rows.push({ label: 'Date of Accident', value: escapeHtml(formatAccidentDate(extras.accidentDate)) })
   }
   push('Coverage', extras.coverage)
   push('PIP', extras.pip)

@@ -77,6 +77,7 @@ export interface ReferrerReferral {
   clientAddress: string
   serviceNeeded: ServiceNeeded
   caseType: string
+  accidentDate?: string // ISO date (YYYY-MM-DD); plain DATE in DB
   notes: string
   status: ReferrerReferralStatus
   assignedClinicId?: string
@@ -109,6 +110,7 @@ export interface Referral {
   patientName: string
   patientPhone: string
   caseType: string
+  accidentDate?: string // ISO date (YYYY-MM-DD); plain DATE in DB
   coverage?: string
   pip?: string
   insuranceCompany?: string

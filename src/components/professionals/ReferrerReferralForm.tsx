@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Send, ArrowLeft, User, Phone, Mail, MapPin, Briefcase, FileText, MessageSquare } from 'lucide-react'
+import { Loader2, CheckCircle2, Send, ArrowLeft, User, Phone, Mail, MapPin, Briefcase, FileText, MessageSquare, Calendar } from 'lucide-react'
+
+const TODAY_ISO = new Date().toISOString().slice(0, 10)
 
 interface ReferrerReferralFormProps {
   state: string
@@ -17,6 +19,7 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
     clientAddress: '',
     serviceNeeded: 'clinic' as 'clinic' | 'lawyer' | 'both',
     caseType: '',
+    accidentDate: '',
     notes: '',
   })
   const [saving, setSaving] = useState(false)
@@ -62,6 +65,7 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
       clientAddress: '',
       serviceNeeded: 'clinic',
       caseType: '',
+      accidentDate: '',
       notes: '',
     })
     setSuccess(false)
@@ -240,20 +244,36 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
             </div>
           </div>
 
-          {/* Case Type */}
-          <div>
-            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
-              <FileText className="h-3.5 w-3.5 text-gray-400" />
-              Case Type <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={form.caseType}
-              onChange={(e) => setForm({ ...form, caseType: e.target.value })}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 bg-gray-50/50 focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
-              placeholder="e.g. Personal Injury, Workers Comp, etc."
-            />
+          {/* Case Type + Date of Accident */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                <FileText className="h-3.5 w-3.5 text-gray-400" />
+                Case Type <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={form.caseType}
+                onChange={(e) => setForm({ ...form, caseType: e.target.value })}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 bg-gray-50/50 focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
+                placeholder="e.g. Personal Injury, Workers Comp, etc."
+              />
+            </div>
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                Date of Accident <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                max={TODAY_ISO}
+                value={form.accidentDate}
+                onChange={(e) => setForm({ ...form, accidentDate: e.target.value })}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 bg-gray-50/50 focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
+              />
+            </div>
           </div>
 
           {/* Notes */}
