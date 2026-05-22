@@ -1,14 +1,12 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Lock, User, AlertCircle, Loader2, ArrowLeft, Shield, ChevronRight } from 'lucide-react'
 
 export function LoginForm() {
-  const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -24,31 +22,47 @@ export function LoginForm() {
     setError('')
     setLoading(true)
 
-    const result = await signIn('credentials', {
-      username,
-      password,
-      redirect: false,
-    })
+    let result
+    try {
+      result = await signIn('credentials', {
+        username,
+        password,
+        redirect: false,
+      })
+    } catch {
+      setError('Sign-in failed. Please try again.')
+      setPassword('')
+      setLoading(false)
+      return
+    }
 
-    if (result?.error) {
+    // NextAuth returns ok=false on credential failures even when `error` is
+    // null (the body's `url` carries the error redirect target instead of
+    // setting `error`). Gate on `ok` and the redirect URL — a CSRF mismatch
+    // can return ok=true but redirect to /api/auth/signin?csrf=true rather
+    // than the real callback.
+    const looksLikeError =
+      !result?.ok ||
+      !!result.error ||
+      (typeof result.url === 'string' &&
+        /\/api\/auth\/(error|signin)\b/.test(result.url))
+    if (looksLikeError) {
       setError('Invalid username or password')
       setPassword('')
       setLoading(false)
-    } else {
-      const session = await getSession()
-      if (session?.user?.role === 'admin') {
-        router.push('/admin/dashboard')
-      } else if (session?.user?.role === 'partner') {
-        router.push('/partners/map')
-      } else if (session?.user?.role === 'referrer') {
-        router.push('/professionals/refer')
-      } else if (session?.user?.role === 'clinic') {
-        router.push('/professionals')
-      } else {
-        router.push('/professionals/map')
-      }
-      router.refresh()
+      return
     }
+
+    // Full-page navigation so the next-auth.session-token cookie is sent on
+    // the GET. /professionals (a server component) resolves the role via
+    // getServerSession() and redirects: admin → /admin/dashboard,
+    // lawyer → /professionals/map, referrer → /professionals/refer,
+    // partner → /partners/map, clinic → renders dashboard in place.
+    //
+    // window.location.assign over router.push avoids the client-side
+    // getSession() race where the freshly-set session-token cookie wasn't
+    // always visible to /api/auth/session before role-routing fired.
+    window.location.assign('/professionals')
   }
 
   return (

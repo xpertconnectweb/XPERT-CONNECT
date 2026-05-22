@@ -58,14 +58,17 @@ export function BaseShell({
     )
   }
 
-  // Role check
-  if (session && !allowedRoles.includes(session.user.role)) {
-    redirect(redirectUrl)
-  }
-
-  // Custom redirect logic
+  // Custom redirect logic runs first so role-specific dashboards (admin,
+  // partner) can intercept before the generic allowedRoles fallback redirects
+  // them to /login. Without this order, admin landing on /professionals races
+  // between server-side redirect('/admin/dashboard') and this layout's
+  // allowedRoles check kicking them to /login on cold-compile renders.
   if (session && onAuthenticated) {
     onAuthenticated(session, pathname)
+  }
+
+  if (session && !allowedRoles.includes(session.user.role)) {
+    redirect(redirectUrl)
   }
 
   return (
