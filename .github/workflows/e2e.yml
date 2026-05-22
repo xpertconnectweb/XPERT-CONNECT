@@ -1,11 +1,10 @@
 name: E2E
 
 on:
-  pull_request:
-    branches: [main]
-  schedule:
-    # Nightly run at 06:00 UTC.
-    - cron: '0 6 * * *'
+  # Manual-only. Re-enable `pull_request` and a `schedule` cron once the
+  # repo secrets are configured (see .env.test.example for the required
+  # set). Until then this workflow sits dormant — invoke it from the
+  # Actions tab when you want to verify E2E green.
   workflow_dispatch:
 
 concurrency:
