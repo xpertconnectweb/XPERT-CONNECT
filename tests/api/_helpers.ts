@@ -164,3 +164,182 @@ export function fakeReferral(overrides: Partial<Referral> = {}): Referral {
     ...overrides,
   }
 }
+
+export function fakeContact(
+  overrides: Partial<{
+    id: string
+    name: string
+    email: string
+    phone: string
+    service: string
+    message: string
+    status: string
+  }> = {}
+) {
+  return {
+    id: overrides.id ?? 'contact-1',
+    name: overrides.name ?? 'Jane Visitor',
+    email: overrides.email ?? 'jane@example.com',
+    phone: overrides.phone ?? '305-555-9999',
+    service: overrides.service ?? 'legal',
+    message: overrides.message ?? 'Need consultation',
+    status: overrides.status ?? 'new',
+    created_at: '2026-05-01T00:00:00Z',
+  }
+}
+
+export function fakeNewsletterSubscriber(
+  overrides: Partial<{ id: string; email: string; subscribed: boolean }> = {}
+) {
+  return {
+    id: overrides.id ?? 'sub-1',
+    email: overrides.email ?? 'subscriber@example.com',
+    subscribed: overrides.subscribed ?? true,
+    created_at: '2026-05-01T00:00:00Z',
+  }
+}
+
+export function fakeUser(
+  overrides: Partial<{
+    id: string
+    username: string
+    role: string
+    email: string
+    name: string
+    lawyer_id: string | null
+    clinic_id: string | null
+  }> = {}
+) {
+  return {
+    id: overrides.id ?? 'u-1',
+    username: overrides.username ?? 'testuser',
+    role: overrides.role ?? 'lawyer',
+    email: overrides.email ?? 'user@test.com',
+    name: overrides.name ?? 'Test User',
+    lawyer_id: overrides.lawyer_id ?? null,
+    clinic_id: overrides.clinic_id ?? null,
+  }
+}
+
+export function fakeActivityLog(
+  overrides: Partial<{
+    id: string
+    user_id: string
+    user_name: string
+    action: string
+    target_type: string
+    target_id: string
+    target_name: string
+    description: string
+  }> = {}
+) {
+  return {
+    id: overrides.id ?? 'log-1',
+    user_id: overrides.user_id ?? 'u-admin',
+    user_name: overrides.user_name ?? 'Admin',
+    action: overrides.action ?? 'clinic_created',
+    target_type: overrides.target_type ?? 'clinic',
+    target_id: overrides.target_id ?? 'c-001',
+    target_name: overrides.target_name ?? 'Test Clinic',
+    description: overrides.description ?? 'Created clinic Test Clinic',
+    created_at: '2026-05-01T00:00:00Z',
+  }
+}
+
+export function fakeSettings(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id: 'settings-singleton',
+    site_name: 'Xpert Connect',
+    contact_email: 'contact@xpertconnect.com',
+    contact_phone: '1-844-XPERT-NOW',
+    referral_emails_enabled: true,
+    ...overrides,
+  }
+}
+
+interface ChainResult {
+  data: unknown
+  error: unknown
+  count?: number
+}
+
+/**
+ * Build a chainable Supabase query mock that captures the call sequence
+ * and resolves to the configured payload. Mirrors the in-line helper in
+ * `data-layer.test.ts` so route-handler tests can reuse it.
+ *
+ * Usage:
+ *   const sb = buildSupabaseChainMock({ data: [...], error: null })
+ *   vi.mock('@/lib/supabase', () => ({
+ *     supabaseAdmin: { from: (t: string) => sb.from(t) },
+ *   }))
+ *   // ...invoke handler...
+ *   expect(sb.calls).toContainEqual({ method: 'from', args: ['clinics'] })
+ */
+export function buildSupabaseChainMock(
+  initial: ChainResult = { data: null, error: null }
+) {
+  const calls: { method: string; args: unknown[] }[] = []
+  let result: ChainResult = initial
+
+  function makeChain() {
+    const chain: Record<string, unknown> = {}
+    const methods = [
+      'select',
+      'eq',
+      'in',
+      'or',
+      'ilike',
+      'like',
+      'order',
+      'range',
+      'limit',
+      'gte',
+      'lte',
+      'gt',
+      'lt',
+      'is',
+      'not',
+      'neq',
+      'insert',
+      'update',
+      'delete',
+      'upsert',
+      'match',
+    ]
+    for (const method of methods) {
+      chain[method] = (...args: unknown[]) => {
+        calls.push({ method, args })
+        return chain
+      }
+    }
+    chain.single = (...args: unknown[]) => {
+      calls.push({ method: 'single', args })
+      return Promise.resolve(result)
+    }
+    chain.maybeSingle = (...args: unknown[]) => {
+      calls.push({ method: 'maybeSingle', args })
+      return Promise.resolve(result)
+    }
+    chain.then = (
+      resolve: (v: ChainResult) => unknown,
+      reject?: (e: unknown) => unknown
+    ) => Promise.resolve(result).then(resolve, reject)
+    return chain
+  }
+
+  return {
+    calls,
+    setResult(next: ChainResult) {
+      result = next
+    },
+    reset(next: ChainResult = { data: null, error: null }) {
+      calls.length = 0
+      result = next
+    },
+    from(table: string) {
+      calls.push({ method: 'from', args: [table] })
+      return makeChain()
+    },
+  }
+}
