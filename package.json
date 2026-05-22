@@ -10,6 +10,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "dotenv -e .env.test -- playwright test",
+    "test:e2e:ui": "dotenv -e .env.test -- playwright test --ui",
+    "test:e2e:debug": "dotenv -e .env.test -- playwright test --debug",
+    "test:e2e:setup": "dotenv -e .env.test -- playwright test --project=setup",
+    "test:e2e:report": "playwright show-report",
+    "e2e:sweep": "tsx e2e/scripts/sweep.ts",
     "validate:schema": "tsx scripts/validate-schema.ts",
     "email:test": "node scripts/send-test-email.mjs",
     "email:send": "node scripts/send-custom-email.mjs"
@@ -39,6 +45,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@sanity/icons": "^3.7.4",
     "@sanity/types": "^3.57.0",
     "@sanity/ui": "^2.16.22",
@@ -56,6 +63,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "autoprefixer": "^10.4.0",
     "dotenv": "^17.3.1",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.2.0",
     "jsdom": "^29.1.1",

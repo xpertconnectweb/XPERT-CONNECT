@@ -18,6 +18,7 @@ node_modules/
 .vitest-cache/
 /playwright-report/
 /test-results/
+/.auth/
 
 # Lint cache
 .eslintcache
@@ -29,6 +30,7 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.test.example
 
 # Debug logs
 npm-debug.log*
