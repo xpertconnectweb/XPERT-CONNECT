@@ -1,0 +1,122 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly run at 06:00 UTC.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      E2E_BASE_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      EMAIL_FROM: noreply@xpert-e2e.local
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      E2E_ADMIN_USER: ${{ secrets.E2E_ADMIN_USER }}
+      E2E_ADMIN_PASS: ${{ secrets.E2E_ADMIN_PASS }}
+      E2E_LAWYER_USER: ${{ secrets.E2E_LAWYER_USER }}
+      E2E_LAWYER_PASS: ${{ secrets.E2E_LAWYER_PASS }}
+      E2E_CLINIC_USER: ${{ secrets.E2E_CLINIC_USER }}
+      E2E_CLINIC_PASS: ${{ secrets.E2E_CLINIC_PASS }}
+      E2E_REFERRER_USER: ${{ secrets.E2E_REFERRER_USER }}
+      E2E_REFERRER_PASS: ${{ secrets.E2E_REFERRER_PASS }}
+      E2E_PARTNER_USER: ${{ secrets.E2E_PARTNER_USER }}
+      E2E_PARTNER_PASS: ${{ secrets.E2E_PARTNER_PASS }}
+      E2E_NAMESPACE_PREFIX: e2e-ci-${{ github.run_id }}-
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: |
+          PW_VERSION=$(node -p "require('@playwright/test/package.json').version")
+          echo "version=$PW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Install Playwright system deps (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox webkit
+
+      - name: Materialize .env.test
+        run: |
+          {
+            echo "E2E_BASE_URL=$E2E_BASE_URL"
+            echo "NEXTAUTH_URL=$NEXTAUTH_URL"
+            echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY"
+            echo "RESEND_API_KEY=$RESEND_API_KEY"
+            echo "EMAIL_FROM=$EMAIL_FROM"
+            echo "CRON_SECRET=$CRON_SECRET"
+            echo "E2E_ADMIN_USER=$E2E_ADMIN_USER"
+            echo "E2E_ADMIN_PASS=$E2E_ADMIN_PASS"
+            echo "E2E_LAWYER_USER=$E2E_LAWYER_USER"
+            echo "E2E_LAWYER_PASS=$E2E_LAWYER_PASS"
+            echo "E2E_CLINIC_USER=$E2E_CLINIC_USER"
+            echo "E2E_CLINIC_PASS=$E2E_CLINIC_PASS"
+            echo "E2E_REFERRER_USER=$E2E_REFERRER_USER"
+            echo "E2E_REFERRER_PASS=$E2E_REFERRER_PASS"
+            echo "E2E_PARTNER_USER=$E2E_PARTNER_USER"
+            echo "E2E_PARTNER_PASS=$E2E_PARTNER_PASS"
+            echo "E2E_NAMESPACE_PREFIX=$E2E_NAMESPACE_PREFIX"
+          } > .env.test
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test-results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 14
+
+      - name: Sweep leftover E2E records (belt-and-suspenders)
+        if: always()
+        run: npm run e2e:sweep
+        continue-on-error: true
