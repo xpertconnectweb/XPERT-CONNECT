@@ -3484,5 +3484,17 @@
   "120 S Olive Ave #500, West Palm Beach, FL 33401": {
     "lat": 26.715364,
     "lng": -80.0532942
+  },
+  "9680 Argyle Forest Blvd, Suite 20, Jacksonville, FL 32222": {
+    "lat": 30.1949574,
+    "lng": -81.8303482
+  },
+  "1233 Lane Ave S, Suite 15, Jacksonville, FL 32205": {
+    "lat": 30.3017687,
+    "lng": -81.7517378
+  },
+  "1313 Beach Blvd, Suite C, Jacksonville Beach, FL 32250": {
+    "lat": 30.2883605,
+    "lng": -81.390024
   }
 }

@@ -12104,5 +12104,63 @@
     "region": "West Central Florida",
     "county": "Pinellas",
     "available": true
+  },
+  {
+    "id": "c-694",
+    "name": "Injury Care Centers",
+    "address": "9680 Argyle Forest Blvd, Suite 20, Jacksonville, FL 32222",
+    "lat": 30.1949574,
+    "lng": -81.8303482,
+    "phone": "(904) 783-0008",
+    "specialties": [
+      "Auto Injuries",
+      "Personal Injury",
+      "PIP",
+      "Pain Management",
+      "Chiropractic Care"
+    ],
+    "email": "",
+    "website": "https://injurycarecenters.net",
+    "region": "Northeast Florida",
+    "county": "Duval",
+    "available": true
+  },
+  {
+    "id": "c-695",
+    "name": "Jacksonville Spine & Injury Center",
+    "address": "1233 Lane Ave S, Suite 15, Jacksonville, FL 32205",
+    "lat": 30.3017687,
+    "lng": -81.7517378,
+    "phone": "(904) 503-8382",
+    "specialties": [
+      "Chiropractic Care",
+      "Auto Injuries",
+      "Spine & Trauma",
+      "Personal Injury"
+    ],
+    "email": "",
+    "website": "https://www.jaxaccidentdoctor.com",
+    "region": "Northeast Florida",
+    "county": "Duval",
+    "available": true
+  },
+  {
+    "id": "c-696",
+    "name": "Integrative Healthcare Solutions",
+    "address": "1313 Beach Blvd, Suite C, Jacksonville Beach, FL 32250",
+    "lat": 30.2883605,
+    "lng": -81.390024,
+    "phone": "(904) 372-0623",
+    "specialties": [
+      "Chiropractic Care",
+      "Rehabilitation",
+      "Whiplash Treatment",
+      "Auto Injuries"
+    ],
+    "email": "",
+    "website": "https://www.jaxbeachhealth.com",
+    "region": "Northeast Florida",
+    "county": "Duval",
+    "available": true
   }
 ]
