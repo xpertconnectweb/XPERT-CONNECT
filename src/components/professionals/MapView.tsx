@@ -2,20 +2,21 @@
 
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet'
+import { useEffect, useState, useRef, useCallback, useMemo, type KeyboardEvent } from 'react'
+import { MapContainer, TileLayer, ZoomControl, Circle, Marker } from 'react-leaflet'
 import L from 'leaflet'
 import { useSession } from 'next-auth/react'
 import {
   AlertTriangle, RefreshCw, Search, X, MapPin,
   Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale, Stethoscope,
+  Copy, Check,
 } from 'lucide-react'
 import { ReferralFormModal } from './ReferralFormModal'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
 import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
 import { MarkerClusterLayer } from './map/MarkerClusterLayer'
 import { VirtualPanelList } from './map/VirtualPanelList'
-import { clinicAvailIcon } from '@/lib/map/icons'
+import { clinicAvailIcon, homeIcon } from '@/lib/map/icons'
 import { US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance } from '@/lib/map/geo'
 import type { MapItem, GeocodeSuggestion } from '@/lib/map/types'
 import type { Clinic } from '@/types/professionals'
@@ -66,6 +67,12 @@ export function MapView({
   const debouncedLocation = useDebounce(locationQuery, 400)
   const [locating, setLocating] = useState(false)
   const [locationLabel, setLocationLabel] = useState('')
+  // Anchor point for "clinics near the client's home": the searched/geolocated coordinates.
+  const [searchedLocation, setSearchedLocation] = useState<[number, number] | null>(null)
+  const [radiusMiles, setRadiusMiles] = useState<number | null>(null)
+  const [activeSuggestion, setActiveSuggestion] = useState(0)
+  const [copied, setCopied] = useState(false)
+  const autoSelectRef = useRef(false)
   const userState = session?.user?.state
   const stateConfig = userState ? STATE_MAP_CONFIG[userState] : undefined
   const initialCenter = stateConfig?.center ?? US_DEFAULT_CENTER
@@ -99,17 +106,53 @@ export function MapView({
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  // Deep-link support: /professionals/map?near=<address> prefills the search and auto-selects
+  // the first match, so "Find clinics near this client" from a referral lands ready to use.
+  useEffect(() => {
+    const near = new URLSearchParams(window.location.search).get('near')
+    if (near && near.trim().length >= 3) { autoSelectRef.current = true; setLocationQuery(near.trim()) }
+  }, [])
+
+  // Keyboard navigation resets to the top suggestion whenever the list changes.
+  useEffect(() => { setActiveSuggestion(0) }, [suggestions])
+
   // Nominatim geocoding
   useEffect(() => {
     if (!debouncedLocation || debouncedLocation.length < 3) { setSuggestions([]); return }
     let cancelled = false
+
+    // Nominatim free-text search returns nothing when the address includes an apartment/unit
+    // designator (Apt 4B, #1402, Suite 200...). Strip those so a full client address resolves.
+    // Note: no bare "fl" — it collides with the "FL" state abbreviation and would strip the ZIP.
+    const stripUnit = (addr: string) => addr
+      .replace(/,?\s*(?:#\s*\w[\w-]*|\b(?:apt|apartment|suite|ste|unit|floor|bldg|building|rm|room)\b\.?\s*#?\s*\w[\w-]*)/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\s*,\s*,/g, ',')
+      .trim()
+
+    // Try progressively: without unit → as typed → just the ZIP. The unit-stripped form goes
+    // first because Nominatim sometimes matches a full "...Apt 200..." string to a coarse
+    // city centroid instead of the exact street; stripping never hurts precision. The ZIP is
+    // the last resort so we never leave the user with an empty search.
+    const zipMatch = debouncedLocation.match(/\b\d{5}(?:-\d{4})?\b/)
+    const candidates = Array.from(new Set([
+      stripUnit(debouncedLocation),
+      debouncedLocation,
+      zipMatch?.[0],
+    ].filter((c): c is string => !!c && c.length >= 3)))
+
     ;(async () => {
       setGeocoding(true)
       try {
-        const q = encodeURIComponent(debouncedLocation + ', US')
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=5&countrycodes=us`, { headers: { 'User-Agent': 'XpertConnect/1.0' } })
-        if (!res.ok) throw new Error()
-        const data: GeocodeSuggestion[] = await res.json()
+        let data: GeocodeSuggestion[] = []
+        for (const candidate of candidates) {
+          const q = encodeURIComponent(candidate)
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=5&countrycodes=us`, { headers: { 'User-Agent': 'XpertConnect/1.0' } })
+          if (cancelled) return
+          if (!res.ok) continue
+          data = await res.json()
+          if (data.length > 0) break
+        }
         if (!cancelled) { setSuggestions(data); setShowSuggestions(data.length > 0) }
       } catch { if (!cancelled) setSuggestions([]) }
       finally { if (!cancelled) setGeocoding(false) }
@@ -128,24 +171,42 @@ export function MapView({
 
   const handleSelectSuggestion = useCallback((s: GeocodeSuggestion) => {
     const lat = parseFloat(s.lat), lng = parseFloat(s.lon)
-    setMapCenter([lat, lng]); setLocationLabel(s.display_name.split(',').slice(0, 2).join(','))
+    setMapCenter([lat, lng]); setSearchedLocation([lat, lng]); setLocationLabel(s.display_name.split(',').slice(0, 2).join(','))
     setLocationQuery(''); setSuggestions([]); setShowSuggestions(false)
-    mapRef.current?.setView([lat, lng], 11)
+    mapRef.current?.setView([lat, lng], 12)
   }, [])
+
+  // Auto-select the first match when the search was driven by the ?near= deep link.
+  useEffect(() => {
+    if (autoSelectRef.current && suggestions.length > 0) {
+      autoSelectRef.current = false
+      handleSelectSuggestion(suggestions[0])
+    }
+  }, [suggestions, handleSelectSuggestion])
 
   const handleGeolocate = useCallback(() => {
     if (!navigator.geolocation) return
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => { const { latitude, longitude } = pos.coords; setMapCenter([latitude, longitude]); setLocationLabel('My Location'); setLocating(false); mapRef.current?.setView([latitude, longitude], 11) },
+      (pos) => { const { latitude, longitude } = pos.coords; setMapCenter([latitude, longitude]); setSearchedLocation([latitude, longitude]); setLocationLabel('My Location'); setLocating(false); mapRef.current?.setView([latitude, longitude], 12) },
       () => setLocating(false),
       { enableHighAccuracy: false, timeout: 10000 }
     )
   }, [])
 
   const handleClearLocation = useCallback(() => {
-    setLocationLabel(''); setLocationQuery(''); setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
+    setLocationLabel(''); setLocationQuery(''); setSearchedLocation(null); setRadiusMiles(null)
+    setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
   }, [initialCenter, initialZoom])
+
+  // Keyboard navigation for the location suggestions dropdown.
+  const handleLocationKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSuggestion((i) => Math.min(i + 1, suggestions.length - 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSuggestion((i) => Math.max(i - 1, 0)) }
+    else if (e.key === 'Enter') { e.preventDefault(); handleSelectSuggestion(suggestions[activeSuggestion] ?? suggestions[0]) }
+    else if (e.key === 'Escape') { setShowSuggestions(false) }
+  }, [showSuggestions, suggestions, activeSuggestion, handleSelectSuggestion])
 
   const viewerClinicId = session?.user?.role === 'clinic' ? session?.user?.clinicId : undefined
   const isClinicViewer = session?.user?.role === 'clinic'
@@ -195,16 +256,42 @@ export function MapView({
     return items
   }, [clinics, lawyers, filterText, showAvailableOnly, showClinics, showLawyers])
 
-  const itemsWithDistance = useMemo(() =>
-    validItems.map(item => ({
+  // When a client location is searched, anchor distances to it ("X mi from the client's home");
+  // otherwise fall back to the live map center (distances update as you pan).
+  const itemsWithDistance = useMemo(() => {
+    const [oLat, oLng] = searchedLocation ?? debouncedCenter
+    return validItems.map(item => ({
       ...item,
-      distance: haversineDistance(debouncedCenter[0], debouncedCenter[1], item.lat, item.lng),
+      distance: haversineDistance(oLat, oLng, item.lat, item.lng),
     }))
-  , [validItems, debouncedCenter])
+  }, [validItems, searchedLocation, debouncedCenter])
+
+  // Radius filter (only active with a searched location) — applies to both list and map markers.
+  const visibleItems = useMemo(() =>
+    searchedLocation && radiusMiles
+      ? itemsWithDistance.filter(item => item.distance <= radiusMiles)
+      : itemsWithDistance
+  , [itemsWithDistance, searchedLocation, radiusMiles])
 
   const panelItems = useMemo(() =>
-    [...itemsWithDistance].sort((a, b) => a.distance - b.distance)
-  , [itemsWithDistance])
+    [...visibleItems].sort((a, b) => a.distance - b.distance)
+  , [visibleItems])
+
+  const handleCopyList = useCallback(async () => {
+    if (panelItems.length === 0) return
+    const origin = locationLabel || 'the selected location'
+    const header = `Clinics near ${origin}${radiusMiles ? ` (within ${radiusMiles} mi)` : ''}:`
+    const lines = panelItems.map((it, i) => {
+      const parts = [`${i + 1}. ${it.name} — ${it.distance.toFixed(1)} mi`]
+      if (it.phone) parts.push(it.phone)
+      if (it.address) parts.push(it.address)
+      return parts.join(' — ')
+    })
+    try {
+      await navigator.clipboard.writeText([header, '', ...lines].join('\n'))
+      setCopied(true); setTimeout(() => setCopied(false), 2000)
+    } catch { /* clipboard unavailable */ }
+  }, [panelItems, locationLabel, radiusMiles])
 
   const { clinicCount, lawyerCount } = useMemo(() => {
     let clinics = 0, lawyers = 0
@@ -279,7 +366,12 @@ export function MapView({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MarkerClusterLayer items={itemsWithDistance} userRole={userRole} onReferral={handleReferral} />
+        <MarkerClusterLayer items={visibleItems} userRole={userRole} onReferral={handleReferral} />
+        {searchedLocation && radiusMiles && (
+          <Circle center={searchedLocation} radius={radiusMiles * 1609.34}
+            pathOptions={{ color: '#1a2a4a', weight: 1.5, opacity: 0.5, fillColor: '#1a2a4a', fillOpacity: 0.05 }} />
+        )}
+        {searchedLocation && <Marker position={searchedLocation} icon={homeIcon} interactive={false} zIndexOffset={1000} />}
       </MapContainer>
 
       {/* ═══ CONTROLS PANEL (top-left) ═══ */}
@@ -302,14 +394,18 @@ export function MapView({
                   <input ref={locationInputRef} type="text" value={locationQuery}
                     onChange={(e) => { setLocationQuery(e.target.value); if (e.target.value.length >= 3) setShowSuggestions(true) }}
                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
-                    placeholder="Search location (city, ZIP)..."
+                    onKeyDown={handleLocationKeyDown}
+                    placeholder="Search address, city, or ZIP..."
+                    aria-label="Search a client address, city, or ZIP"
                     className="w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/15 focus:bg-white border border-gray-200/40 transition-all" />
                   {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />}
                   {showSuggestions && suggestions.length > 0 && (
                     <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-2 rounded-xl bg-white shadow-2xl shadow-black/[0.12] border border-gray-200/60 overflow-hidden">
                       {suggestions.map((s, i) => (
-                        <button key={i} onClick={() => handleSelectSuggestion(s)} className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50/80 transition-colors border-b border-gray-100/50 last:border-0">
-                          <span className="text-gray-700 font-medium">{s.display_name.split(',').slice(0, 3).join(',')}</span>
+                        <button key={i} onClick={() => handleSelectSuggestion(s)} onMouseEnter={() => setActiveSuggestion(i)}
+                          className={`w-full text-left px-4 py-3 text-sm transition-colors border-b border-gray-100/50 last:border-0 flex items-center gap-2 ${i === activeSuggestion ? 'bg-navy/[0.06]' : 'hover:bg-gray-50/80'}`}>
+                          <MapPin className={`h-3.5 w-3.5 shrink-0 ${i === activeSuggestion ? 'text-navy' : 'text-gray-300'}`} />
+                          <span className={`font-medium ${i === activeSuggestion ? 'text-navy' : 'text-gray-700'}`}>{s.display_name.split(',').slice(0, 3).join(',')}</span>
                         </button>
                       ))}
                     </div>
@@ -317,6 +413,22 @@ export function MapView({
                 </>
               )}
             </div>
+
+            {/* Radius filter — only shown once a client location is set */}
+            {locationLabel && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mr-0.5">Radius</span>
+                {([null, 5, 10, 25, 50] as const).map((r) => (
+                  <button key={r ?? 'any'} onClick={() => setRadiusMiles(r)}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold border transition-all duration-200 ${radiusMiles === r ? 'bg-navy text-white border-navy shadow-sm' : 'bg-gray-50/80 text-gray-500 border-gray-200/40 hover:bg-gray-100/80'}`}>
+                    {r === null ? 'Any' : `${r} mi`}
+                  </button>
+                ))}
+                {radiusMiles && (
+                  <span className="ml-auto text-[11px] font-semibold text-navy tabular-nums">{panelItems.length} within {radiusMiles} mi</span>
+                )}
+              </div>
+            )}
 
             {/* Filter row */}
             <div className="flex gap-2">
@@ -386,11 +498,21 @@ export function MapView({
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <div>
             <h2 className="font-heading text-sm font-bold text-navy tracking-tight">Nearest Results</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{panelItems.length} results found</p>
+            <p className="text-[11px] text-gray-400 mt-0.5 font-medium">
+              {panelItems.length} results found{searchedLocation && locationLabel ? ` near ${locationLabel}` : ''}
+            </p>
           </div>
-          <button onClick={() => setShowPanel(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Close panel">
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button onClick={handleCopyList} disabled={panelItems.length === 0}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold border transition-all duration-200 disabled:opacity-40 ${copied ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-50 text-gray-600 border-gray-200/60 hover:bg-gray-100'}`}
+              title="Copy the nearby clinics list">
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+            <button onClick={() => setShowPanel(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Close panel">
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         {/* Panel list (virtualized) */}
         <VirtualPanelList items={panelItems} onFocus={handleFocusItem} />

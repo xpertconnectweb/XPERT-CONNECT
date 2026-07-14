@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Send, ArrowLeft, User, Phone, Mail, MapPin, Briefcase, FileText, MessageSquare, Calendar } from 'lucide-react'
+import { Loader2, CheckCircle2, Send, ArrowLeft, User, Phone, Mail, MapPin, Briefcase, FileText, MessageSquare, Calendar, Map as MapIcon } from 'lucide-react'
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10)
 
@@ -202,6 +202,17 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 bg-gray-50/50 focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
               placeholder="Street, City, State, ZIP"
             />
+            {form.clientAddress.trim().length >= 3 && (
+              <a
+                href={`/professionals/map?near=${encodeURIComponent(form.clientAddress.trim())}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-gold hover:text-gold/80 transition-colors"
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+                View clinics near this client
+              </a>
+            )}
           </div>
 
           {/* Service Needed */}

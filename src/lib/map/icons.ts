@@ -22,6 +22,21 @@ export function createSvgIcon(color: string, borderColor: string, symbol: string
   })
 }
 
+// Distinct pin for the searched "client home" location — navy pin with a gold house glyph.
+export const homeIcon = L.divIcon({
+  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="36" height="46">
+    <defs><filter id="shome" x="-20%" y="-10%" width="140%" height="130%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.35)"/></filter></defs>
+    <g filter="url(#shome)">
+      <path d="M18 2C10.27 2 4 8.27 4 16c0 10 14 26 14 26s14-16 14-26c0-7.73-6.27-14-14-14z" fill="#1a2a4a" stroke="#c9a24b" stroke-width="1.5"/>
+      <path d="M18 8.5l7.5 6.4V15h-1.6v7.2h-4.6v-4.4h-2.6v4.4h-4.6V15H10.5v-.1L18 8.5z" fill="#f5c451"/>
+    </g>
+  </svg>`,
+  iconSize: [36, 46],
+  iconAnchor: [18, 46],
+  popupAnchor: [0, -42],
+  className: '',
+})
+
 export const clinicAvailIcon = createSvgIcon('#0284c7', '#0369a1', '+')
 export const clinicUnavailIcon = createSvgIcon('#94a3b8', '#64748b', '+', 0.5)
 export const lawyerAvailIcon = createSvgIcon('#dc2626', '#b91c1c', '\u00A7')
