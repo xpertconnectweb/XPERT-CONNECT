@@ -1,6 +1,9 @@
 'use client'
 
-import { LayoutDashboard, Users, FileText, MessageSquare, Mail, Building2, Scale, Shield, Clock, Settings, UserPlus } from 'lucide-react'
+import {
+  SquaresFour, Users, FileText, ChatCircle, EnvelopeSimple, Buildings, Scales,
+  ShieldCheck, Clock, Gear, UserPlus,
+} from '@phosphor-icons/react/dist/ssr'
 import { BaseSidebar } from '@/components/shared/BaseSidebar'
 import type { NavSection } from '@/components/shared/BaseSidebar'
 
@@ -8,21 +11,21 @@ const navSections: NavSection[] = [
   {
     label: 'Management',
     items: [
-      { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/admin/dashboard', label: 'Dashboard', icon: SquaresFour },
       { href: '/admin/users', label: 'Users', icon: Users },
-      { href: '/admin/clinics', label: 'Clinics', icon: Building2 },
-      { href: '/admin/lawyers', label: 'Lawyers', icon: Scale },
+      { href: '/admin/clinics', label: 'Clinics', icon: Buildings },
+      { href: '/admin/lawyers', label: 'Lawyers', icon: Scales },
       { href: '/admin/referrals', label: 'Referrals', icon: FileText },
       { href: '/admin/referrer-referrals', label: 'Partner Referrals', icon: UserPlus },
-      { href: '/admin/contacts', label: 'Contacts', icon: MessageSquare },
-      { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+      { href: '/admin/contacts', label: 'Contacts', icon: ChatCircle },
+      { href: '/admin/newsletter', label: 'Newsletter', icon: EnvelopeSimple },
     ],
   },
   {
     label: 'System',
     items: [
       { href: '/admin/activity', label: 'Activity', icon: Clock },
-      { href: '/admin/settings', label: 'Settings', icon: Settings },
+      { href: '/admin/settings', label: 'Settings', icon: Gear },
     ],
   },
 ]
@@ -40,7 +43,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       logoHref="/admin/dashboard"
       ariaLabel="Admin navigation"
       navSections={navSections}
-      badge={{ icon: Shield, text: 'Admin Panel' }}
+      badge={{ icon: ShieldCheck, text: 'Admin Panel' }}
     />
   )
 }

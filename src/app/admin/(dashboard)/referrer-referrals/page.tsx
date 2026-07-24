@@ -56,6 +56,12 @@ export default function AdminReferrerReferralsPage() {
   const [lawyerSearch, setLawyerSearch] = useState('')
   const [error, setError] = useState('')
 
+  // Honor a ?status= deep link from the dashboard (drill-down).
+  useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get('status')
+    if (s && ['pending', 'assigned', 'in_process', 'completed'].includes(s)) setFilterStatus(s)
+  }, [])
+
   const fetchReferrals = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/referrer-referrals')

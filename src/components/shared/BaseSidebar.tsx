@@ -5,12 +5,19 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { LucideIcon } from 'lucide-react'
+import type { ComponentType } from 'react'
+
+// Generic icon type so either Lucide or Phosphor components can be passed.
+// Both render an SVG and accept className + aria-hidden.
+export type SidebarIcon = ComponentType<{
+  className?: string
+  'aria-hidden'?: boolean | 'true' | 'false'
+}>
 
 export interface NavItem {
   href: string
   label: string
-  icon: LucideIcon
+  icon: SidebarIcon
 }
 
 export interface NavSection {
@@ -24,7 +31,7 @@ export interface BaseSidebarProps {
   logoHref: string
   ariaLabel: string
   navSections: NavSection[]
-  badge?: { icon: LucideIcon; text: string }
+  badge?: { icon: SidebarIcon; text: string }
 }
 
 export function BaseSidebar({ isOpen, onClose, logoHref, ariaLabel, navSections, badge }: BaseSidebarProps) {

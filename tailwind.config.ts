@@ -28,6 +28,15 @@ const config: Config = {
       fontFamily: {
         heading: ['var(--font-montserrat)', 'sans-serif'],
         body: ['var(--font-open-sans)', 'sans-serif'],
+        // Admin dashboard system font (scoped via CSS vars set on the admin shell)
+        sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
+      boxShadow: {
+        // Navy-tinted elevation for the admin surface (not generic black)
+        card: '0 1px 2px rgba(26,42,74,0.04), 0 4px 16px -2px rgba(26,42,74,0.08)',
+        'card-hover': '0 2px 6px rgba(26,42,74,0.06), 0 16px 32px -6px rgba(26,42,74,0.16)',
+        kpi: '0 1px 2px rgba(26,42,74,0.05), 0 10px 26px -8px rgba(26,42,74,0.14)',
       },
     },
   },

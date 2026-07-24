@@ -94,6 +94,12 @@ export default function AdminClinicsPage() {
     fetchClinics()
   }, [fetchClinics])
 
+  // Honor an ?availability= deep link from the dashboard (drill-down).
+  useEffect(() => {
+    const a = new URLSearchParams(window.location.search).get('availability')
+    if (a === 'available' || a === 'unavailable') setAvailFilter(a)
+  }, [])
+
   const openCreate = () => {
     setEditingId(null)
     setForm(emptyForm)

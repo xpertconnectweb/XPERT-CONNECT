@@ -23,6 +23,9 @@ import * as auth from '@/lib/api-auth'
 const mockedAuth = vi.mocked(auth)
 const ADMIN = buildSession({ role: 'admin', id: 'u-admin', name: 'Admin' })
 
+// Minimal NextRequest-shaped object — the route only reads `.url`.
+const req = (url = 'http://localhost/api/admin/stats') => ({ url }) as never
+
 beforeEach(() => {
   vi.clearAllMocks()
   sb.reset({ data: [], error: null, count: 0 })
@@ -32,7 +35,7 @@ beforeEach(() => {
 describe('GET /api/admin/stats — auth', () => {
   it('returns 401 for unauthenticated', async () => {
     mockedAuth.requireAdmin.mockImplementation(buildRequireAdmin(null))
-    const res = await GET()
+    const res = await GET(req())
     expect(res.status).toBe(401)
   })
 
@@ -40,44 +43,69 @@ describe('GET /api/admin/stats — auth', () => {
     mockedAuth.requireAdmin.mockImplementation(
       buildRequireAdmin(buildSession({ role: 'lawyer' }))
     )
-    const res = await GET()
+    const res = await GET(req())
     expect(res.status).toBe(401)
   })
 })
 
 describe('GET /api/admin/stats — aggregation', () => {
-  it('returns a payload with all expected keys for an admin', async () => {
-    const res = await GET()
+  it('returns the full nested payload for an admin', async () => {
+    const res = await GET(req())
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body).toMatchObject({
-      totalUsers: expect.any(Number),
-      lawyers: expect.any(Number),
-      clinics: expect.any(Number),
-      totalReferrals: expect.any(Number),
-      received: expect.any(Number),
-      inProcess: expect.any(Number),
-      attended: expect.any(Number),
-      totalContacts: expect.any(Number),
-      totalSubscribers: expect.any(Number),
-      monthlyReferrals: expect.any(Array),
+      range: '30d',
+      generatedAt: expect.any(String),
+      kpis: {
+        referralsPeriod: expect.any(Number),
+        referralsPrev: expect.any(Number),
+        activePipeline: expect.any(Number),
+        partnerPending: expect.any(Number),
+        clinicsAvailable: expect.any(Number),
+        clinicsTotal: expect.any(Number),
+        totalReferrals: expect.any(Number),
+        totalUsers: expect.any(Number),
+      },
+      funnel: { received: expect.any(Number), inProcess: expect.any(Number), attended: expect.any(Number) },
+      trend: expect.any(Array),
+      mix: { byKind: expect.any(Object), byCreator: expect.any(Object), topCaseTypes: expect.any(Array) },
+      partner: expect.any(Object),
+      network: expect.any(Object),
       topClinics: expect.any(Array),
       topLawyers: expect.any(Array),
+      usersByRole: expect.any(Object),
+      contacts: expect.any(Object),
+      newsletter: expect.any(Object),
+      alerts: expect.any(Object),
+      recentReferrals: expect.any(Array),
       recentActivity: expect.any(Array),
     })
-    expect(body.monthlyReferrals).toHaveLength(6)
+  })
+
+  it('defaults to a 30-point daily trend and honors ?range', async () => {
+    const d30 = await (await GET(req())).json()
+    expect(d30.trend).toHaveLength(30)
+
+    const yr = await (await GET(req('http://localhost/api/admin/stats?range=12mo'))).json()
+    expect(yr.range).toBe('12mo')
+    expect(yr.trend).toHaveLength(12)
+
+    const wk = await (await GET(req('http://localhost/api/admin/stats?range=7d'))).json()
+    expect(wk.trend).toHaveLength(7)
+  })
+
+  it('falls back to 30d for an invalid range', async () => {
+    const body = await (await GET(req('http://localhost/api/admin/stats?range=bogus'))).json()
+    expect(body.range).toBe('30d')
   })
 
   it('queries all the expected tables', async () => {
-    await GET()
+    await GET(req())
     const tables = sb.calls
       .filter((c) => c.method === 'from')
       .map((c) => c.args[0] as string)
-    expect(tables).toContain('users')
-    expect(tables).toContain('referrals')
-    expect(tables).toContain('contacts')
-    expect(tables).toContain('newsletter_subscribers')
-    expect(tables).toContain('clinics')
-    expect(tables).toContain('activity_logs')
+    for (const t of ['referrals', 'referrer_referrals', 'clinics', 'lawyers', 'contacts', 'users', 'newsletter_subscribers', 'activity_logs']) {
+      expect(tables).toContain(t)
+    }
   })
 })

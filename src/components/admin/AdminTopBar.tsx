@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { Menu, LogOut } from 'lucide-react'
+import { List, SignOut } from '@phosphor-icons/react/dist/ssr'
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin/dashboard': 'Dashboard',
@@ -10,6 +10,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/clinics': 'Clinics',
   '/admin/lawyers': 'Lawyers',
   '/admin/referrals': 'Referrals',
+  '/admin/referrer-referrals': 'Partner Referrals',
   '/admin/contacts': 'Contacts',
   '/admin/newsletter': 'Newsletter',
   '/admin/activity': 'Activity Log',
@@ -55,12 +56,12 @@ export function AdminTopBar({ onMenuToggle }: AdminTopBarProps) {
           className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden transition-colors"
           aria-label="Toggle sidebar"
         >
-          <Menu className="h-5 w-5" />
+          <List className="h-5 w-5" weight="bold" />
         </button>
 
         <div className="hidden lg:block">
           {pageTitle && (
-            <h1 className="font-heading text-lg font-bold text-navy leading-tight">{pageTitle}</h1>
+            <h1 className="font-sans text-lg font-semibold tracking-tight text-navy leading-tight">{pageTitle}</h1>
           )}
           <p className="text-xs text-gray-400">
             {getGreeting()}, {firstName}
@@ -85,7 +86,7 @@ export function AdminTopBar({ onMenuToggle }: AdminTopBarProps) {
           className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-gray-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500"
           aria-label="Sign out"
         >
-          <LogOut className="h-3.5 w-3.5" />
+          <SignOut className="h-3.5 w-3.5" weight="bold" />
           <span className="hidden sm:inline font-medium">Sign Out</span>
         </button>
       </div>

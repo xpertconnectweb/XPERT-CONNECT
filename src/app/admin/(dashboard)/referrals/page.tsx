@@ -67,6 +67,12 @@ export default function AdminReferralsPage() {
     fetchReferrals()
   }, [fetchReferrals])
 
+  // Honor a ?status= deep link from the dashboard (drill-down).
+  useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get('status')
+    if (s && ['received', 'in_process', 'attended'].includes(s)) setStatusFilter(s)
+  }, [])
+
   const handleStatusChange = async (id: string, newStatus: ReferralStatus) => {
     try {
       const res = await fetch(`/api/professionals/referrals/${id}`, {
