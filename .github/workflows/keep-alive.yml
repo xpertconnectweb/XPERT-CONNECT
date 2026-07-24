@@ -2,7 +2,7 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: "0 8 */2 * *" # Every 2 days at 8:00 UTC
+    - cron: "0 8 * * *" # Daily at 8:00 UTC
   workflow_dispatch: # Manual trigger for testing
 
 jobs:
@@ -18,7 +18,16 @@ jobs:
 
       - run: npm ci
 
-      - run: npx tsx scripts/keep-alive.ts
+      - name: Ping Supabase
+        run: npx tsx scripts/keep-alive.ts
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Alert on failure
+        if: failure()
+        run: node scripts/notify-keepalive-failure.mjs
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
