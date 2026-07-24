@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/data'
+import { logActivity } from '@/lib/activity-log'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { EMAIL_RE, VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
 import type { ReferrerReferral } from '@/types/professionals'
@@ -81,5 +82,16 @@ export async function POST(request: NextRequest) {
   }
 
   const created = await createReferrerReferral(referral)
+
+  await logActivity({
+    userId: session.user.id,
+    userName: referral.referrerName,
+    action: 'referral_created',
+    targetType: 'referral',
+    targetId: referral.id,
+    targetName: referral.clientName,
+    details: { service: serviceNeeded, state: referral.state },
+  })
+
   return NextResponse.json(created, { status: 201 })
 }

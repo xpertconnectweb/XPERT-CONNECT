@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/data'
+import { logActivity } from '@/lib/activity-log'
 import { referrerReferralNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
@@ -97,6 +98,16 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+
+  await logActivity({
+    userId: session.user.id,
+    userName: referrerName,
+    action: 'referral_created',
+    targetType: 'referral',
+    targetId: referral.id,
+    targetName: cleanName,
+    details: { service: serviceNeeded, state },
+  })
 
   waitUntil(
     (async () => {

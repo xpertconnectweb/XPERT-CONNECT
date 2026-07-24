@@ -22,6 +22,10 @@ vi.mock('@/lib/supabase', () => ({
   },
 }))
 
+vi.mock('@/lib/activity-log', () => ({
+  logActivity: vi.fn().mockResolvedValue(undefined),
+}))
+
 import { PATCH } from '@/app/api/professionals/referrals/[id]/route'
 import * as auth from '@/lib/api-auth'
 import * as data from '@/lib/data'

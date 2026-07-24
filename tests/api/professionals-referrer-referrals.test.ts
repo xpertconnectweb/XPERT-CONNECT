@@ -17,6 +17,10 @@ vi.mock('@/lib/email', () => ({
   referrerReferralNotificationEmail: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@/lib/activity-log', () => ({
+  logActivity: vi.fn().mockResolvedValue(undefined),
+}))
+
 import { GET, POST } from '@/app/api/professionals/referrer-referrals/route'
 import * as auth from '@/lib/api-auth'
 import * as data from '@/lib/data'

@@ -6,6 +6,7 @@ import {
   type ReferralPatch,
 } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
+import { logActivity } from '@/lib/activity-log'
 import {
   VALID_REFERRAL_STATUSES,
   REFERRAL_MUTABLE_FIELDS,
@@ -78,6 +79,19 @@ export async function PATCH(
   if (!updated) {
     return NextResponse.json({ error: 'Failed to update referral' }, { status: 500 })
   }
+
+  if (patch.status && patch.status !== referral.status) {
+    await logActivity({
+      userId: session.user.id,
+      userName: session.user.name || 'Unknown',
+      action: 'referral_status_changed',
+      targetType: 'referral',
+      targetId: id,
+      targetName: referral.patientName,
+      details: { from: referral.status, to: patch.status },
+    })
+  }
+
   return NextResponse.json(updated)
 }
 
@@ -85,17 +99,27 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError } = await requireAdmin()
+  const { session, error: authError } = await requireAdmin()
   if (authError) return authError
 
   try {
     const { id } = await params
+    const existing = await getReferralById(id)
     const { error } = await supabaseAdmin
       .from('referrals')
       .delete()
       .eq('id', id)
 
     if (error) throw error
+
+    await logActivity({
+      userId: session.user.id,
+      userName: session.user.name || 'Unknown',
+      action: 'referral_deleted',
+      targetType: 'referral',
+      targetId: id,
+      targetName: existing?.patientName,
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

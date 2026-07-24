@@ -17,6 +17,12 @@ const ACTION_BADGES: Record<string, { label: string; color: string }> = {
   bulk_toggle_availability: { label: 'Bulk Toggle', color: 'bg-purple-100 text-purple-700' },
   bulk_delete: { label: 'Bulk Delete', color: 'bg-purple-100 text-purple-700' },
   settings_updated: { label: 'Settings', color: 'bg-gray-100 text-gray-700' },
+  referral_created: { label: 'Created', color: 'bg-green-100 text-green-700' },
+  referral_status_changed: { label: 'Status', color: 'bg-amber-100 text-amber-700' },
+  referral_deleted: { label: 'Deleted', color: 'bg-red-100 text-red-700' },
+  referrer_referral_assigned: { label: 'Assigned', color: 'bg-blue-100 text-blue-700' },
+  referrer_referral_updated: { label: 'Updated', color: 'bg-amber-100 text-amber-700' },
+  referrer_referral_deleted: { label: 'Deleted', color: 'bg-red-100 text-red-700' },
 }
 
 const ACTION_OPTIONS = [
@@ -33,6 +39,9 @@ const ACTION_OPTIONS = [
   { value: 'bulk_toggle_availability', label: 'Bulk Toggle' },
   { value: 'bulk_delete', label: 'Bulk Delete' },
   { value: 'settings_updated', label: 'Settings Updated' },
+  { value: 'referral_created', label: 'Referral Created' },
+  { value: 'referral_status_changed', label: 'Referral Status Changed' },
+  { value: 'referral_deleted', label: 'Referral Deleted' },
 ]
 
 const TARGET_OPTIONS = [
@@ -40,6 +49,7 @@ const TARGET_OPTIONS = [
   { value: 'clinic', label: 'Clinic' },
   { value: 'lawyer', label: 'Lawyer' },
   { value: 'user', label: 'User' },
+  { value: 'referral', label: 'Referral' },
   { value: 'settings', label: 'Settings' },
 ]
 
@@ -68,6 +78,12 @@ function formatDetails(details: Record<string, unknown> | undefined, action: str
   }
   if (action === 'bulk_delete' && count !== undefined) {
     return `${count} item(s) deleted`
+  }
+
+  // Referral status change: render "from → to"
+  if (action === 'referral_status_changed' && details.from && details.to) {
+    const pretty = (s: unknown) => String(s).replace(/_/g, ' ')
+    return `${pretty(details.from)} → ${pretty(details.to)}`
   }
 
   // Generic fallback: show key=value pairs

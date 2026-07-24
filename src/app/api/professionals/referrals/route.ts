@@ -20,6 +20,7 @@ import {
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { EMAIL_RE, isValidIsoDate } from '@/lib/validation'
 import { MEDICAL_SPECIALTY_TYPES } from '@/lib/medical-specialties'
+import { logActivity } from '@/lib/activity-log'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 import type { Referral } from '@/types/professionals'
@@ -219,6 +220,16 @@ async function handleLawyerToClinic(args: CreateArgs) {
     )
   }
 
+  await logActivity({
+    userId: session.user.id,
+    userName: lawyerName,
+    action: 'referral_created',
+    targetType: 'referral',
+    targetId: referral.id,
+    targetName: cleanName,
+    details: { to: clinic.name, kind: 'lawyer→clinic' },
+  })
+
   const emailSet = new Set<string>()
   if (clinic.email) emailSet.add(clinic.email)
 
@@ -329,6 +340,16 @@ async function handleClinicToLawyer(args: CreateArgs) {
       { status: 500 }
     )
   }
+
+  await logActivity({
+    userId: session.user.id,
+    userName: clinic.name,
+    action: 'referral_created',
+    targetType: 'referral',
+    targetId: referral.id,
+    targetName: cleanName,
+    details: { to: lawyer.name, kind: 'clinic→lawyer' },
+  })
 
   // Notify the firm (entity email) plus every lawyer user linked to it.
   const emailSet = new Set<string>()
@@ -459,6 +480,16 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
       { status: 500 }
     )
   }
+
+  await logActivity({
+    userId: session.user.id,
+    userName: sourceClinic.name,
+    action: 'referral_created',
+    targetType: 'referral',
+    targetId: referral.id,
+    targetName: cleanName,
+    details: { to: targetClinic?.name ?? 'Unassigned specialist', specialty: rawSpecialistType },
+  })
 
   // Collect target-clinic emails (entity + linked users) when a destination
   // was pre-selected. Falls back to admin-only notification when none.
