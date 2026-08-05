@@ -2,7 +2,7 @@ import { test as setup, expect, type BrowserContext } from '@playwright/test'
 import path from 'node:path'
 
 type RoleSpec = {
-  role: 'admin' | 'lawyer' | 'clinic' | 'referrer' | 'partner'
+  role: 'admin' | 'lawyer' | 'clinic' | 'referrer' | 'partner' | 'directory'
   username: string
   password: string
 }
@@ -72,6 +72,10 @@ setup.describe.configure({ mode: 'serial' })
 const roles: RoleSpec['role'][] = ['admin', 'lawyer', 'clinic', 'referrer']
 if (process.env.E2E_PARTNER_USER && process.env.E2E_PARTNER_PASS) {
   roles.push('partner')
+}
+// Gated the same way as partner, so CI without these secrets still passes.
+if (process.env.E2E_DIRECTORY_USER && process.env.E2E_DIRECTORY_PASS) {
+  roles.push('directory')
 }
 
 for (const role of roles) {

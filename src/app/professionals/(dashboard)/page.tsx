@@ -17,6 +17,7 @@ export default async function ProfessionalsIndex() {
   if (role === 'partner') redirect('/partners/map')
   if (role === 'referrer') redirect('/professionals/refer')
   if (role === 'lawyer') redirect('/professionals/map')
+  if (role === 'directory') redirect('/professionals/attorneys')
 
   // Clinic role: dashboard with giant "Refer to Specialist" CTA + recent referrals
   const clinicId = session.user.clinicId

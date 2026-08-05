@@ -56,9 +56,9 @@ describe('USERNAME_RE', () => {
 })
 
 describe('role and status enums', () => {
-  it('VALID_ROLES contains exactly the 5 production roles', () => {
+  it('VALID_ROLES contains exactly the 6 production roles', () => {
     expect(VALID_ROLES.sort()).toEqual(
-      ['admin', 'clinic', 'lawyer', 'partner', 'referrer'].sort()
+      ['admin', 'clinic', 'directory', 'lawyer', 'partner', 'referrer'].sort()
     )
   })
 

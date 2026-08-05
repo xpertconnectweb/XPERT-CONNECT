@@ -20,7 +20,13 @@ test('admin can create a lawyer firm and it appears in the lawyers list', async 
   await page.getByPlaceholder('-80.1918').fill('-80.1918')
   await page.getByPlaceholder('+1 (305) 555-0123').fill('305-555-0200')
   await page.getByPlaceholder('info@lawfirm.com').fill(`${ns}firm@e2e.test`)
-  await page.getByPlaceholder('Criminal Defense, Personal Injury').fill('Personal Injury')
+
+  // Practice areas are chip toggles sourced from the managed catalog,
+  // not a comma-separated input. The testid is the stable handle.
+  await page
+    .getByTestId('practice-areas-select')
+    .getByRole('button', { name: 'Personal Injury', exact: true })
+    .click()
 
   await page.getByRole('button', { name: /^save$|create|submit/i }).click()
 

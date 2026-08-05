@@ -1,4 +1,4 @@
-export type UserRole = 'lawyer' | 'clinic' | 'admin' | 'referrer' | 'partner'
+export type UserRole = 'lawyer' | 'clinic' | 'admin' | 'referrer' | 'partner' | 'directory'
 
 export interface Contact {
   id: number

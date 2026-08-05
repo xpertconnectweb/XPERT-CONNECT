@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
       firmName: role === 'lawyer' ? sanitize(firmName || '') || undefined : undefined,
       clinicId: resolvedClinicId,
       lawyerId: resolvedLawyerId,
-      state: role === 'lawyer' && state ? state : undefined,
+      // Attorneys and legal-directory accounts are both state-scoped.
+      state: (role === 'lawyer' || role === 'directory') && state ? state : undefined,
     })
 
     const { password: _, ...safe } = user

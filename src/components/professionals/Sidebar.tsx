@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { Map, FileText, UserPlus, LayoutDashboard, Stethoscope } from 'lucide-react'
+import { Map, FileText, UserPlus, LayoutDashboard, Stethoscope, Scale } from 'lucide-react'
 import { BaseSidebar } from '@/components/shared/BaseSidebar'
 import type { NavSection } from '@/components/shared/BaseSidebar'
 
@@ -37,6 +37,16 @@ const clinicSections: NavSection[] = [
   },
 ]
 
+const directorySections: NavSection[] = [
+  {
+    label: 'Navigation',
+    items: [
+      { href: '/professionals/attorneys', label: 'Attorneys', icon: Scale },
+      { href: '/professionals/attorneys/map', label: 'Attorney Map', icon: Map },
+    ],
+  },
+]
+
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
@@ -54,6 +64,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   } else if (role === 'clinic') {
     sections = clinicSections
     logoHref = '/professionals'
+  } else if (role === 'directory') {
+    sections = directorySections
+    logoHref = '/professionals/attorneys'
   }
 
   return (

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Plus, Pencil, Trash2, X, Loader2, Search, FilterX } from 'lucide-react'
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
+import { PRACTICE_AREAS, resolveCatalog } from '@/lib/practice-areas'
 
 interface Lawyer {
   id: string
@@ -28,7 +29,7 @@ interface LawyerForm {
   lng: number
   phone: string
   email: string
-  practiceAreas: string
+  practiceAreas: string[]
   website: string
   region: string
   county: string
@@ -43,7 +44,7 @@ const emptyForm: LawyerForm = {
   lng: 0,
   phone: '',
   email: '',
-  practiceAreas: '',
+  practiceAreas: [],
   website: '',
   region: '',
   county: '',
@@ -65,6 +66,8 @@ export default function AdminLawyersPage() {
   const [regionFilter, setRegionFilter] = useState<string>('')
   const [countyFilter, setCountyFilter] = useState<string>('')
   const [practiceAreaFilter, setPracticeAreaFilter] = useState<string>('')
+  const [catalog, setCatalog] = useState<string[]>([...PRACTICE_AREAS])
+  const [customArea, setCustomArea] = useState('')
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
@@ -84,6 +87,23 @@ export default function AdminLawyersPage() {
     fetchLawyers()
   }, [fetchLawyers])
 
+  // The admin-managed practice-area list drives the picker below, so
+  // areas added in /admin/settings are immediately assignable.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/admin/settings')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setCatalog(resolveCatalog(data.practice_areas_list))
+      })
+      .catch(() => {
+        /* keep the canonical fallback */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const openCreate = () => {
     setEditingId(null)
     setForm(emptyForm)
@@ -100,7 +120,7 @@ export default function AdminLawyersPage() {
       lng: lawyer.lng,
       phone: lawyer.phone,
       email: lawyer.email,
-      practiceAreas: lawyer.practiceAreas.join(', '),
+      practiceAreas: [...lawyer.practiceAreas],
       website: lawyer.website || '',
       region: lawyer.region || '',
       county: lawyer.county || '',
@@ -115,11 +135,6 @@ export default function AdminLawyersPage() {
     setSaving(true)
     setError('')
 
-    const practiceAreasArray = form.practiceAreas
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0)
-
     const payload = {
       name: form.name,
       address: form.address,
@@ -127,7 +142,7 @@ export default function AdminLawyersPage() {
       lng: form.lng,
       phone: form.phone,
       email: form.email,
-      practiceAreas: practiceAreasArray,
+      practiceAreas: form.practiceAreas,
       website: form.website || null,
       region: form.region || null,
       county: form.county || null,
@@ -302,11 +317,42 @@ export default function AdminLawyersPage() {
     return Array.from(counties).sort()
   }, [lawyers, regionFilter])
 
+  // Union of the managed catalog and whatever the data actually holds,
+  // so a legacy value is still filterable while it exists.
   const practiceAreaOptions = useMemo(() => {
-    const areas = new Set<string>()
+    const areas = new Set<string>(catalog)
     lawyers.forEach((l) => l.practiceAreas.forEach((a) => areas.add(a)))
     return Array.from(areas).sort()
-  }, [lawyers])
+  }, [lawyers, catalog])
+
+  // The picker offers the catalog plus any area already on this firm.
+  const formAreaOptions = useMemo(() => {
+    const areas = [...catalog]
+    form.practiceAreas.forEach((a) => {
+      if (!areas.includes(a)) areas.push(a)
+    })
+    return areas
+  }, [catalog, form.practiceAreas])
+
+  const toggleArea = (area: string) => {
+    setForm((f) => ({
+      ...f,
+      practiceAreas: f.practiceAreas.includes(area)
+        ? f.practiceAreas.filter((a) => a !== area)
+        : [...f.practiceAreas, area],
+    }))
+  }
+
+  const addCustomArea = () => {
+    const value = customArea.trim().replace(/\s+/g, ' ')
+    if (!value) return
+    setForm((f) =>
+      f.practiceAreas.includes(value)
+        ? f
+        : { ...f, practiceAreas: [...f.practiceAreas, value] }
+    )
+    setCustomArea('')
+  }
 
   useEffect(() => {
     if (countyFilter && !countyOptions.includes(countyFilter)) {
@@ -708,17 +754,56 @@ export default function AdminLawyersPage() {
                 </div>
               </div>
 
-              <div>
+              <div data-testid="practice-areas-select">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Practice Areas (comma-separated)
+                  Practice Areas
                 </label>
-                <input
-                  type="text"
-                  value={form.practiceAreas}
-                  onChange={(e) => setForm({ ...form, practiceAreas: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  placeholder="Criminal Defense, Personal Injury, Family Law"
-                />
+                <div className="flex flex-wrap gap-1.5">
+                  {formAreaOptions.map((area) => {
+                    const selected = form.practiceAreas.includes(area)
+                    return (
+                      <button
+                        key={area}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => toggleArea(area)}
+                        className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
+                          selected
+                            ? 'bg-gold text-white border-gold'
+                            : 'bg-white text-gray-600 border-gray-300 hover:border-gold hover:text-gold-dark'
+                        }`}
+                      >
+                        {area}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="text"
+                    value={customArea}
+                    onChange={(e) => setCustomArea(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addCustomArea()
+                      }
+                    }}
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    placeholder="Other practice area..."
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomArea}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-gray-400">
+                  Manage the standard list in Settings → Practice Areas.
+                </p>
               </div>
 
               <div className="grid grid-cols-3 gap-4">

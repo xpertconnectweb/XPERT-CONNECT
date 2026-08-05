@@ -1,5 +1,6 @@
 import { supabaseAdmin } from './supabase'
 import { rowToModel, rowsToModels, modelToRow } from './mappers'
+import { resolveCatalog } from './practice-areas'
 import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, NewsletterSubscriber } from '@/types/professionals'
 
 export type { Contact, NewsletterSubscriber }
@@ -443,4 +444,36 @@ export async function deleteReferrerReferral(id: string): Promise<boolean> {
     return false
   }
   return true
+}
+
+// Settings
+/**
+ * Reads one row of the key/value `settings` table. Returns undefined
+ * when the key was never saved, so callers can fall back to a default.
+ */
+export async function getSetting<T>(key: string): Promise<T | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('settings')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle()
+  if (error) {
+    console.error('getSetting error:', error)
+    return undefined
+  }
+  return (data?.value as T) ?? undefined
+}
+
+/**
+ * The practice-area list shown to users, ordered by the admin in
+ * /admin/settings and falling back to the canonical catalog.
+ *
+ * Server-side on purpose: /api/admin/settings is requireAdmin, so a
+ * directory user could never read `practice_areas_list` from the
+ * client. Until this function existed the setting was written by the
+ * admin UI and read by nothing.
+ */
+export async function getPracticeAreaCatalog(): Promise<string[]> {
+  const stored = await getSetting<unknown>('practice_areas_list')
+  return resolveCatalog(stored)
 }

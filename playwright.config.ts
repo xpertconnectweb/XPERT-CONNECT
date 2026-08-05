@@ -75,6 +75,12 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'chromium-directory',
+      testMatch: /directory[\\/].*\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], storageState: authFile('directory') },
+      dependencies: ['setup'],
+    },
+    {
       name: 'chromium-edge',
       testMatch: /edge-cases[\\/].*\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },

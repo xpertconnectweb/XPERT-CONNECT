@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   username    TEXT UNIQUE NOT NULL,
   password    TEXT NOT NULL,
   name        TEXT NOT NULL,
-  role        TEXT NOT NULL CHECK (role IN ('lawyer', 'clinic', 'admin', 'partner', 'referrer')),
+  role        TEXT NOT NULL CHECK (role IN ('lawyer', 'clinic', 'admin', 'partner', 'referrer', 'directory')),
   clinic_id   TEXT,
   lawyer_id   TEXT,
   firm_name   TEXT,
@@ -127,6 +127,69 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 );
 
 -- =============================================================
+-- Tables 6-8 were originally created by hand in the Supabase
+-- dashboard and were missing from this file, so a freshly
+-- provisioned database could not run Settings, referrer referrals
+-- or the activity feed. The DDL below is reconstructed from the
+-- column lists the code actually queries:
+--   referrer_referrals → RREF_COLUMNS in src/lib/data.ts
+--   settings           → src/app/api/admin/settings/route.ts
+--   activity_logs      → src/lib/activity-log.ts + types/admin.ts
+-- Diff it against production before relying on it for a migration.
+-- =============================================================
+
+-- 6. Referrer referrals (referrer submits a client, admin routes it)
+CREATE TABLE IF NOT EXISTS referrer_referrals (
+  id                  TEXT PRIMARY KEY,
+  referrer_id         TEXT NOT NULL REFERENCES users(id),
+  referrer_name       TEXT NOT NULL,
+  state               TEXT NOT NULL,
+  client_name         TEXT NOT NULL,
+  client_phone        TEXT NOT NULL,
+  client_email        TEXT NOT NULL DEFAULT '',
+  client_address      TEXT NOT NULL,
+  service_needed      TEXT NOT NULL CHECK (service_needed IN ('clinic', 'lawyer', 'both')),
+  case_type           TEXT NOT NULL,
+  accident_date       DATE,
+  notes               TEXT NOT NULL DEFAULT '',
+  status              TEXT NOT NULL DEFAULT 'pending'
+                      CHECK (status IN ('pending', 'assigned', 'in_process', 'completed')),
+  assigned_clinic_id  TEXT REFERENCES clinics(id) ON DELETE SET NULL,
+  assigned_clinic_name TEXT,
+  assigned_lawyer_id  TEXT REFERENCES lawyers(id) ON DELETE SET NULL,
+  assigned_lawyer_name TEXT,
+  case_confirmed      TEXT NOT NULL DEFAULT 'pending'
+                      CHECK (case_confirmed IN ('pending', 'confirmed')),
+  admin_notes         TEXT NOT NULL DEFAULT '',
+  created_at          TIMESTAMPTZ DEFAULT now(),
+  updated_at          TIMESTAMPTZ DEFAULT now()
+);
+
+-- 7. Platform settings (key/value; see PlatformSettings in types/admin.ts)
+CREATE TABLE IF NOT EXISTS settings (
+  key        TEXT PRIMARY KEY,
+  value      JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  updated_by TEXT
+);
+
+-- 8. Activity logs (admin audit feed)
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id          SERIAL PRIMARY KEY,
+  user_id     TEXT NOT NULL,
+  user_name   TEXT NOT NULL,
+  action      TEXT NOT NULL,
+  target_type TEXT,
+  target_id   TEXT,
+  target_name TEXT,
+  details     JSONB NOT NULL DEFAULT '{}',
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at
+  ON activity_logs (created_at DESC);
+
+-- =============================================================
 -- Auto-update triggers for updated_at
 -- =============================================================
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -153,6 +216,11 @@ CREATE TRIGGER trg_referrals_updated_at
   BEFORE UPDATE ON referrals
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- Deliberately NO trigger on referrer_referrals: its updated_at is
+-- set from JS (src/app/api/admin/referrer-referrals/[id]/route.ts).
+-- Adding one here would silently overwrite the value the API wrote,
+-- which is exactly the bug this project already hit on `referrals`.
+
 -- =============================================================
 -- Row Level Security
 -- =============================================================
@@ -162,6 +230,9 @@ ALTER TABLE lawyers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referrer_referrals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 
 -- Service role has full access (used by API routes)
 CREATE POLICY "Service role full access on users"
@@ -186,6 +257,18 @@ CREATE POLICY "Service role full access on contacts"
 
 CREATE POLICY "Service role full access on newsletter_subscribers"
   ON newsletter_subscribers FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on referrer_referrals"
+  ON referrer_referrals FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on settings"
+  ON settings FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on activity_logs"
+  ON activity_logs FOR ALL
   USING (auth.role() = 'service_role');
 
 -- Anon can INSERT into contacts (public contact form)

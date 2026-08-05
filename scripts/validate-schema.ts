@@ -91,6 +91,21 @@ const PROBES: Probe[] = [
     columns: ['id', 'email'],
     why: 'newsletter subscriptions.',
   },
+  {
+    table: 'referrer_referrals',
+    columns: ['id', 'referrer_id', 'service_needed', 'assigned_clinic_id', 'assigned_lawyer_id', 'status'],
+    why: 'referrer submissions + the columns admin uses to route them.',
+  },
+  {
+    table: 'settings',
+    columns: ['key', 'value'],
+    why: 'platform settings — backs specialties_list and practice_areas_list.',
+  },
+  {
+    table: 'activity_logs',
+    columns: ['id', 'user_id', 'action', 'target_type', 'created_at'],
+    why: 'admin activity feed.',
+  },
 ]
 
 const c = {
@@ -118,6 +133,24 @@ async function probe(p: Probe): Promise<{ ok: boolean; failed?: string[] }> {
   return { ok: false, failed }
 }
 
+/**
+ * CHECK constraints are invisible to PostgREST `select` probes, so the
+ * allowed-role list can't be probed without attempting a write. Report
+ * the roles actually in use instead and let the operator compare them
+ * against VALID_ROLES in src/lib/validation.ts.
+ */
+async function auditRoles(): Promise<void> {
+  const { data, error } = await supabase.from('users').select('role').limit(10000)
+  if (error) {
+    console.log(c.yellow('⚠'), 'Could not audit user roles:', error.message)
+    return
+  }
+  const roles = Array.from(
+    new Set((data ?? []).map((r: { role: string }) => r.role))
+  ).sort()
+  console.log(c.dim('  roles in use:'), roles.join(', ') || '(none)')
+}
+
 async function main() {
   console.log(c.bold('\nXpert Connect — schema validation'))
   console.log(c.dim(`URL: ${url?.replace(/https?:\/\//, '')}\n`))
@@ -127,6 +160,7 @@ async function main() {
     const result = await probe(p)
     if (result.ok) {
       console.log(`${c.green('✓')} ${c.bold(p.table)} — ${p.columns.length} columns OK`)
+      if (p.table === 'users') await auditRoles()
     } else {
       allOk = false
       console.log(`${c.red('✗')} ${c.bold(p.table)} — missing column(s):`)

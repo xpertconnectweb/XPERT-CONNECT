@@ -190,6 +190,7 @@ export default function AdminUsersPage() {
           body.state = form.state
           body.lawyerId = form.lawyerId
         }
+        if (form.role === 'directory') body.state = form.state
         if (form.role === 'clinic') body.clinicId = form.clinicId
 
         const res = await fetch(`/api/admin/users/${editingId}`, {
@@ -384,9 +385,11 @@ export default function AdminUsersPage() {
                         ? 'bg-orange-100 text-orange-700'
                         : user.role === 'partner'
                         ? 'bg-teal-100 text-teal-700'
+                        : user.role === 'directory'
+                        ? 'bg-slate-100 text-slate-700'
                         : 'bg-emerald-100 text-emerald-700'
                     }`}>
-                      {user.role === 'lawyer' ? 'Attorney' : user.role === 'clinic' ? 'Clinic' : user.role === 'referrer' ? 'Referrer' : user.role === 'partner' ? 'Partner' : 'Admin'}
+                      {user.role === 'lawyer' ? 'Attorney' : user.role === 'clinic' ? 'Clinic' : user.role === 'referrer' ? 'Referrer' : user.role === 'partner' ? 'Partner' : user.role === 'directory' ? 'Legal Directory' : 'Admin'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{user.email}</td>
@@ -408,6 +411,15 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                     {user.role === 'clinic' && (clinicNameMap.get(user.clinicId || '') || user.clinicId || '—')}
+                    {user.role === 'directory' && (
+                      user.state
+                        ? (
+                          <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            {user.state}
+                          </span>
+                        )
+                        : <span className="text-gray-400">All states</span>
+                    )}
                     {user.role === 'referrer' && '—'}
                     {user.role === 'partner' && '—'}
                     {user.role === 'admin' && '—'}
@@ -541,6 +553,7 @@ export default function AdminUsersPage() {
                   <option value="clinic">Clinic</option>
                   <option value="referrer">Referrer</option>
                   <option value="partner">Partner</option>
+                  <option value="directory">Legal Directory</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
@@ -634,20 +647,30 @@ export default function AdminUsersPage() {
                       placeholder="Law firm name"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State Filter</label>
-                    <select
-                      value={form.state}
-                      onChange={(e) => setForm({ ...form, state: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    >
-                      <option value="">All States</option>
-                      <option value="FL">Florida (FL)</option>
-                      <option value="MN">Minnesota (MN)</option>
-                    </select>
-                    <p className="mt-1 text-xs text-gray-400">Limits which clinics this attorney can see</p>
-                  </div>
                 </>
+              )}
+
+              {/* Shared by attorney and legal-directory accounts: both are
+                  scoped to a state by src/lib/data.ts getLawyersByState /
+                  getClinicsByState. Leaving it blank means every state. */}
+              {(form.role === 'lawyer' || form.role === 'directory') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State Filter</label>
+                  <select
+                    value={form.state}
+                    onChange={(e) => setForm({ ...form, state: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                  >
+                    <option value="">All States</option>
+                    <option value="FL">Florida (FL)</option>
+                    <option value="MN">Minnesota (MN)</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-400">
+                    {form.role === 'lawyer'
+                      ? 'Limits which clinics this attorney can see'
+                      : 'Limits which attorneys this account can browse, and centers their map'}
+                  </p>
+                </div>
               )}
 
               {form.role === 'clinic' && (

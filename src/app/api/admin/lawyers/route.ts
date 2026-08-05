@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/api-auth'
 import { getLawyers } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
+import { sanitizePracticeAreas } from '@/lib/practice-areas'
 import { randomUUID } from 'crypto'
 
 export async function GET() {
@@ -43,7 +44,9 @@ export async function POST(request: Request) {
       lng,
       phone: phone || '',
       email: email || '',
-      practice_areas: practiceAreas || [],
+      // The real gate on practice-area data: canonicalizes synonyms and
+      // strips the CSV-header junk that once got imported as firms.
+      practice_areas: sanitizePracticeAreas(practiceAreas),
       website: website || null,
       region: region || null,
       county: county || null,

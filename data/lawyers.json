@@ -1015,23 +1015,6 @@
     "available": true
   },
   {
-    "id": "l-060",
-    "name": "Abogado/Firma",
-    "address": "Dirección, FL ZIP Code",
-    "lat": 26.7083444,
-    "lng": -80.1089041,
-    "phone": "Teléfono",
-    "practiceAreas": [
-      "Especialidad"
-    ],
-    "email": "",
-    "website": "",
-    "region": "Región",
-    "county": "Condado",
-    "zipCode": "ZIP Code",
-    "available": true
-  },
-  {
     "id": "l-061",
     "name": "The Law Office of Collin Cherry",
     "address": "1114 E Park Ave, Tallahassee, FL 32301",

@@ -1,5 +1,6 @@
 import type { UserRole, ReferralStatus, ReferrerReferralStatus, CaseConfirmedStatus, ServiceNeeded, ReferralKind } from '@/types/professionals'
 import { MEDICAL_SPECIALTY_TYPES, type MedicalSpecialtyType } from './medical-specialties'
+import { PRACTICE_AREAS, type PracticeArea } from './practice-areas'
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
@@ -18,7 +19,7 @@ export function isValidIsoDate(value: string): boolean {
   )
 }
 
-export const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin', 'referrer', 'partner']
+export const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin', 'referrer', 'partner', 'directory']
 export const VALID_REFERRAL_STATUSES: ReferralStatus[] = ['received', 'in_process', 'attended']
 export const VALID_REFERRER_STATUSES: ReferrerReferralStatus[] = ['pending', 'assigned', 'in_process', 'completed']
 export const VALID_CASE_CONFIRMED: CaseConfirmedStatus[] = ['pending', 'confirmed']
@@ -26,6 +27,7 @@ export const VALID_SERVICES: ServiceNeeded[] = ['clinic', 'lawyer', 'both']
 export const VALID_STATES = ['FL', 'MN'] as const
 export const VALID_REFERRAL_KINDS: ReferralKind[] = ['lawyer', 'medical_specialist']
 export const VALID_MEDICAL_SPECIALTIES: readonly MedicalSpecialtyType[] = MEDICAL_SPECIALTY_TYPES
+export const VALID_PRACTICE_AREAS: readonly PracticeArea[] = PRACTICE_AREAS
 
 export const REFERRAL_MUTABLE_FIELDS = [
   'status',

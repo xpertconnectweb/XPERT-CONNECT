@@ -36,6 +36,10 @@ jobs:
       E2E_REFERRER_PASS: ${{ secrets.E2E_REFERRER_PASS }}
       E2E_PARTNER_USER: ${{ secrets.E2E_PARTNER_USER }}
       E2E_PARTNER_PASS: ${{ secrets.E2E_PARTNER_PASS }}
+      # Optional, like partner: auth.setup.ts skips the role when unset,
+      # so the run still passes before these secrets are configured.
+      E2E_DIRECTORY_USER: ${{ secrets.E2E_DIRECTORY_USER }}
+      E2E_DIRECTORY_PASS: ${{ secrets.E2E_DIRECTORY_PASS }}
       E2E_NAMESPACE_PREFIX: e2e-ci-${{ github.run_id }}-
 
     steps:
@@ -93,6 +97,8 @@ jobs:
             echo "E2E_REFERRER_PASS=$E2E_REFERRER_PASS"
             echo "E2E_PARTNER_USER=$E2E_PARTNER_USER"
             echo "E2E_PARTNER_PASS=$E2E_PARTNER_PASS"
+            echo "E2E_DIRECTORY_USER=$E2E_DIRECTORY_USER"
+            echo "E2E_DIRECTORY_PASS=$E2E_DIRECTORY_PASS"
             echo "E2E_NAMESPACE_PREFIX=$E2E_NAMESPACE_PREFIX"
           } > .env.test
 

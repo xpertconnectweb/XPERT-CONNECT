@@ -58,6 +58,9 @@ export function MapView({
 
   const [filterText, setFilterText] = useState('')
   const [showAvailableOnly, setShowAvailableOnly] = useState(false)
+  // Only surfaced when attorney pins are on, which today means the
+  // legal-directory map. '' = every practice area.
+  const [practiceAreaFilter, setPracticeAreaFilter] = useState('')
   const [showClinics, setShowClinics] = useState(showClinicsProp)
   const [showLawyers, setShowLawyers] = useState(showLawyersProp)
   const [locationQuery, setLocationQuery] = useState('')
@@ -239,6 +242,7 @@ export function MapView({
       for (const l of lawyers) {
         if (!l.lat || !l.lng || (l.lat === 0 && l.lng === 0)) continue
         if (showAvailableOnly && !l.available) continue
+        if (practiceAreaFilter && !(l.practiceAreas || []).includes(practiceAreaFilter)) continue
         if (query && !(
           l.name.toLowerCase().includes(query) || (l.address && l.address.toLowerCase().includes(query)) ||
           (l.practiceAreas || []).some((s) => s.toLowerCase().includes(query)) ||
@@ -254,7 +258,15 @@ export function MapView({
     }
 
     return items
-  }, [clinics, lawyers, filterText, showAvailableOnly, showClinics, showLawyers])
+  }, [clinics, lawyers, filterText, showAvailableOnly, showClinics, showLawyers, practiceAreaFilter])
+
+  // Practice-area options come from the loaded firms rather than a prop,
+  // so the dropdown can never offer an area with zero pins.
+  const practiceAreaOptions = useMemo(() => {
+    const areas = new Set<string>()
+    for (const l of lawyers) (l.practiceAreas || []).forEach((a) => areas.add(a))
+    return Array.from(areas).sort()
+  }, [lawyers])
 
   // When a client location is searched, anchor distances to it ("X mi from the client's home");
   // otherwise fall back to the live map center (distances update as you pan).
@@ -280,7 +292,12 @@ export function MapView({
   const handleCopyList = useCallback(async () => {
     if (panelItems.length === 0) return
     const origin = locationLabel || 'the selected location'
-    const header = `Clinics near ${origin}${radiusMiles ? ` (within ${radiusMiles} mi)` : ''}:`
+    // The panel can hold clinics, attorneys or both — label it accordingly
+    // instead of always claiming "Clinics".
+    const hasClinic = panelItems.some((it) => it.type === 'clinic')
+    const hasLawyer = panelItems.some((it) => it.type === 'lawyer')
+    const label = hasClinic && hasLawyer ? 'Providers' : hasLawyer ? 'Attorneys' : 'Clinics'
+    const header = `${label} near ${origin}${radiusMiles ? ` (within ${radiusMiles} mi)` : ''}:`
     const lines = panelItems.map((it, i) => {
       const parts = [`${i + 1}. ${it.name} — ${it.distance.toFixed(1)} mi`]
       if (it.phone) parts.push(it.phone)
@@ -471,6 +488,19 @@ export function MapView({
                 Attorneys
                 <span className={`ml-0.5 text-[10px] ${showLawyers ? 'text-red-100' : 'text-gray-300'}`}>{lawyerCount}</span>
               </button>}
+              {showLawyersProp && showLawyers && practiceAreaOptions.length > 1 && (
+                <select
+                  value={practiceAreaFilter}
+                  onChange={(e) => setPracticeAreaFilter(e.target.value)}
+                  aria-label="Filter attorneys by practice area"
+                  className="rounded-lg border border-gray-200/40 bg-gray-50/80 px-2 py-1.5 text-[11px] font-semibold text-gray-500 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-colors"
+                >
+                  <option value="">All practice areas</option>
+                  {practiceAreaOptions.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
         </div>

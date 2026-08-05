@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Loader2, Plus, Save } from 'lucide-react'
 import { SortableList } from '@/components/admin/SortableList'
 import { Toast } from '@/components/admin/Toast'
+import { resolveCatalog } from '@/lib/practice-areas'
 
 interface SettingsData {
   specialties_list?: string[]
@@ -35,7 +36,10 @@ export default function AdminSettingsPage() {
         const data = await res.json()
         setSettings(data)
         if (data.specialties_list) setSpecialties(data.specialties_list)
-        if (data.practice_areas_list) setPracticeAreas(data.practice_areas_list)
+        // Seed from the canonical catalog when nothing was ever saved,
+        // so the panel isn't blank on first load and the admin edits a
+        // real list instead of building one from scratch.
+        setPracticeAreas(resolveCatalog(data.practice_areas_list))
         if (data.referral_notifications) setNotifications(data.referral_notifications)
         if (data.platform) setPlatform(data.platform)
       }

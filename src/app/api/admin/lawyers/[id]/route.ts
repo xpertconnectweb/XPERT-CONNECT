@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
+import { sanitizePracticeAreas } from '@/lib/practice-areas'
 
 export async function PATCH(
   request: Request,
@@ -17,7 +18,8 @@ export async function PATCH(
     // Convert camelCase fields to snake_case for Supabase
     const updateData: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(body)) {
-      if (key === 'practiceAreas') updateData['practice_areas'] = value
+      // Same gate as POST — canonicalize synonyms, drop CSV-header junk.
+      if (key === 'practiceAreas') updateData['practice_areas'] = sanitizePracticeAreas(value)
       else if (key === 'zipCode') updateData['zip_code'] = value
       else updateData[key] = value
     }
