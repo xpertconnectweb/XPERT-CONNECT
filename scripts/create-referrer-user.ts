@@ -1,8 +1,14 @@
+/**
+ * Creates the referrer account. The password comes from
+ * REFERRER_USER_PASSWORD in .env.local or --password=; there is no
+ * default, because this repository is public.
+ */
 import { config } from 'dotenv'
 config({ path: '.env.local' })
 import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
 import { randomUUID } from 'crypto'
+import { requireSecret } from './script-env'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +16,7 @@ const supabase = createClient(
 )
 
 async function main() {
-  const password = await bcrypt.hash('***REMOVED***', 10)
+  const password = await bcrypt.hash(requireSecret('REFERRER_USER_PASSWORD', 'password'), 10)
 
   const { data, error } = await supabase.from('users').insert({
     id: `referrer-${randomUUID().slice(0, 8)}`,
@@ -28,9 +34,8 @@ async function main() {
 
   console.log('Referrer user created successfully:')
   console.log(data)
-  console.log('\nCredentials:')
-  console.log('  Username: referrer1')
-  console.log('  Password: ***REMOVED***')
+  console.log('\n  Username: referrer1')
+  console.log('  Password: (the one you supplied)')
 }
 
 main()

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
 import bcrypt from 'bcryptjs'
+import { requireSecret } from './script-env'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 
@@ -11,8 +12,9 @@ const supabase = createClient(
 )
 
 async function main() {
-  const password = '***REMOVED***'
-  const hashed = await bcrypt.hash(password, 10)
+  // From MN_LAWYER_PASSWORD in .env.local or --password=; no default,
+  // because this repository is public.
+  const hashed = await bcrypt.hash(requireSecret('MN_LAWYER_PASSWORD', 'password'), 10)
 
   const user = {
     id: 'lawyer-mn-001',
@@ -38,9 +40,8 @@ async function main() {
 
   console.log('User created successfully:')
   console.log(data)
-  console.log('\nCredentials:')
-  console.log(`  Username: mn_lawyer`)
-  console.log(`  Password: ${password}`)
+  console.log('\n  Username: mn_lawyer')
+  console.log('  Password: (the one you supplied)')
 }
 
 main()

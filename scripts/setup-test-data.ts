@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import * as path from 'path'
 import { randomUUID } from 'crypto'
 import bcrypt from 'bcryptjs'
+import { requireSecret } from './script-env'
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
@@ -16,10 +17,12 @@ async function main() {
   console.log('🔧 Setting up test data...\n')
 
   try {
-    // Hash passwords
-    const adminPassword = await bcrypt.hash('***REMOVED***', 10)
-    const lawyerPassword = await bcrypt.hash('***REMOVED***', 10)
-    const clinicPassword = await bcrypt.hash('***REMOVED***', 10)
+    // Passwords come from .env.local (SEED_ADMIN_PASSWORD,
+    // SEED_LAWYER_PASSWORD, SEED_CLINIC_PASSWORD). No defaults —
+    // this repository is public.
+    const adminPassword = await bcrypt.hash(requireSecret('SEED_ADMIN_PASSWORD'), 10)
+    const lawyerPassword = await bcrypt.hash(requireSecret('SEED_LAWYER_PASSWORD'), 10)
+    const clinicPassword = await bcrypt.hash(requireSecret('SEED_CLINIC_PASSWORD'), 10)
 
     // 1. Delete all referrals
     console.log('📝 Cleaning referrals...')
@@ -61,7 +64,7 @@ async function main() {
       })
 
     if (adminError) throw adminError
-    console.log('✅ Admin created: admin_xpert / ***REMOVED***\n')
+    console.log('✅ Admin created: admin_xpert\n')
 
     // 7. Create test clinic entry in clinics table
     const clinicId = randomUUID()
@@ -101,7 +104,7 @@ async function main() {
       })
 
     if (clinicUserError) throw clinicUserError
-    console.log('✅ Clinic user created: Florida_Centers / ***REMOVED***\n')
+    console.log('✅ Clinic user created: Florida_Centers\n')
 
     // 9. Create test lawyer
     const lawyerId = randomUUID()
@@ -119,7 +122,7 @@ async function main() {
       })
 
     if (lawyerError) throw lawyerError
-    console.log('✅ Lawyer created: alex_rodriguez / ***REMOVED***\n')
+    console.log('✅ Lawyer created: alex_rodriguez\n')
 
     // 10. Create a sample referral
     const referralId = randomUUID()
@@ -150,19 +153,19 @@ async function main() {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     console.log('  👤 ADMIN')
     console.log('     Username: admin_xpert')
-    console.log('     Password: ***REMOVED***')
+    console.log('     Password: $SEED_ADMIN_PASSWORD')
     console.log('')
     console.log('  👨‍⚖️  LAWYER')
     console.log('     Email: joselaurasilvera@gmail.com')
     console.log('     Username: alex_rodriguez')
-    console.log('     Password: ***REMOVED***')
+    console.log('     Password: $SEED_LAWYER_PASSWORD')
     console.log('     Name: Alex Rodriguez')
     console.log('     Firm: Rodriguez & Associates Law Firm')
     console.log('')
     console.log('  🏥 CLINIC')
     console.log('     Email: clinic@florida-injury.com')
     console.log('     Username: Florida_Centers')
-    console.log('     Password: ***REMOVED***')
+    console.log('     Password: $SEED_CLINIC_PASSWORD')
     console.log('     Name: Florida Injury Centers - Port Charlotte')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
