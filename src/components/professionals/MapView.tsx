@@ -3,8 +3,9 @@
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import { useEffect, useState, useRef, useCallback, useMemo, type KeyboardEvent } from 'react'
-import { MapContainer, TileLayer, ZoomControl, Circle, Marker } from 'react-leaflet'
+import { MapContainer, TileLayer, ZoomControl, Circle, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import {
   AlertTriangle, RefreshCw, Search, X, MapPin,
@@ -14,20 +15,59 @@ import {
 import { ReferralFormModal } from './ReferralFormModal'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
 import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
-import { MarkerClusterLayer } from './map/MarkerClusterLayer'
-import { VirtualPanelList } from './map/VirtualPanelList'
+import { MarkerClusterLayer, type MarkerRegistry } from './map/MarkerClusterLayer'
+import { VirtualPanelList, type ScrollRequest } from './map/VirtualPanelList'
+import { SmartSearchBox } from '@/components/search/SmartSearchBox'
+import type { Suggestion } from '@/components/search/types'
+import { Chip, Sheet, type SheetSnap } from '@/components/ui'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useMapSearch } from '@/hooks/useMapSearch'
+import { useSmartSearch } from '@/hooks/useSmartSearch'
+import { useGeocoder } from '@/hooks/useGeocoder'
 import { clinicAvailIcon, homeIcon } from '@/lib/map/icons'
 import { US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance } from '@/lib/map/geo'
-import type { MapItem, GeocodeSuggestion } from '@/lib/map/types'
+import type { Bounds } from '@/lib/search'
+import { parseMapUrlState, toMapUrlQuery } from '@/lib/search/url-state'
+import { ZOOM_FOR_KIND, type GeocodeResult } from '@/types/geocode'
+import { cn } from '@/lib/utils'
+import type { MapItem } from '@/lib/map/types'
 import type { Clinic } from '@/types/professionals'
 import type { Lawyer } from '@/types/professionals'
+import type { DecoratedClinic, DecoratedLawyer } from '@/types/professionals'
 
 L.Marker.prototype.options.icon = clinicAvailIcon
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => { const id = setTimeout(() => setDebounced(value), delay); return () => clearTimeout(id) }, [value, delay])
-  return debounced
+/**
+ * The unified search box ships behind a flag.
+ *
+ * The matching pipeline below is shared by both paths — it was already proven
+ * on the attorney directory and the specialists list. What the flag gates is
+ * the visible replacement of the two old inputs, which is the part that can
+ * disrupt muscle memory and the E2E specs.
+ */
+const SEARCH_V2 = process.env.NEXT_PUBLIC_SEARCH_V2 === '1'
+
+/**
+ * How far the map has to move before "Search this area" is offered. Opening a
+ * popup nudges the centre slightly, and a pill that appears every time you
+ * click a pin is noise.
+ */
+const MOVED_THRESHOLD_MILES = 2
+
+/**
+ * Binds map events through react-leaflet's own hook.
+ *
+ * The listener used to be attached in `whenReady` via `mapRef.current?.on(...)`,
+ * which is not safe: `whenReady` can fire before the ref is assigned, and the
+ * optional chaining then swallows the failure silently, leaving `moveend`
+ * unbound with no error anywhere. `useMapEvents` cannot get this wrong.
+ */
+function MapEvents({ onMoveEnd }: { onMoveEnd: (map: L.Map) => void }) {
+  const map = useMapEvents({
+    moveend: () => onMoveEnd(map),
+  })
+  return null
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -45,8 +85,8 @@ export function MapView({
   showClinics: showClinicsProp = true,
 }: MapViewProps = {}) {
   const { data: session } = useSession()
-  const [clinics, setClinics] = useState<Clinic[]>([])
-  const [lawyers, setLawyers] = useState<Lawyer[]>([])
+  const [clinics, setClinics] = useState<DecoratedClinic[]>([])
+  const [lawyers, setLawyers] = useState<DecoratedLawyer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null)
@@ -64,10 +104,9 @@ export function MapView({
   const [showClinics, setShowClinics] = useState(showClinicsProp)
   const [showLawyers, setShowLawyers] = useState(showLawyersProp)
   const [locationQuery, setLocationQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [geocoding, setGeocoding] = useState(false)
-  const debouncedLocation = useDebounce(locationQuery, 400)
+  // Selected specialty / practice-area chips, applied as a filter.
+  const [tagFilters, setTagFilters] = useState<string[]>([])
   const [locating, setLocating] = useState(false)
   const [locationLabel, setLocationLabel] = useState('')
   // Anchor point for "clinics near the client's home": the searched/geolocated coordinates.
@@ -76,6 +115,9 @@ export function MapView({
   const [activeSuggestion, setActiveSuggestion] = useState(0)
   const [copied, setCopied] = useState(false)
   const autoSelectRef = useRef(false)
+  /** Blocks URL writes until the incoming query string has been consumed. */
+  const hydratedRef = useRef(false)
+  const router = useRouter()
   const userState = session?.user?.state
   const stateConfig = userState ? STATE_MAP_CONFIG[userState] : undefined
   const initialCenter = stateConfig?.center ?? US_DEFAULT_CENTER
@@ -83,9 +125,50 @@ export function MapView({
   const [mapCenter, setMapCenter] = useState<[number, number]>(initialCenter)
   const [showPanel, setShowPanel] = useState(false)
 
-  const debouncedCenter = useDebounce(mapCenter, 500)
+  /**
+   * Two independent spatial ideas, kept apart on purpose.
+   *
+   *   anchor   where distances are measured FROM — the searched client address,
+   *            or the last centre the user explicitly settled on
+   *   viewport which records are INCLUDED — only ever set by "Search this area"
+   *
+   * They used to be fused — and worse, broken. Distances were measured from
+   * `searchedLocation ?? mapCentre`, but `mapCentre` never actually updated:
+   * the `moveend` listener was attached in `whenReady` via
+   * `mapRef.current?.on(...)`, and the ref was still null at that point, so the
+   * optional chaining silently dropped it. The result was that with no address
+   * searched, every "X mi away" figure was measured from the state's default
+   * centroid rather than from anywhere the user had been.
+   */
+  const [appliedCenter, setAppliedCenter] = useState<[number, number]>(initialCenter)
+  const [viewportBounds, setViewportBounds] = useState<Bounds | null>(null)
+  const [mapMoved, setMapMoved] = useState(false)
+
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  /** Scroll request for the results list, raised only by map interaction. */
+  const [scrollTo, setScrollTo] = useState<ScrollRequest | null>(null)
+  /** Phone-only: how far the results sheet is pulled up. */
+  const [sheetSnap, setSheetSnap] = useState<SheetSnap>('peek')
+
+  // The sheet and the docked panel need genuinely different markup, which no
+  // media query can express. Safe here because the map never renders on the
+  // server, so there is no hydration mismatch to worry about.
+  const isPhone = useMediaQuery('(max-width: 639px)')
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
+  const useSheet = SEARCH_V2 && isPhone
+  const panelDocked = SEARCH_V2 && isDesktop
+  /**
+   * Draws the eye to the results toggle when a search has produced results the
+   * user cannot currently see. Without it, collapsing the panel means new
+   * results land silently behind a button with no indication anything changed.
+   */
+  const [panelAttention, setPanelAttention] = useState(false)
+  const panelDefaultedRef = useRef(false)
+  const previousTotalRef = useRef(0)
 
   const mapRef = useRef<L.Map | null>(null)
+  const markersRef = useRef<MarkerRegistry | null>(null)
   const filterInputRef = useRef<HTMLInputElement>(null)
   const locationInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
@@ -109,59 +192,53 @@ export function MapView({
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Deep-link support: /professionals/map?near=<address> prefills the search and auto-selects
-  // the first match, so "Find clinics near this client" from a referral lands ready to use.
+  // Restore shared state from the query string, once, on mount.
+  //
+  // Read from `window.location.search` rather than `useSearchParams` because
+  // the page renders with `ssr: false`; the hook would demand a Suspense
+  // boundary for no benefit here.
   useEffect(() => {
-    const near = new URLSearchParams(window.location.search).get('near')
-    if (near && near.trim().length >= 3) { autoSelectRef.current = true; setLocationQuery(near.trim()) }
+    const state = parseMapUrlState(new URLSearchParams(window.location.search))
+
+    if (state.q) setFilterText(state.q)
+    if (state.tags) setTagFilters(state.tags)
+    if (state.availableOnly) setShowAvailableOnly(true)
+    if (state.types) {
+      setShowClinics(state.types.includes('clinic'))
+      setShowLawyers(state.types.includes('lawyer'))
+    }
+    if (state.radius) setRadiusMiles(state.radius)
+    if (state.bbox) setViewportBounds(state.bbox)
+    if (state.selected) setSelectedId(state.selected)
+
+    if (state.at) {
+      // Already resolved, so skip the geocoder entirely — a shared link lands
+      // instantly and does not depend on a third party still being up.
+      setSearchedLocation(state.at)
+      setAppliedCenter(state.at)
+      setMapCenter(state.at)
+      setLocationLabel(state.near ?? 'Shared location')
+    } else if (state.near && state.near.length >= 3) {
+      // The original contract: geocode the address text and auto-select the
+      // first match, so "View clinics near this client" from a referral lands
+      // on a ready-to-use map rather than an open dropdown.
+      autoSelectRef.current = true
+      setLocationQuery(state.near)
+    }
+
+    hydratedRef.current = true
   }, [])
 
+  // Address lookup now goes through /api/geocode, which sets a real User-Agent,
+  // caches server-side and keeps clients' home addresses off a third party.
+  const { results: geocodeResults, loading: geocoding } = useGeocoder(locationQuery)
+
   // Keyboard navigation resets to the top suggestion whenever the list changes.
-  useEffect(() => { setActiveSuggestion(0) }, [suggestions])
+  useEffect(() => { setActiveSuggestion(0) }, [geocodeResults])
 
-  // Nominatim geocoding
   useEffect(() => {
-    if (!debouncedLocation || debouncedLocation.length < 3) { setSuggestions([]); return }
-    let cancelled = false
-
-    // Nominatim free-text search returns nothing when the address includes an apartment/unit
-    // designator (Apt 4B, #1402, Suite 200...). Strip those so a full client address resolves.
-    // Note: no bare "fl" — it collides with the "FL" state abbreviation and would strip the ZIP.
-    const stripUnit = (addr: string) => addr
-      .replace(/,?\s*(?:#\s*\w[\w-]*|\b(?:apt|apartment|suite|ste|unit|floor|bldg|building|rm|room)\b\.?\s*#?\s*\w[\w-]*)/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .replace(/\s*,\s*,/g, ',')
-      .trim()
-
-    // Try progressively: without unit → as typed → just the ZIP. The unit-stripped form goes
-    // first because Nominatim sometimes matches a full "...Apt 200..." string to a coarse
-    // city centroid instead of the exact street; stripping never hurts precision. The ZIP is
-    // the last resort so we never leave the user with an empty search.
-    const zipMatch = debouncedLocation.match(/\b\d{5}(?:-\d{4})?\b/)
-    const candidates = Array.from(new Set([
-      stripUnit(debouncedLocation),
-      debouncedLocation,
-      zipMatch?.[0],
-    ].filter((c): c is string => !!c && c.length >= 3)))
-
-    ;(async () => {
-      setGeocoding(true)
-      try {
-        let data: GeocodeSuggestion[] = []
-        for (const candidate of candidates) {
-          const q = encodeURIComponent(candidate)
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=5&countrycodes=us`, { headers: { 'User-Agent': 'XpertConnect/1.0' } })
-          if (cancelled) return
-          if (!res.ok) continue
-          data = await res.json()
-          if (data.length > 0) break
-        }
-        if (!cancelled) { setSuggestions(data); setShowSuggestions(data.length > 0) }
-      } catch { if (!cancelled) setSuggestions([]) }
-      finally { if (!cancelled) setGeocoding(false) }
-    })()
-    return () => { cancelled = true }
-  }, [debouncedLocation])
+    setShowSuggestions(geocodeResults.length > 0)
+  }, [geocodeResults])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -172,20 +249,33 @@ export function MapView({
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const handleSelectSuggestion = useCallback((s: GeocodeSuggestion) => {
-    const lat = parseFloat(s.lat), lng = parseFloat(s.lon)
-    setMapCenter([lat, lng]); setSearchedLocation([lat, lng]); setLocationLabel(s.display_name.split(',').slice(0, 2).join(','))
-    setLocationQuery(''); setSuggestions([]); setShowSuggestions(false)
-    mapRef.current?.setView([lat, lng], 12)
-  }, [])
+  const applyPlace = useCallback(
+    (lat: number, lng: number, label: string, zoom: number) => {
+      setMapCenter([lat, lng])
+      setSearchedLocation([lat, lng])
+      setLocationLabel(label)
+      setLocationQuery('')
+      setShowSuggestions(false)
+      mapRef.current?.setView([lat, lng], zoom)
+    },
+    []
+  )
+
+  const handleSelectSuggestion = useCallback((s: GeocodeResult) => {
+    // A ZIP covers far more ground than a street address; landing at street
+    // zoom on a ZIP search hides most of what was asked for.
+    applyPlace(s.lat, s.lng, s.label.split(',').slice(0, 2).join(','), ZOOM_FOR_KIND[s.kind])
+  }, [applyPlace])
 
   // Auto-select the first match when the search was driven by the ?near= deep link.
+  // ReferrerReferralForm depends on this: "View clinics near this client" must
+  // land on a ready-to-use map, not on an open dropdown.
   useEffect(() => {
-    if (autoSelectRef.current && suggestions.length > 0) {
+    if (autoSelectRef.current && geocodeResults.length > 0) {
       autoSelectRef.current = false
-      handleSelectSuggestion(suggestions[0])
+      handleSelectSuggestion(geocodeResults[0])
     }
-  }, [suggestions, handleSelectSuggestion])
+  }, [geocodeResults, handleSelectSuggestion])
 
   const handleGeolocate = useCallback(() => {
     if (!navigator.geolocation) return
@@ -199,66 +289,71 @@ export function MapView({
 
   const handleClearLocation = useCallback(() => {
     setLocationLabel(''); setLocationQuery(''); setSearchedLocation(null); setRadiusMiles(null)
+    // Clearing the location resets every spatial constraint, not just the pin —
+    // leaving a stale viewport behind would keep filtering results against an
+    // area the user can no longer see any reason for.
+    setViewportBounds(null)
+    setMapMoved(false)
+    setAppliedCenter(initialCenter)
     setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
   }, [initialCenter, initialZoom])
 
   // Keyboard navigation for the location suggestions dropdown.
   const handleLocationKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || suggestions.length === 0) return
-    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSuggestion((i) => Math.min(i + 1, suggestions.length - 1)) }
+    if (!showSuggestions || geocodeResults.length === 0) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSuggestion((i) => Math.min(i + 1, geocodeResults.length - 1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSuggestion((i) => Math.max(i - 1, 0)) }
-    else if (e.key === 'Enter') { e.preventDefault(); handleSelectSuggestion(suggestions[activeSuggestion] ?? suggestions[0]) }
+    else if (e.key === 'Enter') { e.preventDefault(); handleSelectSuggestion(geocodeResults[activeSuggestion] ?? geocodeResults[0]) }
     else if (e.key === 'Escape') { setShowSuggestions(false) }
-  }, [showSuggestions, suggestions, activeSuggestion, handleSelectSuggestion])
+  }, [showSuggestions, geocodeResults, activeSuggestion, handleSelectSuggestion])
 
   const viewerClinicId = session?.user?.role === 'clinic' ? session?.user?.clinicId : undefined
   const isClinicViewer = session?.user?.role === 'clinic'
 
-  // Build unified MapItem list
-  const validItems: MapItem[] = useMemo(() => {
-    const query = filterText.toLowerCase().trim()
-    const items: MapItem[] = []
+  // Distances anchor to the searched client address when there is one
+  // ("3.2 mi from the client's home"), otherwise to the centre the user last
+  // settled on — never to the live centre, which would move as they pan.
+  const anchor = useMemo<[number, number]>(
+    () => searchedLocation ?? appliedCenter,
+    [searchedLocation, appliedCenter]
+  )
 
-    if (showClinics) {
-      for (const c of clinics) {
-        if (!c.lat || !c.lng || (c.lat === 0 && c.lng === 0)) continue
-        // Don't show the clinic to itself when browsing as a clinic user.
-        if (viewerClinicId && c.id === viewerClinicId) continue
-        // For clinic viewers, hide chiropractic-only clinics (consistent with
-        // SpecialistsList) — they're the referrer's own specialty.
-        if (isClinicViewer && c.specialties && c.specialties.length > 0 &&
-            c.specialties.every((s) => /chiroprac/i.test(s))) continue
-        if (showAvailableOnly && !c.available) continue
-        if (query && !(
-          c.name.toLowerCase().includes(query) || (c.address && c.address.toLowerCase().includes(query)) ||
-          c.specialties.some((s) => s.toLowerCase().includes(query)) ||
-          (c.region && c.region.toLowerCase().includes(query)) || (c.county && c.county.toLowerCase().includes(query))
-        )) continue
-        items.push({ ...c, distance: 0, type: 'clinic', specialties: c.specialties })
-      }
-    }
+  // The practice-area select feeds the same tag filter as the chips.
+  const activeTags = useMemo(
+    () => (practiceAreaFilter ? [...tagFilters, practiceAreaFilter] : tagFilters),
+    [tagFilters, practiceAreaFilter]
+  )
 
-    if (showLawyers) {
-      for (const l of lawyers) {
-        if (!l.lat || !l.lng || (l.lat === 0 && l.lng === 0)) continue
-        if (showAvailableOnly && !l.available) continue
-        if (practiceAreaFilter && !(l.practiceAreas || []).includes(practiceAreaFilter)) continue
-        if (query && !(
-          l.name.toLowerCase().includes(query) || (l.address && l.address.toLowerCase().includes(query)) ||
-          (l.practiceAreas || []).some((s) => s.toLowerCase().includes(query)) ||
-          (l.region && l.region.toLowerCase().includes(query)) || (l.county && l.county.toLowerCase().includes(query))
-        )) continue
-        items.push({
-          id: l.id, name: l.name, address: l.address, lat: l.lat, lng: l.lng,
-          phone: l.phone, email: l.email, website: l.website, region: l.region,
-          county: l.county, available: l.available, distance: 0, type: 'lawyer',
-          practiceAreas: l.practiceAreas, zipCode: l.zipCode,
-        })
-      }
-    }
+  const {
+    items: panelItems,
+    total: resultTotal,
+    facets,
+    clinicCount,
+    lawyerCount,
+    byId,
+    index: searchIndex,
+  } = useMapSearch({
+    clinics,
+    lawyers,
+    viewerClinicId,
+    isClinicViewer,
+    query: filterText,
+    showClinics,
+    showLawyers,
+    availableOnly: showAvailableOnly,
+    tags: activeTags,
+    anchor,
+    // The radius only means anything relative to a deliberately chosen origin;
+    // measuring it from wherever the map happens to sit would silently reshuffle
+    // the list on every pan.
+    radiusMiles: searchedLocation ? radiusMiles : null,
+    bounds: viewportBounds,
+    sort: filterText.trim() ? 'relevance' : 'distance',
+  })
 
-    return items
-  }, [clinics, lawyers, filterText, showAvailableOnly, showClinics, showLawyers, practiceAreaFilter])
+  // Markers and the panel now render the exact same array, so the chip counts
+  // and the list can no longer disagree.
+  const visibleItems = panelItems
 
   // Practice-area options come from the loaded firms rather than a prop,
   // so the dropdown can never offer an area with zero pins.
@@ -267,27 +362,6 @@ export function MapView({
     for (const l of lawyers) (l.practiceAreas || []).forEach((a) => areas.add(a))
     return Array.from(areas).sort()
   }, [lawyers])
-
-  // When a client location is searched, anchor distances to it ("X mi from the client's home");
-  // otherwise fall back to the live map center (distances update as you pan).
-  const itemsWithDistance = useMemo(() => {
-    const [oLat, oLng] = searchedLocation ?? debouncedCenter
-    return validItems.map(item => ({
-      ...item,
-      distance: haversineDistance(oLat, oLng, item.lat, item.lng),
-    }))
-  }, [validItems, searchedLocation, debouncedCenter])
-
-  // Radius filter (only active with a searched location) — applies to both list and map markers.
-  const visibleItems = useMemo(() =>
-    searchedLocation && radiusMiles
-      ? itemsWithDistance.filter(item => item.distance <= radiusMiles)
-      : itemsWithDistance
-  , [itemsWithDistance, searchedLocation, radiusMiles])
-
-  const panelItems = useMemo(() =>
-    [...visibleItems].sort((a, b) => a.distance - b.distance)
-  , [visibleItems])
 
   const handleCopyList = useCallback(async () => {
     if (panelItems.length === 0) return
@@ -299,10 +373,11 @@ export function MapView({
     const label = hasClinic && hasLawyer ? 'Providers' : hasLawyer ? 'Attorneys' : 'Clinics'
     const header = `${label} near ${origin}${radiusMiles ? ` (within ${radiusMiles} mi)` : ''}:`
     const lines = panelItems.map((it, i) => {
-      const parts = [`${i + 1}. ${it.name} — ${it.distance.toFixed(1)} mi`]
+      const parts = [`${i + 1}. ${it.name} - ${it.distance.toFixed(1)} mi`]
       if (it.phone) parts.push(it.phone)
-      if (it.address) parts.push(it.address)
-      return parts.join(' — ')
+      const where = it.address ?? [it.city, it.state, it.zipCode].filter(Boolean).join(', ')
+      if (where) parts.push(where)
+      return parts.join(' - ')
     })
     try {
       await navigator.clipboard.writeText([header, '', ...lines].join('\n'))
@@ -310,13 +385,241 @@ export function MapView({
     } catch { /* clipboard unavailable */ }
   }, [panelItems, locationLabel, radiusMiles])
 
-  const { clinicCount, lawyerCount } = useMemo(() => {
-    let clinics = 0, lawyers = 0
-    for (const item of validItems) {
-      if (item.type === 'clinic') clinics++; else lawyers++
+  /* ── Unified search box (feature-flagged) ── */
+
+  const { groups: suggestionGroups, remember, forget } = useSmartSearch({
+    index: searchIndex,
+    facets,
+    query: filterText,
+    anchor: searchedLocation,
+    entityHeading: isClinicViewer ? 'Specialists' : 'Providers',
+    categoryHeading: showLawyersProp ? 'Practice areas' : 'Specialties',
+  })
+
+  const handleSuggestionSelect = useCallback(
+    (suggestion: Suggestion) => {
+      const { payload } = suggestion
+      switch (payload.kind) {
+        case 'place':
+          remember(payload.label, { lat: payload.lat, lng: payload.lng, label: payload.label })
+          setFilterText('')
+          applyPlace(payload.lat, payload.lng, payload.label, ZOOM_FOR_KIND[payload.placeKind])
+          return
+        case 'entity': {
+          // Jump to the record itself and open its popup, rather than merely
+          // filtering the list down to it.
+          const item = byId.get(payload.id)
+          if (!item) return
+          remember(item.name)
+          setFilterText('')
+          mapRef.current?.setView([item.lat, item.lng], 15)
+          setShowPanel(false)
+          return
+        }
+        case 'category':
+          // A category is a filter, not a text query — keeping it out of the
+          // box means it survives whatever is typed next.
+          setFilterText('')
+          setTagFilters((current) =>
+            current.includes(payload.tag) ? current : [...current, payload.tag]
+          )
+          return
+        case 'recent':
+          setFilterText(payload.query)
+          return
+      }
+    },
+    [remember, applyPlace, byId]
+  )
+
+  const handleSuggestionRemove = useCallback(
+    (suggestion: Suggestion) => {
+      if (suggestion.payload.kind === 'recent') forget(suggestion.payload.query)
+    },
+    [forget]
+  )
+
+  const handleSearchSubmit = useCallback(
+    (value: string) => {
+      if (value.trim()) remember(value)
+      setShowPanel(true)
+      // On a phone, committing a search should reveal what it found.
+      setSheetSnap((current) => (current === 'peek' ? 'half' : current))
+    },
+    [remember]
+  )
+
+  /* ── Shareable URL ── */
+
+  const urlQuery = useMemo(
+    () =>
+      toMapUrlQuery({
+        q: filterText.trim() || undefined,
+        near: locationLabel || undefined,
+        at: searchedLocation ?? undefined,
+        radius: radiusMiles ?? undefined,
+        bbox: viewportBounds ?? undefined,
+        tags: tagFilters.length > 0 ? tagFilters : undefined,
+        types:
+          showClinics && showLawyers
+            ? undefined
+            : [
+                ...(showClinics ? (['clinic'] as const) : []),
+                ...(showLawyers ? (['lawyer'] as const) : []),
+              ],
+        availableOnly: showAvailableOnly || undefined,
+        selected: selectedId ?? undefined,
+      }),
+    [
+      filterText,
+      locationLabel,
+      searchedLocation,
+      radiusMiles,
+      viewportBounds,
+      tagFilters,
+      showClinics,
+      showLawyers,
+      showAvailableOnly,
+      selectedId,
+    ]
+  )
+
+  // Debounced so typing does not write a history entry per keystroke, and
+  // `replace` rather than `push` so the back button still leaves the map.
+  const debouncedUrlQuery = useDebounce(urlQuery, 500)
+
+  useEffect(() => {
+    // Never write before the initial state has been read, or the first render
+    // would wipe the very parameters it was handed.
+    if (!SEARCH_V2 || !hydratedRef.current) return
+    const next = `${window.location.pathname}${debouncedUrlQuery}`
+    if (next === `${window.location.pathname}${window.location.search}`) return
+    router.replace(next, { scroll: false })
+  }, [debouncedUrlQuery, router])
+
+  /* ── Viewport scope ── */
+
+  const handleSearchThisArea = useCallback(() => {
+    const map = mapRef.current
+    if (!map) return
+    // Pad slightly so pins just off the edge are not jarringly absent from a
+    // list the user just asked to match what they can see.
+    const bounds = map.getBounds().pad(0.1)
+    const centre = map.getCenter()
+    setViewportBounds({
+      south: bounds.getSouth(),
+      north: bounds.getNorth(),
+      west: bounds.getWest(),
+      east: bounds.getEast(),
+    })
+    setAppliedCenter([centre.lat, centre.lng])
+    // The viewport supersedes the radius; leaving both on would mean two
+    // competing answers to "how far out are we looking?".
+    setRadiusMiles(null)
+    setMapMoved(false)
+    setShowPanel(true)
+  }, [])
+
+  const handleClearViewport = useCallback(() => {
+    setViewportBounds(null)
+    setMapMoved(false)
+  }, [])
+
+  /* ── Results panel visibility ── */
+
+  const togglePanel = useCallback(() => {
+    setShowPanel((current) => {
+      const next = !current
+      try {
+        window.localStorage.setItem('xc:map-panel-open', next ? '1' : '0')
+      } catch {
+        // Storage disabled; the preference simply will not persist.
+      }
+      return next
+    })
+  }, [])
+
+  // Open by default on a wide screen, where the list fits beside the map, and
+  // remember whatever the user chooses after that.
+  //
+  // Reads `matchMedia` directly rather than the `isDesktop` hook value: that
+  // hook starts at `false` and corrects itself in its own effect, so this one
+  // ran first, latched "not desktop", and left the panel shut on every wide
+  // screen. Two effects racing over the same question.
+  useEffect(() => {
+    if (!SEARCH_V2 || panelDefaultedRef.current) return
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    panelDefaultedRef.current = true
+
+    if (window.matchMedia('(max-width: 639px)').matches) return
+
+    let stored: string | null = null
+    try {
+      stored = window.localStorage.getItem('xc:map-panel-open')
+    } catch {
+      stored = null
     }
-    return { clinicCount: clinics, lawyerCount: lawyers }
-  }, [validItems])
+    setShowPanel(
+      stored === null ? window.matchMedia('(min-width: 1024px)').matches : stored === '1'
+    )
+  }, [])
+
+  // Flag new results the user cannot see, and stop as soon as they look.
+  useEffect(() => {
+    if (resultTotal === previousTotalRef.current) return
+    previousTotalRef.current = resultTotal
+    if (!showPanel && !useSheet && resultTotal > 0) setPanelAttention(true)
+  }, [resultTotal, showPanel, useSheet])
+
+  useEffect(() => {
+    if (showPanel) setPanelAttention(false)
+  }, [showPanel])
+
+  // Leaflet caches its container size and only re-measures on a window resize.
+  // Docking the panel changes the map's width through CSS, which Leaflet never
+  // hears about, so it keeps drawing tiles for the old narrower viewport and
+  // the newly exposed strip stays blank. Re-measure once the width transition
+  // has finished.
+  useEffect(() => {
+    if (!panelDocked) return
+    const map = mapRef.current
+    if (!map) return
+    map.invalidateSize()
+    const timer = setTimeout(() => map.invalidateSize(), 350)
+    return () => clearTimeout(timer)
+  }, [showPanel, panelDocked])
+
+  useEffect(() => {
+    if (!panelAttention) return
+    // Nudge, do not nag.
+    const timer = setTimeout(() => setPanelAttention(false), 6000)
+    return () => clearTimeout(timer)
+  }, [panelAttention])
+
+  /* ── Panel <-> map synchronisation ── */
+
+  /**
+   * Hover originating in the panel. Highlights the pin but must NOT scroll the
+   * list: scrolling drags the cursor across rows, and letting that feed back
+   * into a scroll made the panel impossible to move.
+   */
+  const handleHoverItem = useCallback((id: string | null) => {
+    setHoveredId(id)
+    markersRef.current?.setHovered(id)
+  }, [])
+
+  /** Hover originating on the map. This one does scroll the list. */
+  const handleMarkerHover = useCallback((id: string | null) => {
+    setHoveredId(id)
+    markersRef.current?.setHovered(id)
+    if (id) setScrollTo((current) => ({ id, nonce: (current?.nonce ?? 0) + 1 }))
+  }, [])
+
+  const handleMarkerClick = useCallback((id: string) => {
+    setSelectedId(id)
+    markersRef.current?.setSelected(id)
+    setScrollTo((current) => ({ id, nonce: (current?.nonce ?? 0) + 1 }))
+  }, [])
 
   const handleReferral = useCallback((target: MapItem) => {
     mapRef.current?.closePopup()
@@ -337,10 +640,56 @@ export function MapView({
   const handleCloseClinicModal = useCallback(() => { setShowClinicModal(false); setSelectedLawyer(null) }, [])
   const handleCloseSpecialistModal = useCallback(() => { setShowSpecialistModal(false); setSelectedTargetClinic(null) }, [])
   const handleClearFilter = useCallback(() => { setFilterText(''); filterInputRef.current?.focus() }, [])
-  const handleMapMoveEnd = useCallback(() => { if (mapRef.current) { const c = mapRef.current.getCenter(); setMapCenter([c.lat, c.lng]) } }, [])
-  const handleFocusItem = useCallback((item: MapItem) => { mapRef.current?.setView([item.lat, item.lng], 14); setShowPanel(false) }, [])
+  // Read through a ref, because the `moveend` listener is bound once when the
+  // map is ready and would otherwise keep comparing against whatever the
+  // centre was at mount.
+  const appliedCenterRef = useRef(appliedCenter)
+  appliedCenterRef.current = appliedCenter
+
+  const handleMapMoveEnd = useCallback(() => {
+    const map = mapRef.current
+    if (!map) return
+    const centre = map.getCenter()
+    setMapCenter([centre.lat, centre.lng])
+    // Offer to re-scope rather than doing it unasked. The threshold keeps the
+    // pill from flashing up on the tiny recentre that follows opening a popup.
+    const [appliedLat, appliedLng] = appliedCenterRef.current
+    const moved = haversineDistance(centre.lat, centre.lng, appliedLat, appliedLng)
+    setMapMoved(moved > MOVED_THRESHOLD_MILES)
+  }, [])
+
+  const handleFocusItem = useCallback((item: MapItem) => {
+    setSelectedId(item.id)
+    markersRef.current?.setSelected(item.id)
+    // Opens the pin's popup, spiderfying its cluster first if needed — the
+    // panel used to only re-centre, leaving no sign of which result was picked.
+    markersRef.current?.focus(item.id)
+    // Get out of the way only where the panel covers the map. On a phone the
+    // sheet drops to peek rather than vanishing, so the list is one drag away.
+    if (window.matchMedia('(max-width: 639px)').matches) setSheetSnap('peek')
+    else if (window.matchMedia('(max-width: 1023px)').matches) setShowPanel(false)
+  }, [])
 
   const userRole = session?.user?.role
+
+  // The sheet and the docked panel need genuinely different markup, which no
+  // media query can express. Safe here because the map never renders on the
+  // server, so there is no hydration mismatch to worry about.
+
+  const resultsSummary = `${panelItems.length} ${
+    panelItems.length === 1 ? 'result' : 'results'
+  } found${searchedLocation && locationLabel ? ` near ${locationLabel}` : ''}`
+
+  const panelBody = (
+    <VirtualPanelList
+      items={panelItems}
+      onFocus={handleFocusItem}
+      onHover={handleHoverItem}
+      hoveredId={hoveredId}
+      selectedId={selectedId}
+      scrollTo={scrollTo}
+    />
+  )
 
   /* ── Loading state ── */
   if (loading) return (
@@ -368,6 +717,9 @@ export function MapView({
   return (
     <div className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-2xl overflow-hidden shadow-md">
       {/* MAP */}
+      {/* The map is inset on desktop so the docked results panel sits
+          beside it rather than covering it. */}
+      <div className={cn('absolute inset-0 transition-[right] duration-300 ease-out motion-reduce:transition-none', panelDocked && showPanel && 'lg:right-[400px]')}>
       <MapContainer
         center={initialCenter}
         zoom={initialZoom}
@@ -376,20 +728,65 @@ export function MapView({
         zoomControl={false}
         preferCanvas={true}
         ref={mapRef}
-        whenReady={() => { mapRef.current?.on('moveend', handleMapMoveEnd) }}
       >
+        <MapEvents onMoveEnd={handleMapMoveEnd} />
         <ZoomControl position="bottomleft" />
+        {/* Standard OpenStreetMap tiles. A muted CARTO basemap was tried, on
+            the theory that a quieter background lets the pins carry the
+            colour, but the client prefers this one: the green land and blue
+            water make the map read as a map at a glance. Their call. */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MarkerClusterLayer items={visibleItems} userRole={userRole} onReferral={handleReferral} />
+        <MarkerClusterLayer
+          ref={markersRef}
+          items={visibleItems}
+          userRole={userRole}
+          onReferral={handleReferral}
+          onMarkerHover={handleMarkerHover}
+          onMarkerClick={handleMarkerClick}
+        />
         {searchedLocation && radiusMiles && (
           <Circle center={searchedLocation} radius={radiusMiles * 1609.34}
             pathOptions={{ color: '#1a2a4a', weight: 1.5, opacity: 0.5, fillColor: '#1a2a4a', fillOpacity: 0.05 }} />
         )}
         {searchedLocation && <Marker position={searchedLocation} icon={homeIcon} interactive={false} zIndexOffset={1000} />}
       </MapContainer>
+      </div>
+
+      {/* ═══ SEARCH THIS AREA ═══ */}
+      {/* Bottom-centre rather than top-centre: the search card occupies the
+          top-left up to 420px, and a top-centred pill lands underneath it on
+          a laptop screen, visible but unclickable. The zoom control sits
+          bottom-left, so the bottom centre is the one uncontested spot. */}
+      {SEARCH_V2 && (mapMoved || viewportBounds) && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-1/2 z-[502] flex items-center gap-2">
+          {mapMoved && (
+            <button
+              type="button"
+              onClick={handleSearchThisArea}
+              data-testid="map-search-this-area"
+              className="inline-flex items-center gap-2 rounded-full bg-navy px-4 py-2 text-xs font-bold text-white shadow-lg shadow-navy/30 hover:bg-navy-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 transition-all"
+            >
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
+              Search this area
+            </button>
+          )}
+          {viewportBounds && (
+            <button
+              type="button"
+              onClick={handleClearViewport}
+              aria-label="Stop limiting results to this area"
+              data-testid="map-clear-viewport"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.92] backdrop-blur-xl px-3 py-2 text-[11px] font-semibold text-gray-600 border border-white/60 shadow-lg shadow-black/[0.08] hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 transition-all"
+            >
+              This area only
+              <X className="h-3 w-3" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ═══ CONTROLS PANEL (top-left) ═══ */}
       <div className="absolute top-4 left-4 z-[500] w-[calc(100%-7rem)] max-w-[420px]" style={{ pointerEvents: 'none' }}>
@@ -398,8 +795,48 @@ export function MapView({
           {/* Glass card container */}
           <div className="rounded-2xl bg-white/[0.92] backdrop-blur-xl shadow-xl shadow-black/[0.08] border border-white/60 p-3 space-y-2.5">
 
+            {/* One box that understands names, specialties, cities and ZIPs.
+                Behind NEXT_PUBLIC_SEARCH_V2 until the E2E specs move over. */}
+            {SEARCH_V2 && (
+              <SmartSearchBox
+                value={filterText}
+                onChange={setFilterText}
+                onSubmit={handleSearchSubmit}
+                onSelect={handleSuggestionSelect}
+                onRemove={handleSuggestionRemove}
+                groups={suggestionGroups}
+                resultCount={resultTotal}
+                loading={geocoding}
+                chipLabel={locationLabel || null}
+                onClearChip={handleClearLocation}
+                placeholder={
+                  isClinicViewer
+                    ? 'Search specialists, specialty, city or ZIP...'
+                    : 'Search providers, specialty, city or ZIP...'
+                }
+              />
+            )}
+
+            {/* Selected specialty / practice-area chips */}
+            {SEARCH_V2 && tagFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {tagFilters.map((tag) => (
+                  <Chip
+                    key={tag}
+                    selected
+                    onToggle={() => setTagFilters((c) => c.filter((t) => t !== tag))}
+                    aria-label={`Remove ${tag} filter`}
+                    data-testid="map-filter-chip"
+                  >
+                    {tag}
+                    <X className="h-3 w-3" aria-hidden="true" />
+                  </Chip>
+                ))}
+              </div>
+            )}
+
             {/* Location search */}
-            <div className="relative">
+            <div className={cn('relative', SEARCH_V2 && 'hidden')}>
               <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
               {locationLabel ? (
                 <div className="flex items-center w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-navy border border-gray-200/40">
@@ -410,19 +847,19 @@ export function MapView({
                 <>
                   <input ref={locationInputRef} type="text" value={locationQuery}
                     onChange={(e) => { setLocationQuery(e.target.value); if (e.target.value.length >= 3) setShowSuggestions(true) }}
-                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
+                    onFocus={() => { if (geocodeResults.length > 0) setShowSuggestions(true) }}
                     onKeyDown={handleLocationKeyDown}
                     placeholder="Search address, city, or ZIP..."
                     aria-label="Search a client address, city, or ZIP"
                     className="w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/15 focus:bg-white border border-gray-200/40 transition-all" />
                   {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />}
-                  {showSuggestions && suggestions.length > 0 && (
+                  {showSuggestions && geocodeResults.length > 0 && (
                     <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-2 rounded-xl bg-white shadow-2xl shadow-black/[0.12] border border-gray-200/60 overflow-hidden">
-                      {suggestions.map((s, i) => (
+                      {geocodeResults.map((s, i) => (
                         <button key={i} onClick={() => handleSelectSuggestion(s)} onMouseEnter={() => setActiveSuggestion(i)}
                           className={`w-full text-left px-4 py-3 text-sm transition-colors border-b border-gray-100/50 last:border-0 flex items-center gap-2 ${i === activeSuggestion ? 'bg-navy/[0.06]' : 'hover:bg-gray-50/80'}`}>
                           <MapPin className={`h-3.5 w-3.5 shrink-0 ${i === activeSuggestion ? 'text-navy' : 'text-gray-300'}`} />
-                          <span className={`font-medium ${i === activeSuggestion ? 'text-navy' : 'text-gray-700'}`}>{s.display_name.split(',').slice(0, 3).join(',')}</span>
+                          <span className={`font-medium ${i === activeSuggestion ? 'text-navy' : 'text-gray-700'}`}>{s.label}</span>
                         </button>
                       ))}
                     </div>
@@ -436,10 +873,14 @@ export function MapView({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mr-0.5">Radius</span>
                 {([null, 5, 10, 25, 50] as const).map((r) => (
-                  <button key={r ?? 'any'} onClick={() => setRadiusMiles(r)}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold border transition-all duration-200 ${radiusMiles === r ? 'bg-navy text-white border-navy shadow-sm' : 'bg-gray-50/80 text-gray-500 border-gray-200/40 hover:bg-gray-100/80'}`}>
+                  <Chip
+                    key={r ?? 'any'}
+                    selected={radiusMiles === r}
+                    onToggle={() => setRadiusMiles(r)}
+                    aria-label={r === null ? 'Any distance' : `Within ${r} miles`}
+                  >
                     {r === null ? 'Any' : `${r} mi`}
-                  </button>
+                  </Chip>
                 ))}
                 {radiusMiles && (
                   <span className="ml-auto text-[11px] font-semibold text-navy tabular-nums">{panelItems.length} within {radiusMiles} mi</span>
@@ -447,9 +888,10 @@ export function MapView({
               </div>
             )}
 
-            {/* Filter row */}
+            {/* Filter row. The text input is subsumed by SmartSearchBox under
+                the flag; the Available toggle stays either way. */}
             <div className="flex gap-2">
-              <div className="relative flex-1">
+              <div className={cn('relative flex-1', SEARCH_V2 && 'hidden')}>
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 z-10" />
                 <input ref={filterInputRef} type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)}
                   placeholder="Filter by name, specialty..."
@@ -458,13 +900,23 @@ export function MapView({
                   <button onClick={handleClearFilter} className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 transition-colors" aria-label="Clear filter"><X className="h-3 w-3" /></button>
                 )}
               </div>
-              <button
-                onClick={() => setShowAvailableOnly(!showAvailableOnly)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-semibold border transition-all duration-200 whitespace-nowrap ${showAvailableOnly ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/25' : 'bg-gray-50/80 text-gray-500 border-gray-200/40 hover:bg-gray-100/80'}`}
+              <Chip
+                selected={showAvailableOnly}
+                onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
+                tone="available"
+                aria-label="Show only providers accepting referrals"
+                icon={
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full transition-colors',
+                      showAvailableOnly ? 'bg-white' : 'bg-gray-300'
+                    )}
+                  />
+                }
               >
-                <span className={`h-1.5 w-1.5 rounded-full transition-colors ${showAvailableOnly ? 'bg-white' : 'bg-gray-300'}`} />
                 Available
-              </button>
+              </Chip>
             </div>
 
             {/* Divider */}
@@ -472,22 +924,34 @@ export function MapView({
 
             {/* Type toggles + counts */}
             <div className="flex items-center gap-2">
-              {showClinicsProp && <button
-                onClick={() => setShowClinics(!showClinics)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showClinics ? (isClinicViewer ? 'bg-teal-500 text-white border-teal-500 shadow-md shadow-teal-500/25' : 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/25') : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
-              >
-                {isClinicViewer ? <Stethoscope className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
-                {isClinicViewer ? 'Specialists' : 'Clinics'}
-                <span className={`ml-0.5 text-[10px] ${showClinics ? (isClinicViewer ? 'text-teal-100' : 'text-sky-100') : 'text-gray-300'}`}>{clinicCount}</span>
-              </button>}
-              {showLawyersProp && <button
-                onClick={() => setShowLawyers(!showLawyers)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition-all duration-200 ${showLawyers ? 'bg-red-500 text-white border-red-500 shadow-md shadow-red-500/25' : 'bg-gray-50/80 text-gray-400 border-gray-200/40 hover:bg-gray-100/80 hover:text-gray-500'}`}
-              >
-                <Scale className="h-3 w-3" />
-                Attorneys
-                <span className={`ml-0.5 text-[10px] ${showLawyers ? 'text-red-100' : 'text-gray-300'}`}>{lawyerCount}</span>
-              </button>}
+              {/* Toned to match the pins they control, so the legend is the
+                  control rather than a separate thing to learn. */}
+              {showClinicsProp && (
+                <Chip
+                  selected={showClinics}
+                  onToggle={() => setShowClinics(!showClinics)}
+                  tone="clinic"
+                  count={clinicCount}
+                  icon={
+                    isClinicViewer
+                      ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
+                      : <Building2 className="h-3 w-3" aria-hidden="true" />
+                  }
+                >
+                  {isClinicViewer ? 'Specialists' : 'Clinics'}
+                </Chip>
+              )}
+              {showLawyersProp && (
+                <Chip
+                  selected={showLawyers}
+                  onToggle={() => setShowLawyers(!showLawyers)}
+                  tone="lawyer"
+                  count={lawyerCount}
+                  icon={<Scale className="h-3 w-3" aria-hidden="true" />}
+                >
+                  Attorneys
+                </Chip>
+              )}
               {showLawyersProp && showLawyers && practiceAreaOptions.length > 1 && (
                 <select
                   value={practiceAreaFilter}
@@ -507,46 +971,124 @@ export function MapView({
       </div>
 
       {/* ═══ RIGHT BUTTONS ═══ */}
-      <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2">
+      <div
+        className={cn(
+          'absolute top-4 right-4 z-[500] flex flex-col gap-2',
+          // Clear of the docked panel at desktop widths.
+          panelDocked && showPanel && 'lg:right-[calc(400px+1rem)]'
+        )}
+      >
         <button onClick={handleGeolocate} disabled={locating}
           className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/[0.92] backdrop-blur-xl border border-white/60 shadow-xl shadow-black/[0.08] text-gray-500 hover:text-navy hover:bg-white disabled:opacity-50 transition-all"
           title="Use my location">
           {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Locate className="h-4 w-4" />}
         </button>
-        <button onClick={() => setShowPanel(!showPanel)}
-          className={`flex items-center justify-center h-10 w-10 rounded-xl backdrop-blur-xl border shadow-xl shadow-black/[0.08] transition-all duration-200 ${showPanel ? 'bg-navy text-white border-navy shadow-navy/30' : 'bg-white/[0.92] text-gray-500 border-white/60 hover:text-navy hover:bg-white'}`}
-          title="List view">
-          <ListIcon className="h-4 w-4" />
-        </button>
+        {/* On a phone this raises and lowers the sheet; everywhere else it
+            shows and hides the results list. */}
+        <div className="relative">
+          {/* A search can produce results while the list is hidden. The ring
+              says "something arrived", the badge says how much. */}
+          {panelAttention && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-xl bg-gold/50 animate-ping motion-reduce:hidden"
+            />
+          )}
+          <button
+            onClick={() => {
+              if (useSheet) setSheetSnap((current) => (current === 'peek' ? 'half' : 'peek'))
+              else togglePanel()
+            }}
+            aria-expanded={useSheet ? sheetSnap !== 'peek' : showPanel}
+            aria-label={
+              showPanel || (useSheet && sheetSnap !== 'peek')
+                ? 'Hide results list'
+                : `Show results list, ${resultTotal} ${resultTotal === 1 ? 'result' : 'results'}`
+            }
+            data-testid="map-panel-toggle"
+            className={cn(
+              'relative flex items-center justify-center h-10 w-10 rounded-xl backdrop-blur-xl border shadow-xl shadow-black/[0.08] transition-all duration-200',
+              (useSheet ? sheetSnap !== 'peek' : showPanel)
+                ? 'bg-navy text-white border-navy shadow-navy/30'
+                : 'bg-white/[0.92] text-gray-500 border-white/60 hover:text-navy hover:bg-white',
+              panelAttention && 'border-gold text-navy ring-2 ring-gold'
+            )}
+            title={showPanel ? 'Hide results' : 'Show results'}
+          >
+            <ListIcon className="h-4 w-4" />
+            {!showPanel && !useSheet && resultTotal > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 min-w-[18px] rounded-full bg-navy px-1 text-[10px] font-bold leading-[18px] text-white tabular-nums shadow-sm">
+                {resultTotal > 999 ? '999+' : resultTotal}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* ═══ SIDE PANEL ═══ */}
-      {showPanel && <div className="absolute inset-0 z-[600] bg-black/20 backdrop-blur-[2px] lg:hidden" onClick={() => setShowPanel(false)} />}
-      <div className={`absolute top-0 right-0 bottom-0 z-[601] w-full sm:w-[400px] bg-white/[0.97] backdrop-blur-xl shadow-2xl border-l border-gray-200/50 flex flex-col transition-transform duration-300 ease-out ${showPanel ? 'translate-x-0' : 'translate-x-full'}`}
-        style={{ willChange: 'transform' }}>
-        {/* Panel header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
-          <div>
-            <h2 className="font-heading text-sm font-bold text-navy tracking-tight">Nearest Results</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5 font-medium">
-              {panelItems.length} results found{searchedLocation && locationLabel ? ` near ${locationLabel}` : ''}
+      {/* ═══ RESULTS PANEL ═══
+          Three presentations of one list: a bottom sheet on phones, a sliding
+          overlay on tablets, a docked column on desktop. The list is what makes
+          results comparable, so on a wide screen it stays put rather than
+          sliding away the moment it is used. */}
+      {useSheet ? (
+        <Sheet
+          snap={sheetSnap}
+          onSnapChange={setSheetSnap}
+          aria-label="Search results"
+          data-testid="map-results-sheet"
+          handleLabel={
+            <p className="text-[11px] font-semibold text-gray-500">
+              {resultsSummary}
             </p>
+          }
+        >
+          {panelBody}
+        </Sheet>
+      ) : (
+        <>
+          {showPanel && (
+            <div
+              className="absolute inset-0 z-[600] bg-black/20 backdrop-blur-[2px] lg:hidden"
+              onClick={() => setShowPanel(false)}
+            />
+          )}
+          <div
+            className={cn(
+              'absolute top-0 right-0 bottom-0 z-[601] w-full sm:w-[400px] bg-white/[0.97] backdrop-blur-xl shadow-2xl border-l border-gray-200/50 flex flex-col transition-transform duration-300 ease-out',
+              showPanel ? 'translate-x-0' : 'translate-x-full',
+              // Docked rather than floating: no shadow, and the map is inset
+              // to make room. Still hideable — the toggle stays available.
+              SEARCH_V2 && 'lg:shadow-none'
+            )}
+            style={{ willChange: 'transform' }}
+          >
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+              <div>
+                <h2 className="font-heading text-sm font-bold text-navy tracking-tight">Nearest Results</h2>
+                <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{resultsSummary}</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={handleCopyList} disabled={panelItems.length === 0}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold border transition-all duration-200 disabled:opacity-40 ${copied ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-50 text-gray-600 border-gray-200/60 hover:bg-gray-100'}`}
+                  title="Copy the nearby clinics list">
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+                <button
+                  onClick={togglePanel}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold transition-colors"
+                  aria-label="Hide results list"
+                  data-testid="map-panel-close"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            {panelBody}
           </div>
-          <div className="flex items-center gap-1.5">
-            <button onClick={handleCopyList} disabled={panelItems.length === 0}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold border transition-all duration-200 disabled:opacity-40 ${copied ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-50 text-gray-600 border-gray-200/60 hover:bg-gray-100'}`}
-              title="Copy the nearby clinics list">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? 'Copied' : 'Copy'}
-            </button>
-            <button onClick={() => setShowPanel(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Close panel">
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-        {/* Panel list (virtualized) */}
-        <VirtualPanelList items={panelItems} onFocus={handleFocusItem} />
-      </div>
+        </>
+      )}
 
       {/* ═══ REFERRAL MODALS ═══ */}
       {showModal && selectedClinic && <ReferralFormModal clinic={selectedClinic} onClose={handleCloseModal} />}

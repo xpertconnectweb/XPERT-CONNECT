@@ -1,6 +1,18 @@
 import L from 'leaflet'
 
-export function createSvgIcon(color: string, borderColor: string, symbol: string, opacity = 1) {
+/**
+ * @param glyphColor Colour of the symbol inside the white disc. Defaults to
+ *   the pin fill, but brand turquoise on white is only ~2.3:1, so the
+ *   clinic pin passes a darker shade for the glyph while keeping the
+ *   recognisable fill.
+ */
+export function createSvgIcon(
+  color: string,
+  borderColor: string,
+  symbol: string,
+  opacity = 1,
+  glyphColor = color
+) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="32" height="42">
     <defs>
       <filter id="s${color.replace('#','')}" x="-20%" y="-10%" width="140%" height="130%">
@@ -10,7 +22,7 @@ export function createSvgIcon(color: string, borderColor: string, symbol: string
     <g filter="url(#s${color.replace('#','')})">
       <path d="M18 2C10.27 2 4 8.27 4 16c0 10 14 26 14 26s14-16 14-26c0-7.73-6.27-14-14-14z" fill="${color}" stroke="${borderColor}" stroke-width="1.5" opacity="${opacity}"/>
       <circle cx="18" cy="16" r="7" fill="white" opacity="${opacity > 0.6 ? 0.95 : 0.5}"/>
-      <text x="18" y="20" text-anchor="middle" font-size="11" font-weight="700" font-family="system-ui,sans-serif" fill="${color}" opacity="${opacity > 0.6 ? 1 : 0.6}">${symbol}</text>
+      <text x="18" y="20" text-anchor="middle" font-size="11" font-weight="700" font-family="system-ui,sans-serif" fill="${glyphColor}" opacity="${opacity > 0.6 ? 1 : 0.6}">${symbol}</text>
     </g>
   </svg>`
   return L.divIcon({
@@ -37,10 +49,72 @@ export const homeIcon = L.divIcon({
   className: '',
 })
 
-export const clinicAvailIcon = createSvgIcon('#0284c7', '#0369a1', '+')
-export const clinicUnavailIcon = createSvgIcon('#94a3b8', '#64748b', '+', 0.5)
-export const lawyerAvailIcon = createSvgIcon('#dc2626', '#b91c1c', '\u00A7')
-export const lawyerUnavailIcon = createSvgIcon('#94a3b8', '#64748b', '\u00A7', 0.5)
+/**
+ * Map palette.
+ *
+ * These were briefly turquoise and burgundy, to line the pins up with the
+ * navy / gold / turquoise used elsewhere on the professional side. The client
+ * preferred the original blue, so blue it is: recognising your own map at a
+ * glance beats theoretical palette tidiness.
+ *
+ * The glyph inside the white disc is darkened one step from the pin fill.
+ * Sky blue on white is about 3.9:1, which is thin for an 11px character.
+ */
+export const CLINIC_PIN = '#0284c7'
+export const CLINIC_PIN_BORDER = '#0369a1'
+const CLINIC_GLYPH = '#075985'
+export const LAWYER_PIN = '#dc2626'
+export const LAWYER_PIN_BORDER = '#b91c1c'
+const LAWYER_GLYPH = '#991b1b'
+const UNAVAILABLE_PIN = '#94a3b8'
+const UNAVAILABLE_BORDER = '#64748b'
+
+export const clinicAvailIcon = createSvgIcon(CLINIC_PIN, CLINIC_PIN_BORDER, '+', 1, CLINIC_GLYPH)
+export const clinicUnavailIcon = createSvgIcon(UNAVAILABLE_PIN, UNAVAILABLE_BORDER, '+', 0.5)
+export const lawyerAvailIcon = createSvgIcon(LAWYER_PIN, LAWYER_PIN_BORDER, '\u00A7', 1, LAWYER_GLYPH)
+export const lawyerUnavailIcon = createSvgIcon(UNAVAILABLE_PIN, UNAVAILABLE_BORDER, '\u00A7', 0.5)
+
+/**
+ * Emphasised pin for the row the cursor is on, or the record that was picked.
+ *
+ * Gold is the app's "this is the thing you acted on" colour, so a selected pin
+ * reads the same way a selected chip or a focus ring does. Scaled up rather
+ * than merely recoloured, because on a dense map a colour change alone is easy
+ * to miss \u2014 and impossible to see for anyone who cannot distinguish it.
+ */
+export function createHighlightIcon(
+  type: 'clinic' | 'lawyer',
+  state: 'hover' | 'selected'
+): L.DivIcon {
+  const fill = type === 'lawyer' ? LAWYER_PIN : CLINIC_PIN
+  const selected = state === 'selected'
+  const size = selected ? 44 : 38
+  const height = Math.round(size * (46 / 36))
+  const symbol = type === 'lawyer' ? '\u00A7' : '+'
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="${size}" height="${height}">
+    <defs>
+      <filter id="hl${type}${state}" x="-30%" y="-20%" width="160%" height="150%">
+        <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0,0,0,0.35)"/>
+      </filter>
+    </defs>
+    <g filter="url(#hl${type}${state})">
+      <path d="M18 2C10.27 2 4 8.27 4 16c0 10 14 26 14 26s14-16 14-26c0-7.73-6.27-14-14-14z"
+            fill="${fill}" stroke="#d4a84b" stroke-width="${selected ? 3 : 2}"/>
+      <circle cx="18" cy="16" r="7" fill="white"/>
+      <text x="18" y="20" text-anchor="middle" font-size="11" font-weight="700"
+            font-family="system-ui,sans-serif" fill="${fill}">${symbol}</text>
+    </g>
+  </svg>`
+
+  return L.divIcon({
+    html: svg,
+    iconSize: [size, height],
+    iconAnchor: [size / 2, height],
+    popupAnchor: [0, -(height - 4)],
+    className: '',
+  })
+}
 
 export function createClusterIcon(cluster: L.MarkerCluster) {
   const markers = cluster.getAllChildMarkers()
@@ -51,7 +125,7 @@ export function createClusterIcon(cluster: L.MarkerCluster) {
     if (t === 'lawyer') hasLawyer = true; else hasClinic = true
     if (hasClinic && hasLawyer) break
   }
-  const bg = hasClinic && hasLawyer ? '#1a2a4a' : hasLawyer ? '#dc2626' : '#0284c7'
+  const bg = hasClinic && hasLawyer ? '#1a2a4a' : hasLawyer ? LAWYER_PIN : CLINIC_PIN
   const size = count < 20 ? 36 : count < 100 ? 44 : 54
   return L.divIcon({
     html: `<div style="

@@ -174,3 +174,32 @@
 .leaflet-popup-tip {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
+
+/* ── Reduced motion ──
+   The site animates a fair amount: fade-ups on every section, a spinning map
+   loader, sliding panels, Leaflet's own pan and zoom easing. None of it was
+   gated, which for anyone who has asked their OS to reduce motion is not a
+   preference being ignored so much as a symptom being triggered. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Leaflet animates pan and zoom through CSS transitions on the tile panes.
+     Collapsing the duration above already stops it, but the marker-cluster
+     spiderfy legs are drawn as SVG paths and need their own opt-out. */
+  .leaflet-cluster-anim .leaflet-marker-icon,
+  .leaflet-cluster-anim .leaflet-marker-shadow,
+  .leaflet-cluster-spider-leg {
+    transition: none !important;
+  }
+}

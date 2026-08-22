@@ -1,2 +1,5 @@
 export { Button } from './Button'
 export { FloatingButton } from './FloatingButton'
+export { Chip, type ChipProps, type ChipTone } from './Chip'
+export { EmptyState, type EmptyStateProps } from './EmptyState'
+export { Sheet, type SheetProps, type SheetSnap } from './Sheet'
