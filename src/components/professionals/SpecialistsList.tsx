@@ -3,10 +3,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Send, Stethoscope, MapPin } from 'lucide-react'
-import type { Clinic } from '@/types/professionals'
+import { buildSearchIndex, search, toSearchDocs } from '@/lib/search'
+import { countyLabel } from '@/lib/counties'
+import type { DecoratedClinic } from '@/types/professionals'
 import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
 
-type ClinicOption = Pick<Clinic, 'id' | 'name' | 'region' | 'county' | 'specialties'>
+/**
+ * Only a subset of the clinic record is rendered here, but `lat`/`lng`,
+ * `city` and `zipCode` are still needed so the shared search core can index
+ * the row (and so a placeholder at (0,0) is dropped the same way it is on the
+ * map). The API returns them regardless.
+ */
+type ClinicOption = Pick<
+  DecoratedClinic,
+  'id' | 'name' | 'region' | 'county' | 'specialties' | 'lat' | 'lng' | 'available' | 'city' | 'state' | 'zipCode'
+>
 
 export function SpecialistsList() {
   const router = useRouter()
@@ -30,23 +41,21 @@ export function SpecialistsList() {
     return () => { cancelled = true }
   }, [])
 
-  const filtered = useMemo(() => {
-    // Hide clinics whose only specialties are variants of "Chiropractic" —
-    // they are not considered medical specialists in this product.
-    const nonChiropractic = clinics.filter((c) => {
+  // Hide clinics whose only specialties are variants of "Chiropractic" —
+  // they are not considered medical specialists in this product. Applied
+  // before indexing so the exclusion cannot be bypassed by a search term.
+  const index = useMemo(() => {
+    const specialists = clinics.filter((c) => {
       if (!c.specialties || c.specialties.length === 0) return true
       return c.specialties.some((s) => !/chiroprac/i.test(s))
     })
-    const q = query.trim().toLowerCase()
-    if (!q) return nonChiropractic
-    return nonChiropractic.filter((c) => {
-      const haystack = [c.name, c.region, c.county, ...(c.specialties ?? [])]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-      return haystack.includes(q)
-    })
-  }, [clinics, query])
+    return buildSearchIndex(toSearchDocs(specialists, []))
+  }, [clinics])
+
+  const filtered = useMemo(
+    () => search(index, query).hits.map((hit) => hit.doc.source),
+    [index, query]
+  )
 
   return (
     <div className="space-y-5">
@@ -106,7 +115,7 @@ export function SpecialistsList() {
                       </span>
                     )}
                     {clinic.county && (
-                      <span className="text-[11px] text-gray-400">{clinic.county} County</span>
+                      <span className="text-[11px] text-gray-400">{countyLabel(clinic.county)}</span>
                     )}
                   </div>
                   {clinic.specialties && clinic.specialties.length > 0 && (
