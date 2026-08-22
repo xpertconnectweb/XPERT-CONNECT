@@ -39,16 +39,6 @@ import type { DecoratedClinic, DecoratedLawyer } from '@/types/professionals'
 L.Marker.prototype.options.icon = clinicAvailIcon
 
 /**
- * The unified search box ships behind a flag.
- *
- * The matching pipeline below is shared by both paths — it was already proven
- * on the attorney directory and the specialists list. What the flag gates is
- * the visible replacement of the two old inputs, which is the part that can
- * disrupt muscle memory and the E2E specs.
- */
-const SEARCH_V2 = process.env.NEXT_PUBLIC_SEARCH_V2 === '1'
-
-/**
  * How far the map has to move before "Search this area" is offered. Opening a
  * popup nudges the centre slightly, and a pill that appears every time you
  * click a pin is noise.
@@ -104,7 +94,6 @@ export function MapView({
   const [showClinics, setShowClinics] = useState(showClinicsProp)
   const [showLawyers, setShowLawyers] = useState(showLawyersProp)
   const [locationQuery, setLocationQuery] = useState('')
-  const [showSuggestions, setShowSuggestions] = useState(false)
   // Selected specialty / practice-area chips, applied as a filter.
   const [tagFilters, setTagFilters] = useState<string[]>([])
   const [locating, setLocating] = useState(false)
@@ -112,7 +101,6 @@ export function MapView({
   // Anchor point for "clinics near the client's home": the searched/geolocated coordinates.
   const [searchedLocation, setSearchedLocation] = useState<[number, number] | null>(null)
   const [radiusMiles, setRadiusMiles] = useState<number | null>(null)
-  const [activeSuggestion, setActiveSuggestion] = useState(0)
   const [copied, setCopied] = useState(false)
   const autoSelectRef = useRef(false)
   /** Blocks URL writes until the incoming query string has been consumed. */
@@ -156,8 +144,8 @@ export function MapView({
   // server, so there is no hydration mismatch to worry about.
   const isPhone = useMediaQuery('(max-width: 639px)')
   const isDesktop = useMediaQuery('(min-width: 1024px)')
-  const useSheet = SEARCH_V2 && isPhone
-  const panelDocked = SEARCH_V2 && isDesktop
+  const useSheet = isPhone
+  const panelDocked = isDesktop
   /**
    * Draws the eye to the results toggle when a search has produced results the
    * user cannot currently see. Without it, collapsing the panel means new
@@ -169,9 +157,6 @@ export function MapView({
 
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<MarkerRegistry | null>(null)
-  const filterInputRef = useRef<HTMLInputElement>(null)
-  const locationInputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true); setError(false)
@@ -233,29 +218,12 @@ export function MapView({
   // caches server-side and keeps clients' home addresses off a third party.
   const { results: geocodeResults, loading: geocoding } = useGeocoder(locationQuery)
 
-  // Keyboard navigation resets to the top suggestion whenever the list changes.
-  useEffect(() => { setActiveSuggestion(0) }, [geocodeResults])
-
-  useEffect(() => {
-    setShowSuggestions(geocodeResults.length > 0)
-  }, [geocodeResults])
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
-          locationInputRef.current && !locationInputRef.current.contains(e.target as Node)) setShowSuggestions(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
   const applyPlace = useCallback(
     (lat: number, lng: number, label: string, zoom: number) => {
       setMapCenter([lat, lng])
       setSearchedLocation([lat, lng])
       setLocationLabel(label)
       setLocationQuery('')
-      setShowSuggestions(false)
       mapRef.current?.setView([lat, lng], zoom)
     },
     []
@@ -298,14 +266,6 @@ export function MapView({
     setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
   }, [initialCenter, initialZoom])
 
-  // Keyboard navigation for the location suggestions dropdown.
-  const handleLocationKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || geocodeResults.length === 0) return
-    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSuggestion((i) => Math.min(i + 1, geocodeResults.length - 1)) }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSuggestion((i) => Math.max(i - 1, 0)) }
-    else if (e.key === 'Enter') { e.preventDefault(); handleSelectSuggestion(geocodeResults[activeSuggestion] ?? geocodeResults[0]) }
-    else if (e.key === 'Escape') { setShowSuggestions(false) }
-  }, [showSuggestions, geocodeResults, activeSuggestion, handleSelectSuggestion])
 
   const viewerClinicId = session?.user?.role === 'clinic' ? session?.user?.clinicId : undefined
   const isClinicViewer = session?.user?.role === 'clinic'
@@ -491,7 +451,7 @@ export function MapView({
   useEffect(() => {
     // Never write before the initial state has been read, or the first render
     // would wipe the very parameters it was handed.
-    if (!SEARCH_V2 || !hydratedRef.current) return
+    if (!hydratedRef.current) return
     const next = `${window.location.pathname}${debouncedUrlQuery}`
     if (next === `${window.location.pathname}${window.location.search}`) return
     router.replace(next, { scroll: false })
@@ -547,7 +507,7 @@ export function MapView({
   // ran first, latched "not desktop", and left the panel shut on every wide
   // screen. Two effects racing over the same question.
   useEffect(() => {
-    if (!SEARCH_V2 || panelDefaultedRef.current) return
+    if (panelDefaultedRef.current) return
     if (typeof window === 'undefined' || !window.matchMedia) return
     panelDefaultedRef.current = true
 
@@ -639,7 +599,6 @@ export function MapView({
   const handleCloseModal = useCallback(() => { setShowModal(false); setSelectedClinic(null) }, [])
   const handleCloseClinicModal = useCallback(() => { setShowClinicModal(false); setSelectedLawyer(null) }, [])
   const handleCloseSpecialistModal = useCallback(() => { setShowSpecialistModal(false); setSelectedTargetClinic(null) }, [])
-  const handleClearFilter = useCallback(() => { setFilterText(''); filterInputRef.current?.focus() }, [])
   // Read through a ref, because the `moveend` listener is bound once when the
   // map is ready and would otherwise keep comparing against whatever the
   // centre was at mount.
@@ -760,7 +719,7 @@ export function MapView({
           top-left up to 420px, and a top-centred pill lands underneath it on
           a laptop screen, visible but unclickable. The zoom control sits
           bottom-left, so the bottom centre is the one uncontested spot. */}
-      {SEARCH_V2 && (mapMoved || viewportBounds) && (
+      {(mapMoved || viewportBounds) && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-1/2 z-[502] flex items-center gap-2">
           {mapMoved && (
             <button
@@ -796,8 +755,7 @@ export function MapView({
           <div className="rounded-2xl bg-white/[0.92] backdrop-blur-xl shadow-xl shadow-black/[0.08] border border-white/60 p-3 space-y-2.5">
 
             {/* One box that understands names, specialties, cities and ZIPs.
-                Behind NEXT_PUBLIC_SEARCH_V2 until the E2E specs move over. */}
-            {SEARCH_V2 && (
+                Replaces the two unrelated inputs the map used to have. */}
               <SmartSearchBox
                 value={filterText}
                 onChange={setFilterText}
@@ -815,10 +773,9 @@ export function MapView({
                     : 'Search providers, specialty, city or ZIP...'
                 }
               />
-            )}
 
             {/* Selected specialty / practice-area chips */}
-            {SEARCH_V2 && tagFilters.length > 0 && (
+            {tagFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
                 {tagFilters.map((tag) => (
                   <Chip
@@ -835,38 +792,6 @@ export function MapView({
               </div>
             )}
 
-            {/* Location search */}
-            <div className={cn('relative', SEARCH_V2 && 'hidden')}>
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-              {locationLabel ? (
-                <div className="flex items-center w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-navy border border-gray-200/40">
-                  <span className="truncate font-semibold">{locationLabel}</span>
-                  <button onClick={handleClearLocation} className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 transition-colors" aria-label="Clear location"><X className="h-3.5 w-3.5" /></button>
-                </div>
-              ) : (
-                <>
-                  <input ref={locationInputRef} type="text" value={locationQuery}
-                    onChange={(e) => { setLocationQuery(e.target.value); if (e.target.value.length >= 3) setShowSuggestions(true) }}
-                    onFocus={() => { if (geocodeResults.length > 0) setShowSuggestions(true) }}
-                    onKeyDown={handleLocationKeyDown}
-                    placeholder="Search address, city, or ZIP..."
-                    aria-label="Search a client address, city, or ZIP"
-                    className="w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/15 focus:bg-white border border-gray-200/40 transition-all" />
-                  {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />}
-                  {showSuggestions && geocodeResults.length > 0 && (
-                    <div ref={suggestionsRef} className="absolute z-[501] top-full left-0 right-0 mt-2 rounded-xl bg-white shadow-2xl shadow-black/[0.12] border border-gray-200/60 overflow-hidden">
-                      {geocodeResults.map((s, i) => (
-                        <button key={i} onClick={() => handleSelectSuggestion(s)} onMouseEnter={() => setActiveSuggestion(i)}
-                          className={`w-full text-left px-4 py-3 text-sm transition-colors border-b border-gray-100/50 last:border-0 flex items-center gap-2 ${i === activeSuggestion ? 'bg-navy/[0.06]' : 'hover:bg-gray-50/80'}`}>
-                          <MapPin className={`h-3.5 w-3.5 shrink-0 ${i === activeSuggestion ? 'text-navy' : 'text-gray-300'}`} />
-                          <span className={`font-medium ${i === activeSuggestion ? 'text-navy' : 'text-gray-700'}`}>{s.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
 
             {/* Radius filter — only shown once a client location is set */}
             {locationLabel && (
@@ -888,18 +813,9 @@ export function MapView({
               </div>
             )}
 
-            {/* Filter row. The text input is subsumed by SmartSearchBox under
-                the flag; the Available toggle stays either way. */}
+            {/* Availability toggle. The text filter it used to sit beside is
+                now part of the search box above. */}
             <div className="flex gap-2">
-              <div className={cn('relative flex-1', SEARCH_V2 && 'hidden')}>
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 z-10" />
-                <input ref={filterInputRef} type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)}
-                  placeholder="Filter by name, specialty..."
-                  className="w-full rounded-lg bg-gray-50/80 py-2 pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-navy/15 focus:bg-white border border-gray-200/40 transition-all" />
-                {filterText && (
-                  <button onClick={handleClearFilter} className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 transition-colors" aria-label="Clear filter"><X className="h-3 w-3" /></button>
-                )}
-              </div>
               <Chip
                 selected={showAvailableOnly}
                 onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
@@ -1058,7 +974,7 @@ export function MapView({
               showPanel ? 'translate-x-0' : 'translate-x-full',
               // Docked rather than floating: no shadow, and the map is inset
               // to make room. Still hideable — the toggle stays available.
-              SEARCH_V2 && 'lg:shadow-none'
+              'lg:shadow-none'
             )}
             style={{ willChange: 'transform' }}
           >

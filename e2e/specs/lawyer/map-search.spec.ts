@@ -1,20 +1,12 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * The unified search box, behind NEXT_PUBLIC_SEARCH_V2.
- *
- * Run with the flag set:
- *   NEXT_PUBLIC_SEARCH_V2=1 npm run test:e2e -- --project=chromium-lawyer
+ * The unified search box.
  *
  * Deliberately asserts on the box and the results panel rather than on Leaflet
- * markers — see the note in map-and-refer.spec.ts about marker flakiness.
+ * markers - see the note in map-and-refer.spec.ts about marker flakiness.
  */
 test.describe('unified map search', () => {
-  test.skip(
-    process.env.NEXT_PUBLIC_SEARCH_V2 !== '1',
-    'SmartSearchBox is behind NEXT_PUBLIC_SEARCH_V2'
-  )
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/professionals/map')
     await expect(page.getByTestId('map-search-input')).toBeVisible({ timeout: 20_000 })
@@ -187,10 +179,6 @@ test.describe('unified map search', () => {
 })
 
 test.describe('results sheet on a phone', () => {
-  test.skip(
-    process.env.NEXT_PUBLIC_SEARCH_V2 !== '1',
-    'SmartSearchBox is behind NEXT_PUBLIC_SEARCH_V2'
-  )
   test.use({ viewport: { width: 390, height: 844 } })
 
   test('presents the results as a draggable sheet, not a drawer', async ({ page }) => {

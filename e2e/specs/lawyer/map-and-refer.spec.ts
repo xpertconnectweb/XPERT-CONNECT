@@ -14,16 +14,15 @@ test('lawyer map renders and the side panel filters by clinic name', async ({
 
   await page.goto('/professionals/map')
 
-  // The side panel toggle isn't always open by default. Use the filter input,
-  // which lives in the map controls regardless of panel state.
-  const filter = page.getByPlaceholder('Filter by name, specialty')
-  await expect(filter).toBeVisible({ timeout: 30_000 })
-  await filter.fill(clinic.name as string)
+  // One search box now covers both jobs the two old inputs did.
+  const search = page.getByTestId('map-search-input')
+  await expect(search).toBeVisible({ timeout: 30_000 })
+  await search.fill(clinic.name as string)
 
-  // After filtering, the target clinic name should appear in the panel.
-  // Open the panel if it's collapsed.
-  const panelToggle = page.getByRole('button', { name: /list/i }).first()
-  if (await panelToggle.count()) {
+  // The results panel is docked at desktop widths and an overlay below them,
+  // so open it only when it is not already showing.
+  const panelToggle = page.getByTestId('map-panel-toggle')
+  if ((await panelToggle.getAttribute('aria-expanded')) !== 'true') {
     await panelToggle.click().catch(() => {})
   }
   await expect(page.getByText(clinic.name as string).first()).toBeVisible({
