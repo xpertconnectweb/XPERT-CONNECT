@@ -30,6 +30,25 @@ const realSetTimeout = globalThis.setTimeout
   return realSetTimeout(fn as (...a: unknown[]) => void, 0, ...rest)
 }) as typeof setTimeout
 
+// jsdom implements no layout, so it ships neither `scrollIntoView` nor
+// `ResizeObserver`. Any component that keeps a highlighted item in view (the
+// search combobox, virtualized lists) or measures its own container (the
+// bottom sheet, the results panel) would otherwise throw during a passive
+// effect. Both stubs report zero-sized boxes, which is honest: jsdom has no
+// layout to report.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn()
+}
+
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class ResizeObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
+}
+
 afterEach(() => {
   cleanup()
 })

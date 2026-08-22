@@ -1,7 +1,12 @@
 import { supabaseAdmin } from './supabase'
 import { rowToModel, rowsToModels, modelToRow } from './mappers'
 import { resolveCatalog } from './practice-areas'
-import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, NewsletterSubscriber } from '@/types/professionals'
+import { parseAddress } from './address'
+import { canonicalizeCounty } from './counties'
+import { sanitizeRegion } from './regions'
+import { sanitizeSpecialties } from './clinic-specialties'
+import { normalizeZip } from './search/text'
+import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, NewsletterSubscriber, DecoratedClinic, DecoratedLawyer } from '@/types/professionals'
 
 export type { Contact, NewsletterSubscriber }
 
@@ -33,47 +38,125 @@ export async function getUserByUsername(
 }
 
 // Clinics
-export async function getClinics(): Promise<Clinic[]> {
+const CLINIC_COLUMNS =
+  'id, name, address, lat, lng, phone, specialties, email, website, region, county, available'
+
+/**
+ * Attaches derived geography and canonicalizes the messy free-text columns.
+ *
+ * Applied on every read path, which is the single choke point every consumer
+ * goes through — API routes, admin pages, scripts and future SSR alike. Doing
+ * it here rather than per-route is what keeps the four map/list surfaces from
+ * drifting apart.
+ */
+function decorateClinic(clinic: Clinic): DecoratedClinic {
+  const parts = parseAddress(clinic.address)
+  return {
+    ...clinic,
+    city: parts.city,
+    state: parts.state,
+    zipCode: parts.zip,
+    region: sanitizeRegion(clinic.region) ?? undefined,
+    county: canonicalizeCounty(clinic.county) ?? undefined,
+    specialties: sanitizeSpecialties(clinic.specialties),
+  }
+}
+
+function decorateLawyer(lawyer: Lawyer): DecoratedLawyer {
+  const parts = parseAddress(lawyer.address)
+  return {
+    ...lawyer,
+    city: parts.city,
+    state: parts.state,
+    // `lawyers.zip_code` is populated on every row; the parsed value is only a
+    // fallback for records added without it.
+    zipCode: normalizeZip(lawyer.zipCode) ?? parts.zip ?? undefined,
+    county: canonicalizeCounty(lawyer.county) ?? undefined,
+    // NB: `lawyers.region` holds a CITY name, not a region. Left alone rather
+    // than run through the region canonicalizer, which would reject all of it.
+  }
+}
+
+export async function getClinics(): Promise<DecoratedClinic[]> {
   const { data, error } = await supabaseAdmin
     .from('clinics')
-    .select('id, name, address, lat, lng, phone, specialties, email, website, region, county, available')
+    .select(CLINIC_COLUMNS)
   if (error) {
     console.error('getClinics error:', error)
     return []
   }
-  return rowsToModels<Clinic>(data)
+  return rowsToModels<Clinic>(data).map(decorateClinic)
 }
 
-export async function getClinicsByState(state: string): Promise<Clinic[]> {
-  // State abbreviation pattern in address: ", FL " or ", MN "
-  const pattern = `%, ${state} %`
+export async function getClinicsByState(state: string): Promise<DecoratedClinic[]> {
+  // The DB filter is a deliberately loose superset and the JS filter below is
+  // what makes it correct — the two must never be separated.
+  //
+  // The previous pattern was `%, ${state} %`, which requires a trailing space
+  // and therefore missed every city-only address ("Melbourne, FL"). That hid 12
+  // clinics from every state-scoped user. `.or()` is not an option: PostgREST
+  // splits its argument on commas and these patterns contain commas.
+  //
+  // The superset over-matches on purpose ("Flagler" contains "fl"), so the
+  // authoritative decision is `parseAddress`, which reads the state from the
+  // end of the string where it actually belongs.
   const { data, error } = await supabaseAdmin
     .from('clinics')
-    .select('id, name, address, lat, lng, phone, specialties, email, website, region, county, available')
-    .ilike('address', pattern)
+    .select(CLINIC_COLUMNS)
+    .ilike('address', `%${state}%`)
   if (error) {
     console.error('getClinicsByState error:', error)
     return []
   }
   return rowsToModels<Clinic>(data)
+    .map(decorateClinic)
+    .filter((clinic) => clinic.state === state)
+}
+
+/**
+ * Clinics by explicit id list, decorated like every other read path.
+ *
+ * Exists so `/api/partners/clinics` does not have to query Supabase directly —
+ * it used to, which meant it silently missed the normalization and derived
+ * geography that every other surface gets.
+ *
+ * THROWS on a database error, unlike its neighbours here which log and return
+ * []. That is deliberate: the partner map has a distinct "Connection Error /
+ * Try Again" state, and swallowing the failure into an empty array would render
+ * an outage as "there are no clinics" — which looks like data loss and gives
+ * the user nothing to retry.
+ */
+export async function getClinicsByIds(
+  ids: readonly string[]
+): Promise<DecoratedClinic[]> {
+  if (ids.length === 0) return []
+  const { data, error } = await supabaseAdmin
+    .from('clinics')
+    .select(CLINIC_COLUMNS)
+    .in('id', ids as string[])
+  if (error) {
+    console.error('getClinicsByIds error:', error)
+    throw new Error(`getClinicsByIds failed: ${error.message}`)
+  }
+  return rowsToModels<Clinic>(data).map(decorateClinic)
 }
 
 export async function getClinicById(
   id: string
-): Promise<Clinic | undefined> {
+): Promise<DecoratedClinic | undefined> {
   const { data, error } = await supabaseAdmin
     .from('clinics')
-    .select('id, name, address, lat, lng, phone, specialties, email, website, region, county, available')
+    .select(CLINIC_COLUMNS)
     .eq('id', id)
     .single()
   if (error || !data) return undefined
-  return rowToModel<Clinic>(data)
+  return decorateClinic(rowToModel<Clinic>(data))
 }
 
 // Lawyers
 const LAWYER_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, email, website, region, county, zip_code, available'
 
-export async function getLawyers(): Promise<Lawyer[]> {
+export async function getLawyers(): Promise<DecoratedLawyer[]> {
   const { data, error } = await supabaseAdmin
     .from('lawyers')
     .select(LAWYER_COLUMNS)
@@ -81,30 +164,33 @@ export async function getLawyers(): Promise<Lawyer[]> {
     console.error('getLawyers error:', error)
     return []
   }
-  return rowsToModels<Lawyer>(data)
+  return rowsToModels<Lawyer>(data).map(decorateLawyer)
 }
 
-export async function getLawyersByState(state: string): Promise<Lawyer[]> {
-  const pattern = `%, ${state} %`
+export async function getLawyersByState(state: string): Promise<DecoratedLawyer[]> {
+  // Same loose-superset-plus-JS-filter approach as getClinicsByState; see the
+  // comment there for why the old `%, ST %` pattern was wrong.
   const { data, error } = await supabaseAdmin
     .from('lawyers')
     .select(LAWYER_COLUMNS)
-    .ilike('address', pattern)
+    .ilike('address', `%${state}%`)
   if (error) {
     console.error('getLawyersByState error:', error)
     return []
   }
   return rowsToModels<Lawyer>(data)
+    .map(decorateLawyer)
+    .filter((lawyer) => lawyer.state === state)
 }
 
-export async function getLawyerById(id: string): Promise<Lawyer | undefined> {
+export async function getLawyerById(id: string): Promise<DecoratedLawyer | undefined> {
   const { data, error } = await supabaseAdmin
     .from('lawyers')
     .select(LAWYER_COLUMNS)
     .eq('id', id)
     .single()
   if (error || !data) return undefined
-  return rowToModel<Lawyer>(data)
+  return decorateLawyer(rowToModel<Lawyer>(data))
 }
 
 export async function createLawyer(lawyer: Lawyer): Promise<Lawyer> {

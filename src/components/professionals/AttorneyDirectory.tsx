@@ -5,7 +5,10 @@ import {
   Search, Scale, MapPin, Phone, Copy, Check, FilterX,
   HeartPulse, Gavel, Users, ScrollText, Plane, Briefcase, Home,
 } from 'lucide-react'
-import type { Lawyer } from '@/types/professionals'
+import { buildSearchIndex, search, toSearchDocs } from '@/lib/search'
+import type { SearchFilters } from '@/lib/search'
+import { countyLabel } from '@/lib/counties'
+import type { DecoratedLawyer } from '@/types/professionals'
 import type { SidebarIcon } from '@/components/shared/BaseSidebar'
 
 /**
@@ -30,14 +33,8 @@ function metaFor(area: string) {
   return AREA_META[area] ?? DEFAULT_META
 }
 
-/** "1000 Legion Pl #1000, Orlando, FL 32801" → "Orlando" */
-function cityOf(address: string): string {
-  const parts = address.split(',').map((p) => p.trim())
-  return parts.length >= 2 ? parts[parts.length - 2] : ''
-}
-
 export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
-  const [lawyers, setLawyers] = useState<Lawyer[]>([])
+  const [lawyers, setLawyers] = useState<DecoratedLawyer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
@@ -49,7 +46,7 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
     let cancelled = false
     fetch('/api/directory/lawyers')
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to load attorneys'))))
-      .then((data: Lawyer[]) => {
+      .then((data: DecoratedLawyer[]) => {
         if (!cancelled) setLawyers(data)
       })
       .catch((err) => {
@@ -89,18 +86,16 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
     [catalog, areaCounts, area]
   )
 
+  // Built once per fetch, not per keystroke: tokenizing 176 firms costs more
+  // than the search itself.
+  const index = useMemo(() => buildSearchIndex(toSearchDocs([], lawyers)), [lawyers])
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return scoped.filter((l) => {
-      if (area && !l.practiceAreas.includes(area)) return false
-      if (!q) return true
-      const haystack = [l.name, l.address, l.region, l.county, ...l.practiceAreas]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-      return haystack.includes(q)
-    })
-  }, [scoped, area, query])
+    const filters: SearchFilters = {}
+    if (area) filters.tags = [area]
+    if (county) filters.counties = [county]
+    return search(index, query, { filters }).hits.map((hit) => hit.doc.source)
+  }, [index, query, area, county])
 
   const hasActiveFilters = Boolean(area || county || query)
 
@@ -110,7 +105,7 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
     setQuery('')
   }
 
-  const copyContact = async (lawyer: Lawyer) => {
+  const copyContact = async (lawyer: DecoratedLawyer) => {
     const lines = [lawyer.name, lawyer.address, lawyer.phone, lawyer.practiceAreas.join(', ')]
     try {
       await navigator.clipboard.writeText(lines.filter(Boolean).join('\n'))
@@ -192,7 +187,9 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
             <option value="">All counties ({countyOptions.length})</option>
             {countyOptions.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {/* Stored bare so it matches the clinics table; rendered with
+                    the suffix, which is how people read a county name. */}
+                {countyLabel(c)}
               </option>
             ))}
           </select>
@@ -240,7 +237,9 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
         ) : (
           <ul className="divide-y divide-gray-100">
             {filtered.map((lawyer) => {
-              const city = lawyer.region || cityOf(lawyer.address)
+              // `region` on a lawyer row is really a city name; `city` is the
+              // value parsed from the address on the read path.
+              const city = lawyer.region || lawyer.city || ''
               return (
                 <li
                   key={lawyer.id}
@@ -272,7 +271,7 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
                         </span>
                       )}
                       {lawyer.county && (
-                        <span className="text-[11px] text-gray-400">{lawyer.county}</span>
+                        <span className="text-[11px] text-gray-400">{countyLabel(lawyer.county)}</span>
                       )}
                     </div>
 

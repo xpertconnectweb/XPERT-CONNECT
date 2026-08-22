@@ -22,14 +22,11 @@ test('a clinic with (0, 0) coords is hidden from the map', async ({
   // Wait for the map to settle.
   await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {})
 
-  // Searching the side panel for the clinic name — it should not appear.
-  // MapView's filter is the only relevant input here ("Filter by name,
-  // specialty..."); /search/i used to match nothing on this page (the page
-  // has no "Search" placeholder), which silently no-op'd the filter.
-  const search = page.getByPlaceholder('Filter by name, specialty')
-  if (await search.count()) {
-    await search.fill(placeholder.name as string)
-  }
+  // Searching for the clinic by name — it must not appear. Records at (0,0)
+  // are dropped when the search index is built, so no query can surface them.
+  const search = page.getByTestId('map-search-input')
+  await expect(search).toBeVisible({ timeout: 30_000 })
+  await search.fill(placeholder.name as string)
 
   // Wait briefly for the filter to apply.
   await page.waitForTimeout(800)

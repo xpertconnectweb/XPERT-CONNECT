@@ -18,7 +18,7 @@ export function buildPopupContent(
   const tagBg = item.type === 'clinic' ? '#eff6ff' : '#fef2f2'
   const tagColor = item.type === 'clinic' ? '#1e40af' : '#991b1b'
   const typeBg = item.type === 'clinic' ? '#e0f2fe' : '#fee2e2'
-  const typeColor = item.type === 'clinic' ? '#0369a1' : '#dc2626'
+  const typeColor = item.type === 'clinic' ? '#0369a1' : '#b91c1c'
   const iconBg = item.type === 'clinic' ? 'linear-gradient(135deg,#0284c7,#0ea5e9)' : 'linear-gradient(135deg,#dc2626,#ef4444)'
   const symbol = item.type === 'clinic' ? '+' : '\u00A7'
   const typeLabel = item.type === 'clinic' ? 'Clinic' : 'Attorney'
@@ -40,10 +40,15 @@ export function buildPopupContent(
     <div style="height:1px;background:#f1f5f9;margin:0 0 10px"></div>
     <div style="font-size:12px;color:#475569;line-height:1.5">`
 
-  if (item.address) {
+  // The professionals and partners maps withhold the street address, so fall
+  // back to the coarse location. Without this the popup showed no location at
+  // all on two of the three maps.
+  const where =
+    item.address ?? [item.city, item.state, item.zipCode].filter(Boolean).join(', ')
+  if (where) {
     html += `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px">
         <span style="color:#94a3b8;flex-shrink:0;margin-top:1px;font-size:13px">&#9906;</span>
-        <span>${escapeHtml(item.address)}</span>
+        <span>${escapeHtml(where)}</span>
       </div>`
   }
 
@@ -74,18 +79,33 @@ export function buildPopupContent(
 
   container.innerHTML = html
 
-  // Lawyer user → click on a clinic marker shows Send Referral.
-  // Clinic user → click on a lawyer marker shows Refer Patient.
-  const lawyerCanReferToClinic = userRole === 'lawyer' && item.type === 'clinic'
-  const clinicCanReferToLawyer = userRole === 'clinic' && item.type === 'lawyer'
+  // Who may refer to whom:
+  //   lawyer -> clinic   send a client for treatment
+  //   clinic -> lawyer   send a patient for representation
+  //   clinic -> clinic   send a patient to a medical specialist
+  //   lawyer -> lawyer   never
+  //
+  // The clinic -> clinic case was missing until 2026-08-22. The gating was
+  // written in May, when clinic users saw attorney pins; in July the map
+  // switched them to seeing other clinics instead, and MapView gained a branch
+  // routing clinic->clinic to MedicalSpecialistReferralModal — but this file
+  // was not updated, so that branch was unreachable and clinic users had no
+  // Refer button on any marker at all. MapView already excludes the viewer's
+  // own clinic, so a clinic can never be offered a referral to itself.
+  const isLawyerViewer = userRole === 'lawyer'
+  const isClinicViewer = userRole === 'clinic'
+  const canRefer =
+    (isLawyerViewer && item.type === 'clinic') ||
+    (isClinicViewer && item.type === 'lawyer') ||
+    (isClinicViewer && item.type === 'clinic')
 
-  if ((lawyerCanReferToClinic || clinicCanReferToLawyer) && item.available) {
+  if (canRefer && item.available) {
     const btn = document.createElement('button')
-    btn.textContent = clinicCanReferToLawyer ? 'Refer Patient' : 'Send Referral'
+    btn.textContent = isClinicViewer ? 'Refer Patient' : 'Send Referral'
     btn.style.cssText = 'width:100%;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#d4a84b,#c4982f);color:#fff;font-weight:700;font-size:13px;letter-spacing:0.01em;box-shadow:0 2px 8px rgba(212,168,75,0.35);'
     btn.addEventListener('click', () => onReferral(item))
     container.appendChild(btn)
-  } else if ((lawyerCanReferToClinic || clinicCanReferToLawyer) && !item.available) {
+  } else if (canRefer && !item.available) {
     const p = document.createElement('p')
     p.textContent = 'Not accepting referrals'
     p.style.cssText = 'font-size:11px;text-align:center;color:#9ca3af;font-style:italic;margin:0;'
