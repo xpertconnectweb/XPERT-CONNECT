@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { getLawyers, getLawyersByState, getUserById } from '@/lib/data'
+import { toPublicLawyers } from '@/lib/api/public-shape'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,8 +28,9 @@ export async function GET() {
       ? await getLawyersByState(userState)
       : await getLawyers()
 
-    // Strip phone and address from response (hidden from non-admin users)
-    const sanitized = lawyers.map(({ phone, address, ...rest }) => rest)
+    // Hide direct contact details, keep coarse location so the map can search
+    // and filter by city/ZIP. See src/lib/api/public-shape.ts.
+    const sanitized = toPublicLawyers(lawyers)
 
     return NextResponse.json(sanitized, {
       headers: {

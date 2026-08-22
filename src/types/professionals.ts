@@ -60,6 +60,35 @@ export interface Lawyer {
   available: boolean
 }
 
+/**
+ * Geography derived from the free-text `address` on the read path.
+ *
+ * Neither table stores city/state/ZIP as columns, so these are parsed by
+ * `parseAddress` in `src/lib/data.ts` and attached to every record leaving the
+ * data layer. That is what makes search by ZIP or city possible at all.
+ *
+ * Deliberately a separate type rather than extra optional fields on `Clinic` /
+ * `Lawyer`: those two interfaces have ~30 consumers plus their own tests, and
+ * none of them should have to care that this exists.
+ */
+export interface DerivedLocation {
+  city?: string | null
+  /** Two-letter code parsed from the address, e.g. 'FL'. */
+  state?: string | null
+  zipCode?: string | null
+}
+
+export type DecoratedClinic = Clinic & DerivedLocation
+export type DecoratedLawyer = Lawyer & DerivedLocation
+
+/**
+ * What the professionals and partners APIs return: coarse location, no way to
+ * contact the provider directly. See `stripContactInfo` in
+ * `src/lib/api/public-shape.ts` for the single definition of that boundary.
+ */
+export type PublicClinic = Omit<DecoratedClinic, 'phone' | 'address'>
+export type PublicLawyer = Omit<DecoratedLawyer, 'phone' | 'address'>
+
 export type ReferralStatus = 'received' | 'in_process' | 'attended'
 
 export type ReferrerReferralStatus = 'pending' | 'assigned' | 'in_process' | 'completed'
