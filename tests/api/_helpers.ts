@@ -281,6 +281,11 @@ export function buildSupabaseChainMock(
 ) {
   const calls: { method: string; args: unknown[] }[] = []
   let result: ChainResult = initial
+  // Per-function results for supabaseAdmin.rpc(). The SMS opt-in flow
+  // claims its rate gates through two Postgres functions, because the
+  // read-modify-write cannot be expressed atomically through the
+  // PostgREST query builder.
+  const rpcResults = new Map<string, ChainResult>()
 
   function makeChain() {
     const chain: Record<string, unknown> = {}
@@ -336,10 +341,19 @@ export function buildSupabaseChainMock(
     reset(next: ChainResult = { data: null, error: null }) {
       calls.length = 0
       result = next
+      rpcResults.clear()
+    },
+    /** Stub one Postgres function, e.g. setRpcResult('claim_otp_send', { data: 'ok', error: null }). */
+    setRpcResult(fn: string, next: ChainResult) {
+      rpcResults.set(fn, next)
     },
     from(table: string) {
       calls.push({ method: 'from', args: [table] })
       return makeChain()
+    },
+    rpc(fn: string, args?: unknown) {
+      calls.push({ method: 'rpc', args: [fn, args] })
+      return Promise.resolve(rpcResults.get(fn) ?? { data: null, error: null })
     },
   }
 }

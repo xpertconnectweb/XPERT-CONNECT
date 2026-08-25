@@ -17,15 +17,25 @@ import {
   clinicToMedicalSpecialistReferralEmail,
   type ReferralExtras,
 } from '@/lib/email'
+import { notifyUsersOfReferral } from '@/lib/sms/notify'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { EMAIL_RE, isValidIsoDate } from '@/lib/validation'
 import { MEDICAL_SPECIALTY_TYPES } from '@/lib/medical-specialties'
 import { logActivity } from '@/lib/activity-log'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
-import type { Referral } from '@/types/professionals'
+import type { Referral, User } from '@/types/professionals'
 
 const MAX_OPTIONAL_FIELD = 200
+
+/**
+ * `waitUntil` runs on borrowed time: it is bounded by the function's
+ * max duration, and the default (10s on Hobby) is now shared between
+ * the SMS fan-out and an email loop that already sleeps 600ms between
+ * recipients. Past the ceiling the invocation is killed mid-loop and
+ * the later recipients silently get nothing, with no error anywhere.
+ */
+export const maxDuration = 30
 
 export async function GET() {
   const { session, error } = await requireAuth()
@@ -242,6 +252,20 @@ async function handleLawyerToClinic(args: CreateArgs) {
 
   waitUntil(
     (async () => {
+      // Text first, then email: the text is the buzz-your-phone
+      // signal and the email is the payload. Outside the try below on
+      // purpose — notifyUsersOfReferral cannot throw, and keeping it
+      // out means the email block's diff is zero.
+      //
+      // Note the recipients are the clinic USERS. `clinic.email` is
+      // in emailSet too, but no person stands behind an organisation
+      // address, so it has no phone and no consent — which is the
+      // correct outcome, not an oversight.
+      await notifyUsersOfReferral(clinicUsers, {
+        referralId: referral.id,
+        orgName: lawyerFirm,
+      })
+
       try {
         for (const email of clinicEmails) {
           try {
@@ -360,6 +384,11 @@ async function handleClinicToLawyer(args: CreateArgs) {
 
   waitUntil(
     (async () => {
+      await notifyUsersOfReferral(lawyerUsers, {
+        referralId: referral.id,
+        orgName: clinic.name,
+      })
+
       try {
         for (const email of lawyerEmails) {
           try {
@@ -494,10 +523,14 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
   // Collect target-clinic emails (entity + linked users) when a destination
   // was pre-selected. Falls back to admin-only notification when none.
   let targetEmails: string[] = []
+  // Hoisted out of the block below so the SMS fan-out can see it. With
+  // no target clinic it stays empty and nobody is texted, which is
+  // right: there is no destination yet for XPERT to notify.
+  let targetUsers: User[] = []
   if (targetClinic) {
     const emailSet = new Set<string>()
     if (targetClinic.email) emailSet.add(targetClinic.email)
-    const targetUsers = await getUsersByClinicId(targetClinic.id)
+    targetUsers = await getUsersByClinicId(targetClinic.id)
     targetUsers.forEach((u) => { if (u.email) emailSet.add(u.email) })
     targetEmails = Array.from(emailSet)
   }
@@ -506,6 +539,11 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
 
   waitUntil(
     (async () => {
+      await notifyUsersOfReferral(targetUsers, {
+        referralId: referral.id,
+        orgName: sourceClinic.name,
+      })
+
       try {
         for (const email of targetEmails) {
           try {

@@ -18,6 +18,13 @@ interface UserRow {
   lawyerId?: string
   state?: string
   createdAt?: string
+  // Read-only, from toAdminSafeUser. Never the full number: the API
+  // returns only the last four digits, so this screen cannot be used
+  // to export users' mobiles.
+  phoneLast4?: string
+  phoneVerified?: boolean
+  smsReferralAlerts?: boolean
+  smsOptedOut?: boolean
 }
 
 /**
@@ -97,6 +104,8 @@ export default function AdminUsersPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [phoneConfirm, setPhoneConfirm] = useState<string | null>(null)
+  const [phoneClearing, setPhoneClearing] = useState(false)
 
   // Defensive fetcher: never throws to a render boundary, surfaces a
   // human-readable error string that we can display inline.
@@ -287,6 +296,27 @@ export default function AdminUsersPage() {
       setSelectedIds(new Set())
     } else {
       setSelectedIds(new Set(allIds))
+    }
+  }
+
+  /**
+   * The only SMS write an admin has. Its own endpoint rather than a
+   * field on the user PATCH, so a stray key in a form submission can
+   * never trigger it and it produces its own audit entry.
+   */
+  const handleClearPhone = async () => {
+    if (!phoneConfirm) return
+    setPhoneClearing(true)
+    try {
+      const res = await fetch(`/api/admin/users/${phoneConfirm}/phone`, { method: 'DELETE' })
+      if (!res.ok) {
+        setError('Could not clear the phone number')
+        return
+      }
+      setPhoneConfirm(null)
+      await fetchAll()
+    } finally {
+      setPhoneClearing(false)
     }
   }
 
@@ -513,6 +543,16 @@ export default function AdminUsersPage() {
         onCancel={() => setBulkConfirm(null)}
       />
 
+      <ConfirmModal
+        open={phoneConfirm !== null}
+        title="Clear phone & SMS consent"
+        message="This removes the user's mobile number, their verification and their consent record. They will stop receiving text alerts and would have to opt in again themselves. Any record of a STOP reply is kept."
+        confirmLabel="Clear"
+        loading={phoneClearing}
+        onConfirm={handleClearPhone}
+        onCancel={() => setPhoneConfirm(null)}
+      />
+
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -595,6 +635,58 @@ export default function AdminUsersPage() {
                   placeholder="user@example.com"
                 />
               </div>
+
+              {/* SMS status — READ ONLY, and deliberately so.
+                  There is no input here and no key for it in the PATCH
+                  allowlist: an admin must never be able to enter a
+                  number or switch alerts on for someone else, because
+                  consent recorded by a third party is not consent.
+                  Clearing is the one action offered, since revocation
+                  is always safe. */}
+              {editingId && (() => {
+                const target = users.find((u) => u.id === editingId)
+                if (!target) return null
+                return (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-3">
+                    <p className="text-sm font-medium text-gray-700 mb-2">SMS alerts</p>
+                    {target.phoneLast4 ? (
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <p>
+                          Number: <span className="font-mono">••• ••• {target.phoneLast4}</span>
+                          {target.phoneVerified ? (
+                            <span className="ml-2 text-emerald-600">verified</span>
+                          ) : (
+                            <span className="ml-2 text-amber-600">not verified</span>
+                          )}
+                        </p>
+                        <p>
+                          Alerts:{' '}
+                          {target.smsReferralAlerts ? (
+                            <span className="text-emerald-600">on</span>
+                          ) : (
+                            <span className="text-gray-500">off</span>
+                          )}
+                          {target.smsOptedOut && (
+                            <span className="ml-2 text-red-600">replied STOP</span>
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setPhoneConfirm(target.id)}
+                          className="mt-2 text-xs text-red-600 hover:text-red-700"
+                        >
+                          Clear phone &amp; SMS consent
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        No number on file. Only the user can add one, from their own
+                        Notifications page.
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
 
               {form.role === 'lawyer' && (
                 <>

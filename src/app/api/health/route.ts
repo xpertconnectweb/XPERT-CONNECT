@@ -91,6 +91,37 @@ export async function GET() {
     })
   )
 
+  // SMS is optional, so NONE of these being set is a valid state —
+  // the feature is simply dormant, and failing the healthcheck for
+  // that would page somebody about a feature nobody turned on.
+  //
+  // What IS a failure is a PARTIAL configuration: some variables set
+  // and others missing means somebody believes texts are working when
+  // they are not, and the send path fails closed and silently.
+  checks.push(
+    await timed('env_twilio', async () => {
+      const keys = [
+        'TWILIO_ACCOUNT_SID',
+        'TWILIO_AUTH_TOKEN',
+        'TWILIO_MESSAGING_SERVICE_SID',
+        'TWILIO_WEBHOOK_URL',
+        'PHONE_OTP_PEPPER',
+      ]
+      const missing = keys.filter((key) => !process.env[key])
+
+      if (missing.length === keys.length) return // deliberately off
+      if (missing.length > 0) {
+        throw new Error(`partially configured — ${missing.join(', ')} missing`)
+      }
+
+      // A short pepper is worse than an obviously absent one: hashing
+      // still works, so nothing looks broken.
+      if ((process.env.PHONE_OTP_PEPPER ?? '').length < 32) {
+        throw new Error('PHONE_OTP_PEPPER is shorter than 32 characters')
+      }
+    })
+  )
+
   const ok = checks.every((c) => c.ok)
   return NextResponse.json(
     { ok, timestamp: new Date().toISOString(), checks },

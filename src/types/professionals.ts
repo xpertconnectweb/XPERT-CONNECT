@@ -27,6 +27,30 @@ export interface User {
   firmName?: string // legacy free-form firm name (now denormalized from lawyers.name when linked)
   email: string
   state?: string // state filter for lawyers (e.g. 'FL', 'MN')
+
+  // SMS referral alerts. Set only by the user themselves, through
+  // /api/me/* — there is deliberately no admin path that grants
+  // these, because consent typed in by a third party is not consent.
+  phoneE164?: string // E.164, normalized on write by toE164Us
+  phoneVerifiedAt?: string // ownership proven by a 6-digit code
+  smsReferralAlerts?: boolean // the switch itself; defaults FALSE in the DB
+  smsConsentAt?: string
+  smsConsentVersion?: string
+  smsConsentText?: string // the literal text agreed to — see lib/sms/consent.ts
+  smsLastSentAt?: string // per-user throttle, also a cost guard
+}
+
+/**
+ * A user as the admin panel may see them.
+ *
+ * `password` was always stripped; `phoneE164` must be too. The admin
+ * table has no legitimate use for whole mobile numbers, and it is the
+ * one screen where a single session could export every user's phone.
+ */
+export type AdminSafeUser = Omit<User, 'password' | 'phoneE164'> & {
+  phoneLast4?: string
+  phoneVerified: boolean
+  smsOptedOut?: boolean
 }
 
 export interface Clinic {

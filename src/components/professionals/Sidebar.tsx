@@ -1,9 +1,19 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { Map, FileText, UserPlus, LayoutDashboard, Stethoscope, Scale } from 'lucide-react'
+import { Map, FileText, UserPlus, LayoutDashboard, Stethoscope, Scale, Bell } from 'lucide-react'
 import { BaseSidebar } from '@/components/shared/BaseSidebar'
 import type { NavSection } from '@/components/shared/BaseSidebar'
+
+/**
+ * Only on the two role variants that can RECEIVE a referral. A
+ * referrer submits them and a directory user browses attorneys, so
+ * for them this screen would be a switch that turns nothing on.
+ */
+const accountSection: NavSection = {
+  label: 'Account',
+  items: [{ href: '/professionals/notifications', label: 'Notifications', icon: Bell }],
+}
 
 const defaultSections: NavSection[] = [
   {
@@ -13,6 +23,7 @@ const defaultSections: NavSection[] = [
       { href: '/professionals/referrals', label: 'Referrals', icon: FileText },
     ],
   },
+  accountSection,
 ]
 
 const referrerSections: NavSection[] = [
@@ -35,6 +46,7 @@ const clinicSections: NavSection[] = [
       { href: '/professionals/referrals', label: 'Referrals', icon: FileText },
     ],
   },
+  accountSection,
 ]
 
 const directorySections: NavSection[] = [

@@ -1,9 +1,12 @@
 import type {
+  AdminSafeUser,
   DecoratedClinic,
   DecoratedLawyer,
   PublicClinic,
   PublicLawyer,
+  User,
 } from '@/types/professionals'
+import { phoneLast4 } from '@/lib/phone'
 
 /**
  * The single definition of what a non-admin professional may see about another
@@ -39,6 +42,31 @@ export function toPublicLawyer(lawyer: DecoratedLawyer): PublicLawyer {
   void phone
   void address
   return rest
+}
+
+/**
+ * What the admin panel may see about a user.
+ *
+ * Widening USER_COLUMNS to carry `phone_e164` put a mobile number
+ * into every read path, including `GET /api/admin/users`, which
+ * previously stripped only `password`. That route is the one place a
+ * single admin session could export every user's phone, and the admin
+ * table has no use for the whole number — it shows a masked one and
+ * whether alerts are on.
+ *
+ * Apply this on BOTH the list response and the PATCH response. The
+ * PATCH one is easy to forget because it returns a single record.
+ */
+export function toAdminSafeUser(user: User, optedOut = false): AdminSafeUser {
+  const { password, phoneE164, ...rest } = user
+  void password
+
+  return {
+    ...rest,
+    phoneLast4: phoneE164 ? phoneLast4(phoneE164) : undefined,
+    phoneVerified: Boolean(user.phoneVerifiedAt),
+    smsOptedOut: optedOut,
+  }
 }
 
 export function toPublicClinics(clinics: readonly DecoratedClinic[]): PublicClinic[] {

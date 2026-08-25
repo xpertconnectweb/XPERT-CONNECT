@@ -33,6 +33,11 @@ export type ActivityAction =
   | 'referrer_referral_assigned'
   | 'referrer_referral_updated'
   | 'referrer_referral_deleted'
+  // Opt-in, verification, opt-out and admin revocation. Only the
+  // legally significant events land here; individual sends go to the
+  // `sms_messages` table instead, or a busy week would bury the audit
+  // feed under a few hundred delivery rows.
+  | 'sms_consent_changed'
 
 export interface ActivityLog {
   id: number
@@ -52,6 +57,18 @@ export interface PlatformSettings {
   referral_notifications: {
     enabled: boolean
     internalEmail: string
+  }
+  /**
+   * Global kill switch for referral texts.
+   *
+   * Unlike `referral_notifications` above — which the admin UI has
+   * written since May and which NO send path has ever read — this one
+   * is consulted on every referral, via `smsNotificationsEnabled()`
+   * in lib/data.ts. Absent means enabled, so a database blip degrades
+   * to "SMS still works" rather than silently killing every alert.
+   */
+  sms_notifications: {
+    enabled: boolean
   }
   platform: {
     defaultState: string

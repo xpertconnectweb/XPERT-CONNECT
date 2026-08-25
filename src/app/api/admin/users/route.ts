@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
 import { getUsers, createUser, getLawyerById, getClinicById } from '@/lib/data'
+import { toAdminSafeUser } from '@/lib/api/public-shape'
 import { sanitize } from '@/lib/sanitize'
 import { logActivity } from '@/lib/activity-log'
 import { VALID_ROLES, EMAIL_RE, USERNAME_RE } from '@/lib/validation'
@@ -12,7 +13,12 @@ export async function GET() {
   if (authError) return authError
 
   const users = await getUsers()
-  const safe = users.map(({ password: _, ...rest }) => rest)
+  // Was a bare password strip. Since USER_COLUMNS now carries
+  // `phone_e164`, that is no longer enough — this is the one response
+  // where a single admin session could export every user's mobile
+  // number. toAdminSafeUser returns the last four digits and the
+  // booleans the table actually renders.
+  const safe = users.map((user) => toAdminSafeUser(user))
   return NextResponse.json(safe)
 }
 
@@ -80,7 +86,7 @@ export async function POST(request: NextRequest) {
       state: (role === 'lawyer' || role === 'directory') && state ? state : undefined,
     })
 
-    const { password: _, ...safe } = user
+    const safe = toAdminSafeUser(user)
 
     await logActivity({
       userId: session.user.id,

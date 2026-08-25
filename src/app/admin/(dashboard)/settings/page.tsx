@@ -10,6 +10,7 @@ interface SettingsData {
   specialties_list?: string[]
   practice_areas_list?: string[]
   referral_notifications?: { enabled: boolean; internalEmail: string }
+  sms_notifications?: { enabled: boolean }
   platform?: { defaultState: string; companyName: string }
 }
 
@@ -23,6 +24,7 @@ export default function AdminSettingsPage() {
   const [specialties, setSpecialties] = useState<string[]>([])
   const [practiceAreas, setPracticeAreas] = useState<string[]>([])
   const [notifications, setNotifications] = useState({ enabled: true, internalEmail: '' })
+  const [smsNotifications, setSmsNotifications] = useState({ enabled: true })
   const [platform, setPlatform] = useState({ defaultState: '', companyName: 'Xpert Connect' })
 
   // "Add new" inputs
@@ -41,6 +43,7 @@ export default function AdminSettingsPage() {
         // real list instead of building one from scratch.
         setPracticeAreas(resolveCatalog(data.practice_areas_list))
         if (data.referral_notifications) setNotifications(data.referral_notifications)
+        if (data.sms_notifications) setSmsNotifications(data.sms_notifications)
         if (data.platform) setPlatform(data.platform)
       }
     } catch (err) {
@@ -225,6 +228,55 @@ export default function AdminSettingsPage() {
               className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-medium text-white hover:bg-gold-dark disabled:opacity-60 transition-colors"
             >
               {savingKey === 'referral_notifications' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save
+            </button>
+          </div>
+        </div>
+
+        {/* SMS Alerts */}
+        <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
+          <h2 className="font-heading text-lg font-semibold text-gray-900 mb-4">SMS Alerts</h2>
+          {/* Unlike the email toggle above — which this panel has
+              written since May and which no send path has ever read, so
+              flipping it changes nothing — this one is consulted on
+              every referral by smsNotificationsEnabled() in
+              lib/data.ts. */}
+          <p className="text-xs text-gray-400 mb-4">
+            Global switch for referral text messages.
+          </p>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSmsNotifications({ enabled: !smsNotifications.enabled })}
+              className={`relative h-6 w-11 rounded-full transition-colors ${
+                smsNotifications.enabled ? 'bg-gold' : 'bg-gray-300'
+              }`}
+              aria-label="Toggle SMS referral alerts"
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  smsNotifications.enabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span className="text-sm font-medium text-gray-700">
+              {smsNotifications.enabled ? 'SMS alerts enabled' : 'SMS alerts disabled'}
+            </span>
+          </div>
+
+          <p className="mt-3 text-xs text-gray-400">
+            Each user still chooses individually whether to receive texts, and
+            must verify their own number. Turning this off stops all of them at
+            once without changing anyone&apos;s preference.
+          </p>
+
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => saveSection('sms_notifications', smsNotifications)}
+              disabled={savingKey === 'sms_notifications'}
+              className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-medium text-white hover:bg-gold-dark disabled:opacity-60 transition-colors"
+            >
+              {savingKey === 'sms_notifications' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save
             </button>
           </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
 import { getUserById, updateUser, deleteUser, getLawyerById, getClinicById } from '@/lib/data'
+import { toAdminSafeUser } from '@/lib/api/public-shape'
 import { sanitize } from '@/lib/sanitize'
 import { logActivity } from '@/lib/activity-log'
 import { VALID_ROLES, EMAIL_RE, USERNAME_RE } from '@/lib/validation'
@@ -96,7 +97,10 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
   }
 
-  const { password: _, ...safe } = updated
+  // Easy one to miss: this returns a single record rather than a
+  // list, so it does not look like a leak surface — but it carries
+  // the same columns.
+  const safe = toAdminSafeUser(updated)
 
   await logActivity({
     userId: session.user.id,

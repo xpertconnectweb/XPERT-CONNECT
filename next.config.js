@@ -15,6 +15,24 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        // The short link carried in every SMS alert. '844xpert.com/r'
+        // is 14 characters where the full path is 44, and those 30
+        // characters are what keep a long firm name inside a single
+        // 160-character segment — i.e. inside one message's worth of
+        // billing.
+        //
+        // Unauthenticated visitors are bounced to the login by
+        // middleware and land back here afterwards, so the link works
+        // whether or not the phone still has a session.
+        source: '/r',
+        destination: '/professionals/referrals',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {

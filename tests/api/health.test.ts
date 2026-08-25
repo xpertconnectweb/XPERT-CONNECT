@@ -33,6 +33,14 @@ beforeEach(() => {
   }
   process.env.RESEND_API_KEY = 'test'
   process.env.NEXTAUTH_SECRET = 'test'
+  // Restored here, not just in tests/setup.ts: the env_twilio cases
+  // below delete and shorten these, and without a reset the first one
+  // to run would silently change the result of every test after it.
+  process.env.TWILIO_ACCOUNT_SID = 'ACtest00000000000000000000000000'
+  process.env.TWILIO_AUTH_TOKEN = 'test-twilio-auth-token'
+  process.env.TWILIO_MESSAGING_SERVICE_SID = 'MGtest00000000000000000000000000'
+  process.env.TWILIO_WEBHOOK_URL = 'https://test.local/api/sms/inbound'
+  process.env.PHONE_OTP_PEPPER = 'test-pepper-at-least-32-characters-long'
 })
 
 describe('GET /api/health', () => {
@@ -50,8 +58,54 @@ describe('GET /api/health', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.ok).toBe(true)
-    expect(body.checks).toHaveLength(6)
+    expect(body.checks).toHaveLength(7)
     expect(body.checks.every((c: { ok: boolean }) => c.ok)).toBe(true)
+  })
+
+  describe('env_twilio', () => {
+    const TWILIO_KEYS = [
+      'TWILIO_ACCOUNT_SID',
+      'TWILIO_AUTH_TOKEN',
+      'TWILIO_MESSAGING_SERVICE_SID',
+      'TWILIO_WEBHOOK_URL',
+      'PHONE_OTP_PEPPER',
+    ]
+
+    const twilioCheck = (body: { checks: Array<{ name: string; ok: boolean; error?: string }> }) =>
+      body.checks.find((c) => c.name === 'env_twilio')!
+
+    beforeEach(() => {
+      mockedAuth.requireAdmin.mockImplementation(
+        buildRequireAdmin(buildSession({ role: 'admin' }))
+      )
+    })
+
+    // SMS is an optional feature. Failing the healthcheck because
+    // nobody turned it on would page someone about nothing.
+    it('passes when Twilio is entirely absent — the feature is simply off', async () => {
+      for (const key of TWILIO_KEYS) delete process.env[key]
+      const res = await GET()
+      expect(res.status).toBe(200)
+      expect(twilioCheck(await res.json()).ok).toBe(true)
+    })
+
+    // A partial configuration is the dangerous state: someone believes
+    // texts are working, and the send path fails closed and silently.
+    it('fails when Twilio is only partly configured', async () => {
+      delete process.env.TWILIO_AUTH_TOKEN
+      const res = await GET()
+      expect(res.status).toBe(503)
+      const check = twilioCheck(await res.json())
+      expect(check.ok).toBe(false)
+      expect(check.error).toContain('TWILIO_AUTH_TOKEN')
+    })
+
+    it('fails on a pepper too short to be worth having', async () => {
+      process.env.PHONE_OTP_PEPPER = 'short'
+      const res = await GET()
+      expect(res.status).toBe(503)
+      expect(twilioCheck(await res.json()).error).toContain('32 characters')
+    })
   })
 
   it('returns 503 when a Supabase check fails', async () => {

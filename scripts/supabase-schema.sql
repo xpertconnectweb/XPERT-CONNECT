@@ -17,6 +17,16 @@ CREATE TABLE IF NOT EXISTS users (
   firm_name   TEXT,
   email       TEXT NOT NULL,
   state       TEXT,
+  -- SMS referral alerts. Only the user themselves writes these, via
+  -- /api/me/*. sms_referral_alerts MUST default FALSE: a consent flag
+  -- that defaults true is consent nobody gave.
+  phone_e164          TEXT,
+  phone_verified_at   TIMESTAMPTZ,
+  sms_referral_alerts BOOLEAN NOT NULL DEFAULT FALSE,
+  sms_consent_at      TIMESTAMPTZ,
+  sms_consent_version TEXT,
+  sms_consent_text    TEXT,
+  sms_last_sent_at    TIMESTAMPTZ,
   created_at  TIMESTAMPTZ DEFAULT now(),
   updated_at  TIMESTAMPTZ DEFAULT now()
 );
@@ -224,7 +234,49 @@ CREATE TRIGGER trg_referrals_updated_at
 -- =============================================================
 -- Row Level Security
 -- =============================================================
+-- =============================================================
+-- 10. SMS notifications (see scripts/migrations/2026-08-sms-notifications.sql
+--     for the full rationale and the two rate-gate functions)
+-- =============================================================
+CREATE TABLE IF NOT EXISTS phone_verifications (
+  user_id         TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  phone_e164      TEXT        NOT NULL,
+  code_hash       TEXT        NOT NULL,
+  expires_at      TIMESTAMPTZ NOT NULL,
+  attempts        INT         NOT NULL DEFAULT 0,
+  sends_in_window INT         NOT NULL DEFAULT 1,
+  window_start    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_sent_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  locked_until    TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- No FK to users, and rows are never deleted: a STOP belongs to the
+-- NUMBER, must survive the account being deleted, and is the proof
+-- that the opt-out was honoured.
+CREATE TABLE IF NOT EXISTS sms_opt_outs (
+  phone_e164   TEXT PRIMARY KEY,
+  opted_out_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reason       TEXT        NOT NULL,
+  raw_keyword  TEXT,
+  resumed_at   TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS sms_messages (
+  id         BIGSERIAL PRIMARY KEY,
+  user_id    TEXT,
+  to_e164    TEXT NOT NULL,
+  kind       TEXT NOT NULL,
+  twilio_sid TEXT,
+  status     TEXT NOT NULL,
+  error_code INT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE phone_verifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sms_opt_outs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sms_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clinics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lawyers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
@@ -269,6 +321,18 @@ CREATE POLICY "Service role full access on settings"
 
 CREATE POLICY "Service role full access on activity_logs"
   ON activity_logs FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on phone_verifications"
+  ON phone_verifications FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on sms_opt_outs"
+  ON sms_opt_outs FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role full access on sms_messages"
+  ON sms_messages FOR ALL
   USING (auth.role() = 'service_role');
 
 -- Anon can INSERT into contacts (public contact form)

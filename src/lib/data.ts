@@ -10,7 +10,34 @@ import type { User, Clinic, Lawyer, Referral, ReferrerReferral, Contact, Newslet
 
 export type { Contact, NewsletterSubscriber }
 
-const USER_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state'
+// Widening this list puts the new columns into EVERY user read path:
+// getUsers, getUserByUsername, getUserById, getUsersByClinicId and
+// getLawyerUsersByEntityId. `phone_e164` is PII, so the two responses
+// that return user records to a browser must run it through
+// toAdminSafeUser (lib/api/public-shape.ts). NextAuth's authorize()
+// is safe because it returns an explicit field list — keep it that
+// way rather than "simplifying" it to a spread.
+// Kept as ONE string literal each, not a concatenation: supabase-js
+// parses these select lists at the type level, and `'a' + 'b'` widens
+// to `string`, which collapses every row type in this file into an
+// error type. Long lines, but the alternative is losing the typing.
+const USER_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state, phone_e164, phone_verified_at, sms_referral_alerts, sms_consent_at, sms_consent_version, sms_consent_text, sms_last_sent_at'
+
+/**
+ * The login path, deliberately narrower.
+ *
+ * PostgREST rejects an entire select that names a column the database
+ * does not have, so a schema that lags the code breaks every query
+ * using the wide list above. Authentication does not need a single
+ * SMS column, and keeping it off them is the difference between "the
+ * new feature is broken" and "nobody can sign in" — the second is how
+ * a missing migration takes the whole site down and reads like an
+ * auth bug.
+ *
+ * `scripts/validate-schema.ts` still fails loudly on the drift, so
+ * this narrows the blast radius without hiding the problem.
+ */
+const USER_AUTH_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state'
 const REFERRAL_COLUMNS = 'id, referral_kind, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, target_clinic_id, target_clinic_name, specialist_type, created_by_user_id, creator_role, patient_name, patient_phone, case_type, accident_date, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
 
 // Users
@@ -28,9 +55,11 @@ export async function getUsers(): Promise<User[]> {
 export async function getUserByUsername(
   username: string
 ): Promise<User | undefined> {
+  // USER_AUTH_COLUMNS, not USER_COLUMNS — see the note on that
+  // constant. This is the query whose failure locks everyone out.
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select(USER_COLUMNS)
+    .select(USER_AUTH_COLUMNS)
     .eq('username', username)
     .single()
   if (error || !data) return undefined
@@ -562,4 +591,208 @@ export async function getSetting<T>(key: string): Promise<T | undefined> {
 export async function getPracticeAreaCatalog(): Promise<string[]> {
   const stored = await getSetting<unknown>('practice_areas_list')
   return resolveCatalog(stored)
+}
+
+// SMS notifications
+/**
+ * The global kill switch for referral texts.
+ *
+ * Note the failure direction. `getSetting` returns undefined both
+ * when the key was never written AND when the query errored, so a
+ * transient database blip must not silently stop every alert —
+ * absent means enabled. The gate that fails CLOSED is the presence
+ * of the Twilio environment variables (see lib/sms/base.ts), which
+ * is what keeps a checkout with no secrets completely inert.
+ *
+ * Unlike `referral_notifications`, which the admin UI has written
+ * since May and no send path has ever read, this one is consulted on
+ * every referral. If you are adding another toggle, read it.
+ */
+export async function smsNotificationsEnabled(): Promise<boolean> {
+  const stored = await getSetting<{ enabled?: boolean }>('sms_notifications')
+  return stored?.enabled !== false
+}
+
+/**
+ * Which of these numbers have told the carrier STOP.
+ *
+ * One query for the whole fan-out rather than one per recipient.
+ * `resumed_at` non-null means they later texted START.
+ */
+export async function getActiveOptOuts(phones: string[]): Promise<Set<string>> {
+  if (phones.length === 0) return new Set()
+
+  const { data, error } = await supabaseAdmin
+    .from('sms_opt_outs')
+    .select('phone_e164')
+    .in('phone_e164', phones)
+    .is('resumed_at', null)
+
+  if (error) {
+    // Fail CLOSED: if we cannot tell who opted out, send to nobody.
+    // Texting someone who said STOP is a statutory penalty per
+    // message; a missed alert is an email they still received.
+    console.error('getActiveOptOuts error:', error)
+    return new Set(phones)
+  }
+
+  return new Set((data ?? []).map((row) => row.phone_e164 as string))
+}
+
+export async function isPhoneOptedOut(phone: string): Promise<boolean> {
+  return (await getActiveOptOuts([phone])).has(phone)
+}
+
+/**
+ * Record a STOP. Never deletes, only upserts — the row is the proof
+ * that the opt-out was honoured, and it outlives the user account.
+ */
+export async function recordOptOut(
+  phone: string,
+  reason: string,
+  rawKeyword?: string
+): Promise<void> {
+  const { error } = await supabaseAdmin.from('sms_opt_outs').upsert(
+    {
+      phone_e164: phone,
+      reason,
+      raw_keyword: rawKeyword ?? null,
+      opted_out_at: new Date().toISOString(),
+      resumed_at: null,
+    },
+    { onConflict: 'phone_e164' }
+  )
+  if (error) console.error('recordOptOut error:', error)
+}
+
+/**
+ * Handle START / UNSTOP.
+ *
+ * Marks the number resumed but deliberately does NOT switch alerts
+ * back on — re-consent has to be a deliberate act in the product, not
+ * a side effect of a keyword. Texting START says "you may contact me
+ * again", not "resume the specific alerts I turned off".
+ */
+export async function recordOptIn(phone: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('sms_opt_outs')
+    .update({ resumed_at: new Date().toISOString() })
+    .eq('phone_e164', phone)
+  if (error) console.error('recordOptIn error:', error)
+}
+
+/** Mirror a carrier-side opt-out onto every account using that number. */
+export async function disableAlertsForPhone(phone: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .update({ sms_referral_alerts: false })
+    .eq('phone_e164', phone)
+  if (error) console.error('disableAlertsForPhone error:', error)
+}
+
+export async function recordSmsMessage(entry: {
+  userId?: string
+  to: string
+  kind: 'otp' | 'referral_alert' | 'opt_in_confirmation'
+  twilioSid?: string
+  status: 'queued' | 'failed'
+  errorCode?: number
+}): Promise<void> {
+  const { error } = await supabaseAdmin.from('sms_messages').insert({
+    user_id: entry.userId ?? null,
+    to_e164: entry.to,
+    kind: entry.kind,
+    twilio_sid: entry.twilioSid ?? null,
+    status: entry.status,
+    error_code: entry.errorCode ?? null,
+  })
+  // Never throw: logging a send must not break the send.
+  if (error) console.error('recordSmsMessage error:', error)
+}
+
+/**
+ * These four write the SMS columns directly rather than going through
+ * `updateUser`, because they need to write NULL.
+ *
+ * `modelToRow` keeps keys whose value is undefined, but the Supabase
+ * client serializes with JSON.stringify, which drops them — so
+ * `updateUser(id, { phoneVerifiedAt: undefined })` silently leaves the
+ * old timestamp in place. That failure is invisible and it is the
+ * dangerous direction: a user swaps in a new number and keeps the
+ * "verified" state earned by the previous one.
+ */
+export async function setPendingPhone(
+  userId: string,
+  phone: string,
+  consent: { version: string; text: string }
+): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .update({
+      phone_e164: phone,
+      phone_verified_at: null,
+      sms_referral_alerts: false,
+      sms_consent_at: new Date().toISOString(),
+      sms_consent_version: consent.version,
+      sms_consent_text: consent.text,
+    })
+    .eq('id', userId)
+  if (error) {
+    console.error('setPendingPhone error:', error)
+    throw new Error('Failed to save phone')
+  }
+}
+
+export async function markPhoneVerified(userId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .update({ phone_verified_at: new Date().toISOString() })
+    .eq('id', userId)
+  if (error) {
+    console.error('markPhoneVerified error:', error)
+    throw new Error('Failed to mark verified')
+  }
+}
+
+export async function setSmsAlerts(userId: string, enabled: boolean): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .update({ sms_referral_alerts: enabled })
+    .eq('id', userId)
+  if (error) {
+    console.error('setSmsAlerts error:', error)
+    throw new Error('Failed to update alerts')
+  }
+}
+
+/**
+ * Full revocation. Note it does NOT touch `sms_opt_outs` — that row
+ * belongs to the phone and must outlive any account decision.
+ */
+export async function clearUserPhone(userId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .update({
+      phone_e164: null,
+      phone_verified_at: null,
+      sms_referral_alerts: false,
+      sms_consent_at: null,
+      sms_consent_version: null,
+      sms_consent_text: null,
+    })
+    .eq('id', userId)
+  if (error) {
+    console.error('clearUserPhone error:', error)
+    throw new Error('Failed to clear phone')
+  }
+
+  await supabaseAdmin.from('phone_verifications').delete().eq('user_id', userId)
+}
+
+export async function markSmsSent(userId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .update({ sms_last_sent_at: new Date().toISOString() })
+    .eq('id', userId)
+  if (error) console.error('markSmsSent error:', error)
 }

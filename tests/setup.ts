@@ -8,6 +8,14 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321'
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
 process.env.RESEND_API_KEY = 'test-resend-key'
 process.env.EMAIL_FROM = 'noreply@test.local'
+// Twilio. Present so the send path is ACTIVE under test — with these
+// unset, sendSms returns { kind: 'config' } and every SMS assertion
+// would pass for the wrong reason.
+process.env.TWILIO_ACCOUNT_SID = 'ACtest00000000000000000000000000'
+process.env.TWILIO_AUTH_TOKEN = 'test-twilio-auth-token'
+process.env.TWILIO_MESSAGING_SERVICE_SID = 'MGtest00000000000000000000000000'
+process.env.TWILIO_WEBHOOK_URL = 'https://test.local/api/sms/inbound'
+process.env.PHONE_OTP_PEPPER = 'test-pepper-at-least-32-characters-long'
 
 // Vercel waitUntil: track every backgrounded promise so tests can
 // `await flushWaitUntil()` (see tests/api/_helpers.ts) before asserting

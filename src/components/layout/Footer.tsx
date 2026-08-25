@@ -177,15 +177,20 @@ export function Footer() {
             <p className="text-sm text-white/70">
               &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved.
             </p>
+            {/* These three linked to href="#" until Aug 2026. A live
+                privacy policy is a hard requirement for toll-free SMS
+                verification — carriers check that the URL resolves and
+                that it carries the mobile-opt-in clause. "Terms of
+                Service" and "Disclaimer" are still to be written by
+                the client's counsel and are not linked until they
+                exist; advertising a link that goes nowhere is what
+                caused this. */}
             <div className="flex flex-wrap justify-center gap-6">
-              <Link href="#" className="text-sm text-white/70 hover:text-gold transition-colors">
+              <Link href="/privacy" className="text-sm text-white/70 hover:text-gold transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-sm text-white/70 hover:text-gold transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="#" className="text-sm text-white/70 hover:text-gold transition-colors">
-                Disclaimer
+              <Link href="/sms-terms" className="text-sm text-white/70 hover:text-gold transition-colors">
+                SMS Terms
               </Link>
             </div>
           </div>

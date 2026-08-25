@@ -45,8 +45,37 @@ interface Probe {
 const PROBES: Probe[] = [
   {
     table: 'users',
-    columns: ['id', 'role', 'clinic_id', 'lawyer_id', 'firm_name', 'state'],
-    why: 'users.lawyer_id is required to link a lawyer login to its firm.',
+    columns: [
+      'id',
+      'role',
+      'clinic_id',
+      'lawyer_id',
+      'firm_name',
+      'state',
+      'phone_e164',
+      'phone_verified_at',
+      'sms_referral_alerts',
+      'sms_consent_at',
+      'sms_consent_version',
+      'sms_consent_text',
+      'sms_last_sent_at',
+    ],
+    why: 'users.lawyer_id links a lawyer login to its firm; the phone/sms_* columns carry the SMS opt-in (2026-08-sms-notifications.sql).',
+  },
+  {
+    table: 'phone_verifications',
+    columns: ['user_id', 'phone_e164', 'code_hash', 'expires_at', 'attempts', 'locked_until'],
+    why: 'holds the pending 6-digit code and its rate gates.',
+  },
+  {
+    table: 'sms_opt_outs',
+    columns: ['phone_e164', 'opted_out_at', 'reason', 'resumed_at'],
+    why: 'a STOP is keyed by phone, not by user, and must survive account deletion.',
+  },
+  {
+    table: 'sms_messages',
+    columns: ['id', 'to_e164', 'kind', 'status', 'twilio_sid', 'error_code'],
+    why: 'delivery log — Vercel free-tier logs are retained about an hour.',
   },
   {
     table: 'lawyers',
