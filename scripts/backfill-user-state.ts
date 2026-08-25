@@ -33,6 +33,21 @@ const APPLY = process.argv.includes('--apply')
 /** Only these roles have their feed scoped by state. */
 const SCOPED_ROLES = ['lawyer', 'clinic', 'directory']
 
+/**
+ * Accounts whose null state is DELIBERATE. Never fill these in.
+ *
+ * A null state is not always a defect. `alex_rodriguez` is a demo fixture: it
+ * is the "global" attorney that shows the client what role-based filtering
+ * does, by contrast with `mn_lawyer` who is scoped to MN. Seeing both states is
+ * the whole point of the account.
+ *
+ * This list exists because that account was backfilled to FL on 2026-08-24 and
+ * had to be reverted by hand. Without it, the next person to run this script
+ * silently breaks the demo again — and it would look like the script working
+ * correctly.
+ */
+const INTENTIONALLY_GLOBAL = ['alex_rodriguez']
+
 async function main() {
   const { data: users, error } = await supabase
     .from('users')
@@ -42,12 +57,18 @@ async function main() {
     process.exit(1)
   }
 
-  const candidates = (users ?? []).filter(
+  const stateless = (users ?? []).filter(
     (u) => SCOPED_ROLES.includes(u.role) && !u.state
   )
+  const skipped = stateless.filter((u) => INTENTIONALLY_GLOBAL.includes(String(u.username)))
+  const candidates = stateless.filter((u) => !INTENTIONALLY_GLOBAL.includes(String(u.username)))
+
+  skipped.forEach((u) => {
+    console.log(`  - ${u.username} (${u.role}) left alone: its null state is deliberate`)
+  })
 
   if (candidates.length === 0) {
-    console.log('✓ Every state-scoped account already has a state.')
+    console.log('✓ Every state-scoped account either has a state or is deliberately global.')
     return
   }
 
