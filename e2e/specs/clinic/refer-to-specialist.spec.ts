@@ -56,3 +56,25 @@ test('clinic "Refer to Lawyer" CTA submits a lawyer referral via the modal', asy
     await supabase.from('referrals').delete().eq('id', data.id)
   }
 })
+
+/**
+ * The Refer button on the specialists list used to be
+ * `onClick={() => setReferOpen(true)}` with the clinic dropped on the floor,
+ * so the modal opened with no destination and asked the user to pick the
+ * specialist they had just pressed Refer on.
+ */
+test('the specialists list pre-selects the specialist that was clicked', async ({ page }) => {
+  test.setTimeout(120_000)
+
+  await page.goto('/professionals/specialists')
+  // Scoped to the list: 'ul > li' also matches the sidebar navigation.
+  const rows = page.getByTestId('specialist-row')
+  await expect(rows.first()).toBeVisible({ timeout: 45_000 })
+
+  const name = (await rows.first().innerText()).split('\n')[0].trim()
+  await rows.first().getByRole('button', { name: new RegExp(`refer a patient to`, 'i') }).click()
+
+  // The modal names the destination instead of offering a picker.
+  await expect(page.getByText(/sending to/i)).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText(name, { exact: false }).first()).toBeVisible()
+})

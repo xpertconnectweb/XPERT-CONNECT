@@ -1,12 +1,16 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Search, Scale, MapPin, Phone, Copy, Check, FilterX,
+  Scale, MapPin, Phone, Copy, Check, FilterX,
   HeartPulse, Gavel, Users, ScrollText, Plane, Briefcase, Home,
 } from 'lucide-react'
 import { buildSearchIndex, search, toSearchDocs } from '@/lib/search'
-import type { SearchFilters } from '@/lib/search'
+import type { SearchFilters, SortMode } from '@/lib/search'
+import { SmartSearchBox } from '@/components/search/SmartSearchBox'
+import type { Suggestion } from '@/components/search/types'
+import { EmptyState, Segmented } from '@/components/ui'
+import { useSmartSearch } from '@/hooks/useSmartSearch'
 import { countyLabel } from '@/lib/counties'
 import type { DecoratedLawyer } from '@/types/professionals'
 import type { SidebarIcon } from '@/components/shared/BaseSidebar'
@@ -29,6 +33,13 @@ const AREA_META: Record<string, { icon: SidebarIcon; accent: string }> = {
 }
 const DEFAULT_META = { icon: Scale, accent: 'from-gray-500 to-gray-700' }
 
+/** No distance without a map, so that mode is left out. */
+const DIRECTORY_SORT = [
+  { value: 'relevance', label: 'Best', 'aria-label': 'Best match' },
+  { value: 'name', label: 'A–Z', 'aria-label': 'Alphabetical' },
+  { value: 'availability', label: 'Open', 'aria-label': 'Accepting referrals first' },
+] as const
+
 function metaFor(area: string) {
   return AREA_META[area] ?? DEFAULT_META
 }
@@ -41,6 +52,7 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
   const [area, setArea] = useState('')
   const [county, setCounty] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [sortMode, setSortMode] = useState<SortMode>('relevance')
 
   useEffect(() => {
     let cancelled = false
@@ -90,12 +102,34 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
   // than the search itself.
   const index = useMemo(() => buildSearchIndex(toSearchDocs([], lawyers)), [lawyers])
 
-  const filtered = useMemo(() => {
+  const outcome = useMemo(() => {
     const filters: SearchFilters = {}
     if (area) filters.tags = [area]
     if (county) filters.counties = [county]
-    return search(index, query, { filters }).hits.map((hit) => hit.doc.source)
-  }, [index, query, area, county])
+    return search(index, query, { filters, sort: sortMode })
+  }, [index, query, area, county, sortMode])
+
+  const filtered = useMemo(() => outcome.hits.map((hit) => hit.doc.source), [outcome])
+
+  /**
+   * `places={false}`: no map on this screen, so a geocoded address would
+   * resolve to somewhere the user cannot be taken.
+   */
+  const { groups: suggestionGroups, remember, forget } = useSmartSearch({
+    index,
+    facets: outcome.facets,
+    query,
+    entityHeading: 'Firms',
+    categoryHeading: 'Practice areas',
+    places: false,
+  })
+
+  const handleSelect = useCallback((sug: Suggestion) => {
+    if (sug.payload.kind === 'category') setArea(sug.payload.tag)
+    else if (sug.payload.kind === 'recent') setQuery(sug.payload.query)
+    else setQuery(sug.label)
+    remember(sug.label)
+  }, [remember])
 
   const hasActiveFilters = Boolean(area || county || query)
 
@@ -128,16 +162,19 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
               Browse the legal network by practice area. Pick a category, then call the firm directly.
             </p>
           </div>
-          <div className="relative w-full lg:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by firm, city, county..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200"
-            />
-          </div>
+          <SmartSearchBox
+            className="w-full lg:w-72"
+            value={query}
+            onChange={setQuery}
+            onSubmit={(v) => { setQuery(v); remember(v) }}
+            onSelect={handleSelect}
+            onRemove={(sug) => forget(sug.label)}
+            groups={suggestionGroups}
+            resultCount={filtered.length}
+            aria-label="Search attorneys by firm, city or county"
+            placeholder="Search by firm, city, county..."
+            data-testid="directory-search"
+          />
         </div>
       </div>
 
@@ -202,6 +239,19 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
             {area && <span className="text-gray-400"> · {area}</span>}
           </span>
 
+          {/* Same control as the map panel and the specialists list. Ordering a
+              directory alphabetically is the obvious thing to want from one,
+              and it was implemented in the engine all along. */}
+          <Segmented
+            className="ml-auto"
+            variant="track"
+            options={DIRECTORY_SORT}
+            value={sortMode}
+            onChange={setSortMode}
+            label="Order firms by"
+            data-testid="directory-sort"
+          />
+
           {hasActiveFilters && (
             <button
               type="button"
@@ -226,14 +276,33 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
             <p className="text-sm text-red-600">{error}</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="px-6 py-12 text-center">
-            <Scale className="mx-auto h-8 w-8 text-gray-200" />
-            <p className="text-sm text-gray-400 mt-3">
-              {lawyers.length === 0
-                ? 'No attorneys available in your state yet.'
-                : 'No firms match these filters.'}
-            </p>
-          </div>
+          <EmptyState
+            icon={Scale}
+            title={lawyers.length === 0 ? 'No attorneys in your state yet' : 'No firms match these filters'}
+            hint={outcome.didYouMean || hasActiveFilters ? undefined : 'Try a different firm, city or county.'}
+            data-testid="directory-empty"
+            action={
+              outcome.didYouMean ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery(outcome.didYouMean!)}
+                  data-testid="directory-did-you-mean"
+                  className="rounded-lg bg-navy px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-navy-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  Did you mean <span className="italic">{outcome.didYouMean}</span>?
+                </button>
+              ) : hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  data-testid="directory-empty-clear"
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  Clear filters
+                </button>
+              ) : undefined
+            }
+          />
         ) : (
           <ul className="divide-y divide-gray-100">
             {filtered.map((lawyer) => {

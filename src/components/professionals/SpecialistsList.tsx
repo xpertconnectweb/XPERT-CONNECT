@@ -1,12 +1,23 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Send, Stethoscope, MapPin } from 'lucide-react'
-import { buildSearchIndex, search, toSearchDocs } from '@/lib/search'
+import { Send, Stethoscope, MapPin } from 'lucide-react'
+import { buildSearchIndex, search, toSearchDocs, type SortMode } from '@/lib/search'
 import { countyLabel } from '@/lib/counties'
+import { SmartSearchBox } from '@/components/search/SmartSearchBox'
+import type { Suggestion } from '@/components/search/types'
+import { EmptyState, Segmented } from '@/components/ui'
+import { useSmartSearch } from '@/hooks/useSmartSearch'
 import type { DecoratedClinic } from '@/types/professionals'
 import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
+
+/** No distance to sort by without a map, so the distance mode is left out. */
+const SPECIALIST_SORT = [
+  { value: 'relevance', label: 'Best', 'aria-label': 'Best match' },
+  { value: 'name', label: 'A–Z', 'aria-label': 'Alphabetical' },
+  { value: 'availability', label: 'Open', 'aria-label': 'Accepting referrals first' },
+] as const
 
 /**
  * Only a subset of the clinic record is rendered here, but `lat`/`lng`,
@@ -25,7 +36,15 @@ export function SpecialistsList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
-  const [referOpen, setReferOpen] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>('relevance')
+  /**
+   * Which specialist the user pressed Refer on.
+   *
+   * The button used to be `onClick={() => setReferOpen(true)}` with the clinic
+   * dropped on the floor, so the modal opened with no target and asked the user
+   * to pick the specialist they had just clicked.
+   */
+  const [referTarget, setReferTarget] = useState<ClinicOption | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -52,10 +71,32 @@ export function SpecialistsList() {
     return buildSearchIndex(toSearchDocs(specialists, []))
   }, [clinics])
 
-  const filtered = useMemo(
-    () => search(index, query).hits.map((hit) => hit.doc.source),
-    [index, query]
+  const outcome = useMemo(
+    () => search(index, query, { sort: sortMode }),
+    [index, query, sortMode]
   )
+  const filtered = useMemo(() => outcome.hits.map((hit) => hit.doc.source), [outcome])
+
+  /**
+   * `places={false}`: this screen has no map, so a geocoded address suggestion
+   * would resolve to somewhere the user cannot be taken. Entities, specialties
+   * and history are all that make sense here.
+   */
+  const { groups: suggestionGroups, remember, forget } = useSmartSearch({
+    index,
+    facets: outcome.facets,
+    query,
+    entityHeading: 'Specialists',
+    categoryHeading: 'Specialties',
+    places: false,
+  })
+
+  const handleSelect = useCallback((s: Suggestion) => {
+    if (s.payload.kind === 'category') setQuery(s.payload.tag)
+    else if (s.payload.kind === 'recent') setQuery(s.payload.query)
+    else setQuery(s.label)
+    remember(s.label)
+  }, [remember])
 
   return (
     <div className="space-y-5">
@@ -68,17 +109,39 @@ export function SpecialistsList() {
               Browse clinics in your state. Click <strong>Refer</strong> to send a patient directly.
             </p>
           </div>
-          <div className="relative w-full lg:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, specialty, region..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200"
+          {/* The same box the map uses, minus the geocoder. This screen had a
+              plain input with none of its typo tolerance or suggestions. */}
+          <SmartSearchBox
+            className="w-full lg:w-72"
+            value={query}
+            onChange={setQuery}
+            onSubmit={(v) => { setQuery(v); remember(v) }}
+            onSelect={handleSelect}
+            onRemove={(s) => forget(s.label)}
+            groups={suggestionGroups}
+            resultCount={filtered.length}
+            aria-label="Search specialists by name, specialty or city"
+            placeholder="Search by name, specialty, city..."
+            data-testid="specialists-search"
+          />
+        </div>
+
+        {!loading && !error && clinics.length > 0 && (
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
+            <p className="text-xs text-gray-500" data-testid="specialists-count">
+              <span className="font-semibold tabular-nums text-navy">{filtered.length}</span>{' '}
+              {filtered.length === 1 ? 'specialist' : 'specialists'}
+            </p>
+            <Segmented
+              variant="track"
+              options={SPECIALIST_SORT}
+              value={sortMode}
+              onChange={setSortMode}
+              label="Order specialists by"
+              data-testid="specialists-sort"
             />
           </div>
-        </div>
+        )}
       </div>
 
       {/* List */}
@@ -92,16 +155,37 @@ export function SpecialistsList() {
             <p className="text-sm text-red-600">{error}</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="px-6 py-12 text-center">
-            <Stethoscope className="mx-auto h-8 w-8 text-gray-200" />
-            <p className="text-sm text-gray-400 mt-3">
-              {clinics.length === 0 ? 'No clinics available in your state yet.' : 'No clinics match your search.'}
-            </p>
-          </div>
+          <EmptyState
+            icon={Stethoscope}
+            title={clinics.length === 0 ? 'No specialists in your state yet' : 'No specialists match your search'}
+            hint={outcome.didYouMean ? undefined : clinics.length === 0 ? undefined : 'Try a different name or specialty.'}
+            data-testid="specialists-empty"
+            action={
+              outcome.didYouMean ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery(outcome.didYouMean!)}
+                  data-testid="specialists-did-you-mean"
+                  className="rounded-lg bg-navy px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-navy-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  Did you mean <span className="italic">{outcome.didYouMean}</span>?
+                </button>
+              ) : query ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  data-testid="specialists-clear"
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  Clear search
+                </button>
+              ) : undefined
+            }
+          />
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100" data-testid="specialists-list">
             {filtered.map((clinic) => (
-              <li key={clinic.id} className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-gray-50/50 transition-colors">
+              <li key={clinic.id} data-testid="specialist-row" className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-gray-50/50 transition-colors">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0f766e] to-[#10b981] text-white">
                   <Stethoscope className="h-5 w-5" />
                 </div>
@@ -133,7 +217,8 @@ export function SpecialistsList() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setReferOpen(true)}
+                  onClick={() => setReferTarget(clinic)}
+                  aria-label={`Refer a patient to ${clinic.name}`}
                   className="self-start sm:self-center inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0f766e] to-[#10b981] px-4 py-2 text-xs font-bold text-white shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-px transition-all duration-200"
                 >
                   <Send className="h-3.5 w-3.5" />
@@ -145,9 +230,18 @@ export function SpecialistsList() {
         )}
       </div>
 
-      {referOpen && (
+      {referTarget && (
         <MedicalSpecialistReferralModal
-          onClose={() => setReferOpen(false)}
+          // Was opened with no target at all, so the modal asked the user to
+          // pick the specialist they had just pressed Refer on.
+          targetClinic={{
+            id: referTarget.id,
+            name: referTarget.name,
+            specialties: referTarget.specialties ?? [],
+            region: referTarget.region,
+            county: referTarget.county,
+          }}
+          onClose={() => setReferTarget(null)}
           onCreated={() => router.refresh()}
         />
       )}
