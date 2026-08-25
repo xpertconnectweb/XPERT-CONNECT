@@ -1,4 +1,5 @@
 import type { MapItem } from './types'
+import { canRefer, referLabel } from './referral-policy'
 
 function escapeHtml(str: string): string {
   const div = document.createElement('div')
@@ -6,17 +7,27 @@ function escapeHtml(str: string): string {
   return div.innerHTML
 }
 
+/**
+ * The popup answers one question: which pin is this?
+ *
+ * It used to be a second, fuller detail card — specialty chips, a website link,
+ * the lot — built as hand-written HTML with inline hex colours, entirely
+ * outside the Tailwind and `Chip` design system, and 310px wide over a map the
+ * user was trying to read. Now that every result row carries the same detail
+ * and its own Refer button, that duplication bought nothing but a second place
+ * to keep in sync.
+ *
+ * What stays: name, type, availability, location, phone, distance, and the
+ * action. What went: the tag rail and the website link, both on the row.
+ */
 export function buildPopupContent(
   item: MapItem,
   userRole: string | undefined,
   onReferral: (target: MapItem) => void,
 ): HTMLElement {
   const container = document.createElement('div')
-  container.style.cssText = 'min-width:260px;max-width:310px;font-family:system-ui,-apple-system,sans-serif;'
+  container.style.cssText = 'min-width:240px;max-width:280px;font-family:system-ui,-apple-system,sans-serif;'
 
-  const tags = item.type === 'clinic' ? item.specialties : item.practiceAreas
-  const tagBg = item.type === 'clinic' ? '#eff6ff' : '#fef2f2'
-  const tagColor = item.type === 'clinic' ? '#1e40af' : '#991b1b'
   const typeBg = item.type === 'clinic' ? '#e0f2fe' : '#fee2e2'
   const typeColor = item.type === 'clinic' ? '#0369a1' : '#b91c1c'
   const iconBg = item.type === 'clinic' ? 'linear-gradient(135deg,#0284c7,#0ea5e9)' : 'linear-gradient(135deg,#dc2626,#ef4444)'
@@ -58,54 +69,24 @@ export function buildPopupContent(
       <span>${escapeHtml(item.phone)}</span>
     </div>`
   }
-  if (item.website) {
-    const href = item.website.startsWith('http') ? item.website : `https://${item.website}`
-    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-      <span style="color:#94a3b8;flex-shrink:0;font-size:13px">&#9741;</span>
-      <a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="color:#0284c7;text-decoration:none;font-weight:500">Visit Website</a>
-    </div>`
-  }
 
   html += `</div>
     <div style="font-size:11px;color:#94a3b8;margin:8px 0;font-weight:500">${item.distance.toFixed(1)} miles away</div>`
 
-  if (tags && tags.length > 0) {
-    html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">`
-    for (const t of tags) {
-      html += `<span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;background:${tagBg};color:${tagColor}">${escapeHtml(t)}</span>`
-    }
-    html += `</div>`
-  }
-
   container.innerHTML = html
 
-  // Who may refer to whom:
-  //   lawyer -> clinic   send a client for treatment
-  //   clinic -> lawyer   send a patient for representation
-  //   clinic -> clinic   send a patient to a medical specialist
-  //   lawyer -> lawyer   never
-  //
-  // The clinic -> clinic case was missing until 2026-08-22. The gating was
-  // written in May, when clinic users saw attorney pins; in July the map
-  // switched them to seeing other clinics instead, and MapView gained a branch
-  // routing clinic->clinic to MedicalSpecialistReferralModal — but this file
-  // was not updated, so that branch was unreachable and clinic users had no
-  // Refer button on any marker at all. MapView already excludes the viewer's
-  // own clinic, so a clinic can never be offered a referral to itself.
-  const isLawyerViewer = userRole === 'lawyer'
-  const isClinicViewer = userRole === 'clinic'
-  const canRefer =
-    (isLawyerViewer && item.type === 'clinic') ||
-    (isClinicViewer && item.type === 'lawyer') ||
-    (isClinicViewer && item.type === 'clinic')
+  // The rule itself lives in `referral-policy.ts`. It used to be written out
+  // here, and the panel row now offers the same action — a second copy of a
+  // rule whose first duplication already shipped a bug.
+  const allowed = canRefer(userRole, item)
 
-  if (canRefer && item.available) {
+  if (allowed && item.available) {
     const btn = document.createElement('button')
-    btn.textContent = isClinicViewer ? 'Refer Patient' : 'Send Referral'
+    btn.textContent = referLabel(userRole)
     btn.style.cssText = 'width:100%;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#d4a84b,#c4982f);color:#fff;font-weight:700;font-size:13px;letter-spacing:0.01em;box-shadow:0 2px 8px rgba(212,168,75,0.35);'
     btn.addEventListener('click', () => onReferral(item))
     container.appendChild(btn)
-  } else if (canRefer && !item.available) {
+  } else if (allowed && !item.available) {
     const p = document.createElement('p')
     p.textContent = 'Not accepting referrals'
     p.style.cssText = 'font-size:11px;text-align:center;color:#9ca3af;font-style:italic;margin:0;'

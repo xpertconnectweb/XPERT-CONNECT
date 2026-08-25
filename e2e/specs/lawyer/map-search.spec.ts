@@ -45,7 +45,7 @@ test.describe('unified map search', () => {
     await expect(page.getByTestId('map-search-option').first()).toBeVisible()
 
     await openResults(page)
-    await expect(page.getByText(/results found/i)).toBeVisible()
+    await expect(page.getByTestId('map-results-summary')).toBeVisible()
   })
 
   test('arrow keys move the ARIA active option without losing input focus', async ({ page }) => {
@@ -61,7 +61,7 @@ test.describe('unified map search', () => {
   test('finds clinics by ZIP, which the old filter box could not do', async ({ page }) => {
     await page.getByTestId('map-search-input').fill('32501')
     await openResults(page)
-    await expect(page.getByText(/results found/i)).toBeVisible()
+    await expect(page.getByTestId('map-results-summary')).toBeVisible()
   })
 
   test('clears the query and returns focus to the box', async ({ page }) => {
@@ -78,8 +78,9 @@ test.describe('unified map search', () => {
     await expect(rows.first()).toBeVisible()
 
     // A panel click used to only re-centre the map, leaving no sign of which
-    // result had been picked.
-    await rows.first().click()
+    // result had been picked. The row is a container now — it holds both the
+    // focus target and the Refer button — so click the primary target.
+    await rows.first().getByTestId('map-panel-row-focus').click()
     await expect(rows.first()).toHaveAttribute('aria-current', 'true')
   })
 
@@ -90,7 +91,7 @@ test.describe('unified map search', () => {
     await openResults(page)
     const rows = page.getByTestId('map-panel-row')
     await expect(rows.first()).toBeVisible()
-    await rows.first().click()
+    await rows.first().getByTestId('map-panel-row-focus').click()
     await expect(rows.first()).toHaveAttribute('aria-current', 'true')
 
     const list = page.getByTestId('map-panel-list').locator('div').first()
@@ -134,6 +135,233 @@ test.describe('unified map search', () => {
     // open for the user to deal with.
     await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
     await expect(page.getByTestId('map-search-listbox')).toBeHidden()
+
+    // The anchor is a sibling of the box, not a replacement for it.
+    await expect(page.getByTestId('map-search-input')).toBeVisible()
+  })
+
+  /**
+   * The defect this phase exists to fix.
+   *
+   * Choosing an address used to swap the whole search box out for a chip, so
+   * "clinics near my client, that do chiropractic" was not expressible: you
+   * could have the address or the filter, never both. Clearing the address to
+   * get the box back also wiped the radius and recentred the map.
+   */
+  test('keeps free-text filtering available after an address is chosen', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl #1000, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+
+    await openResults(page)
+    const rows = page.getByTestId('map-panel-row')
+    await expect(rows.first()).toBeVisible()
+    const before = await page.getByTestId('map-results-summary').innerText()
+
+    await page.getByTestId('map-search-input').fill('chiro')
+    await expect
+      .poll(async () => page.getByTestId('map-results-summary').innerText())
+      .not.toBe(before)
+
+    // ...and the location survived the filtering.
+    await expect(page.getByTestId('map-search-chip')).toBeVisible()
+  })
+
+  /**
+   * The radius counter used to be the last child of the same wrapping row as
+   * the five radius chips. Inside a 420px card it had nowhere to go, so it
+   * wrapped to a second line and pushed every control below it down — picking
+   * a radius made the card jump under the cursor. It now lives on the summary
+   * line, which owns it and cannot reflow the controls above.
+   */
+  test('does not move the controls when the radius changes', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+
+    const input = page.getByTestId('map-search-input')
+    const baseline = (await input.boundingBox())?.y
+
+    for (const name of ['Within 5 miles', 'Within 50 miles', 'Any distance']) {
+      await page.getByRole('radio', { name }).click()
+      await expect(page.getByTestId('map-summary')).toBeVisible()
+      expect((await input.boundingBox())?.y).toBe(baseline)
+    }
+  })
+
+  /**
+   * The regression this phase was always going to cause, written before the
+   * code that causes it: framing the map on the new radius ends in a `moveend`,
+   * and `moveend` is what raises "Search this area". Without a guard the pill
+   * flashes up immediately after the action that framed the map correctly.
+   */
+  test('does not offer to re-scope after framing the radius itself', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+
+    await page.getByRole('radio', { name: 'Within 25 miles' }).click()
+    await page.waitForTimeout(2000)
+    await expect(page.getByTestId('map-search-this-area')).toBeHidden()
+  })
+
+  test('reframes the map when the radius changes', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+
+    const shell = page.getByTestId('map-shell')
+    await page.getByRole('radio', { name: 'Within 5 miles' }).click()
+    await expect.poll(async () => shell.getAttribute('data-zoom')).not.toBeNull()
+    const close = Number(await shell.getAttribute('data-zoom'))
+
+    // Ten times the radius has to pull the camera back, or the number in the
+    // summary is the only evidence anything happened — which is exactly how
+    // this screen behaved before.
+    await page.getByRole('radio', { name: 'Within 50 miles' }).click()
+    await expect.poll(async () => Number(await shell.getAttribute('data-zoom'))).toBeLessThan(close)
+  })
+
+  test('offers the radius as one labelled group rather than five loose toggles', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+
+    const group = page.getByRole('radiogroup', { name: 'Search radius' })
+    await expect(group).toBeVisible()
+    await expect(group.getByRole('radio')).toHaveCount(5)
+  })
+
+  test('lets a specialty be picked from the card, with its count', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+    await openResults(page)
+
+    const before = await page.getByTestId('map-panel-row').count()
+    const chip = page.getByTestId('map-filter-chip').first()
+    await expect(chip).toBeVisible()
+    await chip.click()
+
+    await expect(chip).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(async () => page.getByTestId('map-panel-row').count()).toBeLessThanOrEqual(before)
+    // And the whole filter set can be dropped in one go.
+    await page.getByTestId('map-clear-filters').click()
+    await expect(chip).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test('shows the city and ZIP that were typed, not a neighbourhood nobody knows', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('3200 SW 34th St Ste 500, Gainesville, FL 32608'))
+
+    const chip = page.getByTestId('map-search-chip')
+    await expect(chip).toBeVisible({ timeout: 30_000 })
+    // The old label was the first three comma parts of Nominatim's
+    // display_name, which for this address reads "3200, Southwest 34th Street,
+    // Daysville" — losing the city and ZIP the user actually typed.
+    await expect(chip).toContainText('Gainesville')
+    await expect(chip).toContainText('32608')
+  })
+
+  /**
+   * The heading was a hardcoded "Nearest Results" that kept claiming distance
+   * order while the engine sorted by relevance — which it did the moment
+   * anybody typed. It is now derived from the ordering, so the two cannot
+   * drift apart.
+   */
+  test('names the ordering it is actually using', async ({ page }) => {
+    await openResults(page)
+    const heading = page.getByTestId('map-panel-heading')
+    await expect(heading).toHaveText('Nearest Results')
+
+    await page.getByTestId('map-search-input').fill('chiro')
+    await expect(heading).toHaveText('Best Matches')
+
+    await page.getByRole('radio', { name: 'Alphabetical' }).click()
+    await expect(heading).toHaveText('All Results, A–Z')
+  })
+
+  test('sorts A–Z and carries that choice into a shared link', async ({ page }) => {
+    await openResults(page)
+    const rows = page.getByTestId('map-panel-row')
+    await expect(rows.first()).toBeVisible()
+
+    await page.getByRole('radio', { name: 'Alphabetical' }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.get('sort')).toBe('name')
+
+    const names = (await rows.allInnerTexts()).map((t) => t.split('\n')[0].trim().toLowerCase())
+    expect([...names].sort()).toEqual(names)
+
+    // Reopening the link keeps the order rather than snapping back to nearest.
+    const shared = page.url()
+    await page.goto(shared)
+    await expect(page.getByTestId('map-panel-heading')).toHaveText('All Results, A–Z')
+  })
+
+  test('leaves the URL alone when no order was chosen', async ({ page }) => {
+    // Serialising the resolved value would append ?sort=distance to every visit.
+    await page.waitForTimeout(1200)
+    expect(new URL(page.url()).searchParams.get('sort')).toBeNull()
+  })
+
+  test('exposes the results as a counted list, not an arbitrary window', async ({ page }) => {
+    await openResults(page)
+    const list = page.getByRole('list', { name: /results/i })
+    await expect(list).toBeVisible()
+    // Virtualisation renders ~15 of N rows; without set semantics a screen
+    // reader has no idea which 15 or of how many.
+    await expect(page.getByTestId('map-panel-row').first()).toBeVisible()
+    const first = list.locator('[aria-posinset]').first()
+    await expect(first).toHaveAttribute('aria-posinset', '1')
+    await expect(first).toHaveAttribute('aria-setsize', /\d+/)
+  })
+
+  /**
+   * Referring was only ever possible from the Leaflet popup, which meant
+   * finding the right pin among a cluster first. Half of what this screen is
+   * for was two clicks and a hunt away.
+   */
+  test('lets a patient be referred straight from a result row', async ({ page }) => {
+    await openResults(page)
+    const row = page.getByTestId('map-panel-row').first()
+    await expect(row).toBeVisible()
+
+    const refer = row.getByTestId('map-panel-refer')
+    await expect(refer).toBeVisible()
+    await refer.click()
+
+    // The same modal the pin's popup opens.
+    await expect(page.locator('#patientName')).toBeVisible({ timeout: 15_000 })
+  })
+
+  test('gives the row action a name that cannot collide with the popup', async ({ page }) => {
+    await openResults(page)
+    const refer = page.getByTestId('map-panel-refer').first()
+    // The popup keeps "Send Referral"; a spec looking for that must not find
+    // this instead.
+    await expect(refer).toHaveAttribute('aria-label', /^Refer a patient to /)
+  })
+
+  test('offers a way out of an empty result set', async ({ page }) => {
+    // Open the panel while it still has rows: openResults waits for the list,
+    // and an empty result set renders the empty state instead of one.
+    await openResults(page)
+    await page.getByTestId('map-search-input').fill('zzzzqq-no-such-provider')
+
+    const empty = page.getByTestId('map-panel-empty')
+    await expect(empty).toBeVisible()
+    // Not a dead end: the availability filter is on by default, so there is
+    // always at least one thing to undo.
+    await expect(page.getByTestId('map-empty-clear-filters')).toBeVisible()
+  })
+
+  test('proposes a spelling correction the engine has already verified', async ({ page }) => {
+    // Three edits from "chiropractic": beyond the matcher's budget, inside the
+    // corrector's deliberately wider one. A closer typo like "chiropractc"
+    // simply matches, and correcting a query that already worked is noise.
+    // didYouMean also only fires under three results, and only when re-running
+    // the search with the correction returns more — so it cannot lead to a
+    // second dead end.
+    await openResults(page)
+    await page.getByTestId('map-search-input').fill('chiroprktik')
+
+    const suggestion = page.getByTestId('map-did-you-mean')
+    await expect(suggestion).toBeVisible({ timeout: 15_000 })
+    await suggestion.click()
+    await expect(page.getByTestId('map-panel-row').first()).toBeVisible()
   })
 
   test('records the search in the URL and restores it from a shared link', async ({ page }) => {
@@ -150,7 +378,7 @@ test.describe('unified map search', () => {
 
   test('offers to re-scope after the map is panned, and does not do it unasked', async ({ page }) => {
     await openResults(page)
-    const count = page.getByText(/results found/i)
+    const count = page.getByTestId('map-results-summary')
     await expect(count).toBeVisible()
     const before = await count.innerText()
 
@@ -199,5 +427,35 @@ test.describe('results sheet on a phone', () => {
 
     await handle.press('ArrowUp')
     await expect(handle).toHaveAccessibleName(/currently full/i)
+  })
+
+  /**
+   * Sort parity is a requirement, not a follow-up: a control that only exists
+   * on desktop is a control half the users do not have.
+   */
+  test('offers the same ordering control inside the sheet', async ({ page }) => {
+    await page.goto('/professionals/map')
+    await expect(page.getByTestId('map-search-input')).toBeVisible({ timeout: 20_000 })
+
+    const handle = page.getByRole('button', { name: /resize results panel/i })
+    await handle.press('ArrowUp')
+
+    const sort = page.getByTestId('map-sort-sheet')
+    await expect(sort).toBeVisible()
+
+    const rows = page.getByTestId('map-panel-row')
+    await expect(rows.first()).toBeVisible()
+
+    await sort.getByRole('radio', { name: 'Alphabetical' }).click()
+    await expect(sort.getByRole('radio', { name: 'Alphabetical' })).toBeChecked()
+
+    // The panel heading lives in the docked panel, which a phone never renders,
+    // so assert on the thing the phone can actually show: the order itself.
+    await expect
+      .poll(async () => {
+        const names = (await rows.allInnerTexts()).map((t) => t.split('\n')[0].trim().toLowerCase())
+        return names.length > 1 && JSON.stringify([...names].sort((a, b) => a.localeCompare(b))) === JSON.stringify(names)
+      })
+      .toBe(true)
   })
 })

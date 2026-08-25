@@ -40,7 +40,9 @@ test.describe('partner map search', () => {
     // Every partner clinic is chiropractic, so this must not narrow anything —
     // it proves the specialty field is indexed rather than that filtering works.
     await page.getByTestId('map-search-input').fill('chiropractic')
-    await expect(page.getByText(/results? found/i)).toBeVisible()
+    // Anchored on the testid rather than the copy: the summary wording is a
+    // design decision and changed once already.
+    await expect(page.getByTestId('map-results-summary')).toBeVisible()
     await expect.poll(async () => rows.count()).toBe(before)
   })
 

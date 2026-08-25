@@ -2,15 +2,15 @@
 
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
-import { useEffect, useState, useRef, useCallback, useMemo, type KeyboardEvent } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { MapContainer, TileLayer, ZoomControl, Circle, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import {
-  AlertTriangle, RefreshCw, Search, X, MapPin,
+  AlertTriangle, RefreshCw, Search, X,
   Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale, Stethoscope,
-  Copy, Check,
+  Copy, Check, SlidersHorizontal, MapPin,
 } from 'lucide-react'
 import { ReferralFormModal } from './ReferralFormModal'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
@@ -18,18 +18,22 @@ import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal
 import { MarkerClusterLayer, type MarkerRegistry } from './map/MarkerClusterLayer'
 import { VirtualPanelList, type ScrollRequest } from './map/VirtualPanelList'
 import { SmartSearchBox } from '@/components/search/SmartSearchBox'
+import { LocationAnchor } from '@/components/search/LocationAnchor'
 import type { Suggestion } from '@/components/search/types'
-import { Chip, Sheet, type SheetSnap } from '@/components/ui'
+import { Chip, EmptyState, Segmented, Sheet, type SheetSnap } from '@/components/ui'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { useSmartSearch } from '@/hooks/useSmartSearch'
 import { useGeocoder } from '@/hooks/useGeocoder'
 import { clinicAvailIcon, homeIcon } from '@/lib/map/icons'
-import { US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance } from '@/lib/map/geo'
-import type { Bounds } from '@/lib/search'
+import {
+  US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance,
+  toLatLngBounds, radiusBounds, prefersReducedMotion,
+} from '@/lib/map/geo'
+import type { Bounds, SortMode } from '@/lib/search'
 import { parseMapUrlState, toMapUrlQuery } from '@/lib/search/url-state'
-import { ZOOM_FOR_KIND, type GeocodeResult } from '@/types/geocode'
+import { ZOOM_FOR_KIND, type GeocodeAddress, type GeocodeResult } from '@/types/geocode'
 import { cn } from '@/lib/utils'
 import type { MapItem } from '@/lib/map/types'
 import type { Clinic } from '@/types/professionals'
@@ -44,6 +48,36 @@ L.Marker.prototype.options.icon = clinicAvailIcon
  * click a pin is noise.
  */
 const MOVED_THRESHOLD_MILES = 2
+
+/**
+ * `'any'` rather than `null` because a radiogroup needs a value for every
+ * option, and "no limit" is a choice like any other.
+ */
+const RADIUS_OPTIONS = [
+  { value: 'any', label: 'Any', 'aria-label': 'Any distance' },
+  { value: '5', label: '5 mi', 'aria-label': 'Within 5 miles' },
+  { value: '10', label: '10 mi', 'aria-label': 'Within 10 miles' },
+  { value: '25', label: '25 mi', 'aria-label': 'Within 25 miles' },
+  { value: '50', label: '50 mi', 'aria-label': 'Within 50 miles' },
+] as const
+
+/** Enough to browse, few enough to stay on one scrollable line. */
+const MAX_VISIBLE_TAGS = 6
+
+const SORT_OPTIONS = [
+  { value: 'auto', label: 'Best', 'aria-label': 'Best match' },
+  { value: 'distance', label: 'Nearest', 'aria-label': 'Nearest first' },
+  { value: 'name', label: 'A–Z', 'aria-label': 'Alphabetical' },
+  { value: 'availability', label: 'Open', 'aria-label': 'Accepting referrals first' },
+] as const
+
+/** The heading is derived from the ordering so the two cannot disagree. */
+const SORT_HEADINGS: Record<SortMode, string> = {
+  relevance: 'Best Matches',
+  distance: 'Nearest Results',
+  name: 'All Results, A–Z',
+  availability: 'Accepting Referrals First',
+}
 
 /**
  * Binds map events through react-leaflet's own hook.
@@ -87,17 +121,36 @@ export function MapView({
   const [showSpecialistModal, setShowSpecialistModal] = useState(false)
 
   const [filterText, setFilterText] = useState('')
-  const [showAvailableOnly, setShowAvailableOnly] = useState(false)
-  // Only surfaced when attorney pins are on, which today means the
-  // legal-directory map. '' = every practice area.
-  const [practiceAreaFilter, setPracticeAreaFilter] = useState('')
+  /**
+   * On by default. This is a referral tool: offering a provider who is not
+   * accepting referrals wastes the one action the screen exists for. The
+   * summary line always says the filter is on and clears it in one click.
+   */
+  const [showAvailableOnly, setShowAvailableOnly] = useState(true)
+  /** Phone only — the filter block is collapsed behind a button. */
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [showAllTags, setShowAllTags] = useState(false)
+  /**
+   * `'auto'` keeps the behaviour that was hardwired before: relevance while
+   * there is a query, distance otherwise. It stays as a real, named option so
+   * choosing an explicit order is a decision the user makes rather than one
+   * they trip over — and so the heading can never disagree with the ordering.
+   */
+  const [sortMode, setSortMode] = useState<SortMode | 'auto'>('auto')
   const [showClinics, setShowClinics] = useState(showClinicsProp)
   const [showLawyers, setShowLawyers] = useState(showLawyersProp)
   const [locationQuery, setLocationQuery] = useState('')
   // Selected specialty / practice-area chips, applied as a filter.
   const [tagFilters, setTagFilters] = useState<string[]>([])
+  /** What 'auto' resolves to right now. Also what the panel heading says. */
+  const effectiveSort: SortMode =
+    sortMode !== 'auto' ? sortMode : filterText.trim() ? 'relevance' : 'distance'
   const [locating, setLocating] = useState(false)
   const [locationLabel, setLocationLabel] = useState('')
+  // Kept beside the label rather than replacing it: the label is the one-line
+  // form the URL, the copied list and the summary need, while the anchor row
+  // renders the components on two lines.
+  const [locationAddress, setLocationAddress] = useState<GeocodeAddress | null>(null)
   // Anchor point for "clinics near the client's home": the searched/geolocated coordinates.
   const [searchedLocation, setSearchedLocation] = useState<[number, number] | null>(null)
   const [radiusMiles, setRadiusMiles] = useState<number | null>(null)
@@ -105,12 +158,14 @@ export function MapView({
   const autoSelectRef = useRef(false)
   /** Blocks URL writes until the incoming query string has been consumed. */
   const hydratedRef = useRef(false)
+  /** Set before any move we initiate, so `moveend` can tell it apart from a pan. */
+  const programmaticMoveRef = useRef(false)
+  const mapShellRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const userState = session?.user?.state
   const stateConfig = userState ? STATE_MAP_CONFIG[userState] : undefined
   const initialCenter = stateConfig?.center ?? US_DEFAULT_CENTER
   const initialZoom = stateConfig?.zoom ?? US_DEFAULT_ZOOM
-  const [mapCenter, setMapCenter] = useState<[number, number]>(initialCenter)
   const [showPanel, setShowPanel] = useState(false)
 
   /**
@@ -192,6 +247,7 @@ export function MapView({
       setShowClinics(state.types.includes('clinic'))
       setShowLawyers(state.types.includes('lawyer'))
     }
+    if (state.sort) setSortMode(state.sort)
     if (state.radius) setRadiusMiles(state.radius)
     if (state.bbox) setViewportBounds(state.bbox)
     if (state.selected) setSelectedId(state.selected)
@@ -201,7 +257,6 @@ export function MapView({
       // instantly and does not depend on a third party still being up.
       setSearchedLocation(state.at)
       setAppliedCenter(state.at)
-      setMapCenter(state.at)
       setLocationLabel(state.near ?? 'Shared location')
     } else if (state.near && state.near.length >= 3) {
       // The original contract: geocode the address text and auto-select the
@@ -219,12 +274,39 @@ export function MapView({
   const { results: geocodeResults, loading: geocoding } = useGeocoder(locationQuery)
 
   const applyPlace = useCallback(
-    (lat: number, lng: number, label: string, zoom: number) => {
-      setMapCenter([lat, lng])
+    (
+      lat: number,
+      lng: number,
+      label: string,
+      zoom: number,
+      address: GeocodeAddress | null = null,
+      bbox: GeocodeResult['bbox'] = null
+    ) => {
       setSearchedLocation([lat, lng])
       setLocationLabel(label)
+      setLocationAddress(address)
       setLocationQuery('')
-      mapRef.current?.setView([lat, lng], zoom)
+      // Distances are measured from the anchor, and "Search this area" compares
+      // the live centre against this. It was never updated here, so the pill
+      // appeared the instant you picked any address — the map had "moved" from
+      // wherever it had been before.
+      setAppliedCenter([lat, lng])
+      setMapMoved(false)
+
+      programmaticMoveRef.current = true
+      const map = mapRef.current
+      if (bbox) {
+        // Frame the place's real extent rather than a canned zoom — but only as
+        // a ceiling. Nominatim's city boxes are frequently county-sized, and an
+        // unbounded fit is worse than the fixed zoom it replaces.
+        map?.fitBounds(toLatLngBounds(bbox), {
+          maxZoom: zoom,
+          padding: [40, 40],
+          animate: !prefersReducedMotion(),
+        })
+      } else {
+        map?.setView([lat, lng], zoom, { animate: !prefersReducedMotion() })
+      }
     },
     []
   )
@@ -232,8 +314,34 @@ export function MapView({
   const handleSelectSuggestion = useCallback((s: GeocodeResult) => {
     // A ZIP covers far more ground than a street address; landing at street
     // zoom on a ZIP search hides most of what was asked for.
-    applyPlace(s.lat, s.lng, s.label.split(',').slice(0, 2).join(','), ZOOM_FOR_KIND[s.kind])
+    //
+    // The label arrives already composed from the geocoder's structured
+    // components. It used to be re-truncated here to two comma parts, which
+    // undid that work and produced a different label from the one the dropdown
+    // path produced for the very same address.
+    applyPlace(s.lat, s.lng, s.label, ZOOM_FOR_KIND[s.kind], s.address, s.bbox)
   }, [applyPlace])
+
+  /**
+   * Frame the radius the user just chose.
+   *
+   * Changing 5 mi to 50 mi used to alter nothing on screen but a small number:
+   * same centre, same zoom, same pins in view, while the list quietly grew from
+   * 16 to 65. The map is the one thing on this page that can show what a radius
+   * means, and it was the one thing that did not react.
+   */
+  const applyRadius = useCallback(
+    (miles: number | null) => {
+      setRadiusMiles(miles)
+      if (!miles || !searchedLocation || !mapRef.current) return
+      programmaticMoveRef.current = true
+      mapRef.current.fitBounds(radiusBounds(searchedLocation, miles), {
+        padding: [30, 30],
+        animate: !prefersReducedMotion(),
+      })
+    },
+    [searchedLocation]
+  )
 
   // Auto-select the first match when the search was driven by the ?near= deep link.
   // ReferrerReferralForm depends on this: "View clinics near this client" must
@@ -249,21 +357,21 @@ export function MapView({
     if (!navigator.geolocation) return
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => { const { latitude, longitude } = pos.coords; setMapCenter([latitude, longitude]); setSearchedLocation([latitude, longitude]); setLocationLabel('My Location'); setLocating(false); mapRef.current?.setView([latitude, longitude], 12) },
+      (pos) => { const { latitude, longitude } = pos.coords; setSearchedLocation([latitude, longitude]); setLocationLabel('My Location'); setLocating(false); mapRef.current?.setView([latitude, longitude], 12) },
       () => setLocating(false),
       { enableHighAccuracy: false, timeout: 10000 }
     )
   }, [])
 
   const handleClearLocation = useCallback(() => {
-    setLocationLabel(''); setLocationQuery(''); setSearchedLocation(null); setRadiusMiles(null)
+    setLocationLabel(''); setLocationAddress(null); setLocationQuery(''); setSearchedLocation(null); setRadiusMiles(null)
     // Clearing the location resets every spatial constraint, not just the pin —
     // leaving a stale viewport behind would keep filtering results against an
     // area the user can no longer see any reason for.
     setViewportBounds(null)
     setMapMoved(false)
     setAppliedCenter(initialCenter)
-    setMapCenter(initialCenter); mapRef.current?.setView(initialCenter, initialZoom)
+    mapRef.current?.setView(initialCenter, initialZoom)
   }, [initialCenter, initialZoom])
 
 
@@ -278,16 +386,15 @@ export function MapView({
     [searchedLocation, appliedCenter]
   )
 
-  // The practice-area select feeds the same tag filter as the chips.
-  const activeTags = useMemo(
-    () => (practiceAreaFilter ? [...tagFilters, practiceAreaFilter] : tagFilters),
-    [tagFilters, practiceAreaFilter]
-  )
 
   const {
     items: panelItems,
     total: resultTotal,
     facets,
+    // Computed and verified by the engine since the search rebuild, returned by
+    // this hook, and never once destructured here — so the empty panel showed a
+    // hardcoded "try something else" while a checked suggestion sat unused.
+    didYouMean,
     clinicCount,
     lawyerCount,
     byId,
@@ -301,27 +408,71 @@ export function MapView({
     showClinics,
     showLawyers,
     availableOnly: showAvailableOnly,
-    tags: activeTags,
+    tags: tagFilters,
     anchor,
     // The radius only means anything relative to a deliberately chosen origin;
     // measuring it from wherever the map happens to sit would silently reshuffle
     // the list on every pan.
     radiusMiles: searchedLocation ? radiusMiles : null,
     bounds: viewportBounds,
-    sort: filterText.trim() ? 'relevance' : 'distance',
+    sort: effectiveSort,
   })
+
+  /**
+   * How many of each type the current query found, regardless of whether that
+   * type is switched on.
+   *
+   * `clinicCount`/`lawyerCount` are counted from the rendered hits, so a type
+   * that is toggled off reports 0 by construction — the chip displayed
+   * "Attorneys 0" while the engine knew there were 47. `facets.types` is
+   * computed with the type filter deliberately excluded, so it answers the
+   * question the chip is actually asking: what do I get back if I turn this on?
+   */
+  const typeCount = useCallback(
+    (type: 'clinic' | 'lawyer') => facets.types.find((t) => t.value === type)?.count ?? 0,
+    [facets.types]
+  )
+
+  /**
+   * The denominator for "16 of 118".
+   *
+   * Facets are counted over the hits that matched the TEXT and fell inside the
+   * current area and radius, but before the chip filters are applied
+   * (see `engine.ts`). Summing the per-type counts therefore answers "how many
+   * did this search actually find around here", which is the honest thing to
+   * compare the visible count against — and the number that tells someone
+   * their filters are hiding things.
+   */
+  const areaTotal = useMemo(
+    () => facets.types.reduce((sum, t) => sum + t.count, 0),
+    [facets.types]
+  )
+
+  /** Tags worth offering, most common first, with the selected ones pinned on. */
+  const visibleTags = useMemo(() => {
+    const selected = facets.tags.filter((t) => tagFilters.includes(t.value))
+    const rest = facets.tags.filter((t) => !tagFilters.includes(t.value))
+    const shown = showAllTags ? rest : rest.slice(0, Math.max(0, MAX_VISIBLE_TAGS - selected.length))
+    return [...selected, ...shown]
+  }, [facets.tags, tagFilters, showAllTags])
+
+  /** Everything currently narrowing the list, so it can be undone in one go. */
+  const activeFilterCount =
+    tagFilters.length +
+    (showAvailableOnly ? 1 : 0) +
+    (showClinicsProp && !showClinics ? 1 : 0) +
+    (showLawyersProp && !showLawyers ? 1 : 0)
+
+  const handleClearFilters = useCallback(() => {
+    setTagFilters([])
+    setShowAvailableOnly(false)
+    setShowClinics(showClinicsProp)
+    setShowLawyers(showLawyersProp)
+  }, [showClinicsProp, showLawyersProp])
 
   // Markers and the panel now render the exact same array, so the chip counts
   // and the list can no longer disagree.
   const visibleItems = panelItems
-
-  // Practice-area options come from the loaded firms rather than a prop,
-  // so the dropdown can never offer an area with zero pins.
-  const practiceAreaOptions = useMemo(() => {
-    const areas = new Set<string>()
-    for (const l of lawyers) (l.practiceAreas || []).forEach((a) => areas.add(a))
-    return Array.from(areas).sort()
-  }, [lawyers])
 
   const handleCopyList = useCallback(async () => {
     if (panelItems.length === 0) return
@@ -354,6 +505,7 @@ export function MapView({
     anchor: searchedLocation,
     entityHeading: isClinicViewer ? 'Specialists' : 'Providers',
     categoryHeading: showLawyersProp ? 'Practice areas' : 'Specialties',
+    hasAnchor: Boolean(locationLabel),
   })
 
   const handleSuggestionSelect = useCallback(
@@ -428,6 +580,10 @@ export function MapView({
                 ...(showLawyers ? (['lawyer'] as const) : []),
               ],
         availableOnly: showAvailableOnly || undefined,
+        // Only once someone has actually chosen an order. Serialising the
+        // resolved value would append `?sort=distance` to every visit, so a
+        // plain map load would rewrite its own address bar.
+        sort: sortMode === 'auto' ? undefined : sortMode,
         selected: selectedId ?? undefined,
       }),
     [
@@ -440,6 +596,7 @@ export function MapView({
       showClinics,
       showLawyers,
       showAvailableOnly,
+      sortMode,
       selectedId,
     ]
   )
@@ -605,17 +762,39 @@ export function MapView({
   const appliedCenterRef = useRef(appliedCenter)
   appliedCenterRef.current = appliedCenter
 
+  /**
+   * Publish the zoom on the DOM so a test can assert the map actually reframed.
+   * Written imperatively rather than through state: this fires on every pan,
+   * and re-rendering the whole map for a number nothing displays is exactly the
+   * cost that `mapCenter` used to impose before it was removed.
+   */
+  const publishZoom = useCallback(() => {
+    const map = mapRef.current
+    if (map) mapShellRef.current?.setAttribute('data-zoom', String(map.getZoom()))
+  }, [])
+
   const handleMapMoveEnd = useCallback(() => {
     const map = mapRef.current
     if (!map) return
+    publishZoom()
+
+    // A move we made ourselves is not the user wandering off. Without this,
+    // every `fitBounds` — picking a radius, choosing an address — ends in a
+    // `moveend` that raises "Search this area", so the pill flashes up
+    // immediately after the very action that framed the map correctly.
+    if (programmaticMoveRef.current) {
+      programmaticMoveRef.current = false
+      setMapMoved(false)
+      return
+    }
+
     const centre = map.getCenter()
-    setMapCenter([centre.lat, centre.lng])
     // Offer to re-scope rather than doing it unasked. The threshold keeps the
     // pill from flashing up on the tiny recentre that follows opening a popup.
     const [appliedLat, appliedLng] = appliedCenterRef.current
     const moved = haversineDistance(centre.lat, centre.lng, appliedLat, appliedLng)
     setMapMoved(moved > MOVED_THRESHOLD_MILES)
-  }, [])
+  }, [publishZoom])
 
   const handleFocusItem = useCallback((item: MapItem) => {
     setSelectedId(item.id)
@@ -635,18 +814,95 @@ export function MapView({
   // media query can express. Safe here because the map never renders on the
   // server, so there is no hydration mismatch to worry about.
 
-  const resultsSummary = `${panelItems.length} ${
-    panelItems.length === 1 ? 'result' : 'results'
-  } found${searchedLocation && locationLabel ? ` near ${locationLabel}` : ''}`
+  /**
+   * The summary now leads with the honest ratio.
+   *
+   * "16 results found" left the reader with no idea whether that was everything
+   * or a sliver. `areaTotal` counts what the search found in this area BEFORE
+   * the chip filters, so the difference is precisely what the user's own
+   * filters are hiding.
+   */
+  const resultsSummary = `${panelItems.length}${
+    areaTotal > panelItems.length ? ` of ${areaTotal}` : ''
+  } ${panelItems.length === 1 ? 'result' : 'results'}${
+    searchedLocation && locationLabel ? ` near ${locationLabel}` : ''
+  }`
+
+  /**
+   * The next radius worth offering. Jumping straight to "Any" throws away the
+   * spatial intent the user just expressed; one step out keeps it.
+   */
+  const nextRadius = radiusMiles
+    ? ([5, 10, 25, 50] as const).find((r) => r > radiusMiles) ?? null
+    : null
+
+  /**
+   * A dead end with a way out of it.
+   *
+   * `didYouMean` is only produced when the engine has already re-run the search
+   * with the correction and confirmed it returns MORE results, so proposing it
+   * cannot lead to a second empty panel.
+   */
+  const emptyState = (
+    <EmptyState
+      icon={MapPin}
+      title="No results found"
+      hint={
+        didYouMean
+          ? undefined
+          : nextRadius
+            ? `Nothing within ${radiusMiles} miles of here.`
+            : 'Try a different search, or clear a filter.'
+      }
+      data-testid="map-panel-empty"
+      action={
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {didYouMean && (
+            <button
+              type="button"
+              onClick={() => setFilterText(didYouMean)}
+              data-testid="map-did-you-mean"
+              className="rounded-lg bg-navy px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-navy-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              Did you mean <span className="italic">{didYouMean}</span>?
+            </button>
+          )}
+          {nextRadius && (
+            <button
+              type="button"
+              onClick={() => applyRadius(nextRadius)}
+              data-testid="map-widen-radius"
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              Widen to {nextRadius} mi
+            </button>
+          )}
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              data-testid="map-empty-clear-filters"
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              Clear {activeFilterCount} {activeFilterCount === 1 ? 'filter' : 'filters'}
+            </button>
+          )}
+        </div>
+      }
+    />
+  )
 
   const panelBody = (
     <VirtualPanelList
       items={panelItems}
       onFocus={handleFocusItem}
       onHover={handleHoverItem}
+      onRefer={handleReferral}
+      userRole={userRole}
       hoveredId={hoveredId}
       selectedId={selectedId}
       scrollTo={scrollTo}
+      emptyState={emptyState}
     />
   )
 
@@ -678,7 +934,7 @@ export function MapView({
       {/* MAP */}
       {/* The map is inset on desktop so the docked results panel sits
           beside it rather than covering it. */}
-      <div className={cn('absolute inset-0 transition-[right] duration-300 ease-out motion-reduce:transition-none', panelDocked && showPanel && 'lg:right-[400px]')}>
+      <div ref={mapShellRef} data-testid="map-shell" className={cn('absolute inset-0 transition-[right] duration-300 ease-out motion-reduce:transition-none', panelDocked && showPanel && 'lg:right-[400px]')}>
       <MapContainer
         center={initialCenter}
         zoom={initialZoom}
@@ -708,9 +964,31 @@ export function MapView({
         />
         {searchedLocation && radiusMiles && (
           <Circle center={searchedLocation} radius={radiusMiles * 1609.34}
-            pathOptions={{ color: '#1a2a4a', weight: 1.5, opacity: 0.5, fillColor: '#1a2a4a', fillOpacity: 0.05 }} />
+            // Was weight 1.5 at 5% fill: technically present, invisible in
+            // practice, so the one thing that could show what a radius means
+            // showed nothing. Dashed so it reads as a boundary rather than as
+            // another map feature.
+            pathOptions={{
+              color: '#1a2a4a',
+              weight: 2,
+              opacity: 0.75,
+              dashArray: '6 5',
+              fillColor: '#1a2a4a',
+              fillOpacity: 0.06,
+            }} />
         )}
-        {searchedLocation && <Marker position={searchedLocation} icon={homeIcon} interactive={false} zIndexOffset={1000} />}
+        {searchedLocation && (
+          <Marker
+            position={searchedLocation}
+            icon={homeIcon}
+            zIndexOffset={1000}
+            // Was `interactive={false}`, so the pin could not say which address
+            // it marked. The card says it, but the card is on the other side of
+            // the screen from the pin.
+            title={locationLabel || undefined}
+            alt={locationLabel ? `Searching around ${locationLabel}` : 'Search location'}
+          />
+        )}
       </MapContainer>
       </div>
 
@@ -754,6 +1032,16 @@ export function MapView({
           {/* Glass card container */}
           <div className="rounded-2xl bg-white/[0.92] backdrop-blur-xl shadow-xl shadow-black/[0.08] border border-white/60 p-3 space-y-2.5">
 
+            {/* Where the search is anchored. A sibling of the box, never a
+                replacement for it — see LocationAnchor for why. */}
+            {locationLabel && (
+              <LocationAnchor
+                label={locationLabel}
+                address={locationAddress}
+                onClear={handleClearLocation}
+              />
+            )}
+
             {/* One box that understands names, specialties, cities and ZIPs.
                 Replaces the two unrelated inputs the map used to have. */}
               <SmartSearchBox
@@ -764,122 +1052,182 @@ export function MapView({
                 onRemove={handleSuggestionRemove}
                 groups={suggestionGroups}
                 resultCount={resultTotal}
-                loading={geocoding}
-                chipLabel={locationLabel || null}
-                onClearChip={handleClearLocation}
-                placeholder={
+                aria-label={
                   isClinicViewer
-                    ? 'Search specialists, specialty, city or ZIP...'
-                    : 'Search providers, specialty, city or ZIP...'
+                    ? 'Search specialists by name, specialty, city or ZIP'
+                    : 'Search providers by name, specialty, city or ZIP'
+                }
+                placeholder={
+                  // With an anchor set the box's job has changed from "find me a
+                  // place" to "narrow what is already around it", and saying so
+                  // is the difference between people using it and not.
+                  locationLabel
+                    ? `Filter these ${resultTotal} results...`
+                    : isClinicViewer
+                      ? 'Search specialists, specialty, city or ZIP...'
+                      : 'Search providers, specialty, city or ZIP...'
                 }
               />
 
-            {/* Selected specialty / practice-area chips */}
-            {tagFilters.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                {tagFilters.map((tag) => (
-                  <Chip
-                    key={tag}
-                    selected
-                    onToggle={() => setTagFilters((c) => c.filter((t) => t !== tag))}
-                    aria-label={`Remove ${tag} filter`}
-                    data-testid="map-filter-chip"
-                  >
-                    {tag}
-                    <X className="h-3 w-3" aria-hidden="true" />
-                  </Chip>
-                ))}
-              </div>
-            )}
+            {/* Everything that narrows the results. Collapsed behind a button
+                on a phone: anchor + box + five radius chips + a tag rail + two
+                type chips is ~300px of glass on a 667px screen. */}
+            {(!isPhone || filtersOpen) && (
+              <div className="space-y-2.5">
 
-
-            {/* Radius filter — only shown once a client location is set */}
-            {locationLabel && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mr-0.5">Radius</span>
-                {([null, 5, 10, 25, 50] as const).map((r) => (
-                  <Chip
-                    key={r ?? 'any'}
-                    selected={radiusMiles === r}
-                    onToggle={() => setRadiusMiles(r)}
-                    aria-label={r === null ? 'Any distance' : `Within ${r} miles`}
-                  >
-                    {r === null ? 'Any' : `${r} mi`}
-                  </Chip>
-                ))}
-                {radiusMiles && (
-                  <span className="ml-auto text-[11px] font-semibold text-navy tabular-nums">{panelItems.length} within {radiusMiles} mi</span>
+                {/* Radius — one radiogroup, not five loose toggles. The counter
+                    that used to live at the end of this row moved to the summary
+                    line below: inside a 420px card it wrapped onto a second line
+                    and pushed every control under it down by ~20px, so simply
+                    picking a radius made the card jump. */}
+                {locationLabel && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="mr-0.5 shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                      Radius
+                    </span>
+                    <Segmented
+                      options={RADIUS_OPTIONS}
+                      value={radiusMiles === null ? 'any' : String(radiusMiles)}
+                      onChange={(v) => applyRadius(v === 'any' ? null : Number(v))}
+                      label="Search radius"
+                      data-testid="map-radius"
+                    />
+                  </div>
                 )}
+
+                {/* Specialties, straight from the facet counts. These were only
+                    reachable before by typing two characters and hoping the tag
+                    made the dropdown's top three. */}
+                {visibleTags.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    {/* The rail scrolls; the disclosure does not. Putting the
+                        "+N more" button inside the scroller meant you had to
+                        scroll to find the control that saves you scrolling. */}
+                    <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5">
+                    {visibleTags.map((tag) => {
+                      const selected = tagFilters.includes(tag.value)
+                      return (
+                        <Chip
+                          key={tag.value}
+                          selected={selected}
+                          onToggle={() =>
+                            setTagFilters((current) =>
+                              selected
+                                ? current.filter((t) => t !== tag.value)
+                                : [...current, tag.value]
+                            )
+                          }
+                          count={tag.count}
+                          disabled={tag.count === 0 && !selected}
+                          aria-label={`${selected ? 'Remove' : 'Add'} ${tag.value} filter`}
+                          data-testid="map-filter-chip"
+                        >
+                          {tag.value}
+                          {selected && <X className="h-3 w-3" aria-hidden="true" />}
+                        </Chip>
+                      )
+                    })}
+                    </div>
+                    {facets.tags.length > MAX_VISIBLE_TAGS && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllTags((v) => !v)}
+                        data-testid="map-more-tags"
+                        className="shrink-0 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                      >
+                        {showAllTags ? 'Less' : `+${facets.tags.length - MAX_VISIBLE_TAGS}`}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Type toggles + availability. Toned to match the pins they
+                    control, so the legend is the control rather than a separate
+                    thing to learn. */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {showClinicsProp && (
+                    <Chip
+                      selected={showClinics}
+                      onToggle={() => setShowClinics(!showClinics)}
+                      tone="clinic"
+                      count={typeCount('clinic')}
+                      icon={
+                        isClinicViewer
+                          ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
+                          : <Building2 className="h-3 w-3" aria-hidden="true" />
+                      }
+                    >
+                      {isClinicViewer ? 'Specialists' : 'Clinics'}
+                    </Chip>
+                  )}
+                  {showLawyersProp && (
+                    <Chip
+                      selected={showLawyers}
+                      onToggle={() => setShowLawyers(!showLawyers)}
+                      tone="lawyer"
+                      count={typeCount('lawyer')}
+                      icon={<Scale className="h-3 w-3" aria-hidden="true" />}
+                    >
+                      Attorneys
+                    </Chip>
+                  )}
+                  <Chip
+                    selected={showAvailableOnly}
+                    onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
+                    tone="available"
+                    aria-label="Show only providers accepting referrals"
+                    data-testid="map-available-chip"
+                    icon={
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'h-1.5 w-1.5 rounded-full transition-colors',
+                          showAvailableOnly ? 'bg-white' : 'bg-gray-300'
+                        )}
+                      />
+                    }
+                  >
+                    Available
+                  </Chip>
+                </div>
               </div>
             )}
 
-            {/* Availability toggle. The text filter it used to sit beside is
-                now part of the search box above. */}
-            <div className="flex gap-2">
-              <Chip
-                selected={showAvailableOnly}
-                onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
-                tone="available"
-                aria-label="Show only providers accepting referrals"
-                icon={
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full transition-colors',
-                      showAvailableOnly ? 'bg-white' : 'bg-gray-300'
-                    )}
-                  />
-                }
-              >
-                Available
-              </Chip>
-            </div>
+            {/* The summary line. Owns the counter, so no control above it can
+                reflow when a number appears or changes width. */}
+            <div className="flex items-center gap-2 border-t border-gray-200/50 pt-2">
+              <p className="min-w-0 flex-1 text-[11px] leading-tight text-gray-500" data-testid="map-summary">
+                <span className="font-semibold tabular-nums text-navy">{resultTotal}</span>
+                {areaTotal > resultTotal && (
+                  <span className="tabular-nums"> of {areaTotal}</span>
+                )}
+                {radiusMiles ? ` within ${radiusMiles} mi` : ' shown'}
+                {activeFilterCount > 0 && (
+                  <>
+                    {' · '}
+                    <button
+                      type="button"
+                      onClick={handleClearFilters}
+                      data-testid="map-clear-filters"
+                      className="font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                    >
+                      Clear {activeFilterCount} {activeFilterCount === 1 ? 'filter' : 'filters'}
+                    </button>
+                  </>
+                )}
+              </p>
 
-            {/* Divider */}
-            <div className="h-px bg-gray-200/50" />
-
-            {/* Type toggles + counts */}
-            <div className="flex items-center gap-2">
-              {/* Toned to match the pins they control, so the legend is the
-                  control rather than a separate thing to learn. */}
-              {showClinicsProp && (
-                <Chip
-                  selected={showClinics}
-                  onToggle={() => setShowClinics(!showClinics)}
-                  tone="clinic"
-                  count={clinicCount}
-                  icon={
-                    isClinicViewer
-                      ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
-                      : <Building2 className="h-3 w-3" aria-hidden="true" />
-                  }
+              {isPhone && (
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                  aria-expanded={filtersOpen}
+                  data-testid="map-filters-toggle"
+                  className="shrink-0 rounded-lg border border-gray-200/40 bg-gray-50/80 px-2.5 py-1.5 text-[11px] font-semibold text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                 >
-                  {isClinicViewer ? 'Specialists' : 'Clinics'}
-                </Chip>
-              )}
-              {showLawyersProp && (
-                <Chip
-                  selected={showLawyers}
-                  onToggle={() => setShowLawyers(!showLawyers)}
-                  tone="lawyer"
-                  count={lawyerCount}
-                  icon={<Scale className="h-3 w-3" aria-hidden="true" />}
-                >
-                  Attorneys
-                </Chip>
-              )}
-              {showLawyersProp && showLawyers && practiceAreaOptions.length > 1 && (
-                <select
-                  value={practiceAreaFilter}
-                  onChange={(e) => setPracticeAreaFilter(e.target.value)}
-                  aria-label="Filter attorneys by practice area"
-                  className="rounded-lg border border-gray-200/40 bg-gray-50/80 px-2 py-1.5 text-[11px] font-semibold text-gray-500 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-colors"
-                >
-                  <option value="">All practice areas</option>
-                  {practiceAreaOptions.map((a) => (
-                    <option key={a} value={a}>{a}</option>
-                  ))}
-                </select>
+                  <SlidersHorizontal className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                  Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                </button>
               )}
             </div>
           </div>
@@ -953,11 +1301,24 @@ export function MapView({
           aria-label="Search results"
           data-testid="map-results-sheet"
           handleLabel={
-            <p className="text-[11px] font-semibold text-gray-500">
+            <p className="text-[11px] font-semibold text-gray-500" data-testid="map-results-summary">
               {resultsSummary}
             </p>
           }
         >
+          {/* Sort parity with the docked panel. A control that only exists on
+              desktop is a control half the users do not have. */}
+          <div className="border-b border-gray-100/80 px-4 pb-3">
+            <Segmented
+              className="w-full"
+              variant="track"
+              options={SORT_OPTIONS}
+              value={sortMode}
+              onChange={setSortMode}
+              label="Order results by"
+              data-testid="map-sort-sheet"
+            />
+          </div>
           {panelBody}
         </Sheet>
       ) : (
@@ -969,6 +1330,8 @@ export function MapView({
             />
           )}
           <div
+            role="region"
+            aria-label="Search results"
             className={cn(
               'absolute top-0 right-0 bottom-0 z-[601] w-full sm:w-[400px] bg-white/[0.97] backdrop-blur-xl shadow-2xl border-l border-gray-200/50 flex flex-col transition-transform duration-300 ease-out',
               showPanel ? 'translate-x-0' : 'translate-x-full',
@@ -979,12 +1342,19 @@ export function MapView({
             style={{ willChange: 'transform' }}
           >
             {/* Panel header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
-              <div>
-                <h2 className="font-heading text-sm font-bold text-navy tracking-tight">Nearest Results</h2>
-                <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{resultsSummary}</p>
+            <div className="border-b border-gray-100/80 px-5 py-4" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+             <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                {/* Derived from the ordering rather than written down beside
+                    it. The heading was a hardcoded "Nearest Results" that went
+                    on claiming distance order while the engine was sorting by
+                    relevance — which it did the moment anyone typed. */}
+                <h2 className="font-heading text-sm font-bold text-navy tracking-tight" data-testid="map-panel-heading">
+                  {SORT_HEADINGS[effectiveSort]}
+                </h2>
+                <p className="text-[11px] text-gray-400 mt-0.5 font-medium truncate" data-testid="map-results-summary">{resultsSummary}</p>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <button onClick={handleCopyList} disabled={panelItems.length === 0}
                   className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold border transition-all duration-200 disabled:opacity-40 ${copied ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-50 text-gray-600 border-gray-200/60 hover:bg-gray-100'}`}
                   title="Copy the nearby clinics list">
@@ -997,9 +1367,23 @@ export function MapView({
                   aria-label="Hide results list"
                   data-testid="map-panel-close"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
+             </div>
+
+             {/* Ordering belongs to the list, so it lives with the list. Four
+                 modes have been implemented in the engine and serialisable in
+                 the URL since the search rebuild; none of them were reachable. */}
+             <Segmented
+               className="mt-3 w-full"
+               variant="track"
+               options={SORT_OPTIONS}
+               value={sortMode}
+               onChange={setSortMode}
+               label="Order results by"
+               data-testid="map-sort"
+             />
             </div>
             {panelBody}
           </div>

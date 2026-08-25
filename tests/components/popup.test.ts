@@ -97,22 +97,39 @@ describe('the callback', () => {
 })
 
 describe('content', () => {
-  it('renders name, distance and tags', () => {
+  it('renders name, distance and availability', () => {
     const el = buildPopupContent(item(), 'lawyer', vi.fn())
     expect(el.textContent).toContain('Newlin Chiropractic')
     expect(el.textContent).toContain('3.2 miles away')
-    expect(el.textContent).toContain('Chiropractic')
     expect(el.textContent).toContain('Available')
   })
 
-  it('renders practice areas for an attorney', () => {
+  it('names the type for an attorney', () => {
     const el = buildPopupContent(
       item({ type: 'lawyer', specialties: undefined, practiceAreas: ['Personal Injury'] }),
       'clinic',
       vi.fn()
     )
     expect(el.textContent).toContain('Attorney')
-    expect(el.textContent).toContain('Personal Injury')
+  })
+
+  /**
+   * The popup answers "which pin is this", not "tell me everything". The tag
+   * rail and the website link moved out when every result row gained the same
+   * detail plus its own Refer button — keeping both meant maintaining two
+   * renderings of one record, one of them hand-written HTML with inline hex
+   * colours outside the design system.
+   */
+  it('leaves the full detail to the result row', () => {
+    // A specialty that cannot also appear in the clinic's name, or the
+    // assertion proves nothing — the fixture is called "Newlin Chiropractic".
+    const el = buildPopupContent(
+      item({ specialties: ['Deep Tissue Massage'], website: 'example.test' }),
+      'lawyer',
+      vi.fn()
+    )
+    expect(el.textContent).not.toContain('Deep Tissue Massage')
+    expect(el.querySelector('a')).toBeNull()
   })
 
   it('omits contact rows the API withheld', () => {
@@ -123,17 +140,7 @@ describe('content', () => {
       vi.fn()
     )
     expect(el.textContent).toContain('Newlin Chiropractic')
-    expect(el.querySelector('a')).toBeNull()
-  })
-
-  it('prefixes a protocol-less website', () => {
-    const el = buildPopupContent(item({ website: 'example.test' }), 'lawyer', vi.fn())
-    expect(el.querySelector('a')?.getAttribute('href')).toBe('https://example.test')
-  })
-
-  it('leaves an absolute website URL alone', () => {
-    const el = buildPopupContent(item({ website: 'https://example.test/x' }), 'lawyer', vi.fn())
-    expect(el.querySelector('a')?.getAttribute('href')).toBe('https://example.test/x')
+    expect(el.textContent).not.toContain('undefined')
   })
 
   it('escapes hostile record content rather than rendering it', () => {
