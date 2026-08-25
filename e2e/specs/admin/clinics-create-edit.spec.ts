@@ -1,7 +1,10 @@
 import { test, expect } from '../../fixtures/factories'
 import { createServiceClient } from '../../helpers/supabase-admin'
+import { expectAdminRow } from '../../helpers/admin'
 
 test('admin can create a clinic and see it in the table', async ({ page, ns }) => {
+  test.slow()
+
   const name = `${ns}clinic-${Date.now()}`
 
   await page.goto('/admin/clinics')
@@ -27,9 +30,7 @@ test('admin can create a clinic and see it in the table', async ({ page, ns }) =
   // "View emails for <name>" / "Edit <name>" action buttons' accessible names,
   // so a non-exact cell match resolves to multiple cells. Match the row
   // instead — its accessible name uniquely contains the namespaced clinic.
-  await expect(
-    page.getByRole('row').filter({ hasText: name }),
-  ).toBeVisible({ timeout: 15_000 })
+  await expectAdminRow(page, name)
 
   const supabase = createServiceClient()
   const { data } = await supabase
@@ -46,6 +47,8 @@ test('admin can create a clinic and see it in the table', async ({ page, ns }) =
 })
 
 test('admin can edit an existing clinic name', async ({ page, createClinic, ns }) => {
+  test.slow()
+
   const original = await createClinic({ name: `${ns}orig` })
   const updated = `${ns}updated`
 
@@ -60,7 +63,5 @@ test('admin can edit an existing clinic name', async ({ page, createClinic, ns }
   await nameInput.fill(updated)
   await page.getByRole('button', { name: /^save$|update/i }).click()
 
-  await expect(
-    page.getByRole('row').filter({ hasText: updated }),
-  ).toBeVisible({ timeout: 15_000 })
+  await expectAdminRow(page, updated)
 })

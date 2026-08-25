@@ -20,8 +20,22 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 15_000,
-    navigationTimeout: 30_000,
+    // Both budgets are sized for the webServer being `next dev`, which compiles
+    // a route the first time it is requested. Whichever spec happens to touch a
+    // route first pays for that build, so the same spec passes when its project
+    // runs alone and fails in a full cold run purely because the order changed.
+    //
+    // `test.slow()` rescues neither of these: it scales the per-test timeout,
+    // not the action or navigation ones.
+
+    // The first click on a freshly compiled page waits for the build: 15s was
+    // not enough for "New Clinic" on a cold `/admin/clinics` (~20s to compile).
+    actionTimeout: 30_000,
+    // `/admin/dashboard` (recharts + the bento widgets) compiles in 15.2s and
+    // the navigation measured 24.6s, over the old 30s budget — which failed
+    // `role-guard.spec.ts` for a reason that has nothing to do with role
+    // guarding.
+    navigationTimeout: 90_000,
   },
 
   globalSetup: './e2e/global.setup.ts',

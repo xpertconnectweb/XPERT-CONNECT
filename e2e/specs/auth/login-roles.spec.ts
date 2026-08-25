@@ -38,9 +38,16 @@ for (const c of cases) {
     // The form then redirects somewhere — destination depends on LoginForm's
     // `getSession()` whose role read can flake on cold dev. We only assert the
     // user eventually leaves the login screen.
+    //
+    // `waitUntil: 'commit'` is what makes that assertion honest. The default
+    // waits for the DESTINATION to finish loading, which for a clinic means
+    // `/professionals/map` — Leaflet, the clinic feed, and on a cold `next dev`
+    // its first compile. That is how this spec spent 60s failing at something
+    // it never meant to test. Leaving the login screen is a URL change, so wait
+    // for exactly that.
     await page.waitForURL(
       (url) => !url.pathname.endsWith('/login'),
-      { timeout: 60_000 }
+      { timeout: 60_000, waitUntil: 'commit' }
     )
 
     // Cookie should be set by now. Poll briefly to absorb any microtask delay.
