@@ -10,6 +10,9 @@ type Factories = {
   createLawyer: (overrides?: Partial<LawyerInput>) => Promise<LawyerRow>
   createUser: (overrides?: Partial<UserInput>) => Promise<UserRow>
   createReferral: (overrides?: Partial<ReferralInput>) => Promise<ReferralRow>
+  createReferrerReferral: (
+    overrides?: Partial<ReferrerReferralInput>,
+  ) => Promise<ReferrerReferralRow>
   createContact: (overrides?: Partial<ContactInput>) => Promise<ContactRow>
 }
 
@@ -70,6 +73,33 @@ export interface ReferralInput {
   notes?: string | null
 }
 export type ReferralRow = ReferralInput & { id: string; patient_name: string }
+
+/**
+ * `referrer_referrals` is a different table from `referrals`, and it is the one
+ * the partner portal reads: `/api/partners/referrals` serves
+ * `getReferrerReferralsByReferrer(session.user.id)`. A row is only visible to
+ * the partner whose id is in `referrer_id`, which is why `referrerId` has no
+ * default worth guessing — pass `process.env.E2E_PARTNER_USER_ID`.
+ */
+export interface ReferrerReferralInput {
+  id?: string
+  referrerId?: string
+  referrerName?: string
+  state?: string
+  clientName?: string
+  clientPhone?: string
+  clientEmail?: string
+  clientAddress?: string
+  serviceNeeded?: 'clinic' | 'lawyer' | 'both'
+  caseType?: string
+  status?: 'pending' | 'assigned' | 'in_process' | 'completed'
+  caseConfirmed?: 'pending' | 'confirmed'
+  notes?: string
+}
+export type ReferrerReferralRow = ReferrerReferralInput & {
+  id: string
+  client_name: string
+}
 
 export interface ContactInput {
   id?: string
@@ -239,6 +269,52 @@ export const test = base.extend<Factories>({
       return data as ReferralRow
     }
     await use(create)
+    for (const r of tracked.reverse()) {
+      await supabase.from(r.table).delete().eq('id', r.id)
+    }
+  },
+
+  createReferrerReferral: async ({ ns }, use) => {
+    const tracked: CreatedRecord[] = []
+    const supabase = createServiceClient()
+    const create = async (
+      overrides: Partial<ReferrerReferralInput> = {},
+    ): Promise<ReferrerReferralRow> => {
+      const referrerId = overrides.referrerId ?? process.env.E2E_PARTNER_USER_ID
+      if (!referrerId) {
+        throw new Error(
+          'createReferrerReferral needs a referrerId: pass one, or rely on ' +
+            'E2E_PARTNER_USER_ID which global.setup.ts resolves.',
+        )
+      }
+      const id = overrides.id ?? `${ns}rr-${rand()}`
+      const payload = {
+        id,
+        referrer_id: referrerId,
+        referrer_name: overrides.referrerName ?? `${ns}partner`,
+        state: overrides.state ?? 'FL',
+        client_name: overrides.clientName ?? `${ns}client`,
+        client_phone: overrides.clientPhone ?? '305-555-4444',
+        client_email: overrides.clientEmail ?? `${ns}client@e2e.test`,
+        // NOT NULL with no default, unlike client_email.
+        client_address: overrides.clientAddress ?? '1 E2E Ave, Miami, FL 33101',
+        service_needed: overrides.serviceNeeded ?? 'both',
+        case_type: overrides.caseType ?? 'Auto Accident',
+        status: overrides.status ?? 'pending',
+        case_confirmed: overrides.caseConfirmed ?? 'pending',
+        notes: overrides.notes ?? '',
+      }
+      const { data, error } = await supabase
+        .from('referrer_referrals')
+        .insert(payload)
+        .select()
+        .single()
+      if (error) throw new Error(`createReferrerReferral: ${error.message}`)
+      tracked.push({ table: 'referrer_referrals', id: data.id })
+      return data as ReferrerReferralRow
+    }
+    await use(create)
+    // Must go before the user it points at: referrer_id is a FK to users(id).
     for (const r of tracked.reverse()) {
       await supabase.from(r.table).delete().eq('id', r.id)
     }

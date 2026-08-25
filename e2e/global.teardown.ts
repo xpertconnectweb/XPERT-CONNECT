@@ -11,6 +11,9 @@ async function globalTeardown() {
 
   const tables: Array<{ table: string; col: string }> = [
     { table: 'referrals', col: 'patient_name' },
+    // Before `users`: referrer_id is a FK to users(id), so a leftover row here
+    // would block deleting the throwaway partner that global.setup provisions.
+    { table: 'referrer_referrals', col: 'client_name' },
     { table: 'contacts', col: 'name' },
     { table: 'newsletter_subscribers', col: 'email' },
     { table: 'users', col: 'username' },

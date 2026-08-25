@@ -1,4 +1,5 @@
 import { test as setup, expect, type BrowserContext } from '@playwright/test'
+import fs from 'node:fs'
 import path from 'node:path'
 
 type RoleSpec = {
@@ -69,24 +70,38 @@ async function loginViaApi(context: BrowserContext, s: RoleSpec) {
 // Sequential — pay first cold compile once.
 setup.describe.configure({ mode: 'serial' })
 
-const roles: RoleSpec['role'][] = ['admin', 'lawyer', 'clinic', 'referrer']
-if (process.env.E2E_PARTNER_USER && process.env.E2E_PARTNER_PASS) {
-  roles.push('partner')
-}
-// Gated the same way as partner, so CI without these secrets still passes.
-if (process.env.E2E_DIRECTORY_USER && process.env.E2E_DIRECTORY_PASS) {
-  roles.push('directory')
-}
+const roles: RoleSpec['role'][] = [
+  'admin',
+  'lawyer',
+  'clinic',
+  'referrer',
+  'partner',
+  'directory',
+]
+
+/**
+ * A Playwright project resolves its `storageState` file when the first test in
+ * it runs, and a missing file is a hard error rather than a skip. So every role
+ * gets a file written unconditionally, even when it has no credentials: an
+ * empty one produces an unauthenticated context, and the specs' own
+ * `test.skip` guards then report an honest skip instead of the project dying
+ * with "Error reading storage state from ./.auth/<role>.json".
+ */
+const EMPTY_STATE = { cookies: [], origins: [] }
 
 for (const role of roles) {
   setup(`authenticate as ${role}`, async ({ context }) => {
     setup.setTimeout(120_000)
-    const s = spec(role)
-    if (!s.username || !s.password) {
-      setup.skip(true, `Missing credentials for ${role}; skipping`)
-    }
-    await loginViaApi(context, s)
     const file = path.resolve(process.cwd(), `.auth/${role}.json`)
+    const s = spec(role)
+
+    if (!s.username || !s.password) {
+      fs.writeFileSync(file, JSON.stringify(EMPTY_STATE), 'utf8')
+      setup.skip(true, `Missing credentials for ${role}; skipping`)
+      return
+    }
+
+    await loginViaApi(context, s)
     await context.storageState({ path: file })
   })
 }
