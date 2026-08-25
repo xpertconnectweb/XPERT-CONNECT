@@ -16,7 +16,14 @@ const place = (over: Record<string, unknown> = {}) => ({
   boundingbox: ['28.53', '28.54', '-81.38', '-81.37'],
   class: 'place',
   type: 'house',
-  address: { house_number: '1000', road: 'Legion Pl', city: 'Orlando', postcode: '32801' },
+  address: {
+    house_number: '1000',
+    road: 'Legion Pl',
+    city: 'Orlando',
+    state: 'Florida',
+    'ISO3166-2-lvl4': 'US-FL',
+    postcode: '32801',
+  },
   ...over,
 })
 
@@ -79,6 +86,53 @@ describe('results', () => {
       kind: 'address',
       bbox: [28.53, 28.54, -81.38, -81.37],
     })
+    expect(first.label).toBe('1000 Legion Pl, Orlando, FL 32801')
+    expect(first.address).toEqual({
+      street: '1000 Legion Pl',
+      city: 'Orlando',
+      state: 'FL',
+      postcode: '32801',
+    })
+  })
+
+  /**
+   * The label used to be the first three comma parts of `display_name`, which
+   * for this fixture yields "1000 Legion Pl, Orlando, Orange County" — a county
+   * nobody typed, and no ZIP. The ZIP is the part that tells a user the
+   * geocoder found the right place.
+   */
+  it('keeps the ZIP the user typed instead of a county they did not', async () => {
+    fetchMock.mockResolvedValue(ok([place()]))
+    const res = await call(uniq('1000 Legion Pl Orlando 32801'))
+    const [first] = await res.json()
+    expect(first.label).toContain('32801')
+    expect(first.label).not.toContain('Orange County')
+  })
+
+  it('takes the state code from the ISO field, not by truncating the name', async () => {
+    // "Michigan" and "Minnesota" both start "Mi"; only the ISO field is safe.
+    fetchMock.mockResolvedValue(
+      ok([place({ address: { city: 'Duluth', state: 'Minnesota', 'ISO3166-2-lvl4': 'US-MN' } })])
+    )
+    const res = await call(uniq('duluth'))
+    const [first] = await res.json()
+    expect(first.address.state).toBe('MN')
+  })
+
+  it('promotes the city line when there is no street, so a ZIP search reads right', async () => {
+    fetchMock.mockResolvedValue(
+      ok([place({ type: 'postcode', address: { postcode: '32801', city: 'Orlando', 'ISO3166-2-lvl4': 'US-FL' } })])
+    )
+    const res = await call(uniq('32801'))
+    const [first] = await res.json()
+    expect(first.label).toBe('Orlando, FL 32801')
+  })
+
+  it('falls back to the upstream label when there are no components', async () => {
+    fetchMock.mockResolvedValue(ok([place({ address: undefined })]))
+    const res = await call(uniq('somewhere vague'))
+    const [first] = await res.json()
+    expect(first.address).toBeNull()
     expect(first.label).toBe('1000 Legion Pl, Orlando, Orange County')
   })
 

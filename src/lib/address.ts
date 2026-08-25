@@ -205,3 +205,44 @@ export function stripUnit(address: string): string {
     .replace(/\s*,\s*,/g, ',')
     .trim()
 }
+
+/**
+ * Splits a geocoded address into the two lines a person reads.
+ *
+ * Line one is the street, line two the "city, ST ZIP" tail — the part that
+ * tells you whether the geocoder understood you. Rendering them with different
+ * weight is the whole reason `/api/geocode` keeps the components instead of
+ * one flattened string.
+ *
+ * Falls back to the upstream's own label when there are no components, which
+ * happens for regions and some POIs.
+ */
+export function formatGeocodeLines(
+  address: {
+    street?: string | null
+    city?: string | null
+    state?: string | null
+    postcode?: string | null
+  } | null | undefined,
+  fallback: string
+): { primary: string; secondary: string | null } {
+  if (!address) return { primary: fallback, secondary: null }
+
+  const tail = [address.city, address.state].filter(Boolean).join(', ')
+  const secondary = address.postcode ? `${tail} ${address.postcode}`.trim() : tail || null
+
+  // A ZIP or city search has no street. Promoting the tail keeps the chip from
+  // leading with an empty line.
+  if (!address.street) return { primary: secondary ?? fallback, secondary: null }
+
+  return { primary: address.street, secondary }
+}
+
+/** One-line form, for places that cannot show two lines (the URL, a tooltip). */
+export function formatGeocodeLabel(
+  address: Parameters<typeof formatGeocodeLines>[0],
+  fallback: string
+): string {
+  const { primary, secondary } = formatGeocodeLines(address, fallback)
+  return secondary ? `${primary}, ${secondary}` : primary
+}

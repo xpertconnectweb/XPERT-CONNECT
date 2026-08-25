@@ -28,8 +28,3 @@ export interface MapItem {
   score?: number
 }
 
-export interface GeocodeSuggestion {
-  display_name: string
-  lat: string
-  lon: string
-}

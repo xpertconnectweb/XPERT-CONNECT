@@ -42,6 +42,12 @@ export interface SuggestionGroup {
   items: Suggestion[]
   /** Render placeholder rows instead of items while a source is in flight. */
   loading?: boolean
+  /**
+   * The source failed, as distinct from returning nothing. Without this, a
+   * geocoder outage renders identically to "no such address" and the user
+   * retypes a perfectly good one.
+   */
+  error?: boolean
 }
 
 /** Flattens groups to the visible, selectable order used by keyboard nav. */

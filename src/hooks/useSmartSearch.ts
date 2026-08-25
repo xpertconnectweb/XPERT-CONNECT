@@ -41,10 +41,24 @@ export interface UseSmartSearchOptions<T> {
   categoryHeading?: string
   /** Disable geocoding where a map is not involved (directory, specialists). */
   places?: boolean
+  /**
+   * True once a location is already anchored. Only changes the group heading:
+   * with an anchor set, picking a place REPLACES where you are searching rather
+   * than narrowing it, and "Places" reads like the latter.
+   */
+  hasAnchor?: boolean
 }
 
 export interface UseSmartSearchResult {
   groups: SuggestionGroup[]
+  /**
+   * The geocoder failed, as opposed to finding nothing.
+   *
+   * `useGeocoder` has always returned this and nobody consumed it, so a 502
+   * from `/api/geocode` looked exactly like "no such address" — the user
+   * retyped a perfectly good address instead of retrying.
+   */
+  placesError: boolean
   /** Records a committed search. Call from onSubmit and onSelect. */
   remember: (query: string, near?: { lat: number; lng: number; label: string }) => void
   /** Drops one entry from the history. */
@@ -59,6 +73,7 @@ export function useSmartSearch<T>({
   entityHeading = 'Providers',
   categoryHeading = 'Specialties',
   places = true,
+  hasAnchor = false,
 }: UseSmartSearchOptions<T>): UseSmartSearchResult {
   const trimmed = query.trim()
   const active = trimmed.length >= MIN_QUERY
@@ -174,7 +189,15 @@ export function useSmartSearch<T>({
       { key: 'category', heading: categoryHeading, items: categoryItems },
       { key: 'entity', heading: entityHeading, items: entityItems },
       ...(places
-        ? [{ key: 'place', heading: 'Places', items: placeItems, loading: geocode.loading }]
+        ? [
+            {
+              key: 'place',
+              heading: hasAnchor ? 'Change location' : 'Places',
+              items: placeItems,
+              loading: geocode.loading,
+              error: geocode.error,
+            },
+          ]
         : []),
     ]
   }, [
@@ -184,10 +207,12 @@ export function useSmartSearch<T>({
     categoryItems,
     entityHeading,
     entityItems,
+    hasAnchor,
     places,
     placeItems,
     geocode.loading,
+    geocode.error,
   ])
 
-  return { groups, remember, forget }
+  return { groups, placesError: places && geocode.error, remember, forget }
 }

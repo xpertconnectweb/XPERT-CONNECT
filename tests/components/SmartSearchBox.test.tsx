@@ -301,17 +301,33 @@ describe('loading state', () => {
   })
 })
 
-describe('chip mode', () => {
-  it('replaces the input with the resolved location', () => {
-    setup({ chipLabel: 'Orlando, FL' })
-    expect(screen.queryByRole('combobox')).toBeNull()
-    expect(screen.getByTestId('map-search-chip')).toHaveTextContent('Orlando, FL')
+/**
+ * This used to be `describe('chip mode')`, asserting that a resolved location
+ * REPLACED the input — `expect(queryByRole('combobox')).toBeNull()`. That was
+ * the defect, written down as a guarantee: it meant that once you picked an
+ * address you could no longer filter by name or specialty.
+ *
+ * The location now lives in a sibling `LocationAnchor`, so the box has no chip
+ * mode at all and the combobox is unconditional.
+ */
+describe('the box never goes away', () => {
+  it('renders the combobox with no location concept of its own', () => {
+    setup()
+    expect(screen.getByRole('combobox')).toBeVisible()
+    expect(screen.queryByTestId('map-search-chip')).toBeNull()
   })
 
-  it('offers a labelled way out', async () => {
-    const onClearChip = vi.fn()
-    const { user } = setup({ chipLabel: 'Orlando, FL', onClearChip })
-    await user.click(screen.getByRole('button', { name: /clear location/i }))
-    expect(onClearChip).toHaveBeenCalled()
+  it('keeps a single clear affordance, so the testid is unambiguous', async () => {
+    // Both branches used to ship `data-testid="map-search-clear"`, mutually
+    // exclusive only because of the early return.
+    const { user } = setup({ value: 'chiro' })
+    expect(screen.getAllByTestId('map-search-clear')).toHaveLength(1)
+    await user.click(screen.getByTestId('map-search-clear'))
+    expect(screen.getByRole('combobox')).toHaveFocus()
+  })
+
+  it('takes an accessible name independent of the placeholder', () => {
+    setup({ placeholder: 'Filter these 16 results...', 'aria-label': 'Search providers' })
+    expect(screen.getByRole('combobox', { name: 'Search providers' })).toBeVisible()
   })
 })

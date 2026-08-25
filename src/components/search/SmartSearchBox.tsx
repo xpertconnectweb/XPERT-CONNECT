@@ -2,9 +2,13 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import { Search, X, Loader2, MapPin, Building2, Scale, Clock, Tag } from 'lucide-react'
+import {
+  Search, X, Loader2, MapPin, Building2, Scale, Clock, Tag, AlertTriangle,
+  Landmark, Mailbox, Building, Map,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { flattenSuggestions, type Suggestion, type SuggestionGroup } from './types'
+import type { GeocodeKind } from '@/types/geocode'
 
 /**
  * The single search box.
@@ -37,9 +41,12 @@ export interface SmartSearchBoxProps {
   resultCount?: number
   loading?: boolean
   placeholder?: string
-  /** When set, the input is replaced by a dismissible chip for the location. */
-  chipLabel?: string | null
-  onClearChip?: () => void
+  /**
+   * The accessible name. Separate from `placeholder` on purpose: the map makes
+   * its placeholder contextual ("Filter these 16 results…"), and a placeholder
+   * that changes with state is not a label.
+   */
+  'aria-label'?: string
   autoFocus?: boolean
   className?: string
   'data-testid'?: string
@@ -55,8 +62,23 @@ const ICON_FOR: Record<Suggestion['kind'], typeof Search> = {
   category: Tag,
 }
 
+/**
+ * `/api/geocode` already classifies every place — a ZIP, a city, a street
+ * address and a landmark arrive tagged. The dropdown was giving all four the
+ * same generic pin, so the one piece of information that tells you how wide a
+ * result is went unused.
+ */
+const ICON_FOR_PLACE: Record<GeocodeKind, typeof Search> = {
+  address: MapPin,
+  poi: Landmark,
+  zip: Mailbox,
+  city: Building,
+  region: Map,
+}
+
 function iconFor(suggestion: Suggestion) {
   if (suggestion.kind === 'entity' && suggestion.sublabel === 'Attorney') return Scale
+  if (suggestion.payload.kind === 'place') return ICON_FOR_PLACE[suggestion.payload.placeKind]
   return ICON_FOR[suggestion.kind]
 }
 
@@ -70,8 +92,7 @@ export function SmartSearchBox({
   resultCount,
   loading = false,
   placeholder = 'Search by name, specialty, city or ZIP...',
-  chipLabel = null,
-  onClearChip,
+  'aria-label': ariaLabel = 'Search providers by name, specialty, city or ZIP',
   autoFocus = false,
   className,
   'data-testid': testId = 'map-search',
@@ -88,7 +109,9 @@ export function SmartSearchBox({
   const flat = useMemo(() => flattenSuggestions(groups), [groups])
   const hasItems = flat.length > 0
   const anyLoading = loading || groups.some((g) => g.loading)
-  const expanded = open && (hasItems || anyLoading)
+  // An error with no items still has something to say, so it counts as content.
+  const anyError = groups.some((g) => g.error)
+  const expanded = open && (hasItems || anyLoading || anyError)
 
   // Show the spinner only once a lookup has run long enough to be worth
   // acknowledging. Most resolve from cache in well under this, and rendering a
@@ -204,29 +227,6 @@ export function SmartSearchBox({
     [close]
   )
 
-  if (chipLabel) {
-    return (
-      <div className={cn('relative', className)}>
-        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gold z-10" />
-        <div
-          className="flex items-center w-full rounded-xl bg-gray-50/80 py-2.5 pl-10 pr-9 text-sm text-navy border border-gray-200/40"
-          data-testid={`${testId}-chip`}
-        >
-          <span className="truncate font-semibold">{chipLabel}</span>
-        </div>
-        <button
-          type="button"
-          onClick={onClearChip}
-          aria-label="Clear location"
-          data-testid={`${testId}-clear`}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/60 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 transition-colors"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    )
-  }
-
   let renderIndex = -1
 
   return (
@@ -244,7 +244,7 @@ export function SmartSearchBox({
           activeIndex >= 0 && flat[activeIndex] ? `${baseId}-opt-${flat[activeIndex].id}` : undefined
         }
         aria-describedby={hintId}
-        aria-label="Search providers by name, specialty, city or ZIP"
+        aria-label={ariaLabel}
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
@@ -317,7 +317,7 @@ export function SmartSearchBox({
         )}
       >
         {groups.map((group) => {
-          if (!group.loading && group.items.length === 0) return null
+          if (!group.loading && !group.error && group.items.length === 0) return null
           const headingId = `${baseId}-grp-${group.key}`
           return (
             <li key={group.key} role="group" aria-labelledby={headingId}>
@@ -328,6 +328,19 @@ export function SmartSearchBox({
               >
                 {group.heading}
               </div>
+
+              {/* Not an option: keyboard navigation must skip straight past it,
+                  and `flat` — which drives every index — never contains it. */}
+              {group.error && group.items.length === 0 && !group.loading && (
+                <div
+                  role="presentation"
+                  data-testid={`${testId}-group-error`}
+                  className="mx-2 my-1 flex items-start gap-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-800"
+                >
+                  <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>Address lookup is unavailable. Keep typing to search by name, or try again shortly.</span>
+                </div>
+              )}
 
               {group.loading && group.items.length === 0
                 ? // Reserve the row height so the list does not jump when a

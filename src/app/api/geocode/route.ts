@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { extractZip } from '@/lib/search/text'
-import { stripUnit } from '@/lib/address'
-import type { GeocodeResult } from '@/types/geocode'
+import { stripUnit, formatGeocodeLabel } from '@/lib/address'
+import type { GeocodeAddress, GeocodeResult } from '@/types/geocode'
 
 /**
  * Server-side proxy for Nominatim address lookup.
@@ -92,6 +92,29 @@ function classify(place: NominatimPlace): GeocodeResult['kind'] {
   return 'region'
 }
 
+/**
+ * Pulls the recognisable parts out of Nominatim's `address` object.
+ *
+ * `addressdetails=1` is already requested, so this costs nothing — the
+ * components were being parsed for `classify()` and then discarded.
+ *
+ * The state code comes from `ISO3166-2-lvl4` ("US-FL"), not from truncating
+ * the state name: "Michigan" and "Minnesota" both start "Mi".
+ */
+function toAddress(place: NominatimPlace): GeocodeAddress | null {
+  const a = place.address
+  if (!a) return null
+
+  const street = [a.house_number, a.road].filter(Boolean).join(' ').trim() || null
+  const city = a.city ?? a.town ?? a.village ?? a.hamlet ?? null
+  const iso = a['ISO3166-2-lvl4']
+  const state = iso?.startsWith('US-') ? iso.slice(3) : (a.state ?? null)
+  const postcode = a.postcode ?? null
+
+  if (!street && !city && !state && !postcode) return null
+  return { street, city, state, postcode }
+}
+
 function toResult(place: NominatimPlace, index: number): GeocodeResult | null {
   const lat = Number(place.lat)
   const lng = Number(place.lon)
@@ -99,10 +122,17 @@ function toResult(place: NominatimPlace, index: number): GeocodeResult | null {
 
   const full = place.display_name ?? ''
   const bbox = place.boundingbox
+  const address = toAddress(place)
+
   return {
     id: String(place.place_id ?? `${lat},${lng},${index}`),
-    label: full.split(',').slice(0, 3).join(',').trim() || full,
+    // Built from the components when we have them. The old first-three-commas
+    // rule turned "3200 SW 34th St, Gainesville, FL 32608" into
+    // "3200, Southwest 34th Street, Daysville" — dropping the city and ZIP the
+    // user typed in favour of a neighbourhood they had never heard of.
+    label: formatGeocodeLabel(address, full.split(',').slice(0, 3).join(',').trim() || full),
     fullLabel: full,
+    address,
     lat,
     lng,
     kind: classify(place),
