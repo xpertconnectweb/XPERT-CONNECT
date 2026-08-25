@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, X, Loader2, Search, FilterX } from 'lucide-react'
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import { PRACTICE_AREAS, resolveCatalog } from '@/lib/practice-areas'
+import { useProviderSearchIds } from '@/hooks/useProviderSearchIds'
 
 interface Lawyer {
   id: string
@@ -375,22 +376,17 @@ export default function AdminLawyersPage() {
     return { total: lawyers.length, avail, unavail: lawyers.length - avail }
   }, [lawyers])
 
+  // See the note on the clinics table: the shared core replaces a substring
+  // test that matched "Law Offices" for almost every firm in the directory.
+  const searchIds = useProviderSearchIds(lawyers, search, 'lawyer')
+
   const filtered = lawyers.filter((l) => {
     if (regionFilter && l.region !== regionFilter) return false
     if (countyFilter && l.county !== countyFilter) return false
     if (practiceAreaFilter && !l.practiceAreas.includes(practiceAreaFilter)) return false
     if (availFilter === 'available' && !l.available) return false
     if (availFilter === 'unavailable' && l.available) return false
-    if (search) {
-      const q = search.toLowerCase()
-      const matches =
-        l.name.toLowerCase().includes(q) ||
-        l.address.toLowerCase().includes(q) ||
-        (l.region && l.region.toLowerCase().includes(q)) ||
-        (l.county && l.county.toLowerCase().includes(q)) ||
-        l.practiceAreas.some((a) => a.toLowerCase().includes(q))
-      if (!matches) return false
-    }
+    if (searchIds && !searchIds.has(l.id)) return false
     return true
   })
 

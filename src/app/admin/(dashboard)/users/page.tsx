@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, X, Loader2, Search, AlertTriangle, RefreshCw } fr
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import type { UserRole } from '@/types/professionals'
+import { useProviderSearchIds } from '@/hooks/useProviderSearchIds'
 
 interface UserRow {
   id: string
@@ -19,17 +20,40 @@ interface UserRow {
   createdAt?: string
 }
 
+/**
+ * Both pickers are fed by the professionals APIs, which withhold the street
+ * address and the phone (see src/lib/api/public-shape.ts) but do return the
+ * coarse location. That is why these carry `city`/`state`/`zipCode` and not
+ * `address`: the picker used to advertise an address search it could never
+ * perform, because the field arrived empty every time.
+ *
+ * `lat`/`lng`/`available` are here so the rows satisfy the search core's
+ * `ClinicLike` / `LawyerLike` shapes.
+ */
 interface ClinicOption {
   id: string
   name: string
-  address: string
+  lat: number
+  lng: number
+  available: boolean
+  city?: string | null
+  state?: string | null
+  zipCode?: string | null
+  specialties?: string[]
 }
 
 interface LawyerOption {
   id: string
   name: string
+  lat: number
+  lng: number
+  available: boolean
   region?: string
   county?: string
+  city?: string | null
+  state?: string | null
+  zipCode?: string | null
+  practiceAreas?: string[]
 }
 
 interface UserForm {
@@ -109,13 +133,16 @@ export default function AdminUsersPage() {
     if (c.error) errors.push(c.error)
     else setClinics(
       (Array.isArray(c.data) ? c.data : []).map((c) => ({
-        id: c.id, name: c.name, address: c.address ?? '',
+        id: c.id, name: c.name, lat: c.lat, lng: c.lng, available: c.available,
+        city: c.city, state: c.state, zipCode: c.zipCode, specialties: c.specialties,
       }))
     )
     if (l.error) errors.push(l.error)
     else setLawyerFirms(
       (Array.isArray(l.data) ? l.data : []).map((l) => ({
-        id: l.id, name: l.name, region: l.region, county: l.county,
+        id: l.id, name: l.name, lat: l.lat, lng: l.lng, available: l.available,
+        region: l.region, county: l.county,
+        city: l.city, state: l.state, zipCode: l.zipCode, practiceAreas: l.practiceAreas,
       }))
     )
 
@@ -286,13 +313,14 @@ export default function AdminUsersPage() {
     }
   }
 
-  // Filter clinics for the searchable dropdown
-  const filteredClinics = clinicSearch.trim()
-    ? clinics.filter(
-        (c) =>
-          c.name.toLowerCase().includes(clinicSearch.toLowerCase()) ||
-          c.address.toLowerCase().includes(clinicSearch.toLowerCase())
-      )
+  // Both pickers run on the shared search core, same as the maps and the
+  // clinics/lawyers tables. Hooks have to be called unconditionally, so these
+  // sit here rather than next to the JSX that consumes them.
+  const clinicSearchIds = useProviderSearchIds(clinics, clinicSearch, 'clinic')
+  const lawyerSearchIds = useProviderSearchIds(lawyerFirms, lawyerSearch, 'lawyer')
+
+  const filteredClinics = clinicSearchIds
+    ? clinics.filter((c) => clinicSearchIds.has(c.id))
     : clinics
 
   // Show dropdown only when searching and no clinic is selected yet, or when editing the search
@@ -592,19 +620,15 @@ export default function AdminUsersPage() {
                           }
                         }}
                         className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                        placeholder="Search firm by name or region..."
+                        placeholder="Search firm by name, city or county..."
                       />
                       {(() => {
                         const selectedName = form.lawyerId ? lawyerNameMap.get(form.lawyerId) : null
                         const showLawyerDropdown = lawyerSearch.trim() !== '' && lawyerSearch !== selectedName
                         if (!showLawyerDropdown) return null
-                        const q = lawyerSearch.toLowerCase()
-                        const filtered = lawyerFirms.filter(
-                          (l) =>
-                            l.name.toLowerCase().includes(q) ||
-                            (l.region && l.region.toLowerCase().includes(q)) ||
-                            (l.county && l.county.toLowerCase().includes(q))
-                        )
+                        const filtered = lawyerSearchIds
+                          ? lawyerFirms.filter((l) => lawyerSearchIds.has(l.id))
+                          : lawyerFirms
                         return (
                           <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
                             {filtered.length === 0 ? (
@@ -696,7 +720,7 @@ export default function AdminUsersPage() {
                         }
                       }}
                       className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                      placeholder="Search clinic by name or address..."
+                      placeholder="Search clinic by name, city or ZIP..."
                     />
                     {/* Dropdown results */}
                     {showClinicDropdown && (
@@ -715,7 +739,9 @@ export default function AdminUsersPage() {
                               className="w-full text-left px-4 py-2.5 hover:bg-gold/10 transition-colors border-b border-gray-50 last:border-0"
                             >
                               <p className="text-sm font-medium text-gray-900">{clinic.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{clinic.address}</p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {[clinic.city, clinic.state, clinic.zipCode].filter(Boolean).join(', ')}
+                              </p>
                             </button>
                           ))
                         )}

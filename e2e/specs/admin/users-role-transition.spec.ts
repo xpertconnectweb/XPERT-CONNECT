@@ -49,7 +49,7 @@ test('changing a user role from lawyer to clinic clears lawyer_id', async ({
   await modal.locator('select').first().selectOption('clinic')
 
   // The "Linked Clinic" picker is a search input + button list (no <select>).
-  await modal.getByPlaceholder('Search clinic by name or address').fill(clinic.name as string)
+  await modal.getByPlaceholder('Search clinic by name, city or ZIP').fill(clinic.name as string)
   await modal.getByRole('button', { name: clinic.name as string }).first().click()
 
   await modal.getByRole('button', { name: /^save$|update/i }).click()

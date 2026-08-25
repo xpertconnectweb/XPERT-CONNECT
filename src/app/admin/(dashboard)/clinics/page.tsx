@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail, FilterX } from 'lucide-react'
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
+import { useProviderSearchIds } from '@/hooks/useProviderSearchIds'
 
 interface Clinic {
   id: string
@@ -405,6 +406,11 @@ export default function AdminClinicsPage() {
     return { total: clinics.length, fl, mn, avail, unavail: clinics.length - avail }
   }, [clinics, getClinicState])
 
+  // Same matching the professionals and partners maps use, so an admin looking
+  // for a clinic types what they would type anywhere else in the product and
+  // gets ZIP, city and typo tolerance instead of a raw substring test.
+  const searchIds = useProviderSearchIds(clinics, search, 'clinic')
+
   const filtered = clinics.filter((c) => {
     if (stateFilter && getClinicState(c) !== stateFilter) return false
     if (regionFilter && c.region !== regionFilter) return false
@@ -412,15 +418,7 @@ export default function AdminClinicsPage() {
     if (specialtyFilter && !c.specialties.includes(specialtyFilter)) return false
     if (availFilter === 'available' && !c.available) return false
     if (availFilter === 'unavailable' && c.available) return false
-    if (search) {
-      const q = search.toLowerCase()
-      const matches =
-        c.name.toLowerCase().includes(q) ||
-        c.address.toLowerCase().includes(q) ||
-        (c.region && c.region.toLowerCase().includes(q)) ||
-        (c.county && c.county.toLowerCase().includes(q))
-      if (!matches) return false
-    }
+    if (searchIds && !searchIds.has(c.id)) return false
     return true
   })
 

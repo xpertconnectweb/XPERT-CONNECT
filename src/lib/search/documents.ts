@@ -86,8 +86,42 @@ function hasRealCoordinates(lat: unknown, lng: unknown): boolean {
   )
 }
 
-export function clinicToDoc<T extends ClinicLike>(clinic: T): SearchDoc<T> | null {
-  if (!hasRealCoordinates(clinic.lat, clinic.lng)) return null
+export interface DocOptions {
+  /**
+   * Whether a record must have real coordinates to be indexed. Defaults to
+   * true, which is what every map and public list wants.
+   *
+   * The admin tables pass false: a placeholder row at (0,0) is precisely the
+   * record an admin has to find and fix, so making it unsearchable there would
+   * hide the problem rather than enforce anything. The default is what keeps
+   * those rows off the maps, so flipping it here cannot weaken that rule.
+   */
+  requireCoordinates?: boolean
+  /**
+   * Whether to index the generic "what is this" vocabulary — clinic, provider,
+   * attorney, law firm. Defaults to true, which is what lets "orlando attorney"
+   * pick the firms out of a mixed map.
+   *
+   * The admin tables pass false, because there the type is already decided by
+   * which page you are on: every row in the clinics table is a clinic, so
+   * matching that word makes the query select all 696 rows instead of the
+   * handful with "Clinic" in their name.
+   */
+  includeKindWords?: boolean
+}
+
+/** Non-finite coordinates would poison distance maths downstream. */
+function safeCoord(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+export function clinicToDoc<T extends ClinicLike>(
+  clinic: T,
+  options: DocOptions = {}
+): SearchDoc<T> | null {
+  if (options.requireCoordinates !== false && !hasRealCoordinates(clinic.lat, clinic.lng)) {
+    return null
+  }
 
   // Prefer the decorated columns; fall back to parsing the address so the
   // adapter works before the normalization migration has run.
@@ -112,7 +146,7 @@ export function clinicToDoc<T extends ClinicLike>(clinic: T): SearchDoc<T> | nul
       region: region ? tokenize(region) : [],
       street: parsed?.street ? tokenize(parsed.street) : [],
       state: state ? [fold(state)] : [],
-      kind: CLINIC_KIND_WORDS,
+      kind: options.includeKindWords === false ? [] : CLINIC_KIND_WORDS,
     },
     text: {
       name: fold(clinic.name),
@@ -128,15 +162,20 @@ export function clinicToDoc<T extends ClinicLike>(clinic: T): SearchDoc<T> | nul
     zip,
     county,
     region,
-    lat: clinic.lat,
-    lng: clinic.lng,
+    lat: safeCoord(clinic.lat),
+    lng: safeCoord(clinic.lng),
     available: clinic.available !== false,
     source: clinic,
   }
 }
 
-export function lawyerToDoc<T extends LawyerLike>(lawyer: T): SearchDoc<T> | null {
-  if (!hasRealCoordinates(lawyer.lat, lawyer.lng)) return null
+export function lawyerToDoc<T extends LawyerLike>(
+  lawyer: T,
+  options: DocOptions = {}
+): SearchDoc<T> | null {
+  if (options.requireCoordinates !== false && !hasRealCoordinates(lawyer.lat, lawyer.lng)) {
+    return null
+  }
 
   const parsed = lawyer.address ? parseAddress(lawyer.address) : null
   // `lawyers.region` holds a CITY name (Orlando, Pensacola, Tampa...), not a
@@ -162,7 +201,7 @@ export function lawyerToDoc<T extends LawyerLike>(lawyer: T): SearchDoc<T> | nul
       region: [],
       street: parsed?.street ? tokenize(parsed.street) : [],
       state: state ? [fold(state)] : [],
-      kind: LAWYER_KIND_WORDS,
+      kind: options.includeKindWords === false ? [] : LAWYER_KIND_WORDS,
     },
     text: {
       name: fold(lawyer.name),
@@ -177,8 +216,8 @@ export function lawyerToDoc<T extends LawyerLike>(lawyer: T): SearchDoc<T> | nul
     zip,
     county,
     region: null,
-    lat: lawyer.lat,
-    lng: lawyer.lng,
+    lat: safeCoord(lawyer.lat),
+    lng: safeCoord(lawyer.lng),
     available: lawyer.available !== false,
     source: lawyer,
   }
@@ -187,15 +226,16 @@ export function lawyerToDoc<T extends LawyerLike>(lawyer: T): SearchDoc<T> | nul
 /** Maps a mixed list, dropping records that cannot be indexed. */
 export function toSearchDocs<C extends ClinicLike, L extends LawyerLike>(
   clinics: readonly C[],
-  lawyers: readonly L[]
+  lawyers: readonly L[],
+  options: DocOptions = {}
 ): SearchDoc<C | L>[] {
   const docs: SearchDoc<C | L>[] = []
   for (const clinic of clinics) {
-    const doc = clinicToDoc(clinic)
+    const doc = clinicToDoc(clinic, options)
     if (doc) docs.push(doc as SearchDoc<C | L>)
   }
   for (const lawyer of lawyers) {
-    const doc = lawyerToDoc(lawyer)
+    const doc = lawyerToDoc(lawyer, options)
     if (doc) docs.push(doc as SearchDoc<C | L>)
   }
   return docs

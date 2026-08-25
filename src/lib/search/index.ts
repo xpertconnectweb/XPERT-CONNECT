@@ -57,6 +57,7 @@ export {
   toSearchDocs,
   type ClinicLike,
   type LawyerLike,
+  type DocOptions,
 } from './documents'
 
 export {

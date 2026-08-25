@@ -400,3 +400,60 @@ describe('documents adapters', () => {
     ).toBeNull()
   })
 })
+
+/**
+ * The admin tables reuse this core through `useProviderSearchIds`, with two
+ * options flipped. Both exist because an admin is looking at the data itself
+ * rather than shopping for a provider.
+ */
+describe('admin document options', () => {
+  const adminOpts = { requireCoordinates: false, includeKindWords: false }
+  const adminIndex = buildSearchIndex(toSearchDocs(CLINICS, LAWYERS, adminOpts))
+  const adminIds = (query: string) =>
+    search(adminIndex, query).hits.map((h) => h.doc.id)
+
+  it('keeps placeholder records so an admin can find the row that needs fixing', () => {
+    expect(adminIndex.docs.map((d) => d.id)).toContain('c-5')
+    expect(adminIds('placeholder')).toContain('c-5')
+  })
+
+  it('still drops them everywhere else, which is what keeps them off the maps', () => {
+    expect(index.docs.map((d) => d.id)).not.toContain('c-5')
+  })
+
+  it('gives a placeholder finite coordinates rather than NaN', () => {
+    const doc = adminIndex.docs.find((d) => d.id === 'c-5')!
+    expect(Number.isFinite(doc.lat)).toBe(true)
+    expect(Number.isFinite(doc.lng)).toBe(true)
+  })
+
+  it('coerces non-finite coordinates instead of indexing NaN', () => {
+    const doc = lawyerToDoc(
+      { id: 'l-9', name: 'Bad Coords', lat: NaN, lng: -81, practiceAreas: [], available: true },
+      { requireCoordinates: false }
+    )
+    expect(doc).not.toBeNull()
+    expect(doc!.lat).toBe(0)
+    expect(doc!.lng).toBe(-81)
+  })
+
+  it('stops the type vocabulary from selecting the whole table', () => {
+    // On a mixed map "clinic" is a useful way to say "show me the clinics".
+    // On the admin clinics table every row is a clinic, so it would match all
+    // of them and the query would do nothing.
+    expect(ids('clinic')).toContain('c-2')
+    expect(adminIds('clinic')).not.toContain('c-2')
+    // A firm whose NAME contains the word is still found, which is the whole
+    // point of typing it there.
+    expect(adminIds('law')).toContain('l-2')
+  })
+
+  it('keeps typo tolerance, which the substring filter it replaces had none of', () => {
+    expect('Newlin Chiropractic'.toLowerCase().includes('chriopractic')).toBe(false)
+    expect(adminIds('chriopractic')).toContain('c-1')
+  })
+
+  it('matches on specialty, which the admin substring filter never searched', () => {
+    expect(adminIds('orthopedic')).toContain('c-2')
+  })
+})
