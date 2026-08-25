@@ -67,3 +67,43 @@ describe('LocationAnchor', () => {
     expect(screen.getByTestId('map-search-anchor-clear')).toBeVisible()
   })
 })
+
+/**
+ * Once the pin is draggable the row has a second job: admitting the pin is no
+ * longer where the search put it. On a general-purpose map nobody needs that;
+ * here the anchor decides which clinics count as nearest for one specific
+ * client, so an accidental drag would re-rank the list with nothing on screen
+ * saying so.
+ */
+describe('LocationAnchor, once the pin can move', () => {
+  it('says nothing about adjustment until the pin is moved', () => {
+    render(<LocationAnchor label="Orlando, FL" onClear={() => {}} />)
+    expect(screen.queryByText(/pin adjusted/i)).toBeNull()
+    expect(screen.queryByTestId('map-anchor-reset')).toBeNull()
+  })
+
+  it('admits the pin was moved, and offers the way back', async () => {
+    const onReset = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <LocationAnchor label="Custom location" onClear={() => {}} adjusted onReset={onReset} />
+    )
+    expect(screen.getByText(/pin adjusted/i)).toBeVisible()
+    await user.click(screen.getByTestId('map-anchor-reset'))
+    expect(onReset).toHaveBeenCalled()
+  })
+
+  it('offers no undo when there is nothing to go back to', () => {
+    // Geolocated rather than searched: there is no original address.
+    render(<LocationAnchor label="My Location" onClear={() => {}} adjusted />)
+    expect(screen.getByText(/pin adjusted/i)).toBeVisible()
+    expect(screen.queryByTestId('map-anchor-reset')).toBeNull()
+  })
+
+  it('holds the adjustment notice back while the new address resolves', () => {
+    // Announcing "adjusted · Undo" against a label that is still "Adjusting…"
+    // invites an undo of something the user cannot see yet.
+    render(<LocationAnchor label="Adjusting…" onClear={() => {}} adjusted resolving onReset={() => {}} />)
+    expect(screen.queryByText(/pin adjusted/i)).toBeNull()
+  })
+})

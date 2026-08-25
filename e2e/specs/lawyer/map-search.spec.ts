@@ -335,6 +335,42 @@ test.describe('unified map search', () => {
     await expect(refer).toHaveAttribute('aria-label', /^Refer a patient to /)
   })
 
+  /**
+   * Reported from the live site: unchecking Clinics did nothing — every pin
+   * stayed and the button looked dead. On this map the attorney toggle is
+   * already off, so switching Clinics off leaves the type list empty, and the
+   * engine was guarding on `length > 0` and reading that as "no filter".
+   */
+  test('switching the only pin type off actually empties the results', async ({ page }) => {
+    await openResults(page)
+    const rows = page.getByTestId('map-panel-row')
+    await expect(rows.first()).toBeVisible()
+
+    const chip = page.getByRole('button', { name: /^Clinics/ })
+    await expect(chip).toHaveAttribute('aria-pressed', 'true')
+    await chip.click()
+
+    await expect(chip).toHaveAttribute('aria-pressed', 'false')
+    await expect.poll(async () => rows.count()).toBe(0)
+    await expect(page.getByTestId('map-panel-empty')).toBeVisible()
+
+    // And it comes back, so the state is not a trap.
+    await chip.click()
+    await expect.poll(async () => rows.count()).toBeGreaterThan(0)
+  })
+
+  test('keeps the type chip count honest while the type is switched off', async ({ page }) => {
+    await openResults(page)
+    const chip = page.getByRole('button', { name: /^Clinics/ })
+    const before = (await chip.innerText()).match(/\d+/)?.[0]
+
+    await chip.click()
+    await expect(chip).toHaveAttribute('aria-pressed', 'false')
+    // The chip has to go on saying what turning it back on would give you.
+    // It used to report 0, because the count came from the rendered hits.
+    expect((await chip.innerText()).match(/\d+/)?.[0]).toBe(before)
+  })
+
   test('offers a way out of an empty result set', async ({ page }) => {
     // Open the panel while it still has rows: openResults waits for the list,
     // and an empty result set renders the empty state instead of one.
@@ -362,6 +398,76 @@ test.describe('unified map search', () => {
     await expect(suggestion).toBeVisible({ timeout: 15_000 })
     await suggestion.click()
     await expect(page.getByTestId('map-panel-row').first()).toBeVisible()
+  })
+
+  /**
+   * A geocoder resolves to a rooftop centroid, a street segment, or whatever
+   * the building was last tagged as — usually close enough for "how far is
+   * this clinic from my client", occasionally out by a block. So the pin is
+   * the user's to correct, and correcting it has to actually re-anchor the
+   * search rather than just move a graphic.
+   */
+  test('the home pin can be dragged to correct the location', async ({ page }) => {
+    // Wider than the default on purpose. With the results panel docked at 400px
+    // and the search card occupying the top-left 420px, a 1280px viewport leaves
+    // the pin sitting behind the card — so the press lands on glass, not on the
+    // pin, and the drag silently never starts.
+    await page.setViewportSize({ width: 1600, height: 900 })
+
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+    await page.getByRole('radio', { name: 'Within 5 miles' }).click()
+    await openResults(page)
+
+    const before = await page.getByTestId('map-results-summary').innerText()
+    const pin = page.locator('.xc-home-pin').first()
+    await expect(pin).toBeVisible()
+
+    // Choosing a radius frames it with an animated `fitBounds`, which moves the
+    // pin for ~300ms afterwards. Measuring during that window presses on empty
+    // map, Leaflet pans instead of dragging, and the drop never happens — which
+    // is why this passed alone and failed in a full run, where everything is
+    // warmer and the measurement lands earlier. So wait for the pin to settle
+    // rather than for a duration.
+    let box = await pin.boundingBox()
+    await expect
+      .poll(async () => {
+        const next = await pin.boundingBox()
+        const settled = !!box && !!next && Math.abs(next.x - box.x) < 1 && Math.abs(next.y - box.y) < 1
+        box = next
+        return settled
+      }, { timeout: 15_000 })
+      .toBe(true)
+
+    if (!box) throw new Error('home pin not measurable')
+    const from = { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+    // Down and left, away from both the card and the docked panel.
+    await page.mouse.move(from.x, from.y)
+    await page.mouse.down()
+    await page.mouse.move(from.x - 120, from.y + 180, { steps: 12 })
+    await page.mouse.up()
+
+    // The anchor moved, so the distances did.
+    await expect(page.getByText(/pin adjusted/i)).toBeVisible({ timeout: 30_000 })
+    await expect.poll(async () => page.getByTestId('map-results-summary').innerText()).not.toBe(before)
+
+    // And it is reversible — an accidental drag must not silently re-rank the
+    // list for good.
+    await page.getByTestId('map-anchor-reset').click()
+    await expect(page.getByText(/pin adjusted/i)).toBeHidden()
+    await expect(page.getByTestId('map-search-chip')).toContainText('Legion')
+  })
+
+  test('the pin says it can be moved, and is reachable by keyboard', async ({ page }) => {
+    await page.goto('/professionals/map?near=' + encodeURIComponent('1000 Legion Pl, Orlando, FL 32801'))
+    await expect(page.getByTestId('map-search-chip')).toBeVisible({ timeout: 30_000 })
+
+    const pin = page.locator('.xc-home-pin').first()
+    // The cursor is the only thing on screen saying the pin can be picked up.
+    await expect(pin).toHaveCSS('cursor', 'grab')
+    // Dragging is a pointer gesture; without a focusable marker the precision
+    // this feature exists for is unavailable to a keyboard entirely.
+    await expect(pin).toHaveAttribute('tabindex', '0')
   })
 
   test('records the search in the URL and restores it from a shared link', async ({ page }) => {

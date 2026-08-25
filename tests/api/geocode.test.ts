@@ -237,3 +237,47 @@ describe('upstream failure', () => {
     expect(res.status).toBe(502)
   })
 })
+
+/**
+ * Reverse mode exists for the draggable home pin: once someone nudges it onto
+ * the right driveway the address on screen has to follow, or the card goes on
+ * naming a building the pin is no longer on.
+ */
+describe('reverse lookup', () => {
+  it('turns coordinates into a structured address', async () => {
+    fetchMock.mockResolvedValue(ok(place()))
+    const res = await GET(new Request('http://localhost/api/geocode?lat=28.5383&lng=-81.3792'))
+    expect(res.status).toBe(200)
+    const [first] = await res.json()
+    expect(first.label).toBe('1000 Legion Pl, Orlando, FL 32801')
+    expect(first.address.city).toBe('Orlando')
+  })
+
+  it('asks the reverse endpoint, not the search one', async () => {
+    fetchMock.mockResolvedValue(ok(place()))
+    await GET(new Request('http://localhost/api/geocode?lat=28.6&lng=-81.4'))
+    expect(String(fetchMock.mock.calls[0][0])).toContain('/reverse')
+  })
+
+  it('returns an empty list rather than an error for open water', async () => {
+    // Nominatim answers `{ error: 'Unable to geocode' }` over the sea. The pin
+    // is still exactly where the user put it; only the name is unknown.
+    fetchMock.mockResolvedValue(ok({ error: 'Unable to geocode' }))
+    const res = await GET(new Request('http://localhost/api/geocode?lat=25.1&lng=-79.9'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual([])
+  })
+
+  it('rejects coordinates that are not on Earth', async () => {
+    const res = await GET(new Request('http://localhost/api/geocode?lat=999&lng=0'))
+    expect(res.status).toBe(400)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('caches by rounded coordinates, so a one-metre wobble is one call', async () => {
+    fetchMock.mockResolvedValue(ok(place()))
+    await GET(new Request('http://localhost/api/geocode?lat=28.538312&lng=-81.379244'))
+    await GET(new Request('http://localhost/api/geocode?lat=28.538314&lng=-81.379241'))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})

@@ -175,6 +175,69 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
+/* ── The draggable home pin ──
+   Leaflet sets its own cursor on markers, so these have to win. The cursor is
+   doing the real work here: it is the only thing on screen that says the pin
+   can be picked up at all. */
+/* Two classes on purpose. Leaflet ships `.leaflet-interactive { cursor: pointer }`
+   at the same specificity, and its stylesheet is imported by the map component
+   itself, so on source order alone it wins and the pin reads as a link. */
+.leaflet-marker-icon.xc-home-pin {
+  cursor: grab;
+  /* The icon swaps between two SVGs on drag, and a transition on the swap
+     would fight the drag itself. Only the focus ring animates. */
+  transition: filter 0.15s ease-out;
+}
+
+.leaflet-marker-icon.xc-home-pin:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 3px rgba(212, 168, 75, 0.95)) drop-shadow(0 0 6px rgba(212, 168, 75, 0.6));
+}
+
+/* Held. The pin rises, its shadow spreads and softens as though the ground had
+   moved further away, and a mark stays behind at the anchor point showing where
+   it will land — without that, a floating pin has no relationship to the map
+   and you cannot tell what you are about to pick.
+
+   All of it on the existing element: swapping the icon mid-drag destroys the
+   DOM node Leaflet's drag handler is bound to, and the drop never lands. */
+.leaflet-marker-icon.xc-home-pin--dragging,
+.leaflet-marker-icon.xc-home-pin--dragging * {
+  cursor: grabbing;
+}
+
+.leaflet-marker-icon.xc-home-pin--dragging svg {
+  transform: translateY(-9px) scale(1.06);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.28));
+  transition: transform 0.12s ease-out;
+}
+
+.leaflet-marker-icon.xc-home-pin--dragging::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 12px;
+  height: 5px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: rgba(26, 42, 74, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaflet-marker-icon.xc-home-pin--dragging svg {
+    transition: none;
+  }
+}
+
+/* Leaflet marks the document while a marker is being dragged; keep the
+   grabbing cursor even when the pointer outruns the pin. */
+.leaflet-dragging .leaflet-marker-icon.xc-home-pin,
+.leaflet-dragging .leaflet-marker-icon.xc-home-pin * {
+  cursor: grabbing;
+}
+
 /* ── Reduced motion ──
    The site animates a fair amount: fade-ups on every section, a spinning map
    loader, sliding panels, Leaflet's own pan and zoom easing. None of it was

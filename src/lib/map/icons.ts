@@ -34,10 +34,24 @@ export function createSvgIcon(
   })
 }
 
-// Distinct pin for the searched "client home" location — navy pin with a gold house glyph.
+/**
+ * The searched "client home" location — navy pin, gold house glyph.
+ *
+ * ONE icon, never swapped. The pin is draggable, and the obvious way to show
+ * that — a second "lifted" icon applied on `dragstart` — silently breaks the
+ * drag: `setIcon` replaces the marker's DOM element, and Leaflet's active drag
+ * handler is bound to the element that just went away, so `dragend` never
+ * fires and the drop is lost. Verified against the live map.
+ *
+ * So the held state is CSS on the existing element (see `.xc-home-pin--dragging`
+ * in globals.css), toggled imperatively. Nothing is recreated, and React is not
+ * re-rendered once per drag either.
+ *
+ * `overflow:visible` on the SVG so the lift is not clipped by its own box.
+ */
 export const homeIcon = L.divIcon({
-  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="36" height="46">
-    <defs><filter id="shome" x="-20%" y="-10%" width="140%" height="130%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.35)"/></filter></defs>
+  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="36" height="46" style="overflow:visible">
+    <defs><filter id="shome" x="-40%" y="-20%" width="180%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.35)"/></filter></defs>
     <g filter="url(#shome)">
       <path d="M18 2C10.27 2 4 8.27 4 16c0 10 14 26 14 26s14-16 14-26c0-7.73-6.27-14-14-14z" fill="#1a2a4a" stroke="#c9a24b" stroke-width="1.5"/>
       <path d="M18 8.5l7.5 6.4V15h-1.6v7.2h-4.6v-4.4h-2.6v4.4h-4.6V15H10.5v-.1L18 8.5z" fill="#f5c451"/>
@@ -46,7 +60,9 @@ export const homeIcon = L.divIcon({
   iconSize: [36, 46],
   iconAnchor: [18, 46],
   popupAnchor: [0, -42],
-  className: '',
+  // `grab` / `grabbing` is the whole affordance. Without a cursor change there
+  // is nothing at all telling anyone the pin can be moved.
+  className: 'xc-home-pin',
 })
 
 /**

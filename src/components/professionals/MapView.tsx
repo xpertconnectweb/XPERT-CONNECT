@@ -26,6 +26,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { useSmartSearch } from '@/hooks/useSmartSearch'
 import { useGeocoder } from '@/hooks/useGeocoder'
+import { useReverseGeocode } from '@/hooks/useReverseGeocode'
 import { clinicAvailIcon, homeIcon } from '@/lib/map/icons'
 import {
   US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance,
@@ -155,12 +156,30 @@ export function MapView({
   const [searchedLocation, setSearchedLocation] = useState<[number, number] | null>(null)
   const [radiusMiles, setRadiusMiles] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
+  /** The pin has been moved off what the search returned. */
+  const [anchorAdjusted, setAnchorAdjusted] = useState(false)
+  /**
+   * Where the search originally put the pin, kept so a nudge is undoable.
+   *
+   * This matters more here than on a general-purpose map: the anchor decides
+   * which clinics count as nearest for a specific client, and an accidental
+   * drag would quietly re-rank the list with nothing on screen admitting it
+   * had moved.
+   */
+  const [searchedOrigin, setSearchedOrigin] = useState<{
+    position: [number, number]
+    label: string
+    address: GeocodeAddress | null
+  } | null>(null)
   const autoSelectRef = useRef(false)
   /** Blocks URL writes until the incoming query string has been consumed. */
   const hydratedRef = useRef(false)
   /** Set before any move we initiate, so `moveend` can tell it apart from a pan. */
   const programmaticMoveRef = useRef(false)
   const mapShellRef = useRef<HTMLDivElement>(null)
+  /** Handles for the two things a drag moves without re-rendering React. */
+  const circleRef = useRef<L.Circle | null>(null)
+  const homeMarkerRef = useRef<L.Marker | null>(null)
   const router = useRouter()
   const userState = session?.user?.state
   const stateConfig = userState ? STATE_MAP_CONFIG[userState] : undefined
@@ -272,6 +291,7 @@ export function MapView({
   // Address lookup now goes through /api/geocode, which sets a real User-Agent,
   // caches server-side and keeps clients' home addresses off a third party.
   const { results: geocodeResults, loading: geocoding } = useGeocoder(locationQuery)
+  const { lookup: lookupAddress, loading: reverseLoading } = useReverseGeocode()
 
   const applyPlace = useCallback(
     (
@@ -292,6 +312,9 @@ export function MapView({
       // wherever it had been before.
       setAppliedCenter([lat, lng])
       setMapMoved(false)
+      // Remember where the search put it, so dragging is reversible.
+      setSearchedOrigin({ position: [lat, lng], label, address })
+      setAnchorAdjusted(false)
 
       programmaticMoveRef.current = true
       const map = mapRef.current
@@ -321,6 +344,131 @@ export function MapView({
     // path produced for the very same address.
     applyPlace(s.lat, s.lng, s.label, ZOOM_FOR_KIND[s.kind], s.address, s.bbox)
   }, [applyPlace])
+
+  /**
+   * Moving the home pin.
+   *
+   * The anchor is where every distance is measured from, so a drag re-sorts the
+   * whole list — which is exactly why it must not run per frame. Leaflet fires
+   * `drag` on every pointer move; committing that to React state would rebuild
+   * the search index and re-render several hundred markers dozens of times a
+   * second.
+   *
+   * So the live feedback is imperative: the radius circle is moved directly
+   * through its Leaflet handle, no React involved. State is committed once, on
+   * drop, and only then does anything re-rank.
+   */
+  const handleAnchorDragStart = useCallback((event: L.LeafletEvent) => {
+    // Imperative, and deliberately so. Setting React state here would swap the
+    // icon, and `setIcon` replaces the marker's DOM element — the very element
+    // Leaflet's active drag handler is bound to — so the drag dies mid-gesture
+    // and `dragend` never fires. Found the hard way: the pin lifted correctly
+    // and the drop went nowhere.
+    ;(event.target as L.Marker).getElement()?.classList.add('xc-home-pin--dragging')
+  }, [])
+
+  const handleAnchorDrag = useCallback((event: L.LeafletEvent) => {
+    const next = (event.target as L.Marker).getLatLng()
+    circleRef.current?.setLatLng(next)
+  }, [])
+
+  const commitAnchor = useCallback(
+    async (lat: number, lng: number) => {
+      setSearchedLocation([lat, lng])
+      setAppliedCenter([lat, lng])
+      // The pin moved, not the map. Offering "search this area" here would be
+      // answering a question nobody asked.
+      setMapMoved(false)
+
+      // Say something immediately rather than leaving the old address sitting
+      // under a pin that has moved off it.
+      setLocationAddress(null)
+      setLocationLabel('Adjusting…')
+
+      const place = await lookupAddress(lat, lng)
+      if (place) {
+        setLocationLabel(place.label)
+        setLocationAddress(place.address)
+      } else {
+        // Open water, a field, a lookup that failed. The pin is still exactly
+        // where it was put; only the name for it is unknown, and saying so is
+        // better than naming the building it used to be on.
+        setLocationLabel('Custom location')
+        setLocationAddress(null)
+      }
+    },
+    [lookupAddress]
+  )
+
+  const handleAnchorDragEnd = useCallback(
+    (event: L.LeafletEvent) => {
+      const marker = event.target as L.Marker
+      marker.getElement()?.classList.remove('xc-home-pin--dragging')
+      const { lat, lng } = marker.getLatLng()
+      setAnchorAdjusted(true)
+      void commitAnchor(lat, lng)
+    },
+    [commitAnchor]
+  )
+
+  /**
+   * Arrow keys nudge the focused pin.
+   *
+   * Dragging is a pointer gesture; without this the precision the feature
+   * exists for is unavailable to anyone using a keyboard. The step scales with
+   * zoom so one press is always a similar distance on screen rather than a
+   * jump across the county at street level, or an invisible twitch at state
+   * level. Shift moves ten times as far.
+   */
+  const handleAnchorKeyDown = useCallback(
+    (event: L.LeafletEvent) => {
+      const key = (event as unknown as L.LeafletKeyboardEvent).originalEvent?.key
+      const deltas: Record<string, [number, number]> = {
+        ArrowUp: [1, 0],
+        ArrowDown: [-1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1],
+      }
+      const delta = key ? deltas[key] : undefined
+      if (!delta) return
+
+      const original = (event as unknown as L.LeafletKeyboardEvent).originalEvent
+      original.preventDefault()
+      // Or the map pans underneath at the same time.
+      original.stopPropagation()
+
+      const marker = event.target as L.Marker
+      const map = mapRef.current
+      if (!map) return
+
+      const zoom = map.getZoom()
+      // ~2px on screen per press, whatever the zoom.
+      const step = (original.shiftKey ? 10 : 1) * (360 / 256 / Math.pow(2, zoom)) * 2
+      const current = marker.getLatLng()
+      const next = L.latLng(current.lat + delta[0] * step, current.lng + delta[1] * step)
+
+      marker.setLatLng(next)
+      circleRef.current?.setLatLng(next)
+      setAnchorAdjusted(true)
+      void commitAnchor(next.lat, next.lng)
+    },
+    [commitAnchor]
+  )
+
+  /** Put the pin back where the search put it. */
+  const handleResetAnchor = useCallback(() => {
+    if (!searchedOrigin) return
+    setAnchorAdjusted(false)
+    setLocationLabel(searchedOrigin.label)
+    setLocationAddress(searchedOrigin.address)
+    setSearchedLocation(searchedOrigin.position)
+    setAppliedCenter(searchedOrigin.position)
+    setMapMoved(false)
+    programmaticMoveRef.current = true
+    mapRef.current?.setView(searchedOrigin.position, mapRef.current.getZoom(), {
+      animate: !prefersReducedMotion(),
+    })
+  }, [searchedOrigin])
 
   /**
    * Frame the radius the user just chose.
@@ -963,7 +1111,7 @@ export function MapView({
           onMarkerClick={handleMarkerClick}
         />
         {searchedLocation && radiusMiles && (
-          <Circle center={searchedLocation} radius={radiusMiles * 1609.34}
+          <Circle ref={circleRef} center={searchedLocation} radius={radiusMiles * 1609.34}
             // Was weight 1.5 at 5% fill: technically present, invisible in
             // practice, so the one thing that could show what a radius means
             // showed nothing. Dashed so it reads as a boundary rather than as
@@ -979,14 +1127,33 @@ export function MapView({
         )}
         {searchedLocation && (
           <Marker
+            ref={homeMarkerRef}
             position={searchedLocation}
             icon={homeIcon}
             zIndexOffset={1000}
-            // Was `interactive={false}`, so the pin could not say which address
-            // it marked. The card says it, but the card is on the other side of
-            // the screen from the pin.
+            // Geocoders resolve to a rooftop centroid, a street segment, or
+            // whatever the building was last tagged as. For "how far is this
+            // clinic from my client's home" that is usually close enough and
+            // occasionally out by a block, so the pin is the user's to correct.
+            draggable
+            autoPan
+            autoPanSpeed={12}
+            // Focusable, so the arrow keys below are reachable at all. Dragging
+            // is pointer-only by nature; without this the feature simply does
+            // not exist for a keyboard.
+            keyboard
             title={locationLabel || undefined}
-            alt={locationLabel ? `Searching around ${locationLabel}` : 'Search location'}
+            alt={
+              locationLabel
+                ? `Search location: ${locationLabel}. Drag, or use the arrow keys, to adjust it.`
+                : 'Search location. Drag, or use the arrow keys, to adjust it.'
+            }
+            eventHandlers={{
+              dragstart: handleAnchorDragStart,
+              drag: handleAnchorDrag,
+              dragend: handleAnchorDragEnd,
+              keydown: handleAnchorKeyDown,
+            }}
           />
         )}
       </MapContainer>
@@ -1039,6 +1206,9 @@ export function MapView({
                 label={locationLabel}
                 address={locationAddress}
                 onClear={handleClearLocation}
+                adjusted={anchorAdjusted}
+                resolving={reverseLoading}
+                onReset={searchedOrigin ? handleResetAnchor : undefined}
               />
             )}
 

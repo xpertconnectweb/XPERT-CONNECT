@@ -23,6 +23,7 @@ import type { GeocodeAddress, GeocodeResult } from '@/types/geocode'
 export const dynamic = 'force-dynamic'
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
+const NOMINATIM_REVERSE = 'https://nominatim.openstreetmap.org/reverse'
 const USER_AGENT = 'XpertConnect/1.0 (https://www.844xpert.com)'
 const MIN_QUERY = 3
 const MAX_QUERY = 200
@@ -170,11 +171,90 @@ async function askNominatim(query: string, limit: number): Promise<NominatimPlac
   }
 }
 
+/**
+ * What is at these coordinates?
+ *
+ * Needed because the home pin is draggable: once someone nudges it onto the
+ * right driveway, the address on screen has to follow, or the card goes on
+ * naming a building the pin is no longer on.
+ *
+ * Shares this route rather than getting its own so it inherits the User-Agent,
+ * the one-request-per-second pacing and the cache — three things that are easy
+ * to forget when copying an endpoint.
+ */
+async function askNominatimReverse(lat: number, lng: number): Promise<NominatimPlace | null> {
+  const since = Date.now() - lastUpstreamAt
+  if (since < MIN_UPSTREAM_INTERVAL_MS) {
+    await new Promise((resolve) => setTimeout(resolve, MIN_UPSTREAM_INTERVAL_MS - since))
+  }
+  lastUpstreamAt = Date.now()
+
+  // zoom=18 is building level. Lower and a nudge across a street would report
+  // the same place, which would make the drag look broken.
+  const url = `${NOMINATIM_REVERSE}?format=json&addressdetails=1&zoom=18&lat=${lat}&lon=${lng}`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+      signal: controller.signal,
+    })
+    if (!res.ok) throw new Error(`Nominatim reverse responded ${res.status}`)
+    const data = await res.json()
+    return data && typeof data === 'object' && !data.error ? (data as NominatimPlace) : null
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/** Roughly a metre. Precise enough for an address, coarse enough to cache. */
+function roundCoord(value: number): number {
+  return Math.round(value * 1e5) / 1e5
+}
+
 export async function GET(request: Request) {
   const { error } = await requireAuth()
   if (error) return error
 
-  const raw = (new URL(request.url).searchParams.get('q') ?? '').trim()
+  const params = new URL(request.url).searchParams
+
+  // ── Reverse mode ────────────────────────────────────────────────────────
+  const latParam = Number(params.get('lat'))
+  const lngParam = Number(params.get('lng'))
+  if (params.has('lat') && params.has('lng')) {
+    if (
+      !Number.isFinite(latParam) || !Number.isFinite(lngParam) ||
+      Math.abs(latParam) > 90 || Math.abs(lngParam) > 180
+    ) {
+      return NextResponse.json({ error: 'lat and lng must be valid coordinates' }, { status: 400 })
+    }
+
+    const lat = roundCoord(latParam)
+    const lng = roundCoord(lngParam)
+    const reverseKey = `rev|${lat},${lng}`
+    const hit = cacheGet(reverseKey)
+    if (hit) {
+      return NextResponse.json(hit, {
+        headers: { 'Cache-Control': 'private, max-age=3600', 'X-Geocode-Cache': 'hit' },
+      })
+    }
+
+    try {
+      const place = await askNominatimReverse(lat, lng)
+      // No upstream match is not an error: the sea, a field, a private lot.
+      // The caller still has coordinates and can say "Custom location".
+      const results = place ? [toResult(place, 0)].filter((r): r is GeocodeResult => !!r) : []
+      cacheSet(reverseKey, results)
+      return NextResponse.json(results, {
+        headers: { 'Cache-Control': 'private, max-age=3600', 'X-Geocode-Cache': 'miss' },
+      })
+    } catch (err) {
+      console.error('Reverse geocode error:', err)
+      return NextResponse.json({ error: 'Reverse lookup failed' }, { status: 502 })
+    }
+  }
+
+  const raw = (params.get('q') ?? '').trim()
   if (raw.length < MIN_QUERY || raw.length > MAX_QUERY) {
     return NextResponse.json(
       { error: `Query must be between ${MIN_QUERY} and ${MAX_QUERY} characters` },

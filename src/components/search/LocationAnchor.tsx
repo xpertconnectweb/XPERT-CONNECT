@@ -30,6 +30,11 @@ export interface LocationAnchorProps {
   label: string
   address?: GeocodeAddress | null
   onClear: () => void
+  /** The pin has been dragged off what the search returned. */
+  adjusted?: boolean
+  /** Resolving the address the pin was just dropped on. */
+  resolving?: boolean
+  onReset?: () => void
   className?: string
   'data-testid'?: string
 }
@@ -38,6 +43,9 @@ export function LocationAnchor({
   label,
   address,
   onClear,
+  adjusted = false,
+  resolving = false,
+  onReset,
   className,
   'data-testid': testId = 'map-search-chip',
 }: LocationAnchorProps) {
@@ -56,8 +64,33 @@ export function LocationAnchor({
       <Home className="h-4 w-4 shrink-0 text-gold-dark" aria-hidden="true" />
 
       <div className="min-w-0 flex-1 leading-tight">
-        <p className="truncate text-[13px] font-semibold text-navy">{primary}</p>
+        <p className={cn('truncate text-[13px] font-semibold text-navy', resolving && 'opacity-60')}>
+          {primary}
+        </p>
         {secondary && <p className="truncate text-[11px] text-gray-500">{secondary}</p>}
+
+        {/* Says the pin was moved, and offers the way back.
+            On a general-purpose map nobody needs this. Here the anchor decides
+            which clinics count as nearest for one specific client, so a drag
+            nobody meant to make would re-rank the list silently. */}
+        {adjusted && !resolving && (
+          <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-gray-500">
+            <span className="font-medium text-gold-dark">Pin adjusted</span>
+            {onReset && (
+              <>
+                <span aria-hidden="true">·</span>
+                <button
+                  type="button"
+                  onClick={onReset}
+                  data-testid="map-anchor-reset"
+                  className="font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  Undo
+                </button>
+              </>
+            )}
+          </p>
+        )}
       </div>
 
       <button
