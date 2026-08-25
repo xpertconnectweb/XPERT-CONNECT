@@ -406,6 +406,38 @@ describe('documents adapters', () => {
  * options flipped. Both exist because an admin is looking at the data itself
  * rather than shopping for a provider.
  */
+/**
+ * The type toggles on the map. `useMapSearch` builds this list from them, so
+ * the empty case is not hypothetical: on the clinic map the attorney toggle is
+ * already off, and unchecking Clinics leaves the list empty.
+ */
+describe('type filter', () => {
+  it('restricts to the named types', () => {
+    const clinics = ids('', { filters: { types: ['clinic'] } })
+    expect(clinics.length).toBeGreaterThan(0)
+    expect(clinics.every((id) => id.startsWith('c-'))).toBe(true)
+  })
+
+  it('treats an EMPTY list as none, not as unfiltered', () => {
+    // The bug this replaces: guarding on `.length > 0` made an empty list mean
+    // "no filter", so switching every pin type off left every pin on screen and
+    // the button looked dead.
+    expect(ids('', { filters: { types: [] } })).toEqual([])
+  })
+
+  it('still treats an absent list as unfiltered', () => {
+    // The directory and the specialists list never set it.
+    expect(ids('', { filters: {} }).length).toBeGreaterThan(0)
+  })
+
+  it('keeps the facet counts honest while everything is switched off', () => {
+    // The chip has to keep saying what turning it back on would give you.
+    const outcome = search(index, '', { filters: { types: [] } })
+    expect(outcome.hits).toEqual([])
+    expect(outcome.facets.types.find((t) => t.value === 'clinic')?.count).toBeGreaterThan(0)
+  })
+})
+
 describe('admin document options', () => {
   const adminOpts = { requireCoordinates: false, includeKindWords: false }
   const adminIndex = buildSearchIndex(toSearchDocs(CLINICS, LAWYERS, adminOpts))

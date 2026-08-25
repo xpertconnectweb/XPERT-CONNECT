@@ -40,7 +40,10 @@ function passesExcept(
   if (!filters) return true
   const doc = hit.doc
   if (exclude !== 'availableOnly' && filters.availableOnly && !doc.available) return false
-  if (exclude !== 'types' && filters.types?.length && !filters.types.includes(doc.type)) return false
+  // Same rule as the engine: an empty list means "none", not "unset". Kept in
+  // step deliberately, or the chip counts would describe a different result
+  // set from the one on screen.
+  if (exclude !== 'types' && filters.types && !filters.types.includes(doc.type)) return false
   if (exclude !== 'states' && filters.states?.length) {
     if (!doc.state || !filters.states.includes(doc.state)) return false
   }

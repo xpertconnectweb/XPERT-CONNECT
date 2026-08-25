@@ -209,7 +209,18 @@ function scoreDoc(
 function passesFilters(doc: SearchDoc, filters: SearchFilters | undefined): boolean {
   if (!filters) return true
   if (filters.availableOnly && !doc.available) return false
-  if (filters.types && filters.types.length > 0 && !filters.types.includes(doc.type)) return false
+  // An EMPTY list means "none of them", not "no filter".
+  //
+  // `filters.types` is only ever set by `useMapSearch`, which builds it from
+  // the two pin toggles, so an empty array means the user switched both off —
+  // and the honest answer to that is no results. Guarding on `.length > 0`
+  // treated it as "unset" instead, so on the clinic map, where the attorney
+  // toggle is already off, unchecking Clinics did nothing at all: every pin
+  // stayed on screen and the button looked broken.
+  //
+  // Absent (`undefined`) still means unfiltered; the directory and the
+  // specialists list never set it.
+  if (filters.types && !filters.types.includes(doc.type)) return false
   if (filters.states && filters.states.length > 0) {
     if (!doc.state || !filters.states.includes(doc.state)) return false
   }
