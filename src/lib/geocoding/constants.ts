@@ -142,11 +142,15 @@ export const INTERPOLATION_MAX_SPAN_M = 100
  *       still says `rooftop` on a 60 m guess would keep the drag-the-pin
  *       prompt suppressed for another thirty days.
  *
+ *   8 — a street whose postcode shares only its first three digits AND whose
+ *       city contradicts the query can no longer claim to be the building.
+ *       It put a clinic 69.6 km from itself.
+ *
  * Note the direction of travel: to undo a change, bump this AGAIN rather than
  * putting it back. Reverting the number resurrects exactly the answers the
  * revert was meant to retire.
  */
-export const GEOCODE_CACHE_REVISION = 7
+export const GEOCODE_CACHE_REVISION = 8
 
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,
