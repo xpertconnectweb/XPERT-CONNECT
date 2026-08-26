@@ -296,18 +296,26 @@ export function createSelfHostedProvider(store: StreetStore): GeocodeProvider {
     },
 
     /**
-     * Not implemented, and it returns empty rather than pretending.
+     * Not implemented yet, and it returns empty rather than pretending.
      *
      * Reverse geocoding needs a spatial lookup, and `geo_street` has no index
      * that answers "what is near this point" -- the bounding box columns are
      * there for ranking and framing, not for search. Adding one is a schema
-     * change, and doing it badly means a sequential scan of 567,000 rows on
+     * change, and doing it badly means a sequential scan of 567,767 rows on
      * every drag of the pin.
      *
-     * The chain handles this: `fallbackOnEmpty` is true, so a reverse lookup
-     * falls through to Geoapify, which is what performs it today. The
-     * user-visible behaviour is unchanged, and the gap is here in writing
-     * rather than hidden behind a wrong answer.
+     * ── A correction, because the previous version of this comment was wrong ──
+     *
+     * It said "the chain handles this: `fallbackOnEmpty` is true, so a reverse
+     * lookup falls through to Geoapify". It did not. `fallbackOnEmpty` is read
+     * only by `autocompleteChain`, and `/api/geocode` called `provider.reverse`
+     * directly, so switching to this provider made every pin drag answer `[]`
+     * — cached for a day, per coordinate. The map showed "Custom location" with
+     * no address for as long as that was live.
+     *
+     * `reverseChain` in `./index.ts` now exists and does what that comment
+     * claimed. A comment asserting a behaviour nobody had tested was worse than
+     * no comment: it is what made the gap look handled.
      */
     async reverse(): Promise<ProviderResult<GeocodeResult | null>> {
       return { ok: true, value: null }

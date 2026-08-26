@@ -100,8 +100,14 @@ export const SCOPED_TRIGRAM_THRESHOLD = 0.12
  *       only a city is no longer answered with a street.
  *   3 — an address the register says is not there no longer falls through to a
  *       provider that will invent one.
+ *   4 — reverse geocoding answers again. An empty self-hosted answer now
+ *       reaches the fallback instead of being cached as "nowhere".
+ *
+ * Note the direction of travel: to undo a change, bump this AGAIN rather than
+ * putting it back. Reverting the number resurrects exactly the answers the
+ * revert was meant to retire.
  */
-export const GEOCODE_CACHE_REVISION = 3
+export const GEOCODE_CACHE_REVISION = 4
 
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,

@@ -153,5 +153,68 @@ export async function autocompleteChain(
   }
 }
 
+export interface ReverseOutcome {
+  result: GeocodeResult | null
+  /** Who answered. The route needs it: the TTL of a stored answer is a licence term. */
+  provider: GeocodeProviderId
+  failure: ProviderFailure | null
+}
+
+/**
+ * The same thing for reverse, and it did not exist — which was a live bug.
+ *
+ * `/api/geocode` called `provider.reverse()` directly, so switching
+ * `GEOCODER_PROVIDER` to `selfhosted` — whose reverse is not implemented yet —
+ * made every pin drag answer `[]`. The map fell back to "Custom location" with
+ * no address, and because an empty answer is cached like any other, each
+ * coordinate stayed broken for a day.
+ *
+ * ── Why there is no `answersEmptyAuthoritatively` branch here ───────────────
+ *
+ * In autocomplete an empty answer can be an answer: the county register is held
+ * and it says no such address exists. A coordinate is different. Every point on
+ * earth is somewhere, so "I found nothing here" only ever means "I do not know
+ * what is here", and that is never worth withholding from a provider that
+ * might. The reverse chain always falls through.
+ *
+ * The judgement about whether we hold the register for a place belongs inside
+ * the provider's own reverse — it is the same question as the spatial lookup —
+ * and not on the interface.
+ */
+export async function reverseChain(
+  lat: number,
+  lng: number,
+  ctx: GeocodeContext
+): Promise<ReverseOutcome> {
+  const primary = getProvider()
+  const first = await primary.reverse(lat, lng, ctx)
+
+  if (first.ok && first.value) {
+    return { result: first.value, provider: primary.id, failure: null }
+  }
+
+  const fallback = getFallbackProvider(primary)
+  if (!fallback) {
+    return first.ok
+      ? { result: null, provider: primary.id, failure: null }
+      : { result: null, provider: primary.id, failure: first }
+  }
+
+  if (!first.ok && !isRecoverable(first)) {
+    return { result: null, provider: primary.id, failure: first }
+  }
+
+  const second = await fallback.reverse(lat, lng, ctx)
+  if (second.ok) {
+    return { result: second.value, provider: fallback.id, failure: null }
+  }
+
+  return {
+    result: null,
+    provider: primary.id,
+    failure: first.ok ? second : first,
+  }
+}
+
 export type { GeocodeContext, GeocodeProvider, ProviderResult }
 export type { GeocodeResult, GeocodeSuggestion }

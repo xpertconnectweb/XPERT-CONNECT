@@ -134,3 +134,36 @@ describe('when an empty answer is authoritative', () => {
     ).resolves.toBe(false)
   })
 })
+
+/**
+ * The gap that was described as handled and was not.
+ *
+ * `selfhosted.reverse` returns null on purpose — the spatial lookup does not
+ * exist yet. What made that a live bug rather than a documented limitation is
+ * that `/api/geocode` called `provider.reverse` directly, with no chain behind
+ * it, so switching to this provider made every pin drag answer nothing at all.
+ * A comment claimed `fallbackOnEmpty` covered it. `fallbackOnEmpty` is read only
+ * by `autocompleteChain`.
+ *
+ * These two tests are the thing that was missing: one pins the stub so its
+ * eventual implementation is a deliberate act, and the chain's own test pins
+ * that an empty answer reaches somebody else.
+ */
+describe('reverse, until the spatial lookup exists', () => {
+  it('answers null rather than guessing', async () => {
+    const provider = createSelfHostedProvider(storeOf())
+    const result = await provider.reverse(27.491257, -82.481824, { limit: 1 })
+
+    expect(result.ok).toBe(true)
+    expect(result.ok && result.value).toBeNull()
+  })
+
+  it('does not touch the store to say so', async () => {
+    const store = storeOf()
+    await createSelfHostedProvider(store).reverse(27.491257, -82.481824, { limit: 1 })
+
+    expect(store.search).not.toHaveBeenCalled()
+    expect(store.payloads).not.toHaveBeenCalled()
+    expect(store.covers).not.toHaveBeenCalled()
+  })
+})

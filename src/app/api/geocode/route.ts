@@ -8,7 +8,7 @@ import {
   GEOCODE_CACHE_REVISION,
   MIN_GEOCODE_QUERY,
 } from '@/lib/geocoding/constants'
-import { autocompleteChain, getProvider, getProviderById } from '@/lib/geocoding'
+import { autocompleteChain, getProvider, getProviderById, reverseChain } from '@/lib/geocoding'
 import { memoryGet, memorySet } from '@/lib/geocoding/memory-cache'
 import { claimGeocodeCall } from '@/lib/geocoding/rate-limit'
 import { deriveSessionToken, isValidSid } from '@/lib/geocoding/session'
@@ -140,17 +140,21 @@ export async function GET(request: Request) {
       )
     }
 
-    const result = await provider.reverse(lat, lng, ctx)
-    if (!result.ok) {
-      const { status, error: message } = statusForFailure(result.kind)
+    const outcome = await reverseChain(lat, lng, ctx)
+    if (outcome.failure) {
+      const { status, error: message } = statusForFailure(outcome.failure.kind)
       return NextResponse.json({ error: message === 'Geocoding service unavailable' ? 'Reverse lookup failed' : message }, { status })
     }
 
     // No upstream match is not an error: the sea, a field, a private lot.
     // The caller still has coordinates and can say "Custom location".
-    const results = result.value ? [result.value] : []
+    const results = outcome.result ? [outcome.result] : []
     memorySet(key, results)
-    await sharedSet(key, provider.id, 'reverse', results)
+    // The provider that ANSWERED, not the one that was asked. `sharedSet` uses
+    // it to choose a TTL, and how long an answer may be stored is a licence term
+    // belonging to whoever produced it. The cache KEY stays on the primary, or a
+    // fallback's answer would be written somewhere the next request never looks.
+    await sharedSet(key, outcome.provider, 'reverse', results)
     return respond(results, 'miss', 'provider')
   }
 
