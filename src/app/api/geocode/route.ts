@@ -5,6 +5,7 @@ import {
   DEFAULT_LIMIT,
   MAX_GEOCODE_QUERY,
   MAX_LIMIT,
+  GEOCODE_CACHE_REVISION,
   MIN_GEOCODE_QUERY,
 } from '@/lib/geocoding/constants'
 import { autocompleteChain, getProvider, getProviderById } from '@/lib/geocoding'
@@ -120,7 +121,7 @@ export async function GET(request: Request) {
 
     const lat = roundCoord(latParam)
     const lng = roundCoord(lngParam)
-    const key = `${provider.id}|rev|${lat},${lng}`
+    const key = `${provider.id}|v${GEOCODE_CACHE_REVISION}|rev|${lat},${lng}`
 
     const local = memoryGet(key)
     if (local) return respond(local, 'hit', 'memory')
@@ -167,7 +168,7 @@ export async function GET(request: Request) {
     }
 
     const target = requested ? getProviderById(requested as GeocodeProviderId) : provider
-    const key = `${target.id}|det|${id}`
+    const key = `${target.id}|v${GEOCODE_CACHE_REVISION}|det|${id}`
 
     const local = memoryGet(key)
     if (local) return respond(local, 'hit', 'memory')
@@ -215,7 +216,7 @@ export async function GET(request: Request) {
   // The bias is part of the key because it changes the answer. It is quantised
   // upstream of here precisely so this stays low-cardinality and the cache
   // keeps hitting.
-  const key = `${provider.id}|ac|${raw.toLowerCase()}|${ctx.limit}|${biasKey(ctx)}`
+  const key = `${provider.id}|v${GEOCODE_CACHE_REVISION}|ac|${raw.toLowerCase()}|${ctx.limit}|${biasKey(ctx)}`
 
   const local = memoryGet(key)
   if (local) return respond(local, 'hit', 'memory')

@@ -79,15 +79,41 @@ export const TRIGRAM_THRESHOLD = 0.3
  */
 export const SCOPED_TRIGRAM_THRESHOLD = 0.12
 
+/**
+ * Bumped whenever a change alters what a given query should answer.
+ *
+ * Part of every cache key, so bumping it makes every stored answer unreachable
+ * at once and they age out on their own. Without it a fix reaches nobody who had
+ * already searched that address until the entry expires.
+ *
+ * That is not hypothetical. Two parser defects were fixed and deployed —
+ * "62nd St Cir E" was resolving to a different road, "Bradenton, FL" to a street
+ * four postcodes away — and production kept answering with the old results,
+ * because the self-hosted cache held them and its TTL was a year. The fix was
+ * live and invisible.
+ *
+ * Bump this for a change in the parser, the ranker, the precision rules, or the
+ * shape of a suggestion. Not for a change to the data: a quarterly re-ingest is
+ * covered by the TTL below.
+ *
+ *   2 — ordinals are no longer eaten as house numbers, and a query that names
+ *       only a city is no longer answered with a street.
+ */
+export const GEOCODE_CACHE_REVISION = 2
+
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,
   geoapify: 30 * 24 * 60 * 60 * 1000,
   mapbox: 30 * 24 * 60 * 60 * 1000,
   google: 30 * 24 * 60 * 60 * 1000,
-  // No licence to cap it. The data is the county registers themselves and
-  // this cache sits in front of our own database, so the only thing that
-  // expires an entry is a quarterly re-ingest.
-  selfhosted: 365 * 24 * 60 * 60 * 1000,
+  // Thirty days, like the rest, and NOT the year an earlier version set here.
+  // That year was argued from the licence — nobody caps how long our own data
+  // may be held — which answered the wrong question. What a cache entry holds
+  // also depends on the code that produced it and on an index re-ingested every
+  // quarter, and a year of staleness outlives both. GEOCODE_CACHE_REVISION
+  // handles a code change at once; this bounds how long a data change can go
+  // unnoticed.
+  selfhosted: 30 * 24 * 60 * 60 * 1000,
 }
 
 /**
