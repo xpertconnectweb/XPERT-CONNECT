@@ -191,6 +191,34 @@ async function main() {
     console.log(`  p95 distance ............ ${percentile(95).toFixed(1).padStart(8)} m`)
   }
 
+  /**
+   * The distribution, not the average.
+   *
+   * "median 52 m" and "p95 10 km" describe two completely different populations
+   * sharing one table, and the decision about whether to rewrite these
+   * coordinates depends entirely on which is which. A move of tens of metres is
+   * two defensible opinions about one building — Google and Manatee County
+   * disagree by 33 m about the same office and both are right. A move of
+   * kilometres is an error, and nothing else.
+   */
+  const BANDS: Array<[string, number]> = [
+    ['under 10 m', 10],
+    ['10 - 50 m', 50],
+    ['50 - 200 m', 200],
+    ['200 m - 1 km', 1000],
+    ['1 - 10 km', 10000],
+    ['over 10 km', Infinity],
+  ]
+
+  console.log(`\n  HOW FAR THE ENGINE WOULD MOVE EACH PIN\n`)
+  let floor = -1
+  for (const [label, ceiling] of BANDS) {
+    const n = distances.filter((d) => d > floor && d <= ceiling).length
+    const bar = '#'.repeat(Math.round((n / Math.max(comparable, 1)) * 44))
+    console.log(`  ${label.padEnd(14)} ${String(n).padStart(5)}  ${pct(n, comparable).padStart(7)}  ${bar}`)
+    floor = ceiling
+  }
+
   console.log(`\n  PRECISION CLAIMED\n`)
   for (const [precision, count] of Array.from(byPrecision.entries()).sort((a, b) => b[1] - a[1])) {
     const exact = isExactPrecision(precision as never)

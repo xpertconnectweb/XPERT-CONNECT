@@ -1,30 +1,32 @@
 /**
  * Re-resolve coordinates, place ids and precision for clinics and firms.
  *
- * NOT PART OF THE CURRENT DEPLOY. It is written, tested and ready, and it
- * should not be run until a real geocoding provider is configured.
+ * Held back for a long time, and for a good reason: every row was imported
+ * having already asked Nominatim, so re-asking Nominatim would have spent an
+ * hour re-deriving the coordinates the rows already had.
  *
- * Running it against Nominatim would be pointless work: every record in the
- * table was imported by `scripts/import-clinics-json.js`, which already asked
- * Nominatim, so it would spend an hour re-deriving the coordinates the rows
- * already have. The value only appears with a provider that has US residential
- * address coverage — which is the entire reason `src/lib/geocoding` exists as
- * an adapter layer rather than a rewrite.
+ * Since 2026-08-26 there is a provider worth asking. `selfhosted` resolves
+ * against the county registers in `geo_street`, and `--restale` is the mode
+ * that matters now: every coordinate in these tables came from Geoapify, and
+ * Geoapify was measured at 71% within 50 m of the register while labelling
+ * 100% of its answers rooftop. The rows that most need redoing are the ones
+ * that already look finished.
  *
- * The day a key is set:
+ *   GEOCODER_PROVIDER=selfhosted npx tsx scripts/backfill-geocode.ts --restale
+ *   GEOCODER_PROVIDER=selfhosted npx tsx scripts/backfill-geocode.ts --restale --apply
  *
- *   GEOCODER_PROVIDER=mapbox npx tsx scripts/backfill-geocode.ts
- *   GEOCODER_PROVIDER=mapbox npx tsx scripts/backfill-geocode.ts --apply
- *
- * Roughly 880 records. One-off cost: about $4.40 on Mapbox permanent
- * geocoding, nothing on Google's free tier — but see the note on storage below
- * before choosing Google for this path.
+ * Roughly 880 records and no per-call cost, because nothing leaves the
+ * infrastructure. On Mapbox the same run would be about $4.40 of permanent
+ * geocoding; on Google it would sign the project up to deleting and refreshing
+ * every stored coordinate within 30 days, in perpetuity.
  *
  * Flags:
  *   --apply           write (default is a dry run)
  *   --table=clinics   one table only
  *   --limit=50        stop after N rows; the run is resumable
  *   --force           accept a result that moves a record more than 2 miles
+ *   --restale         redo the rows a DIFFERENT provider resolved, instead of
+ *                     the ones nobody has
  */
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
@@ -42,6 +44,7 @@ const supabase = createClient(url, key, { auth: { persistSession: false } })
 
 const APPLY = process.argv.includes('--apply')
 const FORCE = process.argv.includes('--force')
+const RESTALE = process.argv.includes('--restale')
 const TABLE_ARG = process.argv.find((a) => a.startsWith('--table='))?.split('=')[1]
 const LIMIT = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1]) || 0
 const TABLES = TABLE_ARG ? [TABLE_ARG] : ['clinics', 'lawyers']
@@ -152,8 +155,25 @@ async function backfillTable(table: string) {
   const query = supabase
     .from(table)
     .select('id, name, address, lat, lng, zip_code')
-    .is('geocoded_at', null)
     .order('id')
+
+  /**
+   * `--restale` takes the rows a DIFFERENT provider resolved, rather than the
+   * ones nobody has.
+   *
+   * The default — untouched rows only — is right for filling gaps and wrong
+   * for the situation this exists for now. Every coordinate in these tables
+   * came from Geoapify, which was measured against county registers at 71%
+   * within 50 m while labelling 100% of its answers rooftop. The self-hosted
+   * engine returns the register itself. So the rows that most need redoing are
+   * precisely the ones that already look finished.
+   *
+   * The client reported it before this flag did: CZAIA LAW sits 65.7 m from its
+   * own building because Geoapify put it there, and `geocoded_at` being set
+   * meant nothing would ever revisit it.
+   */
+  if (RESTALE) query.neq('place_provider', getProvider().id)
+  else query.is('geocoded_at', null)
 
   const { data, error } = LIMIT ? await query.limit(LIMIT) : await query
   if (error) {
@@ -162,7 +182,9 @@ async function backfillTable(table: string) {
   }
 
   const rows = (data ?? []) as Row[]
-  console.log(`\n${table}: ${rows.length} row(s) never geocoded`)
+  console.log(
+    `\n${table}: ${rows.length} row(s) ${RESTALE ? `resolved by someone other than ${getProvider().id}` : 'never geocoded'}`
+  )
 
   const byPrecision = new Map<string, number>()
   let written = 0
