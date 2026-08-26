@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/factories'
 import { createServiceClient } from '../../helpers/supabase-admin'
-import { expectAdminRow } from '../../helpers/admin'
+import { expectAdminRow, openManualCoordinates } from '../../helpers/admin'
 
 test('admin can create a clinic and see it in the table', async ({ page, ns }) => {
   test.slow()
@@ -15,7 +15,17 @@ test('admin can create a clinic and see it in the table', async ({ page, ns }) =
   // and `/chiropractic|physical therapy/i` could match any future search-style
   // input that mentions specialties.
   await page.getByPlaceholder('Clinic Name').fill(name)
-  await page.getByPlaceholder('123 Medical Plaza').fill('1 E2E Way, Miami, FL 33101')
+  await page.getByTestId('clinic-address-input').fill('1 E2E Way, Miami, FL 33101')
+
+  // Latitude and longitude now live behind "Set coordinates manually". They are
+  // still reachable — removing them outright would make a clinic in a new
+  // development, which no provider has yet, impossible to create at all — but
+  // the disclosure has to be opened first.
+  //
+  // This test drives that path on purpose rather than picking a suggestion:
+  // it keeps the escape hatch covered, and it avoids depending on a geocoding
+  // provider from an admin spec. The suggestion path has its own test below.
+  await openManualCoordinates(page)
   await page.getByPlaceholder('25.7617').fill('25.7617')
   await page.getByPlaceholder('-80.1918').fill('-80.1918')
   await page.getByPlaceholder('+1 (305) 555-0123').fill('305-555-0100')

@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Xpert Connect — Buscador de direcciones</title>
+<style>
+  /*
+    Matches the house style of "Xpert Connect - Avisos por SMS".
+    Letter, 75px side margins, 666px content column, Segoe UI, and the same
+    navy / teal / gold palette. Kept as one self-contained file so it renders
+    identically offline and cannot break because a CDN moved.
+  */
+  @page { size: letter; margin: 0.78in; }
+
+  :root {
+    --navy:       #1A2A4A;
+    --navy-light: #2A3F6A;
+    --teal:       #20B2AA;
+    --teal-dark:  #1A9690;
+    --gold:       #D4A84B;
+    --body:       #374151;
+    --muted:      #6B7280;
+    --card:       #F8FAFC;
+    --line:       #E5E7EB;
+    --ok:         #1A7F5A;
+    --bad:        #B4453C;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.62;
+    color: var(--body);
+  }
+
+  p { margin: 0 0 10px; }
+  strong { color: var(--navy); font-weight: 600; }
+  em { font-style: normal; color: var(--navy); font-weight: 600; }
+
+  /* ── Header ─────────────────────────────────────────────── */
+
+  .masthead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .masthead img { width: 110px; height: auto; }
+
+  .meta { display: flex; gap: 34px; text-align: right; }
+  .meta dt {
+    font-size: 9pt;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 0.02em;
+    margin: 0 0 2px;
+  }
+  .meta dd {
+    margin: 0;
+    font-size: 9pt;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .accent {
+    width: 54px;
+    height: 3px;
+    background: var(--gold);
+    margin: 46px 0 20px;
+  }
+
+  .eyebrow {
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--teal-dark);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0 0 18px;
+    font-size: 34pt;
+    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--navy);
+  }
+
+  .lead { font-size: 12pt; line-height: 1.55; margin-bottom: 0; }
+
+  .rule { height: 2px; background: var(--navy); margin: 26px 0 22px; }
+
+  /* ── KPI row ────────────────────────────────────────────── */
+
+  .kpis { display: flex; gap: 12px; }
+  .kpi {
+    flex: 1;
+    background: var(--card);
+    border-radius: 4px;
+    padding: 14px 16px 16px;
+  }
+  .kpi-label {
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 22pt;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .kpi-value .sep { font-size: 11pt; font-weight: 400; color: var(--navy-light); }
+  .kpi-note { font-size: 8.5pt; line-height: 1.42; color: var(--muted); }
+
+  /* ── Sections ───────────────────────────────────────────── */
+
+  section { margin-top: 30px; }
+  .num {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    /* A section number stranded at the foot of a page reads as a typo. */
+    break-after: avoid;
+  }
+  h2 {
+    margin: 0 0 14px;
+    font-size: 19pt;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+    break-after: avoid;
+  }
+  h3 {
+    margin: 18px 0 6px;
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--navy);
+    break-after: avoid;
+  }
+  /* Never leave one line of a paragraph alone across a page boundary. */
+  p, li { orphans: 3; widows: 3; }
+
+  ol.points { margin: 0; padding: 0; list-style: none; counter-reset: pt; }
+  ol.points > li { margin-bottom: 12px; }
+  ol.points > li::before {
+    counter-increment: pt;
+    content: counter(pt) ". ";
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  ul { margin: 0 0 10px; padding-left: 17px; }
+  li { margin-bottom: 5px; }
+
+  /* ── Tables ─────────────────────────────────────────────── */
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 9.5pt; }
+  th {
+    text-align: left;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--navy);
+    padding: 0 10px 6px 0;
+  }
+  td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th.num-col, td.num-col { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 0; }
+  tr.highlight td { background: var(--card); }
+
+  .mono { font-family: Consolas, "SF Mono", monospace; font-size: 8.8pt; }
+  .yes { color: var(--ok); font-weight: 700; }
+  .no  { color: var(--bad); font-weight: 700; }
+
+  /* ── Notes ──────────────────────────────────────────────── */
+
+  .note {
+    background: var(--card);
+    border-left: 3px solid var(--teal);
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 10pt;
+  }
+  .note.gold { border-left-color: var(--gold); }
+  .note.navy { border-left-color: var(--navy); }
+  .note p:last-child { margin-bottom: 0; }
+  .note-title {
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  footer {
+    margin-top: 34px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 8pt;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  /* Deliberately unused: with orphans/widows and break-after on the headings,
+     the document paginates itself. A hand-placed break that lands a few lines
+     early leaves a near-empty page, and the copy is edited more often than the
+     breaks would be rechecked. */
+  .page-break { break-before: page; }
+  .avoid-break { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <img src="../public/images/logo.png" alt="Xpert Connect">
+  <dl class="meta">
+    <div>
+      <dt>DOCUMENTO</dt>
+      <dd>Diagnóstico y mejoras<br>Agosto 2026 · v1.1</dd>
+    </div>
+    <div>
+      <dt>ÁMBITO</dt>
+      <dd>Plataforma Xpert Connect<br>844xpert.com</dd>
+    </div>
+  </dl>
+</header>
+
+<div class="accent"></div>
+
+<div class="eyebrow">Buscador de direcciones</div>
+
+<h1>Por qué una dirección real<br>no aparece en el mapa</h1>
+
+<p class="lead">
+  Nos reportaron que el buscador «está bien pero le falta mucha mejora para uso real»,
+  con un ejemplo concreto: <span class="mono">862 62nd St Cir E, Bradenton, Florida</span>
+  no se muestra. Este documento responde a tres preguntas:
+  <em>¿por qué falla?</em>, <em>¿qué se ha arreglado ya?</em> y
+  <em>¿cuánto cuesta resolverlo del todo?</em>
+</p>
+
+<div class="rule"></div>
+
+<div class="kpis avoid-break">
+  <div class="kpi">
+    <div class="kpi-label">¿Es un error nuestro?</div>
+    <div class="kpi-value">No</div>
+    <div class="kpi-note">La calle no está en la base de datos del proveedor gratuito que usábamos.</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Coste mensual</div>
+    <div class="kpi-value">$0</div>
+    <div class="kpi-note">Hay una opción gratuita con los mismos datos. Sin tarjeta de crédito.</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Puesta en marcha</div>
+    <div class="kpi-value">1 <span class="sep">día</span></div>
+    <div class="kpi-note">El desarrollo ya está hecho. Falta abrir una cuenta gratuita.</div>
+  </div>
+</div>
+
+<section>
+  <div class="num">RESUMEN</div>
+  <h2>Lo esencial en cinco puntos</h2>
+
+  <ol class="points">
+    <li>
+      <strong>No es un fallo de programación.</strong> La plataforma usaba
+      OpenStreetMap, que es gratuito y no tiene esa calle registrada. Lo comprobamos
+      escribiendo la dirección de cuatro formas distintas, incluida con el código postal:
+      ninguna devuelve nada. Ningún ajuste al código puede inventar un dato que no existe.
+    </li>
+    <li>
+      <strong>Localizamos el dato correcto, y es público y gratuito.</strong> La dirección
+      sí está en el registro oficial de direcciones del condado de Manatee, con licencia
+      abierta que permite el uso comercial. Ese registro forma parte de
+      <em>OpenAddresses</em>, un archivo público que reúne 72 fuentes de Florida y 70 de
+      Minnesota — los dos estados donde opera la plataforma.
+    </li>
+    <li>
+      <strong>Por eso el coste puede ser cero.</strong> Existen proveedores construidos
+      sobre esos mismos datos abiertos con planes gratuitos de 3.000 consultas al día. La
+      plataforma necesita unas 1.000–3.500 <em>al mes</em>: menos del 4 % del cupo
+      gratuito, sin tarjeta de crédito y con uso comercial permitido.
+    </li>
+    <li>
+      <strong>Ya está arreglado todo lo que no dependía de terceros.</strong> El buscador
+      dejó de fallar en silencio, avisa cuando una ubicación es solo aproximada, permite
+      colocar el punto a mano, y se eliminó la causa de las fichas guardadas con
+      coordenadas incorrectas.
+    </li>
+    <li>
+      <strong>Lo que queda es abrir una cuenta, no un desarrollo.</strong> La plataforma
+      está preparada para cuatro proveedores. Cambiar de uno a otro es una línea de
+      configuración, sin reescribir nada.
+    </li>
+  </ol>
+</section>
+
+<section>
+  <div class="num">01</div>
+  <h2>Qué está fallando exactamente</h2>
+
+  <p>
+    Probamos la dirección reportada contra el proveedor que usaba la plataforma, en todas
+    las formas en que alguien podría escribirla. Estos son resultados reales, no una
+    estimación:
+  </p>
+
+  <table class="avoid-break">
+    <thead>
+      <tr>
+        <th style="width:64%">Lo que se escribe en el buscador</th>
+        <th style="width:36%">Lo que devuelve</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="mono">862 62nd St Cir E, Bradenton, FL</td>
+        <td class="no">Nada</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="mono">862 62nd Street Circle East, Bradenton, FL</span><br>
+          <span style="color:var(--muted);font-size:8.6pt">escrito completo, sin abreviaturas</span>
+        </td>
+        <td class="no">Nada</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="mono">62nd Street Circle East, Bradenton, FL</span><br>
+          <span style="color:var(--muted);font-size:8.6pt">solo la calle, sin número</span>
+        </td>
+        <td class="no">Nada</td>
+      </tr>
+      <tr class="highlight">
+        <td>
+          <span class="mono">862 62nd St Cir E, Bradenton, FL 34208</span><br>
+          <span style="color:var(--muted);font-size:8.6pt">añadiendo el código postal</span>
+        </td>
+        <td class="no">Nada</td>
+      </tr>
+      <tr>
+        <td class="mono">Bradenton, FL</td>
+        <td class="yes">Funciona</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    La conclusión está en la cuarta fila: <strong>ni siquiera añadiendo el código postal
+    aparece</strong>. Eso descarta que sea un problema de formato, de abreviaturas o de
+    cómo se escribe la consulta. La calle «62nd Street Circle East» no está en los datos
+    de OpenStreetMap. Es un problema de <em>cobertura de información</em>.
+  </p>
+
+  <h3>Por qué la alternativa gratuita del gobierno tampoco sirve</h3>
+
+  <p>
+    Probamos el geocodificador oficial de la Oficina del Censo de Estados Unidos, que es
+    gratuito. El resultado fue peor que no encontrar nada.
+  </p>
+
+  <div class="note gold avoid-break">
+    <div class="note-title">Resultado de la prueba</div>
+    <p>
+      Devolvió <span class="mono">862 62ND ST W, Bradenton, FL 34209</span>: una calle
+      distinta, con otro código postal. La ubicación real está a
+      <strong>14 kilómetros</strong> de la que propuso.
+    </p>
+    <p>
+      Un punto colocado en silencio en el lugar equivocado es <strong>más peligroso</strong>
+      que un buscador que dice «no lo encuentro»: nadie lo revisa, y todas las distancias
+      calculadas desde ahí —incluida «la clínica más cercana»— salen mal sin que nadie se
+      entere.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="num">02</div>
+  <h2>Dónde sí está el dato</h2>
+
+  <p>
+    Antes de recomendar cualquier gasto buscamos si la dirección existe en alguna fuente
+    pública. <strong>Sí existe.</strong> El condado de Manatee publica su registro oficial
+    de direcciones —301.660 puntos— y la dirección reportada está ahí:
+  </p>
+
+  <table class="avoid-break">
+    <thead>
+      <tr>
+        <th style="width:46%">Fuente</th>
+        <th style="width:32%">Qué dice</th>
+        <th class="num-col" style="width:22%">Coordenadas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td><strong>Registro oficial del condado de Manatee</strong><br>
+          <span style="color:var(--muted);font-size:8.6pt">licencia abierta, uso comercial permitido</span></td>
+        <td>862 62nd Street Circle E, Bradenton 34208</td>
+        <td class="num-col">27,4913<br>−82,4818</td>
+      </tr>
+      <tr>
+        <td>Oficina del Censo de EE. UU.</td>
+        <td class="no">862 62nd St <strong>W</strong>, 34209</td>
+        <td class="num-col">27,4920<br>−82,6236</td>
+      </tr>
+      <tr>
+        <td>OpenStreetMap <span style="color:var(--muted)">(el que usábamos)</span></td>
+        <td class="no">No conoce la calle</td>
+        <td class="num-col" style="color:var(--muted)">—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Ese registro del condado no es un caso aislado. Forma parte de <em>OpenAddresses</em>,
+    un archivo público que reúne los registros oficiales de direcciones de todo el país:
+    <strong>72 fuentes de Florida y 70 de Minnesota</strong>, es decir, prácticamente toda
+    la cobertura que esta plataforma necesita, bajo licencias que permiten el uso comercial.
+  </p>
+
+  <div class="note avoid-break">
+    <div class="note-title">Lo que eso significa</div>
+    <p>
+      El dato que arregla el problema <strong>es gratuito y de dominio público</strong>. No
+      hace falta comprarlo. Lo único que aportan los proveedores de pago es el trabajo de
+      convertir esos catorce millones de puntos en un buscador rápido y tolerante a erratas
+      — y hay proveedores que ya lo han hecho y lo ofrecen con un plan gratuito suficiente
+      para esta plataforma.
+    </p>
+  </div>
+
+  <h3>Verificado, no supuesto</h3>
+
+  <p>
+    El 25 de agosto de 2026 probamos la dirección reportada contra Geoapify con una clave
+    real del plan gratuito. El resultado:
+  </p>
+
+  <table class="avoid-break">
+    <tbody>
+      <tr>
+        <td style="width:34%"><strong>Dirección devuelta</strong></td>
+        <td>862 62nd Street Circle East, Bradenton, FL 34208</td>
+      </tr>
+      <tr>
+        <td><strong>Coordenadas</strong></td>
+        <td class="mono">27,491767 · −82,48216</td>
+      </tr>
+      <tr>
+        <td><strong>Tipo de coincidencia</strong></td>
+        <td class="yes">Exacta (confianza 1 sobre 1)</td>
+      </tr>
+      <tr class="highlight">
+        <td><strong>Origen del dato</strong></td>
+        <td>OpenAddresses — el mismo registro del condado citado arriba</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Está a <strong>36 metros</strong> de la coordenada oficial del condado. Para
+    comparar: la propuesta del geocodificador del censo estaba a 14 kilómetros.
+  </p>
+</section>
+
+<section>
+  <div class="num">03</div>
+  <h2>Qué se ha mejorado ya, sin coste</h2>
+
+  <p>
+    Investigando el caso encontramos otros problemas de fondo que también explicaban el
+    «le falta para uso real». Todos están corregidos y ninguno depende de contratar nada.
+  </p>
+
+  <h3>El buscador ya no falla en silencio</h3>
+  <p>
+    Antes, cuando una dirección no se encontraba, la lista de sugerencias
+    <em>desaparecía</em>: no había mensaje, el mapa no se movía y el usuario no podía
+    saber si el sistema estaba roto, lento, o siendo honesto. La gente reescribía
+    direcciones que ya estaban bien. Ahora se indica qué dirección falló y qué hacer con ella.
+  </p>
+
+  <h3>Se puede colocar el punto a mano</h3>
+  <p>
+    Cuando el proveedor no conoce una dirección, el desplegable ofrece
+    «<strong>Place the pin yourself</strong>»: un clic en el mapa fija la ubicación exacta
+    y el trabajo continúa. Ningún proveedor acierta el 100 % de las veces, así que esta
+    salida sigue haciendo falta incluso con el mejor de ellos.
+  </p>
+
+  <h3>Se avisa cuando la ubicación es aproximada</h3>
+  <p>
+    Antes, el centro de un código postal y la puerta exacta de una casa se mostraban
+    <em>igual</em>. Alguien buscando el domicilio de un cliente podía recibir el centro de
+    un código postal sin manera de notarlo, y medir «la clínica más cercana» desde ahí.
+    Ahora se muestra la precisión y se invita a ajustar el punto arrastrándolo.
+  </p>
+
+  <h3>Autocompletado en los tres formularios</h3>
+  <p>
+    El alta de clínica, el alta de despacho y el formulario de derivación usaban un campo
+    de texto simple. Ahora los tres comparten el mismo buscador con sugerencias, y los de
+    administración muestran un mini-mapa para confirmar el punto exacto antes de guardar.
+  </p>
+
+  <h3>Se acabaron las coordenadas escritas a mano</h3>
+  <p>
+    El panel de administración pedía la latitud y la longitud como dos números que alguien
+    tenía que teclear. Si el campo quedaba vacío se guardaba un cero — y «0, 0» es un punto
+    en el golfo de Guinea. De ahí salían las fichas que el mapa tenía que esconder. Ahora
+    se rellenan solas al elegir la dirección, y el servidor <strong>rechaza</strong> las
+    coordenadas imposibles aunque alguien lo intente.
+  </p>
+
+  <h3>Además, por debajo</h3>
+  <ul>
+    <li>
+      <strong>Búsquedas más relevantes.</strong> El buscador tiene ahora en cuenta la zona
+      que el usuario está mirando y el estado asignado a su cuenta, así que una calle común
+      deja de competir con las mismas calles de todo el país.
+    </li>
+    <li>
+      <strong>Direcciones estructuradas en la base de datos.</strong> La ciudad, el estado
+      y el código postal no eran columnas: se extraían del texto en cada consulta. Ahora se
+      guardan como datos propios e indexados.
+    </li>
+    <li>
+      <strong>Caché compartida y límites de uso.</strong> Las búsquedas repetidas ya no
+      cuestan una consulta nueva, y ningún usuario puede agotar el cupo por accidente. Esto
+      es justamente lo que permite quedarse dentro de un plan gratuito.
+    </li>
+    <li>
+      <strong>Pruebas automáticas.</strong> Verifican que los cuatro proveedores producen
+      exactamente el mismo resultado, lo que convierte el cambio de proveedor en una
+      decisión reversible en lugar de un salto al vacío.
+    </li>
+  </ul>
+</section>
+
+<section>
+  <div class="num">04</div>
+  <h2>Las opciones y lo que cuestan</h2>
+
+  <table class="avoid-break">
+    <thead>
+      <tr>
+        <th style="width:26%">Proveedor</th>
+        <th class="num-col" style="width:18%">Uso actual</th>
+        <th class="num-col" style="width:18%">Si crece ×35</th>
+        <th style="width:38%">Notas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td><strong>Geoapify</strong></td>
+        <td class="num-col"><strong>0 $</strong></td>
+        <td class="num-col"><strong>0 $</strong></td>
+        <td>3.000/día gratis, sin tarjeta. Usa OpenAddresses. Exige mostrar «Powered by Geoapify», ya implementado.</td>
+      </tr>
+      <tr>
+        <td>Mapbox</td>
+        <td class="num-col">≈ 3 $/mes</td>
+        <td class="num-col">≈ 115 $/mes</td>
+        <td>Requiere tarjeta. Alternativa si el cupo gratuito se queda corto.</td>
+      </tr>
+      <tr>
+        <td>Google Maps</td>
+        <td class="num-col">0 $</td>
+        <td class="num-col">≈ 654 $/mes</td>
+        <td class="no">Obliga a reescribir todo el mapa (4–6 días) y a refrescar las coordenadas cada 30 días.</td>
+      </tr>
+      <tr>
+        <td>OpenStreetMap <span style="color:var(--muted)">(el anterior)</span></td>
+        <td class="num-col">0 $</td>
+        <td class="num-col">0 $</td>
+        <td class="no">No resuelve el problema reportado.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:9pt;color:var(--muted);margin-top:-6px">
+    Precios oficiales publicados a agosto de 2026. El escenario «uso actual» supone unos
+    50 usuarios profesionales activos, es decir 1.000–3.500 búsquedas al mes. Re-procesar
+    las ~880 fichas ya existentes es un coste único de 0 $ con Geoapify.
+  </p>
+
+  <div class="note avoid-break">
+    <div class="note-title">Nuestra recomendación</div>
+    <p>
+      <strong>Geoapify, en su plan gratuito.</strong>
+    </p>
+    <p>
+      Resuelve el problema reportado con los mismos datos abiertos donde localizamos la
+      dirección, no cuesta nada, no pide tarjeta de crédito, mantiene intacto todo el mapa
+      actual y su única condición —mostrar la atribución— ya está implementada en el
+      buscador.
+    </p>
+    <p>
+      Si el uso creciera más de veinticinco veces por encima de lo previsto y el cupo
+      diario se quedara corto, <strong>Mapbox</strong> es el siguiente escalón por unos
+      3 $ al mes, y el cambio sigue siendo una línea de configuración.
+    </p>
+  </div>
+
+  <div class="note navy avoid-break">
+    <div class="note-title">Por qué no recomendamos Google</div>
+    <p>
+      Es gratuito al volumen actual, pero sus términos <em>prohíben</em> mostrar sus
+      resultados sobre un mapa que no sea de Google. La plataforma usa OpenStreetMap, así
+      que elegir Google obliga a reescribir toda la capa del mapa —marcadores,
+      agrupaciones, ventanas emergentes, círculo de radio y punto arrastrable—: entre 4 y
+      6 días de trabajo. Además solo permite guardar sus coordenadas 30 días, lo que
+      obligaría a un proceso automático de refresco indefinido.
+    </p>
+    <p>
+      Sigue siendo la opción correcta si lo que se quiere es que <em>el mapa</em> también
+      sea Google —satélite, Street View, sus puntos de interés—, y no solo que el buscador
+      funcione.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="num">05</div>
+  <h2>Qué hay que hacer, y cuándo</h2>
+
+  <table class="avoid-break">
+    <thead>
+      <tr>
+        <th style="width:8%">#</th>
+        <th style="width:52%">Paso</th>
+        <th style="width:20%">Quién</th>
+        <th style="width:20%">Plazo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1</strong></td>
+        <td>Revisar las mejoras ya entregadas en el entorno de pruebas. No requiere contratar nada.</td>
+        <td>Xpert Connect</td>
+        <td>Inmediato</td>
+      </tr>
+      <tr class="highlight">
+        <td><strong>2</strong></td>
+        <td>Crear una cuenta gratuita en Geoapify y facilitarnos la clave. No pide tarjeta.</td>
+        <td>Xpert Connect</td>
+        <td>10 minutos</td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td>Enviarnos 20–30 direcciones que hoy fallen, para medir el acierto real.</td>
+        <td>Xpert Connect</td>
+        <td>Inmediato</td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td>Pasarlas por todos los proveedores y entregar una tabla de aciertos comparada.</td>
+        <td>Desarrollo</td>
+        <td>Medio día</td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td>Activación y re-verificación de las 880 fichas existentes.</td>
+        <td>Desarrollo</td>
+        <td>1 día</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note gold avoid-break">
+    <div class="note-title">Para ser transparentes</div>
+    <p>
+      Hasta que se active una clave —gratuita, pero clave al fin— la dirección concreta que
+      se reportó <strong>seguirá sin aparecer</strong>. Lo que cambia desde ya es que el
+      sistema lo dice claramente, ofrece una alternativa para continuar el trabajo, y no
+      vuelve a guardar ubicaciones incorrectas.
+    </p>
+    <p>
+      Tampoco prometemos un 100 % de aciertos: ningún geocodificador lo consigue, ni
+      siquiera Google. Por eso la opción de colocar el punto a mano se queda en el producto
+      de forma permanente.
+    </p>
+  </div>
+</section>
+
+<footer>
+  Informe elaborado tras la revisión y las mejoras aplicadas al buscador de direcciones de
+  Xpert Connect. Los resultados de las secciones 01 y 02 son consultas reales verificadas
+  contra los servicios en producción y contra el registro oficial de direcciones del
+  condado de Manatee. Los precios de la sección 04 proceden de la documentación oficial de
+  cada proveedor a fecha de agosto de 2026 y pueden variar.
+</footer>
+
+</body>
+</html>

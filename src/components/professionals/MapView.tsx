@@ -25,8 +25,10 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { useSmartSearch } from '@/hooks/useSmartSearch'
-import { useGeocoder } from '@/hooks/useGeocoder'
+import { resolveOnce, type ProximityHint } from '@/hooks/useGeocoder'
 import { useReverseGeocode } from '@/hooks/useReverseGeocode'
+import { quantizeProximity } from '@/lib/geocoding/bias'
+import { MIN_GEOCODE_QUERY } from '@/lib/geocoding/constants'
 import { clinicAvailIcon, homeIcon } from '@/lib/map/icons'
 import {
   US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance,
@@ -34,7 +36,12 @@ import {
 } from '@/lib/map/geo'
 import type { Bounds, SortMode } from '@/lib/search'
 import { parseMapUrlState, toMapUrlQuery } from '@/lib/search/url-state'
-import { ZOOM_FOR_KIND, type GeocodeAddress, type GeocodeResult } from '@/types/geocode'
+import {
+  ZOOM_FOR_KIND,
+  type GeocodeAddress,
+  type GeocodePrecision,
+  type GeocodeResult,
+} from '@/types/geocode'
 import { cn } from '@/lib/utils'
 import type { MapItem } from '@/lib/map/types'
 import type { Clinic } from '@/types/professionals'
@@ -88,9 +95,17 @@ const SORT_HEADINGS: Record<SortMode, string> = {
  * optional chaining then swallows the failure silently, leaving `moveend`
  * unbound with no error anywhere. `useMapEvents` cannot get this wrong.
  */
-function MapEvents({ onMoveEnd }: { onMoveEnd: (map: L.Map) => void }) {
+function MapEvents({
+  onMoveEnd,
+  onPick,
+}: {
+  onMoveEnd: (map: L.Map) => void
+  /** Only bound while the user has asked to place the pin by hand. */
+  onPick?: (lat: number, lng: number) => void
+}) {
   const map = useMapEvents({
     moveend: () => onMoveEnd(map),
+    click: (event) => onPick?.(event.latlng.lat, event.latlng.lng),
   })
   return null
 }
@@ -152,6 +167,19 @@ export function MapView({
   // form the URL, the copied list and the summary need, while the anchor row
   // renders the components on two lines.
   const [locationAddress, setLocationAddress] = useState<GeocodeAddress | null>(null)
+  /**
+   * How sure the provider was about this point.
+   *
+   * Drives the "drag the pin" prompt on the chip. Without it a ZIP centroid and
+   * a rooftop hit look identical, and every distance in the panel is measured
+   * from the difference without saying so.
+   */
+  const [locationPrecision, setLocationPrecision] = useState<GeocodePrecision | null>(null)
+  /**
+   * The dropdown offered "place the pin yourself" and the user took it. The
+   * next click on the map sets the anchor.
+   */
+  const [placingPin, setPlacingPin] = useState(false)
   // Anchor point for "clinics near the client's home": the searched/geolocated coordinates.
   const [searchedLocation, setSearchedLocation] = useState<[number, number] | null>(null)
   const [radiusMiles, setRadiusMiles] = useState<number | null>(null)
@@ -203,6 +231,40 @@ export function MapView({
    * centroid rather than from anywhere the user had been.
    */
   const [appliedCenter, setAppliedCenter] = useState<[number, number]>(initialCenter)
+
+  /**
+   * A deliberately coarse view hint, sent with address lookups so the provider
+   * ranks what the user is looking at first.
+   *
+   * Declared up here with the rest of the state rather than beside
+   * `handleMapMoveEnd`, which is where it is written: `useSmartSearch` reads it
+   * several hundred lines above that, and a `const` used before its declaration
+   * is a temporal-dead-zone error at runtime, not a lint warning.
+   *
+   * This is state, unlike the zoom that `publishZoom` writes straight to the
+   * DOM, and only because it is QUANTISED first: one decimal of latitude is
+   * ~11 km and zoom moves in steps of two, so the value changes on the order of
+   * once per deliberate move rather than once per frame. The `prev` comparison
+   * below is what enforces that — without it this would re-render the map on
+   * every pan, which is exactly the cost `mapCenter` used to impose before it
+   * was removed.
+   *
+   * Coarse also keeps the cache useful: the hint is part of the cache key, so
+   * full-precision coordinates would give every pixel of pan its own entry.
+   */
+  const [proximity, setProximity] = useState<ProximityHint | null>(null)
+
+  const syncProximity = useCallback(() => {
+    const map = mapRef.current
+    if (!map) return
+    const centre = map.getCenter()
+    const next = quantizeProximity(centre.lat, centre.lng, map.getZoom())
+    setProximity((prev) =>
+      prev && prev.lat === next.lat && prev.lng === next.lng && prev.zoom === next.zoom
+        ? prev
+        : next
+    )
+  }, [])
   const [viewportBounds, setViewportBounds] = useState<Bounds | null>(null)
   const [mapMoved, setMapMoved] = useState(false)
 
@@ -288,9 +350,8 @@ export function MapView({
     hydratedRef.current = true
   }, [])
 
-  // Address lookup now goes through /api/geocode, which sets a real User-Agent,
+  // Address lookup goes through /api/geocode, which sets a real User-Agent,
   // caches server-side and keeps clients' home addresses off a third party.
-  const { results: geocodeResults, loading: geocoding } = useGeocoder(locationQuery)
   const { lookup: lookupAddress, loading: reverseLoading } = useReverseGeocode()
 
   const applyPlace = useCallback(
@@ -300,11 +361,14 @@ export function MapView({
       label: string,
       zoom: number,
       address: GeocodeAddress | null = null,
-      bbox: GeocodeResult['bbox'] = null
+      bbox: GeocodeResult['bbox'] = null,
+      precision: GeocodePrecision | null = null
     ) => {
       setSearchedLocation([lat, lng])
       setLocationLabel(label)
       setLocationAddress(address)
+      setLocationPrecision(precision)
+      setPlacingPin(false)
       setLocationQuery('')
       // Distances are measured from the anchor, and "Search this area" compares
       // the live centre against this. It was never updated here, so the pill
@@ -334,16 +398,19 @@ export function MapView({
     []
   )
 
-  const handleSelectSuggestion = useCallback((s: GeocodeResult) => {
-    // A ZIP covers far more ground than a street address; landing at street
-    // zoom on a ZIP search hides most of what was asked for.
-    //
-    // The label arrives already composed from the geocoder's structured
-    // components. It used to be re-truncated here to two comma parts, which
-    // undid that work and produced a different label from the one the dropdown
-    // path produced for the very same address.
-    applyPlace(s.lat, s.lng, s.label, ZOOM_FOR_KIND[s.kind], s.address, s.bbox)
-  }, [applyPlace])
+  const handleSelectSuggestion = useCallback(
+    (s: GeocodeResult) => {
+      // A ZIP covers far more ground than a street address; landing at street
+      // zoom on a ZIP search hides most of what was asked for.
+      //
+      // The label arrives already composed from the geocoder's structured
+      // components. It used to be re-truncated here to two comma parts, which
+      // undid that work and produced a different label from the one the dropdown
+      // path produced for the very same address.
+      applyPlace(s.lat, s.lng, s.label, ZOOM_FOR_KIND[s.kind], s.address, s.bbox, s.precision)
+    },
+    [applyPlace]
+  )
 
   /**
    * Moving the home pin.
@@ -384,6 +451,10 @@ export function MapView({
       // under a pin that has moved off it.
       setLocationAddress(null)
       setLocationLabel('Adjusting…')
+      // Whatever the search claimed about precision no longer describes this
+      // point. Dropping it also suppresses the "drag the pin" prompt, which has
+      // been answered by the act of dragging.
+      setLocationPrecision(null)
 
       const place = await lookupAddress(lat, lng)
       if (place) {
@@ -491,28 +562,124 @@ export function MapView({
     [searchedLocation]
   )
 
-  // Auto-select the first match when the search was driven by the ?near= deep link.
-  // ReferrerReferralForm depends on this: "View clinics near this client" must
-  // land on a ready-to-use map, not on an open dropdown.
+  /**
+   * Resolves the `?near=<address>` deep link, exactly once.
+   *
+   * `ReferrerReferralForm` depends on this: "View clinics near this client"
+   * must land on a ready-to-use map, not on an open dropdown. It used to be
+   * served by a SECOND `useGeocoder` instance that lived for the whole session
+   * in order to answer one question at mount, plus an `autoSelectRef` that
+   * fished the first result out of it as it arrived. `resolveOnce` is the same
+   * contract without the machinery — and the contract matters, because the deep
+   * link has URLs in circulation and two E2E specs pinning it.
+   */
   useEffect(() => {
-    if (autoSelectRef.current && geocodeResults.length > 0) {
-      autoSelectRef.current = false
-      handleSelectSuggestion(geocodeResults[0])
+    if (!autoSelectRef.current || locationQuery.trim().length < MIN_GEOCODE_QUERY) return
+    autoSelectRef.current = false
+
+    let cancelled = false
+    const query = locationQuery
+    resolveOnce(query).then((result) => {
+      if (cancelled) return
+      if (result) {
+        handleSelectSuggestion(result)
+        return
+      }
+      // The address on the referral cannot be resolved. Hand it to the search
+      // box rather than silently doing nothing: the dropdown says which address
+      // failed and offers to place the pin by hand, which is the only way
+      // forward when the provider has never heard of the street.
+      setLocationQuery('')
+      setFilterText(query)
+    })
+
+    return () => {
+      cancelled = true
     }
-  }, [geocodeResults, handleSelectSuggestion])
+  }, [locationQuery, handleSelectSuggestion])
 
   const handleGeolocate = useCallback(() => {
     if (!navigator.geolocation) return
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => { const { latitude, longitude } = pos.coords; setSearchedLocation([latitude, longitude]); setLocationLabel('My Location'); setLocating(false); mapRef.current?.setView([latitude, longitude], 12) },
+      (pos) => {
+        const { latitude, longitude } = pos.coords
+        setSearchedLocation([latitude, longitude])
+        setLocationLabel('My Location')
+        setLocationPrecision(null)
+        setPlacingPin(false)
+        setAppliedCenter([latitude, longitude])
+        setMapMoved(false)
+        setAnchorAdjusted(false)
+        setLocating(false)
+        programmaticMoveRef.current = true
+        mapRef.current?.setView([latitude, longitude], 12)
+
+        // Name the place, and record it as the origin.
+        //
+        // Neither used to happen, so the chip read "My Location" with no second
+        // line and no Undo — and dragging the pin from a geolocated start had
+        // nothing to undo back to, which is the one case where a stray drag is
+        // most likely, since the browser's fix can already be a block out.
+        setSearchedOrigin({
+          position: [latitude, longitude],
+          label: 'My Location',
+          address: null,
+        })
+        void lookupAddress(latitude, longitude).then((result) => {
+          if (!result) return
+          setLocationAddress(result.address)
+          setLocationPrecision(result.precision)
+          setSearchedOrigin({
+            position: [latitude, longitude],
+            label: 'My Location',
+            address: result.address,
+          })
+        })
+      },
       () => setLocating(false),
       { enableHighAccuracy: false, timeout: 10000 }
     )
-  }, [])
+  }, [lookupAddress])
+
+  /**
+   * The user chose "place the pin yourself", then clicked the map.
+   *
+   * This is the escape hatch that turns an unresolvable address into work that
+   * can continue — the exact case the client reported, where a real street is
+   * simply absent from the provider's data. No provider switch removes the need
+   * for it; it only makes it rarer.
+   *
+   * `locationPrecision` stays null rather than becoming 'rooftop': we know where
+   * they clicked, not that a building is under it, and null is the value that
+   * makes no claim either way. The reverse lookup that follows is for the label
+   * only — the coordinates are already exactly what was asked for.
+   */
+  const handlePickPin = useCallback(
+    (lat: number, lng: number) => {
+      setPlacingPin(false)
+      setSearchedLocation([lat, lng])
+      setAppliedCenter([lat, lng])
+      setMapMoved(false)
+      setAnchorAdjusted(false)
+      setLocationLabel('Custom location')
+      setLocationAddress(null)
+      setLocationPrecision(null)
+      setSearchedOrigin({ position: [lat, lng], label: 'Custom location', address: null })
+
+      void lookupAddress(lat, lng).then((result) => {
+        if (!result) return
+        setLocationLabel(result.label)
+        setLocationAddress(result.address)
+        setSearchedOrigin({ position: [lat, lng], label: result.label, address: result.address })
+      })
+    },
+    [lookupAddress]
+  )
 
   const handleClearLocation = useCallback(() => {
     setLocationLabel(''); setLocationAddress(null); setLocationQuery(''); setSearchedLocation(null); setRadiusMiles(null)
+    setLocationPrecision(null); setPlacingPin(false)
     // Clearing the location resets every spatial constraint, not just the pin —
     // leaving a stale viewport behind would keep filtering results against an
     // area the user can no longer see any reason for.
@@ -646,7 +813,13 @@ export function MapView({
 
   /* ── Unified search box (feature-flagged) ── */
 
-  const { groups: suggestionGroups, remember, forget } = useSmartSearch({
+  const {
+    groups: suggestionGroups,
+    remember,
+    forget,
+    resolvePlace,
+    resetSession,
+  } = useSmartSearch({
     index: searchIndex,
     facets,
     query: filterText,
@@ -654,16 +827,53 @@ export function MapView({
     entityHeading: isClinicViewer ? 'Specialists' : 'Providers',
     categoryHeading: showLawyersProp ? 'Practice areas' : 'Specialties',
     hasAnchor: Boolean(locationLabel),
+    proximity,
+    // There is a map right here to point at, so an address the provider has
+    // never heard of does not have to be a dead end.
+    allowManualPin: true,
   })
 
   const handleSuggestionSelect = useCallback(
-    (suggestion: Suggestion) => {
+    async (suggestion: Suggestion) => {
       const { payload } = suggestion
       switch (payload.kind) {
-        case 'place':
-          remember(payload.label, { lat: payload.lat, lng: payload.lng, label: payload.label })
+        case 'place': {
+          // Google and Mapbox return suggestions WITHOUT coordinates — that
+          // split is how they bill one session rather than N keystrokes — so a
+          // row is not a location until it has been resolved. Nominatim answers
+          // from the suggestion it already has.
+          const place = await resolvePlace(payload.suggestion)
+          if (!place) {
+            // Leave the text alone. Clearing it here would make a transient
+            // network failure look like the user mistyped.
+            return
+          }
+          remember(place.label, { lat: place.lat, lng: place.lng, label: place.label })
           setFilterText('')
-          applyPlace(payload.lat, payload.lng, payload.label, ZOOM_FOR_KIND[payload.placeKind])
+          // Passing `address` and `bbox` through is the whole point of carrying
+          // the suggestion object. This call site used to pass neither, so the
+          // map never framed the bounding box it had been handed and the
+          // location chip rendered one line where it was built for two — while
+          // the `?near=` path, which did pass them, behaved correctly for the
+          // very same address.
+          applyPlace(
+            place.lat,
+            place.lng,
+            place.label,
+            ZOOM_FOR_KIND[place.kind],
+            place.address,
+            place.bbox,
+            place.precision
+          )
+          return
+        }
+        case 'manual':
+          // Arm the map. The next click sets the anchor, and the pin is
+          // draggable from there like any other.
+          setFilterText('')
+          resetSession()
+          setPlacingPin(true)
+          setShowPanel(false)
           return
         case 'entity': {
           // Jump to the record itself and open its popup, rather than merely
@@ -689,7 +899,7 @@ export function MapView({
           return
       }
     },
-    [remember, applyPlace, byId]
+    [remember, applyPlace, byId, resolvePlace, resetSession]
   )
 
   const handleSuggestionRemove = useCallback(
@@ -925,6 +1135,7 @@ export function MapView({
     const map = mapRef.current
     if (!map) return
     publishZoom()
+    syncProximity()
 
     // A move we made ourselves is not the user wandering off. Without this,
     // every `fitBounds` — picking a radius, choosing an address — ends in a
@@ -942,7 +1153,7 @@ export function MapView({
     const [appliedLat, appliedLng] = appliedCenterRef.current
     const moved = haversineDistance(centre.lat, centre.lng, appliedLat, appliedLng)
     setMapMoved(moved > MOVED_THRESHOLD_MILES)
-  }, [publishZoom])
+  }, [publishZoom, syncProximity])
 
   const handleFocusItem = useCallback((item: MapItem) => {
     setSelectedId(item.id)
@@ -1092,7 +1303,12 @@ export function MapView({
         preferCanvas={true}
         ref={mapRef}
       >
-        <MapEvents onMoveEnd={handleMapMoveEnd} />
+        <MapEvents
+          onMoveEnd={handleMapMoveEnd}
+          // Bound only while armed, so an ordinary click on the map never
+          // moves someone's anchor by accident.
+          onPick={placingPin ? handlePickPin : undefined}
+        />
         <ZoomControl position="bottomleft" />
         {/* Standard OpenStreetMap tiles. A muted CARTO basemap was tried, on
             the theory that a quieter background lets the pins carry the
@@ -1164,9 +1380,37 @@ export function MapView({
           top-left up to 420px, and a top-centred pill lands underneath it on
           a laptop screen, visible but unclickable. The zoom control sits
           bottom-left, so the bottom centre is the one uncontested spot. */}
-      {(mapMoved || viewportBounds) && (
+      {/* `placingPin` belongs in this condition, not just on the pill inside.
+          It was omitted at first, and the effect was that "place the pin
+          yourself" armed the map silently: the state flipped, the click handler
+          bound, and the user was told nothing — because on a freshly loaded map
+          neither `mapMoved` nor `viewportBounds` is true, so the whole slot was
+          absent. Three E2E cases caught it; nothing in the type system could. */}
+      {(mapMoved || viewportBounds || placingPin) && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-1/2 z-[502] flex items-center gap-2">
-          {mapMoved && (
+          {/* Armed by "place the pin yourself". Occupies the same slot as the
+              other pills, and suppresses "Search this area" while it is up so
+              two competing calls to action never stack. */}
+          {placingPin && (
+            <div
+              role="status"
+              data-testid="map-pin-placing"
+              className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-xs font-bold text-navy shadow-lg shadow-gold/30"
+            >
+              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+              Click the map to set the location
+              <button
+                type="button"
+                onClick={() => setPlacingPin(false)}
+                aria-label="Cancel placing the pin"
+                data-testid="map-pin-placing-cancel"
+                className="ml-1 rounded-full p-0.5 hover:bg-navy/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/40"
+              >
+                <X className="h-3 w-3" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          {mapMoved && !placingPin && (
             <button
               type="button"
               onClick={handleSearchThisArea}
@@ -1208,6 +1452,7 @@ export function MapView({
                 onClear={handleClearLocation}
                 adjusted={anchorAdjusted}
                 resolving={reverseLoading}
+                precision={locationPrecision}
                 onReset={searchedOrigin ? handleResetAnchor : undefined}
               />
             )}

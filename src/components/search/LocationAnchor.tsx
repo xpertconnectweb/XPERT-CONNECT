@@ -3,7 +3,8 @@
 import { Home, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatGeocodeLines } from '@/lib/address'
-import type { GeocodeAddress } from '@/types/geocode'
+import { isExactPrecision } from '@/lib/geocoding/precision'
+import type { GeocodeAddress, GeocodePrecision } from '@/types/geocode'
 
 /**
  * The "searching around here" row.
@@ -34,6 +35,15 @@ export interface LocationAnchorProps {
   adjusted?: boolean
   /** Resolving the address the pin was just dropped on. */
   resolving?: boolean
+  /**
+   * How sure the provider is that this point is the building.
+   *
+   * Anything below rooftop earns a prompt to drag the pin. The drag has always
+   * worked; what was missing was ever saying when it mattered — so a ZIP
+   * centroid looked exactly like an exact address, and every distance measured
+   * from it was quietly wrong.
+   */
+  precision?: GeocodePrecision | null
   onReset?: () => void
   className?: string
   'data-testid'?: string
@@ -45,11 +55,13 @@ export function LocationAnchor({
   onClear,
   adjusted = false,
   resolving = false,
+  precision = null,
   onReset,
   className,
   'data-testid': testId = 'map-search-chip',
 }: LocationAnchorProps) {
   const { primary, secondary } = formatGeocodeLines(address, label)
+  const approximate = precision !== null && !isExactPrecision(precision)
 
   return (
     <div
@@ -68,6 +80,19 @@ export function LocationAnchor({
           {primary}
         </p>
         {secondary && <p className="truncate text-[11px] text-gray-500">{secondary}</p>}
+
+        {/* Only when the pin has NOT already been adjusted: once someone has
+            dragged it, they have answered the question this asks. */}
+        {approximate && !adjusted && !resolving && (
+          <p
+            data-testid="map-anchor-approximate"
+            className="mt-0.5 text-[10px] font-medium text-amber-700"
+          >
+            {precision === 'zip'
+              ? 'Approximate — centre of the ZIP. Drag the pin to the exact spot.'
+              : 'Approximate — drag the pin to the exact spot.'}
+          </p>
+        )}
 
         {/* Says the pin was moved, and offers the way back.
             On a general-purpose map nobody needs this. Here the anchor decides

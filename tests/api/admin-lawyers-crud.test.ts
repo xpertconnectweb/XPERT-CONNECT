@@ -87,8 +87,13 @@ describe('POST /api/admin/lawyers', () => {
 
   it('returns 500 when Supabase errors out', async () => {
     sb.reset({ data: null, error: { message: 'duplicate' } })
+    // Real Orlando coordinates, not the placeholder 1,1 this used to send.
+    // `validateCoordinates` now rejects that before Supabase is ever reached —
+    // 1,1 is in the Gulf of Guinea, which is the exact class of value the
+    // guard exists to stop. The case under test is the SUPABASE failure, so it
+    // has to get past the guard to reach it.
     const res = await POST(
-      buildRequest({ name: 'X', lat: 1, lng: 1 }) as Request
+      buildRequest({ name: 'X', lat: 28.5383, lng: -81.3792 }) as Request
     )
     expect(res.status).toBe(500)
   })

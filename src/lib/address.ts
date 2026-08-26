@@ -194,11 +194,23 @@ export function publicLocationLabel(parts: AddressParts): string | null {
  *
  * Deliberately absent: a bare `fl` token. It collides with the "FL" state
  * abbreviation and stripping it would delete the state and ZIP.
+ *
+ * The unit token allows a `/`-joined second part, because "Unit 101/102" and
+ * "Suite 301/302" are everywhere in this corpus — a practice that took two
+ * adjoining rooms in a medical plaza. Matching only the first half left a
+ * stray "/102" glued to the street, and that fragment is enough to make the
+ * lookup fail on its own: `1531 SE 17th St Unit 101/102, Ocala, FL 34471`
+ * returned nothing, and `1531 SE 17th St, Ocala, FL 34471` resolves.
  */
 export function stripUnit(address: string): string {
+  const unitNumber = String.raw`\w[\w-]*(?:\s*/\s*\w[\w-]*)?`
+  const designators = 'apt|apartment|suite|ste|unit|floor|bldg|building|rm|room'
   return address
     .replace(
-      /,?\s*(?:#\s*\w[\w-]*|\b(?:apt|apartment|suite|ste|unit|floor|bldg|building|rm|room)\b\.?\s*#?\s*\w[\w-]*)/gi,
+      new RegExp(
+        String.raw`,?\s*(?:#\s*${unitNumber}|\b(?:${designators})\b\.?\s*#?\s*${unitNumber})`,
+        'gi'
+      ),
       ''
     )
     .replace(/\s{2,}/g, ' ')

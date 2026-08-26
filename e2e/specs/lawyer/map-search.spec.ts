@@ -1,13 +1,22 @@
 import { test, expect } from '@playwright/test'
+import { mockGeocode } from '../../helpers/geocode-mock'
 
 /**
  * The unified search box.
  *
  * Deliberately asserts on the box and the results panel rather than on Leaflet
  * markers - see the note in map-and-refer.spec.ts about marker flakiness.
+ *
+ * Address lookup is intercepted (see helpers/geocode-mock). This file used to
+ * call the live geocoding provider, which is why so many assertions below carry
+ * a 30-second timeout: the service paces callers to one request per second and
+ * an address that resolves today can stop resolving tomorrow, turning a
+ * third-party change into what looks like our bug. Those timeouts can come
+ * down now.
  */
 test.describe('unified map search', () => {
   test.beforeEach(async ({ page }) => {
+    await mockGeocode(page)
     await page.goto('/professionals/map')
     await expect(page.getByTestId('map-search-input')).toBeVisible({ timeout: 20_000 })
   })

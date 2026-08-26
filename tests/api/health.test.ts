@@ -58,7 +58,10 @@ describe('GET /api/health', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.ok).toBe(true)
-    expect(body.checks).toHaveLength(7)
+    // Eight since `env_geocoder` joined them: naming a paid provider without
+    // its key makes the app fall back to OpenStreetMap silently, so somebody
+    // believes they are paying for coverage they are not getting.
+    expect(body.checks).toHaveLength(8)
     expect(body.checks.every((c: { ok: boolean }) => c.ok)).toBe(true)
   })
 

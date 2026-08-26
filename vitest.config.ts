@@ -26,6 +26,11 @@ export default defineConfig({
         'src/lib/email/templates/**',
         'src/lib/search/**',
         'src/lib/address.ts',
+        // The provider adapters. Listed here on purpose: the thresholds are
+        // global, so a large new module with no tests drags the whole build
+        // under them. That is the forcing function — this is the code that has
+        // to keep behaving identically as the provider changes underneath it.
+        'src/lib/geocoding/**',
         'src/lib/regions.ts',
         'src/lib/counties.ts',
         'src/lib/clinic-specialties.ts',

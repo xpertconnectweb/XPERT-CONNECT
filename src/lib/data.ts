@@ -67,8 +67,16 @@ export async function getUserByUsername(
 }
 
 // Clinics
+//
+// ONE string literal, not a concatenation. `'a' + 'b'` widens to `string`,
+// which collapses the row typing for every query in this file — the same trap
+// documented on USER_COLUMNS above.
+//
+// Widened by 2026-08-structured-addresses.sql. PostgREST rejects an entire
+// select that names a column which does not exist, so this list and that
+// migration have to land in that order: migration first, then deploy.
 const CLINIC_COLUMNS =
-  'id, name, address, lat, lng, phone, specialties, email, website, region, county, available'
+  'id, name, address, lat, lng, phone, specialties, email, website, region, county, available, street, city, state, zip_code, place_id, place_provider, geocode_precision, geocoded_at'
 
 /**
  * Attaches derived geography and canonicalizes the messy free-text columns.
@@ -77,14 +85,24 @@ const CLINIC_COLUMNS =
  * goes through — API routes, admin pages, scripts and future SSR alike. Doing
  * it here rather than per-route is what keeps the four map/list surfaces from
  * drifting apart.
+ *
+ * DUAL READ, for the length of the backfill. The structured column wins where
+ * it is populated; `parseAddress` remains the fallback where it is NULL. That
+ * is what lets the migration and the deploy happen at different times, and it
+ * is why those columns have no defaults — NULL is the signal, not an absence.
+ *
+ * Delete the fallback only once
+ *   SELECT count(*) FROM clinics WHERE geocoded_at IS NULL
+ * returns 0 in production.
  */
 function decorateClinic(clinic: Clinic): DecoratedClinic {
-  const parts = parseAddress(clinic.address)
+  const structured = clinic.city != null || clinic.state != null
+  const parts = structured ? null : parseAddress(clinic.address)
   return {
     ...clinic,
-    city: parts.city,
-    state: parts.state,
-    zipCode: parts.zip,
+    city: clinic.city ?? parts?.city ?? null,
+    state: clinic.state ?? parts?.state ?? null,
+    zipCode: normalizeZip(clinic.zipCode) ?? parts?.zip ?? null,
     region: sanitizeRegion(clinic.region) ?? undefined,
     county: canonicalizeCounty(clinic.county) ?? undefined,
     specialties: sanitizeSpecialties(clinic.specialties),
@@ -92,14 +110,15 @@ function decorateClinic(clinic: Clinic): DecoratedClinic {
 }
 
 function decorateLawyer(lawyer: Lawyer): DecoratedLawyer {
-  const parts = parseAddress(lawyer.address)
+  const structured = lawyer.city != null || lawyer.state != null
+  const parts = structured ? null : parseAddress(lawyer.address)
   return {
     ...lawyer,
-    city: parts.city,
-    state: parts.state,
+    city: lawyer.city ?? parts?.city ?? null,
+    state: lawyer.state ?? parts?.state ?? null,
     // `lawyers.zip_code` is populated on every row; the parsed value is only a
     // fallback for records added without it.
-    zipCode: normalizeZip(lawyer.zipCode) ?? parts.zip ?? undefined,
+    zipCode: normalizeZip(lawyer.zipCode) ?? parts?.zip ?? undefined,
     county: canonicalizeCounty(lawyer.county) ?? undefined,
     // NB: `lawyers.region` holds a CITY name, not a region. Left alone rather
     // than run through the region canonicalizer, which would reject all of it.
@@ -129,15 +148,24 @@ export async function getClinicsByState(state: string): Promise<DecoratedClinic[
   // The superset over-matches on purpose ("Flagler" contains "fl"), so the
   // authoritative decision is `parseAddress`, which reads the state from the
   // end of the string where it actually belongs.
-  const { data, error } = await supabaseAdmin
-    .from('clinics')
-    .select(CLINIC_COLUMNS)
-    .ilike('address', `%${state}%`)
-  if (error) {
-    console.error('getClinicsByState error:', error)
+  //
+  // TRANSITION PHASE. Two queries, unioned:
+  //   - rows the backfill has reached go through the indexed `state` column
+  //   - rows it has not still get the loose ILIKE, exactly as before
+  // The second query shrinks to zero as the backfill progresses, and then this
+  // whole branch can go. The JS filter below stays either way: it is the
+  // authoritative decision, and it is what makes the union provably harmless.
+  const [structured, legacy] = await Promise.all([
+    supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).eq('state', state),
+    supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).is('state', null).ilike('address', `%${state}%`),
+  ])
+
+  if (structured.error || legacy.error) {
+    console.error('getClinicsByState error:', structured.error ?? legacy.error)
     return []
   }
-  return rowsToModels<Clinic>(data)
+
+  return rowsToModels<Clinic>([...(structured.data ?? []), ...(legacy.data ?? [])])
     .map(decorateClinic)
     .filter((clinic) => clinic.state === state)
 }
@@ -183,7 +211,9 @@ export async function getClinicById(
 }
 
 // Lawyers
-const LAWYER_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, email, website, region, county, zip_code, available'
+// One string literal, same reason as CLINIC_COLUMNS. Widened by
+// 2026-08-structured-addresses.sql — apply that migration before deploying.
+const LAWYER_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, email, website, region, county, zip_code, available, street, city, state, place_id, place_provider, geocode_precision, geocoded_at'
 
 export async function getLawyers(): Promise<DecoratedLawyer[]> {
   const { data, error } = await supabaseAdmin
@@ -197,17 +227,19 @@ export async function getLawyers(): Promise<DecoratedLawyer[]> {
 }
 
 export async function getLawyersByState(state: string): Promise<DecoratedLawyer[]> {
-  // Same loose-superset-plus-JS-filter approach as getClinicsByState; see the
-  // comment there for why the old `%, ST %` pattern was wrong.
-  const { data, error } = await supabaseAdmin
-    .from('lawyers')
-    .select(LAWYER_COLUMNS)
-    .ilike('address', `%${state}%`)
-  if (error) {
-    console.error('getLawyersByState error:', error)
+  // Same loose-superset-plus-JS-filter approach as getClinicsByState, and the
+  // same transition-phase union; see the comments there.
+  const [structured, legacy] = await Promise.all([
+    supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).eq('state', state),
+    supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).is('state', null).ilike('address', `%${state}%`),
+  ])
+
+  if (structured.error || legacy.error) {
+    console.error('getLawyersByState error:', structured.error ?? legacy.error)
     return []
   }
-  return rowsToModels<Lawyer>(data)
+
+  return rowsToModels<Lawyer>([...(structured.data ?? []), ...(legacy.data ?? [])])
     .map(decorateLawyer)
     .filter((lawyer) => lawyer.state === state)
 }

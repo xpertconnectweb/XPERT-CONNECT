@@ -6,6 +6,8 @@ import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import { PRACTICE_AREAS, resolveCatalog } from '@/lib/practice-areas'
 import { useProviderSearchIds } from '@/hooks/useProviderSearchIds'
+import { AddressAutocomplete } from '@/components/search/AddressAutocomplete'
+import type { ResolvedAddress } from '@/types/geocode'
 
 interface Lawyer {
   id: string
@@ -59,6 +61,8 @@ export default function AdminLawyersPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<LawyerForm>(emptyForm)
+  /** See the note on the clinic form: evidence for the server, not input. */
+  const [resolvedAddress, setResolvedAddress] = useState<ResolvedAddress | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -108,6 +112,7 @@ export default function AdminLawyersPage() {
   const openCreate = () => {
     setEditingId(null)
     setForm(emptyForm)
+    setResolvedAddress(null)
     setError('')
     setShowModal(true)
   }
@@ -128,6 +133,7 @@ export default function AdminLawyersPage() {
       zipCode: lawyer.zipCode || '',
       available: lawyer.available,
     })
+    setResolvedAddress(null)
     setError('')
     setShowModal(true)
   }
@@ -149,6 +155,18 @@ export default function AdminLawyersPage() {
       county: form.county || null,
       zipCode: form.zipCode || null,
       available: form.available,
+      // Only when the address came from a suggestion. The server re-resolves
+      // from `placeId` rather than trusting posted coordinates.
+      ...(resolvedAddress
+        ? {
+            street: resolvedAddress.street,
+            city: resolvedAddress.city,
+            state: resolvedAddress.state,
+            placeId: resolvedAddress.placeId,
+            placeProvider: resolvedAddress.provider,
+            geocodePrecision: resolvedAddress.precision,
+          }
+        : {}),
     }
 
     try {
@@ -691,41 +709,66 @@ export default function AdminLawyersPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  placeholder="123 Legal Ave, City, FL 00000"
-                />
-              </div>
+              {/* See the note on the clinic form: the two hand-typed number
+                  fields below the disclosure are what put records at (0, 0). */}
+              <AddressAutocomplete
+                label="Address"
+                required
+                value={form.address}
+                onChange={(value) => setForm((current) => ({ ...current, address: value }))}
+                onResolved={(resolved) => {
+                  setResolvedAddress(resolved)
+                  if (resolved) {
+                    setForm((current) => ({
+                      ...current,
+                      address: resolved.formatted,
+                      lat: resolved.lat,
+                      lng: resolved.lng,
+                      zipCode: resolved.zip ?? current.zipCode,
+                      county: resolved.county ?? current.county,
+                    }))
+                  }
+                }}
+                resolved={resolvedAddress}
+                placeholder="123 Legal Ave, City, FL 00000"
+                confirmOnMap
+                hint="Pick a suggestion to set the coordinates and ZIP automatically."
+                data-testid="lawyer-address"
+              />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Latitude *</label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={form.lat}
-                    onChange={(e) => setForm({ ...form, lat: parseFloat(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="25.7617"
-                  />
+              <details className="rounded-lg border border-gray-200 bg-gray-50/60 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-medium text-gray-600">
+                  Set coordinates manually
+                </summary>
+                <p className="mt-2 text-[11px] leading-snug text-gray-500">
+                  Only needed when the address cannot be found. The map hides any
+                  record left at 0, 0.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Latitude *</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={form.lat}
+                      onChange={(e) => setForm({ ...form, lat: parseFloat(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      placeholder="25.7617"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Longitude *</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={form.lng}
+                      onChange={(e) => setForm({ ...form, lng: parseFloat(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      placeholder="-80.1918"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Longitude *</label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={form.lng}
-                    onChange={(e) => setForm({ ...form, lng: parseFloat(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="-80.1918"
-                  />
-                </div>
-              </div>
+              </details>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

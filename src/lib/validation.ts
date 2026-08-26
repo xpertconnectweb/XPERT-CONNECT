@@ -19,6 +19,59 @@ export function isValidIsoDate(value: string): boolean {
   )
 }
 
+/**
+ * The box every record has to fall inside: the continental US plus Alaska,
+ * Hawaii and Puerto Rico. `[south, north, west, east]`.
+ *
+ * Generous on purpose. This is not a business rule about which states are
+ * served — that is `VALID_STATES` — it is a sanity check against a coordinate
+ * that cannot be a US address at all.
+ */
+const US_BOUNDS = { south: 17.5, north: 71.5, west: -180, east: -64 }
+
+export type CoordinateCheck =
+  | { ok: true; lat: number; lng: number }
+  | { ok: false; reason: string }
+
+/**
+ * Rejects coordinates that cannot be a provider's address.
+ *
+ * The admin form used to take latitude and longitude as two hand-typed number
+ * fields with `parseFloat(e.target.value) || 0` behind them, and the POST
+ * handler inserted whatever arrived without looking. So an empty field became
+ * 0, and 0, 0 — which is in the Gulf of Guinea — became a clinic. Those rows
+ * are still in the table, which is why `hasRealCoordinates` has to filter them
+ * out when the search index is built.
+ *
+ * That filter stays as defence in depth for the legacy rows. This is the fix:
+ * no new ones.
+ */
+export function validateCoordinates(lat: unknown, lng: unknown): CoordinateCheck {
+  const latNum = typeof lat === 'number' ? lat : Number(lat)
+  const lngNum = typeof lng === 'number' ? lng : Number(lng)
+
+  if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) {
+    return { ok: false, reason: 'Latitude and longitude must be numbers' }
+  }
+  // The specific case that produced the bad rows, called out by name so the
+  // admin sees why rather than a generic range error.
+  if (latNum === 0 && lngNum === 0) {
+    return {
+      ok: false,
+      reason: 'Coordinates are 0, 0 — pick an address from the suggestions, or set them manually',
+    }
+  }
+  if (
+    latNum < US_BOUNDS.south ||
+    latNum > US_BOUNDS.north ||
+    lngNum < US_BOUNDS.west ||
+    lngNum > US_BOUNDS.east
+  ) {
+    return { ok: false, reason: 'Coordinates are outside the United States' }
+  }
+  return { ok: true, lat: latNum, lng: lngNum }
+}
+
 export const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin', 'referrer', 'partner', 'directory']
 export const VALID_REFERRAL_STATUSES: ReferralStatus[] = ['received', 'in_process', 'attended']
 export const VALID_REFERRER_STATUSES: ReferrerReferralStatus[] = ['pending', 'assigned', 'in_process', 'completed']

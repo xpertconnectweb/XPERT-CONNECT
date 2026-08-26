@@ -18,29 +18,65 @@ import { phoneLast4 } from '@/lib/phone'
  * drift, which matters because a divergence here is a privacy bug rather than a
  * cosmetic one.
  *
- * What is withheld: `phone` and the street `address`, so a provider cannot be
- * contacted directly around the referral flow.
+ * What is withheld: `phone`, the free-text `address` and the `street` column,
+ * so a provider cannot be contacted directly around the referral flow.
  *
  * What is kept: `city`, `state` and `zipCode`. Coarse location is not contact
  * information, and without it searching or filtering by ZIP or city on these
  * maps is impossible — there is simply no field to match against. Street level
  * detail stays hidden.
  *
+ * NOTE THE SHAPE OF THIS FUNCTION. It withholds by destructuring named fields
+ * out and spreading the rest, which means every NEW column on `clinics` is
+ * public by default. `street` is the first one where that mattered:
+ * `2026-08-structured-addresses.sql` adds it, and without the line below it
+ * would have shipped the exact detail this whole function exists to hide, on
+ * three routes, with the paragraph above still claiming otherwise. Adding a
+ * column is therefore a decision about this function too.
+ *
  * `/api/directory/lawyers` deliberately does NOT use this: the legal directory
  * exists to hand out attorney contact details, and its own route comment plus
  * `tests/api/directory-lawyers.test.ts` assert that phone and address survive.
  */
 export function toPublicClinic(clinic: DecoratedClinic): PublicClinic {
-  const { phone, address, ...rest } = clinic
+  const {
+    phone,
+    address,
+    street,
+    placeId,
+    placeProvider,
+    geocodePrecision,
+    geocodedAt,
+    ...rest
+  } = clinic
   void phone
   void address
+  void street
+  void placeId
+  void placeProvider
+  void geocodePrecision
+  void geocodedAt
   return rest
 }
 
 export function toPublicLawyer(lawyer: DecoratedLawyer): PublicLawyer {
-  const { phone, address, ...rest } = lawyer
+  const {
+    phone,
+    address,
+    street,
+    placeId,
+    placeProvider,
+    geocodePrecision,
+    geocodedAt,
+    ...rest
+  } = lawyer
   void phone
   void address
+  void street
+  void placeId
+  void placeProvider
+  void geocodePrecision
+  void geocodedAt
   return rest
 }
 

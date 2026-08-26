@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixtures/factories'
+import { openManualCoordinates } from '../../helpers/admin'
 import { createServiceClient } from '../../helpers/supabase-admin'
 
 test('admin can create a lawyer firm and it appears in the lawyers list', async ({
@@ -15,7 +16,12 @@ test('admin can create a lawyer firm and it appears in the lawyers list', async 
   // address, practice area..." filter, and the email/phone/practice-areas
   // alternations were equally fragile.
   await page.getByPlaceholder('Law Firm Name').fill(firm)
-  await page.getByPlaceholder('123 Legal Ave').fill('1 E2E Law Ave, Miami, FL 33101')
+  await page.getByTestId('lawyer-address-input').fill('1 E2E Law Ave, Miami, FL 33101')
+
+  // See clinics-create-edit: coordinates moved behind "Set coordinates
+  // manually". This spec drives that escape hatch rather than the suggestion
+  // path, so an admin test never depends on a geocoding provider.
+  await openManualCoordinates(page)
   await page.getByPlaceholder('25.7617').fill('25.7617')
   await page.getByPlaceholder('-80.1918').fill('-80.1918')
   await page.getByPlaceholder('+1 (305) 555-0123').fill('305-555-0200')

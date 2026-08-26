@@ -4,10 +4,15 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import {
   Search, X, Loader2, MapPin, Building2, Scale, Clock, Tag, AlertTriangle,
-  Landmark, Mailbox, Building, Map,
+  Landmark, Mailbox, Building, Map, Crosshair,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { flattenSuggestions, type Suggestion, type SuggestionGroup } from './types'
+import {
+  flattenSuggestions,
+  groupStatus,
+  type Suggestion,
+  type SuggestionGroup,
+} from './types'
 import type { GeocodeKind } from '@/types/geocode'
 
 /**
@@ -49,6 +54,8 @@ export interface SmartSearchBoxProps {
   'aria-label'?: string
   autoFocus?: boolean
   className?: string
+  /** DOM id for the input, so a form can point a visible `<label>` at it. */
+  inputId?: string
   'data-testid'?: string
 }
 
@@ -60,6 +67,7 @@ const ICON_FOR: Record<Suggestion['kind'], typeof Search> = {
   place: MapPin,
   entity: Building2,
   category: Tag,
+  manual: Crosshair,
 }
 
 /**
@@ -78,8 +86,43 @@ const ICON_FOR_PLACE: Record<GeocodeKind, typeof Search> = {
 
 function iconFor(suggestion: Suggestion) {
   if (suggestion.kind === 'entity' && suggestion.sublabel === 'Attorney') return Scale
-  if (suggestion.payload.kind === 'place') return ICON_FOR_PLACE[suggestion.payload.placeKind]
+  if (suggestion.payload.kind === 'place') return ICON_FOR_PLACE[suggestion.payload.suggestion.kind]
   return ICON_FOR[suggestion.kind]
+}
+
+/**
+ * A non-selectable line explaining why a group has no rows.
+ *
+ * `role="presentation"` is the load-bearing part, and it is the same reason the
+ * outage warning has always used it: `flattenSuggestions` — which drives every
+ * index in the keyboard navigation — contains only `items`, so anything
+ * rendered here has to be invisible to the arrow keys. Making one of these
+ * focusable would put a dead stop in the middle of the list.
+ */
+function StatusRow({
+  testId,
+  tone,
+  text,
+}: {
+  testId: string
+  tone: 'muted' | 'warning'
+  text: string
+}) {
+  return (
+    <div
+      role="presentation"
+      data-testid={testId}
+      className={cn(
+        'mx-2 my-1 flex items-start gap-2 rounded-lg px-2.5 py-2 text-[11px] leading-snug',
+        tone === 'warning' ? 'bg-amber-50 text-amber-800' : 'bg-gray-50 text-gray-500'
+      )}
+    >
+      {tone === 'warning' && (
+        <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      )}
+      <span>{text}</span>
+    </div>
+  )
 }
 
 export function SmartSearchBox({
@@ -95,6 +138,7 @@ export function SmartSearchBox({
   'aria-label': ariaLabel = 'Search providers by name, specialty, city or ZIP',
   autoFocus = false,
   className,
+  inputId,
   'data-testid': testId = 'map-search',
 }: SmartSearchBoxProps) {
   const [open, setOpen] = useState(false)
@@ -235,6 +279,12 @@ export function SmartSearchBox({
 
       <input
         ref={inputRef}
+        // Only set when a caller renders a visible <label htmlFor>. The map has
+        // no visible label — its accessible name comes from `aria-label`,
+        // because its placeholder is contextual and a changing placeholder is
+        // not a label — but a form field does, and clicking that label has to
+        // focus this input.
+        id={inputId}
         type="text"
         role="combobox"
         aria-expanded={expanded}
@@ -317,7 +367,20 @@ export function SmartSearchBox({
         )}
       >
         {groups.map((group) => {
-          if (!group.loading && !group.error && group.items.length === 0) return null
+          const status = groupStatus(group)
+          // Drop a group only when it has nothing at all to say: no rows, and
+          // no state worth explaining. A group that declares no `status` is a
+          // local source, and hiding it when empty is what keeps the list
+          // tight — "Specialties (none)" is noise.
+          //
+          // The places group always declares one, because it is the group whose
+          // silence people were misreading. "We have never heard of that
+          // address" and "you have not typed enough to ask yet" both used to
+          // render as nothing at all, so the only feedback was a dropdown that
+          // quietly shrank, and users retyped addresses that were already right.
+          if (group.status === undefined && status === 'empty') return null
+          if (status === 'ok' && group.items.length === 0) return null
+
           const headingId = `${baseId}-grp-${group.key}`
           return (
             <li key={group.key} role="group" aria-labelledby={headingId}>
@@ -329,20 +392,42 @@ export function SmartSearchBox({
                 {group.heading}
               </div>
 
-              {/* Not an option: keyboard navigation must skip straight past it,
-                  and `flat` — which drives every index — never contains it. */}
-              {group.error && group.items.length === 0 && !group.loading && (
-                <div
-                  role="presentation"
-                  data-testid={`${testId}-group-error`}
-                  className="mx-2 my-1 flex items-start gap-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-800"
-                >
-                  <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span>Address lookup is unavailable. Keep typing to search by name, or try again shortly.</span>
-                </div>
+              {/* None of these are options: keyboard navigation must skip
+                  straight past them, and `flat` — which drives every index —
+                  never contains them. */}
+              {status === 'idle' && group.items.length === 0 && (
+                <StatusRow
+                  testId={`${testId}-group-idle`}
+                  tone="muted"
+                  text="Keep typing to search addresses."
+                />
               )}
 
-              {group.loading && group.items.length === 0
+              {status === 'empty' && (
+                <StatusRow
+                  testId={`${testId}-group-empty`}
+                  tone="muted"
+                  text={group.emptyHint ?? 'No matches.'}
+                />
+              )}
+
+              {status === 'rate_limited' && group.items.length === 0 && (
+                <StatusRow
+                  testId={`${testId}-group-error`}
+                  tone="warning"
+                  text="Too many lookups just now. Try again in a moment."
+                />
+              )}
+
+              {status === 'error' && group.items.length === 0 && (
+                <StatusRow
+                  testId={`${testId}-group-error`}
+                  tone="warning"
+                  text="Address lookup is unavailable. Keep typing to search by name, or try again shortly."
+                />
+              )}
+
+              {status === 'loading' && group.items.length === 0
                 ? // Reserve the row height so the list does not jump when a
                   // slower source (the geocoder) resolves under the cursor.
                   Array.from({ length: 2 }, (_, i) => (
@@ -406,7 +491,14 @@ export function SmartSearchBox({
                           )}
                         </span>
                         {item.meta && (
-                          <span className="shrink-0 text-[11px] tabular-nums text-gray-400">
+                          <span
+                            className={cn(
+                              'shrink-0 text-[11px] tabular-nums',
+                              item.metaTone === 'warning'
+                                ? 'font-medium text-amber-600'
+                                : 'text-gray-400'
+                            )}
+                          >
                             {item.meta}
                           </span>
                         )}
@@ -429,6 +521,25 @@ export function SmartSearchBox({
                       </div>
                     )
                   })}
+
+              {/* Data-source credit. A LICENCE TERM, not a courtesy: Geoapify's
+                  free plan permits commercial use on the condition that this is
+                  shown, and OSM's ODbL requires the same. Deleting it is a
+                  breach that nothing at runtime will ever flag.
+
+                  `role="presentation"` for the same reason as the status rows —
+                  `flattenSuggestions` drives every keyboard index and contains
+                  only `items`, so anything else here must be invisible to the
+                  arrow keys. */}
+              {group.attribution && group.items.length > 0 && (
+                <div
+                  role="presentation"
+                  data-testid={`${testId}-attribution`}
+                  className="px-3 pb-1.5 pt-1 text-[10px] text-gray-400"
+                >
+                  {group.attribution}
+                </div>
+              )}
             </li>
           )
         })}

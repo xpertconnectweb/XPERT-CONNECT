@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Send, ArrowLeft, User, Phone, Mail, MapPin, Briefcase, FileText, MessageSquare, Calendar, Map as MapIcon } from 'lucide-react'
+import { Loader2, CheckCircle2, Send, ArrowLeft, User, Phone, Mail, Briefcase, FileText, MessageSquare, Calendar, Map as MapIcon } from 'lucide-react'
+import { AddressAutocomplete } from '@/components/search/AddressAutocomplete'
+import type { ResolvedAddress } from '@/types/geocode'
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10)
 
@@ -22,6 +24,17 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
     accidentDate: '',
     notes: '',
   })
+  /**
+   * The geocoded form of `clientAddress`, when the referrer picked a suggestion
+   * rather than typing free text.
+   *
+   * Optional by design. A referrer with an address the provider has never heard
+   * of must still be able to file the referral — the address on the intake form
+   * is the address on the file, resolvable or not. What this buys when it IS
+   * present is that "View clinics near this client" carries coordinates, so the
+   * map lands instantly instead of re-geocoding on arrival.
+   */
+  const [resolvedAddress, setResolvedAddress] = useState<ResolvedAddress | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -68,6 +81,9 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
       accidentDate: '',
       notes: '',
     })
+    // Must be cleared with the text. Left behind, the next referral would carry
+    // the previous client's coordinates under a blank address field.
+    setResolvedAddress(null)
     setSuccess(false)
     setError('')
   }
@@ -190,21 +206,29 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
 
           {/* Address */}
           <div>
-            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
-              <MapPin className="h-3.5 w-3.5 text-gray-400" />
-              Client Address <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
+            <AddressAutocomplete
+              label="Client Address"
               required
               value={form.clientAddress}
-              onChange={(e) => setForm({ ...form, clientAddress: e.target.value })}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 bg-gray-50/50 focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
+              onChange={(value) => setForm((current) => ({ ...current, clientAddress: value }))}
+              onResolved={setResolvedAddress}
+              resolved={resolvedAddress}
               placeholder="Street, City, State, ZIP"
+              hint="Pick a suggestion to pin the exact spot, or type the address as you have it."
+              data-testid="client-address"
             />
             {form.clientAddress.trim().length >= 3 && (
               <a
-                href={`/professionals/map?near=${encodeURIComponent(form.clientAddress.trim())}`}
+                href={
+                  resolvedAddress
+                    ? // Coordinates already resolved, so the map skips the
+                      // geocoder entirely on arrival — see the `state.at`
+                      // branch of MapView's hydration. One fewer round trip,
+                      // and the link keeps working if the provider is down.
+                      `/professionals/map?at=${resolvedAddress.lat.toFixed(5)},${resolvedAddress.lng.toFixed(5)}` +
+                      `&near=${encodeURIComponent(resolvedAddress.formatted)}`
+                    : `/professionals/map?near=${encodeURIComponent(form.clientAddress.trim())}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-gold hover:text-gold/80 transition-colors"

@@ -44,6 +44,21 @@ CREATE TABLE IF NOT EXISTS clinics (
   website     TEXT,
   region      TEXT,
   county      TEXT,
+  -- Structured address. Added by migrations/2026-08-structured-addresses.sql.
+  -- Nullable with no defaults on purpose: NULL means the backfill has not
+  -- reached this row, and that is what makes decorateClinic fall back to
+  -- parseAddress — which in turn is what lets the migration and the deploy
+  -- happen at different times.
+  street            TEXT,
+  city              TEXT,
+  state             TEXT,
+  zip_code          TEXT,
+  -- place_provider travels with place_id: an id is meaningless to a provider
+  -- that did not issue it, and the failure is silent rather than loud.
+  place_id          TEXT,
+  place_provider    TEXT,
+  geocode_precision TEXT,
+  geocoded_at       TIMESTAMPTZ,
   available   BOOLEAN NOT NULL DEFAULT true,
   created_at  TIMESTAMPTZ DEFAULT now(),
   updated_at  TIMESTAMPTZ DEFAULT now()
@@ -63,6 +78,15 @@ CREATE TABLE IF NOT EXISTS lawyers (
   region         TEXT,
   county         TEXT,
   zip_code       TEXT,
+  -- See the clinics table above. `zip_code` predates this and is authoritative
+  -- here; the rest arrived with migrations/2026-08-structured-addresses.sql.
+  street            TEXT,
+  city              TEXT,
+  state             TEXT,
+  place_id          TEXT,
+  place_provider    TEXT,
+  geocode_precision TEXT,
+  geocoded_at       TIMESTAMPTZ,
   available      BOOLEAN NOT NULL DEFAULT true,
   created_at     TIMESTAMPTZ DEFAULT now(),
   updated_at     TIMESTAMPTZ DEFAULT now()

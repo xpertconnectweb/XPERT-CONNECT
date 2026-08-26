@@ -83,3 +83,9 @@ data/abogados-lista-completa.csv
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+data/backups/
+
+# Generated from docs/informe-buscador-direcciones.html by `npm run report:pdf`.
+# The HTML is the source; a 955 KB binary regenerated on every edit does not
+# belong in history.
+docs/*.pdf

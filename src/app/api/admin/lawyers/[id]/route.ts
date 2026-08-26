@@ -3,6 +3,22 @@ import { requireAdmin } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
 import { sanitizePracticeAreas } from '@/lib/practice-areas'
+import { validateCoordinates } from '@/lib/validation'
+
+/**
+ * Payload key to database column, for the ones that differ.
+ *
+ * Unmapped keys are passed through under their own name, so a camelCase field
+ * with no entry here reaches Postgres as an unknown column and 500s. That is
+ * what these four exist to prevent.
+ */
+const COLUMN_FOR: Record<string, string> = {
+  practiceAreas: 'practice_areas',
+  zipCode: 'zip_code',
+  placeId: 'place_id',
+  placeProvider: 'place_provider',
+  geocodePrecision: 'geocode_precision',
+}
 
 export async function PATCH(
   request: Request,
@@ -15,13 +31,31 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
 
+    // Validated as a PAIR, before anything is written. A latitude on its own
+    // cannot be range-checked, and every caller that moves a firm sends both.
+    if (body.lat !== undefined || body.lng !== undefined) {
+      if (body.lat === undefined || body.lng === undefined) {
+        return NextResponse.json({ error: 'lat and lng must be sent together' }, { status: 400 })
+      }
+      const coords = validateCoordinates(body.lat, body.lng)
+      if (!coords.ok) {
+        return NextResponse.json({ error: coords.reason }, { status: 400 })
+      }
+      body.lat = coords.lat
+      body.lng = coords.lng
+    }
+
     // Convert camelCase fields to snake_case for Supabase
     const updateData: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(body)) {
       // Same gate as POST — canonicalize synonyms, drop CSV-header junk.
       if (key === 'practiceAreas') updateData['practice_areas'] = sanitizePracticeAreas(value)
-      else if (key === 'zipCode') updateData['zip_code'] = value
-      else updateData[key] = value
+      else updateData[COLUMN_FOR[key] ?? key] = value
+    }
+
+    // A geocoded save is dated, so the backfill knows to leave it alone.
+    if (body.placeId !== undefined && body.placeId !== null) {
+      updateData.geocoded_at = new Date().toISOString()
     }
 
     const { data, error } = await supabaseAdmin

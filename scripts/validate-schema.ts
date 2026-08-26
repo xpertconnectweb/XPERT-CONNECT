@@ -79,13 +79,33 @@ const PROBES: Probe[] = [
   },
   {
     table: 'lawyers',
-    columns: ['id', 'name', 'email', 'practice_areas'],
+    columns: ['id', 'name', 'email', 'practice_areas', 'city', 'state', 'place_id', 'geocoded_at'],
     why: 'lawyers entity table — referenced by users.lawyer_id and referrals.lawyer_id.',
   },
   {
     table: 'clinics',
-    columns: ['id', 'name', 'email', 'specialties', 'available'],
-    why: 'clinics entity table.',
+    columns: [
+      'id', 'name', 'email', 'specialties', 'available',
+      // Added by 2026-08-structured-addresses.sql, and worth probing because
+      // LAWYER_COLUMNS and CLINIC_COLUMNS in src/lib/data.ts now name them.
+      // PostgREST rejects an entire select that mentions a column which does
+      // not exist, so a database missing this migration fails EVERY clinic and
+      // lawyer read at once — the map, the directory, the admin tables and the
+      // referral form together. Better to hear it from this script.
+      'street', 'city', 'state', 'zip_code', 'place_id', 'place_provider',
+      'geocode_precision', 'geocoded_at',
+    ],
+    why: 'clinics entity table, including the structured address columns.',
+  },
+  {
+    table: 'geocode_cache',
+    columns: ['cache_key', 'provider', 'mode', 'payload', 'expires_at'],
+    why: 'shared address-lookup cache — without it every lookup pays the provider.',
+  },
+  {
+    table: 'geocode_usage',
+    columns: ['user_id', 'kind', 'window_start', 'calls'],
+    why: 'per-user geocoding quota — the only thing bounding a runaway render loop.',
   },
   {
     table: 'referrals',

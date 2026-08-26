@@ -5,6 +5,8 @@ import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import { useProviderSearchIds } from '@/hooks/useProviderSearchIds'
+import { AddressAutocomplete } from '@/components/search/AddressAutocomplete'
+import type { ResolvedAddress } from '@/types/geocode'
 
 interface Clinic {
   id: string
@@ -62,6 +64,14 @@ export default function AdminClinicsPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<ClinicForm>(emptyForm)
+  /**
+   * The geocoded form of the address, when it came from a suggestion.
+   *
+   * Held beside the form rather than inside it because it is evidence, not
+   * input: the server re-resolves from `placeId` instead of trusting whatever
+   * coordinates the client happens to post.
+   */
+  const [resolvedAddress, setResolvedAddress] = useState<ResolvedAddress | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -104,6 +114,7 @@ export default function AdminClinicsPage() {
   const openCreate = () => {
     setEditingId(null)
     setForm(emptyForm)
+    setResolvedAddress(null)
     setError('')
     setShowModal(true)
   }
@@ -123,6 +134,10 @@ export default function AdminClinicsPage() {
       county: clinic.county || '',
       available: clinic.available,
     })
+    // An existing record has coordinates but no live resolution behind them.
+    // Starting null means the field shows the stored text and claims no
+    // precision until someone actually picks a suggestion.
+    setResolvedAddress(null)
     setError('')
     setShowModal(true)
   }
@@ -148,6 +163,21 @@ export default function AdminClinicsPage() {
       region: form.region || null,
       county: form.county || null,
       available: form.available,
+      // Sent only when the address came from a suggestion. The server treats
+      // `placeId` as authoritative and re-resolves from it rather than trusting
+      // the coordinates in this payload — a client can post anything, and
+      // "anything" is how (0, 0) got in.
+      ...(resolvedAddress
+        ? {
+            street: resolvedAddress.street,
+            city: resolvedAddress.city,
+            state: resolvedAddress.state,
+            zipCode: resolvedAddress.zip,
+            placeId: resolvedAddress.placeId,
+            placeProvider: resolvedAddress.provider,
+            geocodePrecision: resolvedAddress.precision,
+          }
+        : {}),
     }
 
     try {
@@ -737,41 +767,75 @@ export default function AdminClinicsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  placeholder="123 Medical Plaza, City, ST 00000"
-                />
-              </div>
+              {/*
+                Latitude and longitude used to be two number fields right here,
+                filled in by hand. Nothing validated them, and nothing on the
+                server did either — which is where the rows sitting at (0, 0)
+                came from, and why hasRealCoordinates() has to hide them from
+                the map at index time.
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Latitude *</label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={form.lat}
-                    onChange={(e) => setForm({ ...form, lat: parseFloat(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="25.7617"
-                  />
+                Picking a suggestion now fills both. The manual pair survives
+                below a disclosure, because removing it entirely would turn a
+                rare annoyance — a clinic in a new development the provider has
+                never heard of — into a hard block on creating the record at all.
+              */}
+              <AddressAutocomplete
+                label="Address"
+                required
+                value={form.address}
+                onChange={(value) => setForm((current) => ({ ...current, address: value }))}
+                onResolved={(resolved) => {
+                  setResolvedAddress(resolved)
+                  if (resolved) {
+                    setForm((current) => ({
+                      ...current,
+                      address: resolved.formatted,
+                      lat: resolved.lat,
+                      lng: resolved.lng,
+                      county: resolved.county ?? current.county,
+                    }))
+                  }
+                }}
+                resolved={resolvedAddress}
+                placeholder="123 Medical Plaza, City, ST 00000"
+                confirmOnMap
+                hint="Pick a suggestion to set the coordinates automatically."
+                data-testid="clinic-address"
+              />
+
+              <details className="rounded-lg border border-gray-200 bg-gray-50/60 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-medium text-gray-600">
+                  Set coordinates manually
+                </summary>
+                <p className="mt-2 text-[11px] leading-snug text-gray-500">
+                  Only needed when the address cannot be found. The map hides any
+                  record left at 0, 0.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Latitude *</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={form.lat}
+                      onChange={(e) => setForm({ ...form, lat: parseFloat(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      placeholder="25.7617"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Longitude *</label>
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={form.lng}
+                      onChange={(e) => setForm({ ...form, lng: parseFloat(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      placeholder="-80.1918"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Longitude *</label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={form.lng}
-                    onChange={(e) => setForm({ ...form, lng: parseFloat(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-                    placeholder="-80.1918"
-                  />
-                </div>
-              </div>
+              </details>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

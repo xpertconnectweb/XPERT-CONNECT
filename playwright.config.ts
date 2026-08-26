@@ -15,11 +15,48 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
 
+  /**
+   * `@live` specs are excluded from every ordinary run.
+   *
+   * There is exactly one: the acceptance check that asks the REAL geocoding
+   * provider whether the address the client reported resolves. It is the only
+   * thing that would notice an expired API key or a provider regression, and it
+   * is also the only thing in the suite that depends on a third party being up
+   * and costs money per run. So it belongs on a schedule, not on a pull request.
+   *
+   *   npx playwright test --grep @live
+   */
+  grepInvert: process.env.E2E_INCLUDE_LIVE ? undefined : /@live/,
+
   use: {
     baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+
+    /**
+     * Emulate "reduce motion" for every test.
+     *
+     * `globals.css` sets `scroll-behavior: smooth` on `html`. Playwright scrolls
+     * an element into view before clicking it and then waits for it to be
+     * STABLE, so a smooth scroll means the target is still moving when the
+     * check runs. On a control far enough down the admin modal to need
+     * scrolling, that spent the whole 30s budget and failed on Firefox while
+     * passing on Chromium — a difference in scroll timing, not in the app.
+     *
+     * This is not a workaround bolted on for the tests: `globals.css` already
+     * has a `prefers-reduced-motion: reduce` block that turns off smooth
+     * scrolling and collapses every animation, written for users who asked
+     * their OS for it. Opting the suite into that same path removes the
+     * flakiness and makes the run faster, without changing what ships.
+     *
+     * Nested under `contextOptions`, not set directly on `use`. On this version
+     * `reducedMotion` lives on `BrowserContextOptions`; putting it at the top
+     * level type-checks as an unknown key that Playwright then ignores, so the
+     * emulation silently never happens and the flake stays. `npx tsc --noEmit`
+     * is what caught that — the suite gave no hint.
+     */
+    contextOptions: { reducedMotion: 'reduce' },
     // Both budgets are sized for the webServer being `next dev`, which compiles
     // a route the first time it is requested. Whichever spec happens to touch a
     // route first pays for that build, so the same spec passes when its project

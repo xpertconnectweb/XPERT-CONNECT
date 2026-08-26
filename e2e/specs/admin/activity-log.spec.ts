@@ -1,6 +1,6 @@
 import { test } from '../../fixtures/factories'
 import { createServiceClient } from '../../helpers/supabase-admin'
-import { expectAdminRow } from '../../helpers/admin'
+import { expectAdminRow, openManualCoordinates } from '../../helpers/admin'
 
 test('admin sees a fresh activity log entry after creating a clinic', async ({
   page,
@@ -19,7 +19,12 @@ test('admin sees a fresh activity log entry after creating a clinic', async ({
   // ("Search by name, address, region, county..."), and the specialties
   // regex was equally fragile.
   await page.getByPlaceholder('Clinic Name').fill(name)
-  await page.getByPlaceholder('123 Medical Plaza').fill('1 E2E Log Rd, Miami, FL 33101')
+  await page.getByTestId('clinic-address-input').fill('1 E2E Log Rd, Miami, FL 33101')
+  // Coordinates moved behind "Set coordinates manually" when the address field
+  // gained autocomplete. They are still reachable on purpose — a clinic in a
+  // new development that no provider knows yet has to be creatable — but the
+  // disclosure has to be opened first.
+  await openManualCoordinates(page)
   await page.getByPlaceholder('25.7617').fill('25.7617')
   await page.getByPlaceholder('-80.1918').fill('-80.1918')
   await page.getByPlaceholder('+1 (305) 555-0123').fill('305-555-0300')

@@ -1,13 +1,20 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useGeocoder } from './useGeocoder'
+import { useGeocoder, type ProximityHint } from './useGeocoder'
 import { addRecent, readRecents, removeRecent } from '@/lib/search/recents'
 import { suggestEntities, type SearchIndex } from '@/lib/search'
 import { tokenSimilarity } from '@/lib/search/fuzzy'
 import { fold } from '@/lib/search/text'
+import { ATTRIBUTION, MIN_GEOCODE_QUERY } from '@/lib/geocoding/constants'
+import { isExactPrecision } from '@/lib/geocoding/precision'
 import type { Facets } from '@/lib/search'
-import type { Suggestion, SuggestionGroup } from '@/components/search/types'
+import type {
+  Suggestion,
+  SuggestionGroup,
+  SuggestionGroupStatus,
+} from '@/components/search/types'
+import type { GeocodeResult, GeocodeSuggestion } from '@/types/geocode'
 
 /**
  * Assembles the suggestion groups for `SmartSearchBox`.
@@ -47,6 +54,16 @@ export interface UseSmartSearchOptions<T> {
    * than narrowing it, and "Places" reads like the latter.
    */
   hasAnchor?: boolean
+  /** The map's current view, so the provider ranks nearby answers first. */
+  proximity?: ProximityHint | null
+  /**
+   * Offer "place the pin yourself" when the geocoder finds nothing.
+   *
+   * Only where there is a map to point at. Without it, an address the provider
+   * has never heard of is a dead end — which is exactly the case that prompted
+   * this work, and the one no provider switch can fully eliminate.
+   */
+  allowManualPin?: boolean
 }
 
 export interface UseSmartSearchResult {
@@ -63,6 +80,16 @@ export interface UseSmartSearchResult {
   remember: (query: string, near?: { lat: number; lng: number; label: string }) => void
   /** Drops one entry from the history. */
   forget: (query: string) => void
+  /**
+   * Turns a chosen row into coordinates.
+   *
+   * Google and Mapbox withhold geometry from autocomplete — that split is how
+   * they bill a session rather than a keystroke — so a suggestion is not a
+   * location until this has run. For Nominatim it returns immediately.
+   */
+  resolvePlace: (suggestion: GeocodeSuggestion) => Promise<GeocodeResult | null>
+  /** Starts a new billing session. Call when the box is cleared. */
+  resetSession: () => void
 }
 
 export function useSmartSearch<T>({
@@ -74,11 +101,17 @@ export function useSmartSearch<T>({
   categoryHeading = 'Specialties',
   places = true,
   hasAnchor = false,
+  proximity = null,
+  allowManualPin = false,
 }: UseSmartSearchOptions<T>): UseSmartSearchResult {
   const trimmed = query.trim()
   const active = trimmed.length >= MIN_QUERY
 
-  const geocode = useGeocoder(trimmed, { enabled: places && active, limit: MAX_PLACES })
+  const geocode = useGeocoder(trimmed, {
+    enabled: places && active,
+    limit: MAX_PLACES,
+    proximity,
+  })
 
   // Read once on mount — localStorage is not reactive, and re-reading on every
   // render would be wasted work.
@@ -144,24 +177,46 @@ export function useSmartSearch<T>({
     }))
   }, [active, index, trimmed, anchor])
 
-  const placeItems = useMemo<Suggestion[]>(
-    () =>
-      geocode.results.map((result) => ({
-        id: `plc-${result.id}`,
-        kind: 'place' as const,
-        label: result.label,
-        sublabel: result.fullLabel === result.label ? undefined : result.fullLabel,
-        payload: {
-          kind: 'place' as const,
-          lat: result.lat,
-          lng: result.lng,
-          label: result.label,
-          placeKind: result.kind,
-          bbox: result.bbox,
-        },
-      })),
-    [geocode.results]
-  )
+  const placeItems = useMemo<Suggestion[]>(() => {
+    const rows: Suggestion[] = geocode.results.map((result) => ({
+      id: `plc-${result.id}`,
+      kind: 'place' as const,
+      label: result.label,
+      sublabel: result.fullLabel === result.label ? undefined : result.fullLabel,
+      // Says so up front when the point is not the building. A ZIP centroid and
+      // a rooftop hit used to render identically, so someone searching a
+      // client's home could be handed the middle of a postcode with no way to
+      // tell — and then measure "the nearest clinic" from it.
+      meta: isExactPrecision(result.precision) ? undefined : 'Approximate',
+      metaTone: 'warning' as const,
+      payload: { kind: 'place' as const, suggestion: result },
+    }))
+
+    // A selectable row, not a dead line of text. When the provider has never
+    // heard of an address the user is looking at, pointing at it on the map is
+    // the only way forward, and it has to be reachable by keyboard like
+    // anything else in the list.
+    if (allowManualPin && geocode.status === 'empty') {
+      rows.push({
+        id: 'plc-manual',
+        kind: 'manual' as const,
+        label: 'Place the pin yourself',
+        sublabel: 'Click the map to set an exact spot',
+        payload: { kind: 'manual' as const, query: trimmed },
+      })
+    }
+
+    return rows
+  }, [geocode.results, geocode.status, allowManualPin, trimmed])
+
+  /**
+   * `MIN_QUERY` is 2 so local sources answer early, but the geocoder needs 3.
+   * That one-character gap used to render as nothing at all — the "Places"
+   * group simply vanished, with no way for the user to know whether it was
+   * broken, slow, or waiting. `idle` is the state that says so.
+   */
+  const placesStatus: SuggestionGroupStatus =
+    trimmed.length < MIN_GEOCODE_QUERY ? 'idle' : geocode.status
 
   const groups = useMemo<SuggestionGroup[]>(() => {
     // With an empty box, offer history rather than an empty dropdown.
@@ -194,8 +249,21 @@ export function useSmartSearch<T>({
               key: 'place',
               heading: hasAnchor ? 'Change location' : 'Places',
               items: placeItems,
-              loading: geocode.loading,
-              error: geocode.error,
+              status: placesStatus,
+              // Names the address that failed, so the user can see whether it
+              // is the one they meant. When a manual pin is on offer the row
+              // below says so; repeating it here would just be noise.
+              emptyHint: `No match for "${trimmed}". Check the spelling, or try the ZIP.`,
+              // Read off the results rather than the configured provider, so it
+              // credits whoever actually answered — which after a fallback is
+              // not always the one in the environment variable.
+              attribution: geocode.results[0]
+                ? ATTRIBUTION[geocode.results[0].providerId]
+                : undefined,
+              // Derived, and kept only so callers and component tests written
+              // against the booleans survive this release.
+              loading: placesStatus === 'loading',
+              error: placesStatus === 'error' || placesStatus === 'rate_limited',
             },
           ]
         : []),
@@ -203,6 +271,9 @@ export function useSmartSearch<T>({
   }, [
     active,
     recents,
+    // `allowManualPin` is NOT here: it stopped being read in this memo when the
+    // empty hint stopped mentioning it. The row it controls is built in
+    // `placeItems`, which has its own dependency on it.
     categoryHeading,
     categoryItems,
     entityHeading,
@@ -210,9 +281,19 @@ export function useSmartSearch<T>({
     hasAnchor,
     places,
     placeItems,
-    geocode.loading,
-    geocode.error,
+    placesStatus,
+    trimmed,
+    // Read directly for the attribution, so it has to be a dependency in its
+    // own right — `placeItems` covers the rows but not which provider answered.
+    geocode.results,
   ])
 
-  return { groups, placesError: places && geocode.error, remember, forget }
+  return {
+    groups,
+    placesError: places && geocode.error,
+    remember,
+    forget,
+    resolvePlace: geocode.resolve,
+    resetSession: geocode.resetSession,
+  }
 }

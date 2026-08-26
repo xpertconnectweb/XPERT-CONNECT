@@ -53,7 +53,31 @@ export type AdminSafeUser = Omit<User, 'password' | 'phoneE164'> & {
   smsOptedOut?: boolean
 }
 
-export interface Clinic {
+/**
+ * The address columns added by `2026-08-structured-addresses.sql`.
+ *
+ * All optional, all nullable, and no defaults in the database either. NULL is
+ * the signal that the backfill has not reached this row yet, which is what lets
+ * `decorateClinic` fall back to `parseAddress` and lets the migration and the
+ * deploy happen at different times.
+ *
+ * `placeProvider` travels with `placeId` because a place id is meaningless to a
+ * provider that did not issue it, and the failure is silent: a Google id handed
+ * to Mapbox is simply not found, so the row quietly stops refreshing.
+ */
+export interface StoredAddress {
+  /** House number and street. Withheld from the public API — see PublicClinic. */
+  street?: string | null
+  city?: string | null
+  /** Two-letter code, e.g. 'FL'. */
+  state?: string | null
+  placeId?: string | null
+  placeProvider?: string | null
+  geocodePrecision?: string | null
+  geocodedAt?: string | null
+}
+
+export interface Clinic extends StoredAddress {
   id: string
   name: string
   address: string
@@ -65,10 +89,11 @@ export interface Clinic {
   website?: string
   region?: string
   county?: string
+  zipCode?: string | null
   available: boolean
 }
 
-export interface Lawyer {
+export interface Lawyer extends StoredAddress {
   id: string
   name: string
   address: string
@@ -107,11 +132,30 @@ export type DecoratedLawyer = Lawyer & DerivedLocation
 
 /**
  * What the professionals and partners APIs return: coarse location, no way to
- * contact the provider directly. See `stripContactInfo` in
+ * contact the provider directly. See `toPublicClinic` in
  * `src/lib/api/public-shape.ts` for the single definition of that boundary.
+ *
+ * `street` is in this list and has to stay there. It arrived as a column in
+ * `2026-08-structured-addresses.sql`, and because `toPublicClinic` works by
+ * destructuring the withheld fields out and spreading the rest, a new column is
+ * PUBLIC BY DEFAULT — adding `street` without adding it here would have
+ * published the exact detail the withholding exists to hide, silently, on three
+ * routes, while the comment above `toPublicClinic` went on claiming otherwise.
+ *
+ * The geocode metadata is withheld for a duller reason: it is internal
+ * bookkeeping, and there is no client that needs it.
  */
-export type PublicClinic = Omit<DecoratedClinic, 'phone' | 'address'>
-export type PublicLawyer = Omit<DecoratedLawyer, 'phone' | 'address'>
+type WithheldFromPublic =
+  | 'phone'
+  | 'address'
+  | 'street'
+  | 'placeId'
+  | 'placeProvider'
+  | 'geocodePrecision'
+  | 'geocodedAt'
+
+export type PublicClinic = Omit<DecoratedClinic, WithheldFromPublic>
+export type PublicLawyer = Omit<DecoratedLawyer, WithheldFromPublic>
 
 export type ReferralStatus = 'received' | 'in_process' | 'attended'
 

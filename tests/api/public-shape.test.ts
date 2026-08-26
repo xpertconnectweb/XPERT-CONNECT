@@ -32,6 +32,18 @@ const CLINIC: DecoratedClinic = {
   city: 'Pensacola',
   state: 'FL',
   zipCode: '32501',
+  // Present so "leaks no street detail" is testing something.
+  //
+  // `toPublicClinic` withholds by destructuring named fields out and spreading
+  // the rest, so a new column is public by default. Before `street` existed the
+  // Palafox assertion below passed because the only place that string appeared
+  // was `address`. With the column and without it in the fixture, the same
+  // assertion would keep passing while the route started publishing the street.
+  street: '1117 N Palafox St',
+  placeId: 'nominatim-123',
+  placeProvider: 'nominatim',
+  geocodePrecision: 'rooftop',
+  geocodedAt: '2026-08-25T00:00:00.000Z',
 }
 
 const LAWYER: DecoratedLawyer = {
@@ -49,6 +61,11 @@ const LAWYER: DecoratedLawyer = {
   available: true,
   city: 'Orlando',
   state: 'FL',
+  street: '2601 Technology Dr',
+  placeId: 'nominatim-456',
+  placeProvider: 'nominatim',
+  geocodePrecision: 'rooftop',
+  geocodedAt: '2026-08-25T00:00:00.000Z',
 }
 
 describe('toPublicClinic', () => {
@@ -69,6 +86,17 @@ describe('toPublicClinic', () => {
     const serialized = JSON.stringify(result)
     expect(serialized).not.toContain('Palafox')
     expect(serialized).not.toContain('433-1111')
+  })
+
+  it('withholds the structured street column, not just the free-text address', () => {
+    expect(result).not.toHaveProperty('street')
+  })
+
+  it('withholds the geocoding bookkeeping, which no client needs', () => {
+    expect(result).not.toHaveProperty('placeId')
+    expect(result).not.toHaveProperty('placeProvider')
+    expect(result).not.toHaveProperty('geocodePrecision')
+    expect(result).not.toHaveProperty('geocodedAt')
   })
 
   it('keeps everything else the map needs', () => {
@@ -106,6 +134,12 @@ describe('toPublicLawyer', () => {
 
   it('keeps the practice areas the directory filters on', () => {
     expect(result.practiceAreas).toEqual(['Personal Injury'])
+  })
+
+  it('withholds the structured street column and the geocoding bookkeeping', () => {
+    expect(result).not.toHaveProperty('street')
+    expect(result).not.toHaveProperty('placeId')
+    expect(JSON.stringify(result)).not.toContain('Technology Dr')
   })
 })
 

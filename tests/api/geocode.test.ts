@@ -3,6 +3,28 @@ import { buildRequireAuth, buildSession } from './_helpers'
 
 vi.mock('@/lib/api-auth', () => ({ requireAuth: vi.fn() }))
 
+/**
+ * The shared cache and the quota gate both talk to Supabase, and `supabase-js`
+ * uses the GLOBAL fetch — the same one `vi.stubGlobal('fetch', fetchMock)`
+ * replaces below. Left real, a cache read would consume
+ * `fetchMock.mock.calls[0]` and break every assertion in this file that indexes
+ * into it, and the quota claim would consume another.
+ *
+ * Stubbed to "always miss, always allow" so these cases describe the PROVIDER.
+ * The cache and the limiter have their own unit tests, where Supabase is the
+ * subject rather than an accident.
+ */
+vi.mock('@/lib/geocoding/shared-cache', () => ({
+  sharedGet: vi.fn(async () => null),
+  sharedSet: vi.fn(async () => undefined),
+  purgeExpired: vi.fn(async () => 0),
+  ttlFor: vi.fn(() => 86_400_000),
+}))
+vi.mock('@/lib/geocoding/rate-limit', () => ({
+  claimGeocodeCall: vi.fn(async () => ({ allowed: true, retryAfter: 0 })),
+  __clearRateLimitBuckets: vi.fn(),
+}))
+
 import { GET } from '@/app/api/geocode/route'
 import * as auth from '@/lib/api-auth'
 

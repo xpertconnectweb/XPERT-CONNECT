@@ -122,6 +122,20 @@ describe('stripUnit', () => {
     )
   })
 
+  it('takes a slash-joined unit whole, leaving no fragment behind', () => {
+    // "Unit 101/102" is a practice that took two adjoining rooms, and it is
+    // common in this corpus. Matching only the first half used to leave "/102"
+    // glued to the street — and that fragment is enough to make the lookup fail
+    // on its own: the full string returns nothing from the provider, while
+    // "1531 SE 17th St, Ocala, FL 34471" is a rooftop match.
+    expect(stripUnit('1531 SE 17th St Unit 101/102, Ocala, FL 34471')).toBe(
+      '1531 SE 17th St, Ocala, FL 34471'
+    )
+    expect(stripUnit('3256 S Pine Ave Suite 301/302, Ocala, FL 34471')).toBe(
+      '3256 S Pine Ave, Ocala, FL 34471'
+    )
+  })
+
   it('never strips a bare "fl" — it would take the state and ZIP with it', () => {
     expect(stripUnit('123 Main St, Orlando, FL 32801')).toBe('123 Main St, Orlando, FL 32801')
   })

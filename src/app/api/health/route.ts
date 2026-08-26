@@ -122,6 +122,37 @@ export async function GET() {
     })
   )
 
+  /**
+   * Geocoding, on the same "off is fine, half-on is not" principle as Twilio.
+   *
+   * Leaving `GEOCODER_PROVIDER` unset is a valid state: address lookup falls
+   * back to OpenStreetMap, which needs no key. The failure worth paging about
+   * is a provider NAMED without its key present — the request then silently
+   * falls back, so someone believes they are paying for coverage they are not
+   * getting, and the address that prompted the whole exercise still will not
+   * resolve.
+   */
+  checks.push(
+    await timed('env_geocoder', async () => {
+      const provider = process.env.GEOCODER_PROVIDER?.trim().toLowerCase()
+      if (!provider || provider === 'nominatim') return // deliberately free
+
+      const keyFor: Record<string, string> = {
+        geoapify: 'GEOAPIFY_API_KEY',
+        mapbox: 'MAPBOX_ACCESS_TOKEN',
+        google: 'GOOGLE_MAPS_SERVER_KEY',
+      }
+
+      const envVar = keyFor[provider]
+      if (!envVar) {
+        throw new Error(`GEOCODER_PROVIDER="${provider}" is not a known provider`)
+      }
+      if (!process.env[envVar]) {
+        throw new Error(`GEOCODER_PROVIDER=${provider} but ${envVar} is missing`)
+      }
+    })
+  )
+
   const ok = checks.every((c) => c.ok)
   return NextResponse.json(
     { ok, timestamp: new Date().toISOString(), checks },

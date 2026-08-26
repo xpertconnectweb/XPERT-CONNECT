@@ -3,12 +3,29 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SmartSearchBox } from '@/components/search/SmartSearchBox'
 import type { Suggestion, SuggestionGroup } from '@/components/search/types'
+import type { GeocodeSuggestion } from '@/types/geocode'
+
+const suggestion = (id: string, label: string): GeocodeSuggestion => ({
+  id,
+  label,
+  fullLabel: label,
+  address: null,
+  county: null,
+  kind: 'city',
+  precision: 'city',
+  providerId: 'nominatim',
+  placeId: id,
+  lat: 28.5,
+  lng: -81.3,
+  bbox: null,
+  needsResolve: false,
+})
 
 const place = (id: string, label: string): Suggestion => ({
   id,
   kind: 'place',
   label,
-  payload: { kind: 'place', lat: 28.5, lng: -81.3, label, placeKind: 'city', bbox: null },
+  payload: { kind: 'place', suggestion: suggestion(id, label) },
 })
 
 const entity = (id: string, label: string): Suggestion => ({

@@ -4,6 +4,7 @@ import { getLawyers } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
 import { sanitizePracticeAreas } from '@/lib/practice-areas'
+import { validateCoordinates } from '@/lib/validation'
 import { randomUUID } from 'crypto'
 
 export async function GET() {
@@ -33,15 +34,28 @@ export async function POST(request: Request) {
       county,
       zipCode,
       available,
+      street,
+      city,
+      state,
+      placeId,
+      placeProvider,
+      geocodePrecision,
     } = body
+
+    // See the clinic route: the admin form's `parseFloat(value) || 0` turned an
+    // empty field into 0, and nothing here looked.
+    const coords = validateCoordinates(lat, lng)
+    if (!coords.ok) {
+      return NextResponse.json({ error: coords.reason }, { status: 400 })
+    }
 
     const newId = randomUUID()
     const { error } = await supabaseAdmin.from('lawyers').insert({
       id: newId,
       name,
       address,
-      lat,
-      lng,
+      lat: coords.lat,
+      lng: coords.lng,
       phone: phone || '',
       email: email || '',
       // The real gate on practice-area data: canonicalizes synonyms and
@@ -52,6 +66,15 @@ export async function POST(request: Request) {
       county: county || null,
       zip_code: zipCode || null,
       available: available !== false,
+      // Null when the address was typed rather than chosen — and null is what
+      // tells `decorateLawyer` to fall back to parseAddress.
+      street: street ?? null,
+      city: city ?? null,
+      state: state ?? null,
+      place_id: placeId ?? null,
+      place_provider: placeProvider ?? null,
+      geocode_precision: geocodePrecision ?? null,
+      geocoded_at: placeId ? new Date().toISOString() : null,
     })
 
     if (error) throw error

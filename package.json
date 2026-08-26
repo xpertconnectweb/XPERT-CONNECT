@@ -17,6 +17,10 @@
     "test:e2e:report": "playwright show-report",
     "e2e:sweep": "tsx e2e/scripts/sweep.ts",
     "validate:schema": "tsx scripts/validate-schema.ts",
+    "backfill:addresses": "tsx scripts/backfill-structured-addresses.ts",
+    "backfill:geocode": "tsx scripts/backfill-geocode.ts",
+    "geocode:bakeoff": "tsx scripts/geocode-bakeoff.ts",
+    "report:pdf": "node scripts/build-report-pdf.mjs",
     "email:test": "node scripts/send-test-email.mjs",
     "email:send": "node scripts/send-custom-email.mjs"
   },
