@@ -108,9 +108,10 @@ async function main() {
   } else if (streets === 0) {
     add('index loaded', 'missing', 'npx tsx scripts/geo/load-index.ts --apply --truncate')
   } else if (streets < 500_000) {
-    // The same bar /api/health uses. A full build is 567,767; anything well
-    // under that is an interrupted load, not a smaller dataset.
-    add('index loaded', 'partial', `only ${streets.toLocaleString('en-US')} of ~567,767 — the load stopped early`)
+    // The same bar /api/health uses. A full build is 567,767 streets, so
+    // anything well under that is incomplete — though this cannot tell an
+    // abandoned load from one still running, so it does not claim to.
+    add('index loaded', 'partial', `${streets.toLocaleString('en-US')} of ~567,767 — incomplete, or still loading`)
   } else if (blobs < streets) {
     add('index loaded', 'partial', `${streets.toLocaleString('en-US')} streets but only ${blobs.toLocaleString('en-US')} blobs`)
   } else {
@@ -132,21 +133,31 @@ async function main() {
   })
 
   if (probe.error) {
-    const missing = probe.error.code === MISSING_FUNCTION || probe.error.message.includes('does not exist')
+    const absent = probe.error.code === MISSING_FUNCTION || probe.error.message.includes('does not exist')
     add(
       'search function',
       'missing',
-      missing ? 'geo_street_search does not exist' : probe.error.message
+      absent ? 'geo_street_search does not exist' : probe.error.message
     )
   } else {
     const rows = (probe.data ?? []) as Array<{ name_display: string; city: string; score: number }>
-    add(
-      'search function',
-      rows.length > 0 ? 'done' : 'partial',
-      rows.length > 0
-        ? `works — "${rows[0].name_display}, ${rows[0].city}" at ${Number(rows[0].score).toFixed(2)}`
-        : 'exists but found nothing for the reported address — is the index loaded?'
-    )
+    const loaded = streets !== null && streets > 0
+
+    // Answering at all is what proves the function exists, that the service
+    // role may execute it, and — because Postgres validates the body of a
+    // `language sql` function as it creates it — that pg_trgm installed.
+    //
+    // Finding nothing in an empty index proves nothing and is not a problem to
+    // report: it made the tool name this as the next step when the next step
+    // was plainly the load. Only an empty answer over a FULL index is an
+    // anomaly worth flagging.
+    if (rows.length > 0) {
+      add('search function', 'done', `works — "${rows[0].name_display}, ${rows[0].city}" at ${Number(rows[0].score).toFixed(2)}`)
+    } else if (!loaded) {
+      add('search function', 'done', 'exists; nothing to find yet because the index is empty')
+    } else {
+      add('search function', 'partial', 'exists, but found nothing for the address the client reported')
+    }
   }
 
   // ── The switch ────────────────────────────────────────────────────────────
