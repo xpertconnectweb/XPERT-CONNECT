@@ -34,6 +34,7 @@
  * error is at most 1.1 m against a 50 m accuracy target -- two percent of the
  * budget, and finer than the county registers themselves are.
  */
+import { haversineDistance } from '../map/geo'
 
 /** Degrees per unit of the offset scale. 1e-5 degrees is about 1.11 m of latitude. */
 const OFFSET_SCALE = 1e5
@@ -266,7 +267,37 @@ export interface NumberMatch {
    *   the point is the middle of the run.
    */
   kind: 'exact' | 'interpolated' | 'street'
+  /**
+   * How far apart the two bracketing points are, in metres. `null` unless the
+   * answer was interpolated.
+   *
+   * This is the width of the guess. The caller cannot tell from `interpolated`
+   * alone whether the number sits between two doors twenty metres apart or two
+   * ends of a block, and those deserve different words in the interface.
+   */
+  spanM: number | null
+  /**
+   * Whether the bracketing pair is on the same side of the street as the number
+   * being placed -- that is, whether all three share a parity.
+   *
+   * `null` unless the answer was interpolated. See the note in `findNumber`;
+   * this is the single strongest predictor of how wrong an interpolation is.
+   */
+  sameSide: boolean | null
 }
+
+/** Even or odd, and correct for the negative numbers `%` would hand back. */
+const parityOf = (n: number) => (((n % 2) + 2) % 2)
+
+/**
+ * The project's one distance function, in the unit this file reports.
+ *
+ * `haversineDistance` answers in miles, which is the sort of mismatch that is
+ * silent when you get it wrong -- so the conversion happens here, once, rather
+ * than at each call site.
+ */
+const metresBetween = (lat0: number, lng0: number, lat1: number, lng1: number) =>
+  haversineDistance(lat0, lng0, lat1, lng1) * 1609.344
 
 /**
  * Resolves a house number against a blob.
@@ -278,47 +309,92 @@ export interface NumberMatch {
  * until one has been chosen.
  *
  * Pass `null` for a street-level answer.
+ *
+ * -- Why parity decides the bracket -----------------------------------------
+ *
+ * American streets number one side even and the other odd, so 861 is not
+ * between 860 and 862; it is ACROSS THE ROAD from both. Bracketing it with its
+ * two numeric neighbours therefore lands it in the middle of the carriageway,
+ * and on a wide road with setbacks that is most of the error there is.
+ *
+ * Measured by leave-one-out over the county registers themselves -- take a
+ * recorded door out, interpolate it back from its neighbours, compare against
+ * where the county put it (`scripts/geo/gate-interpolation.ts`):
+ *
+ *                       same side      across the road
+ *   Manatee, FL            3.2 m              46.4 m
+ *   Hennepin, MN           0.6 m              58.2 m
+ *   Aitkin, MN             1.9 m              13.1 m
+ *   Wakulla, FL            0.7 m               0.7 m
+ *
+ * A factor of fifty to a hundred in the built-up counties, and the mistake was
+ * invisible because the answer still looked like a street address. Wakulla is
+ * flat because rural addressing runs up one side of a county road rather than
+ * splitting by parity -- which is also why the fallback below is a fallback and
+ * not an error: where no same-side pair exists, the mixed one is all there is,
+ * and where parity is not in use it is just as good.
  */
 export function findNumber(payload: Buffer, number: number | null): NumberMatch {
   const { count, baseLat, baseLng, numbersAt } = readHeader(payload)
+  const wanted = number === null ? -1 : parityOf(number)
 
   let at = numbersAt
   let running = 0
   let exactAt = -1
+  let scanned = 0
 
-  // The bracketing pair, tracked as the scan goes: the last number below the
-  // target and the first one above it.
+  // The nearest recorded number below the target and above it, tracked twice:
+  // once for any neighbour, and once for a neighbour on the target's own side
+  // of the street. The second is preferred and the first is the fallback.
   let belowAt = -1
   let belowNumber = 0
   let aboveAt = -1
   let aboveNumber = 0
+  let sideBelowAt = -1
+  let sideBelowNumber = 0
+  let sideAboveAt = -1
+  let sideAboveNumber = 0
 
   for (let i = 0; i < count; i++) {
     const read = readVarint(payload, at)
     running += read[0]
     at = read[1]
+    scanned = i + 1
 
     if (number === null) continue
     if (running === number) {
       exactAt = i
       break
     }
+
+    const sameSide = parityOf(running) === wanted
+
     if (running < number) {
       belowAt = i
       belowNumber = running
+      if (sameSide) {
+        sideBelowAt = i
+        sideBelowNumber = running
+      }
     } else {
-      aboveAt = i
-      aboveNumber = running
-      break
+      if (aboveAt === -1) {
+        aboveAt = i
+        aboveNumber = running
+      }
+      // Unlike the old scan, a number above the target is not the end of the
+      // search: if it is on the wrong side we keep reading for one that is not.
+      // In practice that is a single extra varint, since sides alternate.
+      if (sameSide) {
+        sideAboveAt = i
+        sideAboveNumber = running
+        break
+      }
     }
   }
 
-  // The scan stops early on a hit, so skip whatever it did not read: the
-  // coordinate columns start immediately after the last varint.
-  if (exactAt !== -1 || aboveAt !== -1) {
-    const read = (exactAt !== -1 ? exactAt : aboveAt) + 1
-    for (let i = read; i < count; i++) at = readVarint(payload, at)[1]
-  }
+  // Skip whatever the scan did not read: the coordinate columns start
+  // immediately after the last varint, so the cursor has to get there.
+  for (let i = scanned; i < count; i++) at = readVarint(payload, at)[1]
 
   const latAt = at
   const lngAt = at + count * 2
@@ -326,21 +402,34 @@ export function findNumber(payload: Buffer, number: number | null): NumberMatch 
   const lngOf = (i: number) => baseLng + payload.readUInt16LE(lngAt + i * 2) / OFFSET_SCALE
 
   if (exactAt !== -1) {
-    return { lat: latOf(exactAt), lng: lngOf(exactAt), kind: 'exact' }
+    return { lat: latOf(exactAt), lng: lngOf(exactAt), kind: 'exact', spanM: null, sameSide: null }
   }
+
+  // Prefer the pair that shares the target's parity, and fall back to the
+  // numeric neighbours when the register has no such pair -- a one-sided
+  // street, or a rural road numbered straight through.
+  const sided = sideBelowAt !== -1 && sideAboveAt !== -1 && sideAboveNumber !== sideBelowNumber
+  const loAt = sided ? sideBelowAt : belowAt
+  const hiAt = sided ? sideAboveAt : aboveAt
+  const loNumber = sided ? sideBelowNumber : belowNumber
+  const hiNumber = sided ? sideAboveNumber : aboveNumber
 
   // Both neighbours present: place the number proportionally between them. This
   // is how every commercial geocoder fills a gap, and it is worth being honest
   // that it is a guess -- hence the separate `interpolated` label, which the UI
   // already treats as "approximate, drag the pin to correct it".
-  if (belowAt !== -1 && aboveAt !== -1 && number !== null && aboveNumber !== belowNumber) {
-    const t = (number - belowNumber) / (aboveNumber - belowNumber)
-    const lat0 = latOf(belowAt)
-    const lng0 = lngOf(belowAt)
+  if (loAt !== -1 && hiAt !== -1 && number !== null && hiNumber !== loNumber) {
+    const t = (number - loNumber) / (hiNumber - loNumber)
+    const lat0 = latOf(loAt)
+    const lng0 = lngOf(loAt)
+    const lat1 = latOf(hiAt)
+    const lng1 = lngOf(hiAt)
     return {
-      lat: lat0 + (latOf(aboveAt) - lat0) * t,
-      lng: lng0 + (lngOf(aboveAt) - lng0) * t,
+      lat: lat0 + (lat1 - lat0) * t,
+      lng: lng0 + (lng1 - lng0) * t,
       kind: 'interpolated',
+      spanM: metresBetween(lat0, lng0, lat1, lng1),
+      sameSide: sided,
     }
   }
 
@@ -348,5 +437,5 @@ export function findNumber(payload: Buffer, number: number | null): NumberMatch 
   // the average of the coordinates, which a long road with a dense cluster at
   // one end would drag into that cluster.
   const middle = count >> 1
-  return { lat: latOf(middle), lng: lngOf(middle), kind: 'street' }
+  return { lat: latOf(middle), lng: lngOf(middle), kind: 'street', spanM: null, sameSide: null }
 }

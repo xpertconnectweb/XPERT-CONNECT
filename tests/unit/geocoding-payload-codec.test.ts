@@ -137,6 +137,70 @@ describe('findNumber', () => {
     const match = findNumber(payload, 861)
     expect(match.kind).toBe('interpolated')
     expect(match.lat).toBeCloseTo(27.49 + 61 * 0.00002, 4)
+    // No odd number anywhere in this register, so the only bracket available
+    // crosses the road. The flag is what lets `precisionOf` decline to call
+    // this a house number at all.
+    expect(match.sameSide).toBe(false)
+  })
+
+  /**
+   * The correction this codec exists to make, and the one that was costing the
+   * most: American streets run even down one side and odd down the other, so
+   * 861 is not between 860 and 862 -- it is ACROSS THE ROAD from both.
+   *
+   * Measured by leave-one-out over the county registers, bracketing by numeric
+   * neighbour put the median answer 46 m out in Manatee and 58 m out in
+   * Hennepin. Bracketing by same-parity neighbour puts it at 3.2 m and 0.6 m.
+   */
+  describe('which side of the street', () => {
+    /** Evens at one latitude, odds thirty metres north, as a real street is. */
+    const twoSided = encodePoints(
+      Array.from({ length: 82 }, (_, i) => {
+        const number = 800 + i
+        return {
+          number,
+          lat: (number % 2 === 0 ? 27.49 : 27.4903) + (number - 800) * 0.00002,
+          lng: -82.48 + (number - 800) * 0.00001,
+        }
+      }).filter((p) => p.number !== 861)
+    )
+
+    it('brackets an odd number with odd neighbours, not with the evens beside it', () => {
+      const match = findNumber(twoSided, 861)
+      expect(match.kind).toBe('interpolated')
+      expect(match.sameSide).toBe(true)
+      // On the odd side, where 861 actually is -- not the middle of the road.
+      expect(match.lat).toBeCloseTo(27.4903 + 61 * 0.00002, 4)
+    })
+
+    it('reports how far apart the bracketing pair was', () => {
+      // 859 and 863 are four numbers and two metres of latitude apart, which is
+      // what `precisionOf` grades the answer on.
+      const match = findNumber(twoSided, 861)
+      expect(match.spanM).toBeGreaterThan(0)
+      expect(match.spanM).toBeLessThan(50)
+    })
+
+    it('leaves an exact hit alone, with nothing to grade', () => {
+      const match = findNumber(twoSided, 862)
+      expect(match.kind).toBe('exact')
+      expect(match.spanM).toBeNull()
+      expect(match.sameSide).toBeNull()
+    })
+
+    /**
+     * A rural county road numbered straight up one side. There is no parity to
+     * respect, so the numeric neighbours are both the best and the only
+     * bracket -- and the gate measures them as good as any (Wakulla: 0.7 m
+     * either way). The fallback has to stay a fallback and not an error.
+     */
+    it('uses the numeric neighbours when the register has only one side', () => {
+      const oneSided = encodePoints(block(800, 900, 2))
+      const match = findNumber(oneSided, 851)
+      expect(match.kind).toBe('interpolated')
+      expect(match.sameSide).toBe(false)
+      expect(match.lat).toBeCloseTo(27.49 + 51 * 0.00002, 4)
+    })
   })
 
   it('falls back to the middle of the run past either end of the block', () => {

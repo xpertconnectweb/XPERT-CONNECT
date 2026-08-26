@@ -36,6 +36,7 @@ import { haversineDistance } from '@/lib/map/geo'
 import { fold, SUFFIX_TOKEN_WEIGHT } from '@/lib/search/text'
 import { tokenSimilarity, trigramSimilarity } from '@/lib/search/fuzzy'
 import type { GeocodePrecision } from '@/types/geocode'
+import { INTERPOLATION_MAX_SPAN_M } from './constants'
 import { findNumber, type NumberMatch } from './payload-codec'
 import type { ParsedUsAddress } from './address-parser'
 import { canonicalDirectional, canonicalSuffix } from './usps'
@@ -357,7 +358,20 @@ export function precisionOf(match: NumberMatch, agreement = 1): GeocodePrecision
   // UI ask the user to place the pin -- which is the right thing to ask.
   if (agreement < CONFIDENT_LOCATION) return 'street'
   if (match.kind === 'exact') return 'rooftop'
-  if (match.kind === 'interpolated') return 'interpolated'
+
+  if (match.kind === 'interpolated') {
+    // A bracket that crosses the road is not a near miss, it is a different
+    // kind of answer. Where the register had no same-parity pair, `findNumber`
+    // falls back to the numeric neighbours, and leave-one-out puts that case
+    // below the 50 m bar in every band it was measured in -- 76% at its very
+    // best, against 99% for a same-side pair of the same width. It gets the
+    // street, which is the part of it that is true.
+    if (match.sameSide === false) return 'street'
+    // And a same-side pair can still be too far apart to be placing a door.
+    if (match.spanM !== null && match.spanM > INTERPOLATION_MAX_SPAN_M) return 'street'
+    return 'interpolated'
+  }
+
   return 'street'
 }
 

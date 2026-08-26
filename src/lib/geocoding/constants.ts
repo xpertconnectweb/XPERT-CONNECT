@@ -80,6 +80,34 @@ export const TRIGRAM_THRESHOLD = 0.3
 export const SCOPED_TRIGRAM_THRESHOLD = 0.12
 
 /**
+ * How far apart the two bracketing doors may be before an interpolated answer
+ * stops being worth the word.
+ *
+ * Measured, not chosen. `scripts/geo/gate-interpolation.ts` takes a door the
+ * county recorded, re-encodes the street without it, asks the shipped
+ * `findNumber` to put it back, and compares against the register -- 171,000
+ * trials across six counties picked to span dense city grid and rural county
+ * road. Share landing within the 50 m this project already calls "the right
+ * building":
+ *
+ *                        <= 100 m apart     100-200 m apart
+ *   Manatee, FL              98.2-99.8%          77.4%
+ *   Miami-Dade, FL           97.1-99.6%          88.3%
+ *   Orange, FL               95.9-99.1%          76.6%
+ *   Hennepin, MN             98.2-99.5%          83.6%
+ *   Wakulla, FL              98.1-100%           97.7%
+ *   Aitkin, MN               97.9-100%           97.2%
+ *
+ * 100 m is the widest band that clears 95% in EVERY county rather than on
+ * average -- a bar set on Miami would be a lie in Aitkin. Past it the median
+ * error triples and the tail runs to hundreds of metres, which is a street-level
+ * answer wearing a house number.
+ *
+ * Raising this needs a fresh run of that gate, not an argument.
+ */
+export const INTERPOLATION_MAX_SPAN_M = 100
+
+/**
  * Bumped whenever a change alters what a given query should answer.
  *
  * Part of every cache key, so bumping it makes every stored answer unreachable
@@ -105,12 +133,15 @@ export const SCOPED_TRIGRAM_THRESHOLD = 0.12
  *   5 — the search knows where the caller is. A clinic or firm user is biased
  *       toward its own address, and the state a referrer picked finally reaches
  *       the engine instead of both states being searched at once.
+ *   6 — an interpolated address is bracketed by the two doors on ITS OWN side
+ *       of the street, instead of by the numeric neighbours across the road,
+ *       and a bracket too wide to be placing a door now says so.
  *
  * Note the direction of travel: to undo a change, bump this AGAIN rather than
  * putting it back. Reverting the number resurrects exactly the answers the
  * revert was meant to retire.
  */
-export const GEOCODE_CACHE_REVISION = 5
+export const GEOCODE_CACHE_REVISION = 6
 
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,

@@ -42,6 +42,55 @@ export function isExactPrecision(precision: GeocodePrecision): boolean {
   return precision === 'rooftop' || precision === 'parcel'
 }
 
+/**
+ * What to tell someone whose pin is not on the building, and how loudly.
+ *
+ * Every inexact answer used to get one sentence -- "Approximate, drag the pin to
+ * the exact spot" -- whether the point was estimated between two doors twenty
+ * metres apart or was the centre of a postcode. Those are not the same request.
+ * The first needs a glance; the second needs a drag. A warning that cries the
+ * same wolf at both is one people stop reading, and it fired on about a fifth of
+ * searches.
+ *
+ * `short` is for the inline chip under a search box, which already shows the
+ * precision token beside it and has one line to work with. `full` is for the
+ * map anchor, which is the place a correction actually gets made.
+ *
+ * Note what does NOT change: `isExactPrecision` still governs whether any of
+ * this appears. This grades the wording, never the decision to warn -- softening
+ * a message is honest, suppressing it is not.
+ */
+const APPROXIMATE_COPY: Partial<Record<GeocodePrecision, { short: string; full: string }>> = {
+  interpolated: {
+    short: 'estimated between two neighbours, drag the pin if it is off',
+    // The measured case: a same-side bracket under 100 m wide, which lands
+    // within 50 m about 98% of the time (`INTERPOLATION_MAX_SPAN_M`). Worth
+    // mentioning, not worth alarming anyone over.
+    full: 'Estimated between the two neighbouring addresses. Drag the pin if it is off.',
+  },
+  street: {
+    short: 'on the street, drag the pin to the building',
+    full: 'Placed on the street. Drag the pin to the right building.',
+  },
+  zip: {
+    short: 'centre of the ZIP code, drag the pin to correct it',
+    full: 'Approximate — centre of the ZIP code. Drag the pin to the exact spot.',
+  },
+  city: {
+    short: 'centre of the city, drag the pin to correct it',
+    full: 'Approximate — centre of the city. Drag the pin to the exact spot.',
+  },
+}
+
+const APPROXIMATE_FALLBACK = {
+  short: 'drag the pin to correct it',
+  full: 'Approximate — drag the pin to the exact spot.',
+}
+
+export function approximateCopy(precision: GeocodePrecision): { short: string; full: string } {
+  return APPROXIMATE_COPY[precision] ?? APPROXIMATE_FALLBACK
+}
+
 /* ── Nominatim ─────────────────────────────────────────────────────────── */
 
 export function nominatimPrecision(

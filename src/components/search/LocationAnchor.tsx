@@ -3,7 +3,7 @@
 import { Home, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatGeocodeLines } from '@/lib/address'
-import { isExactPrecision } from '@/lib/geocoding/precision'
+import { approximateCopy, isExactPrecision } from '@/lib/geocoding/precision'
 import type { GeocodeAddress, GeocodePrecision } from '@/types/geocode'
 
 /**
@@ -88,9 +88,7 @@ export function LocationAnchor({
             data-testid="map-anchor-approximate"
             className="mt-0.5 text-[10px] font-medium text-amber-700"
           >
-            {precision === 'zip'
-              ? 'Approximate — centre of the ZIP. Drag the pin to the exact spot.'
-              : 'Approximate — drag the pin to the exact spot.'}
+            {approximateCopy(precision ?? 'unknown').full}
           </p>
         )}
 

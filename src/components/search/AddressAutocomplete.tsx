@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { SmartSearchBox } from './SmartSearchBox'
 import type { Suggestion, SuggestionGroup } from './types'
 import { useGeocoder, type ProximityHint } from '@/hooks/useGeocoder'
-import { isExactPrecision } from '@/lib/geocoding/precision'
+import { approximateCopy, isExactPrecision } from '@/lib/geocoding/precision'
 import { ATTRIBUTION, MIN_GEOCODE_QUERY } from '@/lib/geocoding/constants'
 import { toResolvedAddress, type ResolvedAddress } from '@/types/geocode'
 
@@ -209,7 +209,7 @@ export function AddressAutocomplete({
           </span>
           <span aria-hidden="true">·</span>
           <span>{resolved.precision}</span>
-          {approximate && <span>— drag the pin to correct it</span>}
+          {approximate && <span>— {approximateCopy(resolved.precision).short}</span>}
         </p>
       )}
 

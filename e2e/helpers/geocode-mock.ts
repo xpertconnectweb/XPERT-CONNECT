@@ -1,4 +1,5 @@
 import type { Page, Route } from '@playwright/test'
+import type { GeocodePrecision } from '../../src/types/geocode'
 
 /**
  * Intercepts `/api/geocode` so the suite stops calling a third party.
@@ -26,7 +27,14 @@ export interface GeocodeFixture {
   lat: number
   lng: number
   kind?: 'address' | 'city' | 'zip' | 'poi' | 'region'
-  precision?: 'rooftop' | 'parcel' | 'interpolated' | 'street' | 'city' | 'zip' | 'region' | 'unknown'
+  /**
+   * The real union, imported rather than spelled out again.
+   *
+   * It used to be redeclared inline, so adding or removing a precision level
+   * left this file compiling happily against a vocabulary the application no
+   * longer used -- a mock that agrees with nothing is worse than no mock.
+   */
+  precision?: GeocodePrecision
   street?: string | null
   city?: string | null
   state?: string | null

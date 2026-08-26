@@ -199,10 +199,17 @@ describe('rankStreets', () => {
 })
 
 describe('precisionOf', () => {
+  const exact = { lat: 0, lng: 0, kind: 'exact', spanM: null, sameSide: null } as const
+  /** An interpolation between two doors on the caller's own side of the road. */
+  const between = (spanM: number, sameSide = true) =>
+    ({ lat: 0, lng: 0, kind: 'interpolated', spanM, sameSide }) as const
+
   it('claims rooftop only when the register holds the number', () => {
-    expect(precisionOf({ lat: 0, lng: 0, kind: 'exact' })).toBe('rooftop')
-    expect(precisionOf({ lat: 0, lng: 0, kind: 'interpolated' })).toBe('interpolated')
-    expect(precisionOf({ lat: 0, lng: 0, kind: 'street' })).toBe('street')
+    expect(precisionOf(exact)).toBe('rooftop')
+    expect(precisionOf(between(30))).toBe('interpolated')
+    expect(precisionOf({ lat: 0, lng: 0, kind: 'street', spanM: null, sameSide: null })).toBe(
+      'street'
+    )
   })
 
   /**
@@ -212,14 +219,49 @@ describe('precisionOf', () => {
    * Finding house number 183 is worthless if it is the wrong Spruce St.
    */
   it('will not claim rooftop for a street it cannot place', () => {
-    const uncertain = precisionOf({ lat: 0, lng: 0, kind: 'exact' }, 0.3)
+    const uncertain = precisionOf(exact, 0.3)
     expect(uncertain).toBe('street')
     expect(isExactPrecision(uncertain)).toBe(false)
   })
 
   it('claims rooftop when the location is corroborated', () => {
-    expect(precisionOf({ lat: 0, lng: 0, kind: 'exact' }, 1)).toBe('rooftop')
-    expect(precisionOf({ lat: 0, lng: 0, kind: 'exact' }, 0.7)).toBe('rooftop')
+    expect(precisionOf(exact, 1)).toBe('rooftop')
+    expect(precisionOf(exact, 0.7)).toBe('rooftop')
+  })
+
+  /**
+   * Both rules below come out of `scripts/geo/gate-interpolation.ts`, which
+   * measures the shipped `findNumber` by leave-one-out against the county
+   * registers. Neither number is a judgement call, and changing one without
+   * re-running that gate is how this stops being true.
+   */
+  describe('how much an interpolation may claim', () => {
+    it('trusts a narrow bracket on the same side of the road', () => {
+      // 95.9-99.7% of these land within 50 m, in every county measured.
+      expect(precisionOf(between(10))).toBe('interpolated')
+      expect(precisionOf(between(100))).toBe('interpolated')
+    })
+
+    it('demotes a bracket too wide to be placing a door', () => {
+      // Past 100 m the median error triples and the tail runs to hundreds of
+      // metres. That is a street-level answer wearing a house number.
+      expect(precisionOf(between(101))).toBe('street')
+      expect(precisionOf(between(900))).toBe('street')
+    })
+
+    /**
+     * The finding that made this phase worth doing: 861 is not between 860 and
+     * 862, it is across the road from both. Where the register holds no
+     * same-parity pair the engine still answers, but the answer is a street.
+     */
+    it('demotes a bracket that crosses the road, however narrow', () => {
+      expect(precisionOf(between(8, false))).toBe('street')
+      expect(precisionOf(between(80, false))).toBe('street')
+    })
+
+    it('still never counts an interpolation as exact', () => {
+      expect(isExactPrecision(precisionOf(between(10)))).toBe(false)
+    })
   })
 })
 

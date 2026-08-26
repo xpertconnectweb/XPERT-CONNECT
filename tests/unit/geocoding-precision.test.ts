@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  approximateCopy,
   googleGeocodingPrecision,
   googlePlacesPrecision,
   isExactPrecision,
@@ -127,5 +128,57 @@ describe('the consumer rule', () => {
     expect(precisionRank('rooftop')).toBeLessThan(precisionRank('street'))
     expect(precisionRank('street')).toBeLessThan(precisionRank('zip'))
     expect(precisionRank('zip')).toBeLessThan(precisionRank('unknown'))
+  })
+})
+
+/**
+ * The wording, not the decision.
+ *
+ * Every inexact answer used to get the same sentence, whether the point was
+ * estimated between two doors twenty metres apart or was the centre of a
+ * postcode. That warning fired on about a fifth of searches, and one that cries
+ * the same wolf at both is one people stop reading.
+ */
+describe('how an approximate answer is worded', () => {
+  it('says something different for each kind of approximation', () => {
+    const said = (['interpolated', 'street', 'zip', 'city'] as const).map(
+      (p) => approximateCopy(p).full
+    )
+    expect(new Set(said).size).toBe(said.length)
+  })
+
+  it('is softer for an interpolation than for the centre of a postcode', () => {
+    // The measured case: a same-side bracket under 100 m lands within 50 m
+    // about 98% of the time. Worth mentioning, not worth alarming anyone over.
+    expect(approximateCopy('interpolated').full).not.toMatch(/^Approximate/)
+    expect(approximateCopy('zip').full).toMatch(/^Approximate/)
+  })
+
+  /**
+   * Both forms, and this is the line that matters. The chip under a search box
+   * is the only instruction some of these fields ever show -- an earlier draft
+   * graded the wording by dropping the drag from the softer cases, and a
+   * component test caught it saying "centre of the ZIP code" and nothing else.
+   * Grade the severity, never the way out.
+   */
+  it('always offers the drag, whichever wording it uses', () => {
+    for (const p of ['interpolated', 'street', 'zip', 'city', 'region', 'unknown'] as const) {
+      expect(approximateCopy(p).full).toMatch(/[Dd]rag the pin/)
+      expect(approximateCopy(p).short).toMatch(/[Dd]rag the pin/)
+    }
+  })
+
+  it('falls back rather than going blank on a level it has no copy for', () => {
+    expect(approximateCopy('region').full).toBeTruthy()
+    expect(approximateCopy('unknown').short).toBeTruthy()
+  })
+
+  /**
+   * `isExactPrecision` is what decides whether any of this is shown. Grading the
+   * wording must never turn into suppressing the warning -- softening a message
+   * is honest, hiding it is not.
+   */
+  it('does not quietly promote an interpolation to exact', () => {
+    expect(isExactPrecision('interpolated')).toBe(false)
   })
 })
