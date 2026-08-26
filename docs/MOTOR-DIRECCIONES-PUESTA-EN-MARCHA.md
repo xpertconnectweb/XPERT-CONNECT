@@ -47,6 +47,18 @@ dice.
 
 ---
 
+## Dónde vas
+
+```bash
+npx tsx scripts/geo/status.ts
+```
+
+Dice qué partes existen ya en tu base de datos y cuál es el siguiente paso. No
+escribe nada. Úsalo antes y después de cada paso — cuatro de las cinco piezas
+viven fuera del repositorio y el código no puede decirte cuáles están puestas.
+
+---
+
 ## Paso 1 — Aplicar la migración, parte 1
 
 Abre el **SQL Editor** de Supabase (proyecto de producción) y ejecuta la
@@ -88,7 +100,23 @@ Si esa puerta fallara, **no sigas**: el plan previsto era mover
 
 ---
 
-## Paso 3 — Cargar
+## Paso 3 — Crear la función de búsqueda
+
+En el SQL Editor: `scripts/migrations/2026-09-geo-search.sql`.
+
+> Va **aquí**, y no al final, a propósito. Solo depende de que existan las dos
+> tablas: Postgres valida el cuerpo de una función `language sql` al crearla,
+> así que si `pg_trgm` no se hubiera instalado bien, esto falla en dos segundos
+> con `operator does not exist: text % text`. Descubrirlo ahora es gratis;
+> descubrirlo después de cargar cuesta cuarenta minutos.
+
+Si `status.ts` sigue diciendo que la función no existe justo después de crearla,
+espera unos segundos: PostgREST recarga su caché de esquema con un pequeño
+retraso.
+
+---
+
+## Paso 4 — Cargar
 
 ```bash
 npx tsx scripts/geo/load-index.ts                    # ensayo, no escribe nada
@@ -104,13 +132,11 @@ silencioso pondría coordenadas verosímiles y equivocadas en toda la base.
 
 ---
 
-## Paso 4 — Migración, parte 2, y la función de búsqueda
+## Paso 5 — Migración, parte 2
 
-De nuevo en el SQL Editor:
-
-1. La **PARTE 2** de `scripts/migrations/2026-09-geo-index.sql` (índices +
-   `analyze`). Tarda varios minutos.
-2. `scripts/migrations/2026-09-geo-search.sql` (la función `geo_street_search`).
+De nuevo en el SQL Editor: la **PARTE 2** de
+`scripts/migrations/2026-09-geo-index.sql` — el índice de trigramas, los dos
+btree y el `analyze`. Tarda varios minutos.
 
 > Una versión anterior de esa función bajaba el umbral de trigramas con una
 > cláusula `SET`, y Supabase la rechaza: `ERROR: 42501: permission denied to set
@@ -122,7 +148,7 @@ De nuevo en el SQL Editor:
 
 ---
 
-## Paso 5 — Activarlo
+## Paso 6 — Activarlo
 
 En Vercel, **Settings → Environment Variables**:
 
