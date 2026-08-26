@@ -257,8 +257,20 @@ npx tsx scripts/geo/probe.ts                              # contra producción
 npx tsx scripts/geo/probe.ts --base=http://localhost:3000
 npx tsx scripts/geo/probe.ts --only=typos
 
+# arrastrar el pin: qué hay en un punto, y sobre todo QUIÉN contesta
+npx tsx scripts/geo/probe-reverse.ts
+# Las coordenadas de dentro de cobertura tienen que decir `selfhosted`.
+# Una en `geoapify` significa que el domicilio de un lesionado ha salido
+# fuera, que es justo lo que la geocodificación inversa propia evita.
+
 # ¿sigue el parser alcanzando el índice? (>= 98 % en los cuatro estilos)
 npx tsx scripts/geo/gate-parser.ts
+
+# los umbrales de la inversa, medidos de nuevo sobre los registros
+node --max-old-space-size=4096 node_modules/tsx/dist/cli.mjs scripts/geo/gate-reverse.ts
+
+# el error de interpolación frente al ancho del tramo, por condado
+npx tsx scripts/geo/gate-interpolation.ts
 
 # ¿cuánto encuentra de las fichas reales de la plataforma?
 npx tsx scripts/geo/gate-coverage.ts
