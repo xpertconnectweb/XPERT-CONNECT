@@ -34,7 +34,7 @@ export interface GeocodeAddress {
   postcode: string | null
 }
 
-export type GeocodeProviderId = 'nominatim' | 'geoapify' | 'mapbox' | 'google'
+export type GeocodeProviderId = 'nominatim' | 'geoapify' | 'mapbox' | 'google' | 'selfhosted'
 
 /**
  * How sure we are that the point is the building the user meant.

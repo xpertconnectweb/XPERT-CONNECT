@@ -3,6 +3,7 @@ import { geoapifyProvider } from './geoapify'
 import { googleProvider } from './google'
 import { mapboxProvider } from './mapbox'
 import { nominatimProvider } from './nominatim'
+import { selfHostedProvider } from './selfhosted'
 import type {
   GeocodeContext,
   GeocodeProvider,
@@ -24,6 +25,7 @@ const PROVIDERS: Record<GeocodeProviderId, GeocodeProvider> = {
   geoapify: geoapifyProvider,
   mapbox: mapboxProvider,
   google: googleProvider,
+  selfhosted: selfHostedProvider,
 }
 
 function isProviderId(value: string | undefined): value is GeocodeProviderId {

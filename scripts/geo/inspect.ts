@@ -22,6 +22,7 @@ import type { IndexedStreet } from './build-index'
 
 const MERGED = 'data/geo/index/merged.ndjson'
 const SHOW_ALL = process.argv.includes('--all')
+const WITH_ENGINE = process.argv.includes('--engine')
 const LIMIT = SHOW_ALL ? Infinity : 12
 
 async function main() {
@@ -76,6 +77,35 @@ async function main() {
 
   if (found > LIMIT) console.log(`  … and ${found - LIMIT} more (--all to list them)`)
   console.log(`\n  ${found} matching street${found === 1 ? '' : 's'} in ${scanned.toLocaleString('en-US')} rows`)
+
+  // What is stored and what the engine returns are two different questions, and
+  // confusing them wastes an afternoon. The scan above answers the first by
+  // exact name; this answers the second by running the real ranker.
+  if (WITH_ENGINE) await runEngine(query)
+}
+
+async function runEngine(query: string) {
+  process.stdout.write('\n  Loading the index for the engine… ')
+  const { LocalIndex } = await import('./lib/local-index')
+  const { localProvider } = await import('./lib/local-provider')
+  const index = await LocalIndex.load()
+  console.log(`${index.size.toLocaleString('en-US')} streets\n`)
+
+  const result = await localProvider(index).autocomplete(query, { limit: 6 })
+  if (!result.ok) {
+    console.log(`  engine failed: ${result.kind}`)
+    return
+  }
+  if (result.value.length === 0) {
+    console.log('  engine returned nothing')
+    return
+  }
+
+  for (const suggestion of result.value) {
+    const mark = suggestion.precision === 'rooftop' ? '✓' : suggestion.precision === 'interpolated' ? '≈' : '·'
+    console.log(`  ${mark} ${suggestion.precision.padEnd(13)} ${suggestion.fullLabel}`)
+    console.log(`      ${suggestion.lat?.toFixed(6)}, ${suggestion.lng?.toFixed(6)}`)
+  }
 }
 
 main().catch((err) => {

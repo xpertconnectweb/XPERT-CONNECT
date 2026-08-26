@@ -137,6 +137,33 @@ export async function GET() {
       const provider = process.env.GEOCODER_PROVIDER?.trim().toLowerCase()
       if (!provider || provider === 'nominatim') return // deliberately free
 
+      /**
+       * The self-hosted engine has no key — the whole point of it — so what
+       * gets checked instead is that the index is actually there. A deploy
+       * pointed at a database where the migration was never applied, or where
+       * the load stopped halfway, fails EVERY address lookup, and it does so
+       * by silently falling back to Geoapify. That is exactly the shape of
+       * problem this check exists to refuse to hide.
+       *
+       * One count, cheap, and it asserts the whole chain: the table exists,
+       * the service role can read it, and something is in it.
+       */
+      if (provider === 'selfhosted') {
+        const { count, error } = await supabaseAdmin
+          .from('geo_street')
+          .select('id', { count: 'exact', head: true })
+
+        if (error) {
+          throw new Error(`GEOCODER_PROVIDER=selfhosted but geo_street is unreadable: ${error.message}`)
+        }
+        // 500,000 is well below the 567,767 a full load produces and well above
+        // anything a partial one leaves behind.
+        if (!count || count < 500_000) {
+          throw new Error(`geo_street holds ${count ?? 0} streets — the index load did not finish`)
+        }
+        return
+      }
+
       const keyFor: Record<string, string> = {
         geoapify: 'GEOAPIFY_API_KEY',
         mapbox: 'MAPBOX_ACCESS_TOKEN',

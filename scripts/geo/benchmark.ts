@@ -7,7 +7,8 @@
  *
  *   npx tsx scripts/geo/benchmark.ts --provider=geoapify     # the baseline
  *   npx tsx scripts/geo/benchmark.ts --provider=nominatim    # what shipped before
- *   npx tsx scripts/geo/benchmark.ts --provider=selfhosted   # Phase 4 onward
+ *   npx tsx scripts/geo/benchmark.ts --provider=selfhosted   # from Postgres
+ *   npx tsx scripts/geo/benchmark.ts --provider=local        # from memory
  *   npx tsx scripts/geo/benchmark.ts --provider=geoapify --save
  *
  * `--save` writes the run to docs/geo-baseline.json, which is committed. A
@@ -29,6 +30,8 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { config } from 'dotenv'
 import { getProviderById } from '../../src/lib/geocoding'
+import { LocalIndex } from './lib/local-index'
+import { localProvider } from './lib/local-provider'
 import { isExactPrecision } from '../../src/lib/geocoding/precision'
 import { haversineDistance } from '../../src/lib/map/geo'
 import type { GeocodeProviderId, GeocodeResult, GeocodeSuggestion } from '../../src/types/geocode'
@@ -182,14 +185,25 @@ async function main() {
   const { cases } = JSON.parse(raw) as { cases: TruthCase[] }
   const subset = LIMIT ? cases.slice(0, LIMIT) : cases
 
-  const provider = getProviderById(PROVIDER)
-  if (!provider.configured()) {
-    console.error(`Provider "${PROVIDER}" is not configured — its API key is missing.`)
-    process.exit(1)
+  // `local` reads the built index straight off disk, so Phase 4 can be
+  // answered before a migration has been applied anywhere. It runs the same
+  // provider code as production; only the store underneath it differs.
+  let provider
+  if ((PROVIDER as string) === 'local') {
+    process.stdout.write('Loading the index into memory… ')
+    const index = await LocalIndex.load()
+    console.log(`${index.size.toLocaleString('en-US')} streets`)
+    provider = localProvider(index)
+  } else {
+    provider = getProviderById(PROVIDER)
+    if (!provider.configured()) {
+      console.error(`Provider "${PROVIDER}" is not configured — its API key is missing.`)
+      process.exit(1)
+    }
   }
 
   // Nominatim's usage policy is one request per second and it is not optional.
-  const pacing = PROVIDER === 'nominatim' ? 1100 : 120
+  const pacing = PROVIDER === 'nominatim' ? 1100 : (PROVIDER as string) === 'local' ? 0 : 120
   console.log(`Benchmarking ${PROVIDER} over ${subset.length} cases (${pacing} ms pacing)…`)
 
   const outcomes: Outcome[] = []
@@ -197,7 +211,7 @@ async function main() {
   // Array.prototype.entries() would need --downlevelIteration.
   for (let i = 0; i < subset.length; i++) {
     const testCase = subset[i]
-    await sleep(pacing)
+    if (pacing > 0) await sleep(pacing)
     outcomes.push(await measure(provider, testCase))
     if ((i + 1) % 25 === 0) process.stdout.write(`  ${i + 1}/${subset.length}\r`)
   }

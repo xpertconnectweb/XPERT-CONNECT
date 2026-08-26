@@ -46,6 +46,10 @@ export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   geoapify: 30 * 24 * 60 * 60 * 1000,
   mapbox: 30 * 24 * 60 * 60 * 1000,
   google: 30 * 24 * 60 * 60 * 1000,
+  // No licence to cap it. The data is the county registers themselves and
+  // this cache sits in front of our own database, so the only thing that
+  // expires an entry is a quarterly re-ingest.
+  selfhosted: 365 * 24 * 60 * 60 * 1000,
 }
 
 /**
@@ -83,4 +87,8 @@ export const SESSION_MAX_IDLE_MS = 3 * 60 * 1000
 export const ATTRIBUTION: Partial<Record<GeocodeProviderId, string>> = {
   geoapify: 'Powered by Geoapify',
   nominatim: '© OpenStreetMap contributors',
+  // Self-hosting the registers does not remove the licence term that came
+  // with them: Manatee County publishes under CC BY 4.0 and it is not alone.
+  // Attribution is the one obligation that survives dropping the provider.
+  selfhosted: 'Datos de los registros oficiales de direcciones de los condados (OpenAddresses)',
 }

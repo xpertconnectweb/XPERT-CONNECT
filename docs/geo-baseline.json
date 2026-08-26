@@ -11,5 +11,18 @@
     "p50Ms": 699,
     "p95Ms": 1272,
     "corpusSize": 201
+  },
+  "local": {
+    "provider": "local",
+    "cases": 201,
+    "hitRate": 1,
+    "within50m": 1,
+    "within200m": 1,
+    "medianErrorM": 0.37023398621090664,
+    "p95ErrorM": 0.5970686254346286,
+    "exactRate": 0.9950248756218906,
+    "p50Ms": 5,
+    "p95Ms": 13,
+    "corpusSize": 201
   }
 }
