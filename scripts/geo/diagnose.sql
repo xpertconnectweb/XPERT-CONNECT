@@ -85,3 +85,59 @@ order by
     + case when s.zip = '34208' then 0.15 else 0 end desc,
   s.point_count desc
 limit 50;
+
+
+-- ── 5. The function itself ───────────────────────────────────
+--
+-- Blocks 3 and 4 measure the query. This measures what actually
+-- runs in production.
+--
+-- A `language sql` function is sometimes inlined into the calling
+-- query, in which case the real plan appears below and can be
+-- compared with block 4. If instead it prints a single line saying
+-- "Function Scan on geo_street_search", it was not inlined — and
+-- the total Execution Time is still the number that matters.
+
+explain (analyze, buffers)
+select * from geo_street_search('62nd st cir e', 'FL', '34208', null, 50);
+
+
+-- ── 6. The same query, but with real parameters ──────────────
+--
+-- The decisive one. Block 4 was fast partly because a planner
+-- given literals can fold `null is null` away and delete the dead
+-- branches before it starts. Given parameters it cannot: it has to
+-- produce one plan that works for every possible value.
+--
+-- PREPARE reproduces exactly that. Postgres builds a fresh plan
+-- for the first five executions and then decides whether a single
+-- generic plan is cheap enough to reuse — so the sixth is where a
+-- bad generic plan shows itself. Run the whole block; compare the
+-- last EXECUTE with the first.
+
+prepare geo_probe (text, text, text, text, integer) as
+  select s.id, s.name_display, similarity(s.name_norm, $1) as score
+  from geo_street s
+  where
+    ($2 is null or s.state = $2)
+    and (
+      s.name_norm % $1
+      or ($3 is not null and s.zip  = $3 and similarity(s.name_norm, $1) > 0.12)
+      or ($4 is not null and s.city = $4 and similarity(s.name_norm, $1) > 0.12)
+    )
+  order by
+    similarity(s.name_norm, $1)
+      + case when $3 is not null and s.zip  = $3 then 0.15 else 0 end
+      + case when $4 is not null and s.city = $4 then 0.10 else 0 end
+      desc,
+    s.point_count desc
+  limit $5;
+
+explain (analyze) execute geo_probe('62nd st cir e', 'FL', '34208', null, 50);
+explain (analyze) execute geo_probe('62nd st cir e', 'FL', '34208', null, 50);
+explain (analyze) execute geo_probe('62nd st cir e', 'FL', '34208', null, 50);
+explain (analyze) execute geo_probe('62nd st cir e', 'FL', '34208', null, 50);
+explain (analyze) execute geo_probe('62nd st cir e', 'FL', '34208', null, 50);
+explain (analyze, buffers) execute geo_probe('62nd st cir e', 'FL', '34208', null, 50);
+
+deallocate geo_probe;
