@@ -252,6 +252,11 @@ motor. Esto las separa:
 # ¿está la dirección en el índice? y ¿qué devuelve el motor?
 npx tsx scripts/geo/inspect.ts "862 62nd St Cir E, Bradenton, FL 34208" --engine
 
+# teclear 30 direcciones reales contra una instancia viva y ver qué contesta
+npx tsx scripts/geo/probe.ts                              # contra producción
+npx tsx scripts/geo/probe.ts --base=http://localhost:3000
+npx tsx scripts/geo/probe.ts --only=typos
+
 # ¿sigue el parser alcanzando el índice? (>= 98 % en los cuatro estilos)
 npx tsx scripts/geo/gate-parser.ts
 
