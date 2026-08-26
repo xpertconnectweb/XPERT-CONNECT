@@ -387,6 +387,15 @@ export interface StreetStore {
    * Streets with no stored blob are simply absent from the result.
    */
   payloads(streetIds: readonly number[]): Promise<Map<number, Buffer>>
+
+  /**
+   * Whether the index holds ANY street in this place.
+   *
+   * Not "is the address there" — "do we have the register at all". Houston
+   * County, Minnesota publishes none, so every address in it is absent from the
+   * index, and none of those absences means the address does not exist.
+   */
+  covers(state: string, zip: string | null, city: string | null): Promise<boolean>
 }
 
 export interface StreetSearchOptions {
@@ -397,6 +406,30 @@ export interface StreetSearchOptions {
 }
 
 export const supabaseStreetStore: StreetStore = {
+  async covers(state, zip, city) {
+    // The postcode first: it is the tighter question and the (state, zip) btree
+    // answers it outright. The city is the fallback for the five percent of
+    // rows whose source published no postcode.
+    for (const [column, value] of [
+      ['zip', zip],
+      ['city', city],
+    ] as const) {
+      if (!value) continue
+      const { count, error } = await supabaseAdmin
+        .from('geo_street')
+        .select('id', { count: 'exact' })
+        .eq('state', state)
+        .eq(column, value)
+        .limit(0)
+
+      // A failure here must not be read as "no coverage", which would make the
+      // engine authoritative about a place it could not check.
+      if (error) return false
+      if ((count ?? 0) > 0) return true
+    }
+    return false
+  },
+
   async search(query, options) {
     const { data, error } = await supabaseAdmin.rpc('geo_street_search', {
       q: query,

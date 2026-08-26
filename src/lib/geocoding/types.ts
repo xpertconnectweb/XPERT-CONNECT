@@ -76,6 +76,26 @@ export interface GeocodeProvider {
   /** False when the API key is absent. Fail closed, like `twilioConfig()`. */
   configured(): boolean
 
+  /**
+   * Whether THIS empty answer was an answer, overriding `fallbackOnEmpty`.
+   *
+   * `fallbackOnEmpty` is a property of a provider; this is a property of a
+   * query, and the self-hosted engine needs both. It holds the county register
+   * for Manatee, so its silence about a Bradenton address means the address does
+   * not exist. It holds nothing at all for Houston County, Minnesota, which
+   * publishes no register, so its silence there means only that it does not
+   * know.
+   *
+   * Without the distinction, asking for "9999999 Nowhere Rd, Bradenton, FL"
+   * fell through to Geoapify, which answered "1014 Baytree Road" and called it
+   * rooftop — a confident wrong pin on a different street, which is the exact
+   * failure this engine was built to stop producing.
+   *
+   * Optional: a provider that does not implement it keeps `fallbackOnEmpty`
+   * unchanged, and only the self-hosted adapter has anything to say here.
+   */
+  answersEmptyAuthoritatively?(query: string, ctx: GeocodeContext): Promise<boolean>
+
   autocomplete(query: string, ctx: GeocodeContext): Promise<ProviderResult<GeocodeSuggestion[]>>
   details(id: string, ctx: GeocodeContext): Promise<ProviderResult<GeocodeResult | null>>
   reverse(lat: number, lng: number, ctx: GeocodeContext): Promise<ProviderResult<GeocodeResult | null>>

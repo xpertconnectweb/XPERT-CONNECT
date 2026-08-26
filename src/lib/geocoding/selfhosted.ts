@@ -165,6 +165,38 @@ export function createSelfHostedProvider(store: StreetStore): GeocodeProvider {
       return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
     },
 
+    /**
+     * An empty answer is an answer only where the register is actually held.
+     *
+     * Three conditions, and each removes a way of being wrong:
+     *
+     *   A house number. Without one the query may be a business, a city or a
+     *   landmark — "Bayfront Health, Punta Gorda" parses as a street called
+     *   Bayfront Health, and Geoapify finds the clinic. Declining those would
+     *   lose the half of the product this engine never claimed to serve.
+     *
+     *   A street. Nothing to be authoritative about otherwise.
+     *
+     *   Coverage of the place named. This is the one that matters: Houston
+     *   County, Minnesota publishes no register, so every address in it is
+     *   absent from the index and none of those absences is evidence. Asking
+     *   whether the index holds ANY street in that postcode separates "no such
+     *   address" from "no register".
+     */
+    async answersEmptyAuthoritatively(query: string, ctx: GeocodeContext): Promise<boolean> {
+      const parsed = parseUsAddress(query)
+      if (parsed.number === null || parsed.variants.length === 0) return false
+
+      const state = ctx.state ?? parsed.state
+      if (!state) return false
+
+      try {
+        return await store.covers(state, parsed.zip, parsed.city)
+      } catch {
+        return false
+      }
+    },
+
     async autocomplete(query: string, ctx: GeocodeContext): Promise<ProviderResult<GeocodeSuggestion[]>> {
       if (query.trim().length < MIN_GEOCODE_QUERY) return { ok: true, value: [] }
 

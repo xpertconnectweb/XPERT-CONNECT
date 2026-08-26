@@ -112,8 +112,20 @@ export async function autocompleteChain(
   const primary = getProvider()
   const first = await primary.autocomplete(query, ctx)
 
-  if (first.ok && (first.value.length > 0 || !primary.fallbackOnEmpty)) {
+  if (first.ok && first.value.length > 0) {
     return { suggestions: first.value, provider: primary.id, failure: null }
+  }
+
+  // Empty. Whether that is an answer or an absence is sometimes a property of
+  // the query rather than of the provider — see `answersEmptyAuthoritatively`.
+  if (first.ok) {
+    const authoritative = primary.answersEmptyAuthoritatively
+      ? await primary.answersEmptyAuthoritatively(query, ctx)
+      : !primary.fallbackOnEmpty
+
+    if (authoritative) {
+      return { suggestions: [], provider: primary.id, failure: null }
+    }
   }
 
   const fallback = getFallbackProvider(primary)
