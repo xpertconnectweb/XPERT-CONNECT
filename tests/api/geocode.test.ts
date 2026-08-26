@@ -60,6 +60,17 @@ const fetchMock = vi.fn()
 
 beforeEach(() => {
   vi.clearAllMocks()
+  /**
+   * Pinned, because this file describes the NOMINATIM adapter — every assertion
+   * below reads the URL it built out of `fetchMock.mock.calls`.
+   *
+   * Without this the provider came from whatever `GEOCODER_PROVIDER` happened to
+   * be in the environment, so the file passed on a developer machine and on CI
+   * and failed the moment anyone exported the variable. A test that silently
+   * changes its subject depending on a shell is not testing anything in
+   * particular.
+   */
+  vi.stubEnv('GEOCODER_PROVIDER', 'nominatim')
   vi.stubGlobal('fetch', fetchMock)
   mockedAuth.requireAuth.mockImplementation(
     buildRequireAuth(buildSession({ role: 'lawyer', state: 'FL' }))
@@ -68,6 +79,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
 })
 
 const ok = (body: unknown) => ({ ok: true, status: 200, json: async () => body })

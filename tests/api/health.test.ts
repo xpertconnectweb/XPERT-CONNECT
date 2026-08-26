@@ -8,14 +8,24 @@ vi.mock('@/lib/api-auth', () => ({
 
 // Build a programmable Supabase mock where each `.from(table).select(...).limit(N)`
 // resolves to whatever was registered for that table.
-const supabaseTableResults: Record<string, { error: unknown }> = {}
+//
+// `count` is part of the shape because the env_geocoder check counts
+// `geo_street` rather than reading a row from it. A deploy pointed at a database
+// where the address index was never loaded fails EVERY address lookup, and does
+// it silently by falling back to another provider — which is precisely the kind
+// of failure a health check exists to refuse to hide. The default is a healthy
+// count, so only the cases that care have to say anything.
+const supabaseTableResults: Record<string, { error: unknown; count?: number }> = {}
+
+/** Comfortably above the 500,000 the health check treats as a finished load. */
+const LOADED_STREETS = 567_767
 
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: {
     from: (table: string) => ({
       select: () => ({
         limit: () =>
-          Promise.resolve(supabaseTableResults[table] ?? { error: null }),
+          Promise.resolve(supabaseTableResults[table] ?? { error: null, count: LOADED_STREETS }),
       }),
     }),
   },

@@ -126,6 +126,18 @@ function report(outcomes: readonly Outcome[]) {
     exactRate: found.filter((o) => isExactPrecision(o.precision as never)).length / total,
     p50Ms: percentile(latencies, 50),
     p95Ms: percentile(latencies, 95),
+    /**
+     * The fastest single lookup of the run.
+     *
+     * Saved because a latency figure without it invites the wrong reading.
+     * `selfhosted` measured 581 ms p50 from a developer machine in Europe
+     * against `geoapify` at 699 -- which looks like a rounding error and is
+     * actually an order of magnitude, because 2 round trips to the database
+     * region cost 440 ms of that and the database itself cost 42. The
+     * minimum is the closest thing to a network floor this can observe
+     * without knowing where it is running.
+     */
+    minMs: latencies.length > 0 ? latencies[0] : NaN,
   }
 
   console.log(`\n${'─'.repeat(64)}`)
@@ -136,7 +148,7 @@ function report(outcomes: readonly Outcome[]) {
   console.log(`  claims rooftop/parcel . ${pct(found.filter((o) => isExactPrecision(o.precision as never)).length)}`)
   console.log(`  median error .......... ${summary.medianErrorM.toFixed(1)} m`)
   console.log(`  p95 error ............. ${summary.p95ErrorM.toFixed(1)} m`)
-  console.log(`  latency p50 / p95 ..... ${summary.p50Ms} / ${summary.p95Ms} ms`)
+  console.log(`  latency p50 / p95 ..... ${summary.p50Ms} / ${summary.p95Ms} ms   (fastest ${summary.minMs} ms)`)
 
   // Per county, because a headline average hides the rural counties where the
   // registers are thin — and those are exactly where the product will be blamed.

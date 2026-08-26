@@ -149,16 +149,22 @@ export async function GET() {
        * the service role can read it, and something is in it.
        */
       if (provider === 'selfhosted') {
+        // `limit(0)` rather than `head: true`. A head request has no response
+        // body, so when PostgREST answers 404 there is no JSON for supabase-js
+        // to read the error from and it returns `{ error: null, count: null }` —
+        // which would be reported here as an empty table rather than a missing
+        // one, and send whoever is reading it to reload data into nothing.
         const { count, error } = await supabaseAdmin
           .from('geo_street')
-          .select('id', { count: 'exact', head: true })
+          .select('id', { count: 'exact' })
+          .limit(0)
 
         if (error) {
           throw new Error(`GEOCODER_PROVIDER=selfhosted but geo_street is unreadable: ${error.message}`)
         }
         // 500,000 is well below the 567,767 a full load produces and well above
         // anything a partial one leaves behind.
-        if (!count || count < 500_000) {
+        if (typeof count !== 'number' || count < 500_000) {
           throw new Error(`geo_street holds ${count ?? 0} streets — the index load did not finish`)
         }
         return
