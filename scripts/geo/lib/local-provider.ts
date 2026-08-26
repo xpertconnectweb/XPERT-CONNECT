@@ -23,6 +23,10 @@ export function localStreetStore(index: LocalIndex): StreetStore {
       })
     },
 
+    async covers(state, zip, city) {
+      return index.covers(state, zip, city)
+    },
+
     async payloads(streetIds) {
       const out = new Map<number, Buffer>()
       for (const id of streetIds) {

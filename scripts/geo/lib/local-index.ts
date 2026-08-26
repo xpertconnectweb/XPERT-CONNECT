@@ -207,6 +207,17 @@ export class LocalIndex {
     }
   }
 
+  /** Whether any street is held in this place. Mirrors the Supabase store. */
+  covers(state: string, zip: string | null, city: string | null): boolean {
+    const wantCity = city ? city.toUpperCase() : null
+    for (let i = 0; i < this.state.length; i++) {
+      if (this.state[i] !== state) continue
+      if (zip && this.zip[i] === zip) return true
+      if (wantCity && this.city[i].toUpperCase() === wantCity) return true
+    }
+    return false
+  }
+
   payloadOf(id: number): Buffer | null {
     return this.payloads[id] ?? null
   }

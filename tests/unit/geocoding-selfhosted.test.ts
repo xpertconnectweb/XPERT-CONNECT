@@ -38,7 +38,11 @@ function storeOf(options: { rows?: StreetRow[]; covers?: boolean } = {}): Street
 
   return {
     search: vi.fn(async () => rows),
-    payloads: vi.fn(async (ids) => new Map(ids.map((id) => [id, payload]))),
+    payloads: vi.fn(async (ids: readonly number[]) => {
+      const out = new Map<number, Buffer>()
+      for (const id of ids) out.set(id, payload)
+      return out
+    }),
     covers: vi.fn(async () => options.covers ?? false),
   }
 }
