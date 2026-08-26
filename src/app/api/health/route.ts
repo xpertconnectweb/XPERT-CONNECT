@@ -167,6 +167,39 @@ export async function GET() {
         if (typeof count !== 'number' || count < 500_000) {
           throw new Error(`geo_street holds ${count ?? 0} streets — the index load did not finish`)
         }
+
+        /**
+         * Reverse geocoding rides on a SEPARATE table and a separate migration,
+         * and it is switched on by an environment variable rather than a
+         * deploy. That combination is how the two get out of step: flip
+         * REVERSE_SELFHOSTED on a database where `2026-10-geo-reverse.sql` was
+         * never applied, or applied without running `geo_rebuild_cells()`, and
+         * every pin drag falls through to Geoapify — silently, because the
+         * chain treats it as a recoverable failure and covers for it.
+         *
+         * Checked only when the flag is on, so an unapplied migration is not an
+         * outage for anyone who has not asked for the feature.
+         */
+        if (process.env.REVERSE_SELFHOSTED === '1') {
+          const cells = await supabaseAdmin
+            .from('geo_street_cell')
+            .select('cell_lat', { count: 'exact' })
+            .limit(0)
+
+          if (cells.error) {
+            throw new Error(
+              `REVERSE_SELFHOSTED=1 but geo_street_cell is unreadable — was ` +
+                `scripts/migrations/2026-10-geo-reverse.sql applied? ${cells.error.message}`
+            )
+          }
+          // 100,000 against the 114,016 a full rebuild produces: comfortably
+          // below a complete run and far above a truncated one.
+          if (typeof cells.count !== 'number' || cells.count < 100_000) {
+            throw new Error(
+              `geo_street_cell holds ${cells.count ?? 0} cells — run select geo_rebuild_cells()`
+            )
+          }
+        }
         return
       }
 

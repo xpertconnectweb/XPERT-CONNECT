@@ -27,6 +27,17 @@ export function localStreetStore(index: LocalIndex): StreetStore {
       return index.covers(state, zip, city)
     },
 
+    /**
+     * The twin of `geo_street_nearby`, and required rather than optional so
+     * that adding it to the interface made this file fail to compile until it
+     * had one. `gate-reverse.ts` measures the reverse thresholds through here;
+     * if this drifted from the SQL, those numbers would describe a system
+     * nobody runs.
+     */
+    async nearby(lat, lng, radiusDeg, limit) {
+      return index.nearby(lat, lng, radiusDeg, limit)
+    },
+
     async payloads(streetIds) {
       const out = new Map<number, Buffer>()
       for (const id of streetIds) {

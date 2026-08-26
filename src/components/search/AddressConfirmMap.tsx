@@ -66,7 +66,18 @@ export function AddressConfirmMap({
         city: place.address?.city ?? null,
         state: place.address?.state ?? null,
         zip: place.address?.postcode ?? null,
-        county: place.county,
+        // Kept when the answer does not carry one, rather than overwritten with
+        // null. The self-hosted engine never supplies a county: the registers
+        // publish one per point, but it is dropped at index time because
+        // 567,000 copies of a county name is several megabytes of a 500 MB
+        // budget spent on a facet the address search does not use.
+        //
+        // Without the `??`, dragging a pin in an admin form would silently
+        // blank a field the clinic list filters on. The cost is a county that
+        // could go stale if someone dragged the pin across a county line --
+        // which this map, a tens-of-metres correction on an address already
+        // chosen, does not do.
+        county: place.county ?? moved.county,
       })
     },
     [address, lookup, onMove]

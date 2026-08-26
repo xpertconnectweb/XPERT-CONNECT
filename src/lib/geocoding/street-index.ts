@@ -403,6 +403,25 @@ export interface StreetStore {
   payloads(streetIds: readonly number[]): Promise<Map<number, Buffer>>
 
   /**
+   * The streets nearest a coordinate, nearest first, for reverse geocoding.
+   *
+   * `radiusDeg` is in degrees of LATITUDE; implementations widen it for
+   * longitude by `1 / cos(lat)`. Ordered by distance to each street's bounding
+   * BOX and then by the smaller box -- see `cells.ts` for why both halves of
+   * that ordering are load-bearing.
+   *
+   * Required rather than optional on purpose: `scripts/geo/lib/local-index.ts`
+   * has to implement it too, or `gate-reverse.ts` measures thresholds against
+   * code that never deploys.
+   */
+  nearby(
+    lat: number,
+    lng: number,
+    radiusDeg: number,
+    limit: number
+  ): Promise<StreetRow[]>
+
+  /**
    * Whether the index holds ANY street in this place.
    *
    * Not "is the address there" — "do we have the register at all". Houston
@@ -442,6 +461,30 @@ export const supabaseStreetStore: StreetStore = {
       if ((count ?? 0) > 0) return true
     }
     return false
+  },
+
+  /**
+   * The streets nearest a coordinate, for reverse geocoding.
+   *
+   * Reads a range of the cell table's primary key, which is why the migration
+   * insists on an `EXPLAIN` in Miami as well as Bradenton: `(param is null or
+   * column = param)` cost this project a factor of eleven once, and a plan that
+   * looks fine on a quiet cell can still fall over on the densest one.
+   *
+   * Throws rather than returning nothing on error, unlike `covers`. An empty
+   * answer here means "no register at this point", which the provider chain
+   * treats as a reason to stop; a failed query must not be able to say that.
+   */
+  async nearby(lat, lng, radiusDeg, limit) {
+    const { data, error } = await supabaseAdmin.rpc('geo_street_nearby', {
+      q_lat: lat,
+      q_lng: lng,
+      q_radius_deg: radiusDeg,
+      q_limit: limit,
+    })
+
+    if (error) throw new Error(`geo_street_nearby: ${error.message}`)
+    return (data ?? []) as StreetRow[]
   },
 
   async search(query, options) {

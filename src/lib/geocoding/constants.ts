@@ -284,3 +284,23 @@ export const REVERSE_NUMBER_M = 25
  * publish no register at all.
  */
 export const REVERSE_COVERAGE_M = 1000
+
+/**
+ * How far the reverse cell lookup reaches, in degrees of latitude.
+ *
+ * Three cells. `REVERSE_COVERAGE_M` decides whether the answer is kept; this
+ * decides how much ground is read to find one, and it has to be the wider of
+ * the two or the coverage rule would never get the chance to fire.
+ */
+export const REVERSE_SEARCH_RADIUS_DEG = REVERSE_CELL_DEGREES * 3
+
+/**
+ * How many streets the reverse lookup pulls before picking.
+ *
+ * Twelve, and `gate-reverse.ts` measured with the same number -- a threshold
+ * measured against a different candidate set is a threshold measured against
+ * nothing. Their blobs come back in ONE request, which is why `payloads` is
+ * plural: against the live database, eight blobs in one round trip took 226 ms
+ * and one took 218.
+ */
+export const REVERSE_CANDIDATES = 12

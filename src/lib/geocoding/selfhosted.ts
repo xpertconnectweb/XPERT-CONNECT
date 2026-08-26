@@ -45,7 +45,15 @@ import type {
 } from '@/types/geocode'
 import { parseUsAddress, type ParsedUsAddress } from './address-parser'
 import type { GeocodeContext, GeocodeProvider, ProviderResult } from './types'
-import { MIN_GEOCODE_QUERY } from './constants'
+import {
+  MIN_GEOCODE_QUERY,
+  REVERSE_CANDIDATES,
+  REVERSE_COVERAGE_M,
+  REVERSE_NUMBER_M,
+  REVERSE_ROOFTOP_M,
+  REVERSE_SEARCH_RADIUS_DEG,
+} from './constants'
+import { nearestPoint, type NearestPoint } from './payload-codec'
 import {
   precisionOf,
   rankStreets,
@@ -54,6 +62,7 @@ import {
   streetCentre,
   supabaseStreetStore,
   type RankedStreet,
+  type StreetRow,
   type StreetStore,
 } from './street-index'
 
@@ -296,29 +305,106 @@ export function createSelfHostedProvider(store: StreetStore): GeocodeProvider {
     },
 
     /**
-     * Not implemented yet, and it returns empty rather than pretending.
+     * What is at this point.
      *
-     * Reverse geocoding needs a spatial lookup, and `geo_street` has no index
-     * that answers "what is near this point" -- the bounding box columns are
-     * there for ranking and framing, not for search. Adding one is a schema
-     * change, and doing it badly means a sequential scan of 567,767 rows on
-     * every drag of the pin.
+     * The question the map asks when someone drags the pin, and until now the
+     * one place the addresses still left the building: `MapView` drags the
+     * HOME ADDRESS of a personal-injury client, and those coordinates went to
+     * Geoapify. Answering it here is the last part of the privacy case for
+     * building this at all.
      *
-     * ── A correction, because the previous version of this comment was wrong ──
+     * ── A correction that this replaces ──
      *
-     * It said "the chain handles this: `fallbackOnEmpty` is true, so a reverse
-     * lookup falls through to Geoapify". It did not. `fallbackOnEmpty` is read
-     * only by `autocompleteChain`, and `/api/geocode` called `provider.reverse`
+     * The comment that used to sit here said "the chain handles this:
+     * `fallbackOnEmpty` is true, so a reverse lookup falls through to
+     * Geoapify". It did not. `fallbackOnEmpty` is read only by
+     * `autocompleteChain`, and `/api/geocode` called `provider.reverse`
      * directly, so switching to this provider made every pin drag answer `[]`
-     * — cached for a day, per coordinate. The map showed "Custom location" with
-     * no address for as long as that was live.
+     * -- cached for a day, per coordinate. `reverseChain` now exists and does
+     * what that comment claimed.
      *
-     * `reverseChain` in `./index.ts` now exists and does what that comment
-     * claimed. A comment asserting a behaviour nobody had tested was worse than
-     * no comment: it is what made the gap look handled.
+     * ── What it may claim ──
+     *
+     * Every threshold below is measured by `scripts/geo/gate-reverse.ts` and
+     * lives in `constants.ts` with the numbers behind it. The rule they enforce
+     * is that THE LABEL AND THE PRECISION MUST AGREE: past `REVERSE_NUMBER_M`
+     * the house number comes off the text entirely, because answering "you are
+     * at 862" when the nearest recorded door is 120 m away is precisely the
+     * confident wrong answer this engine exists to stop producing.
+     *
+     * `parcel` is deliberately never claimed. `isExactPrecision` treats it as
+     * exact, and that predicate is what silences the "drag the pin" prompt --
+     * on a browser geolocation, which can be blocks out, that would suppress
+     * the warning exactly where it is most needed. `interpolated` is the honest
+     * step: the prompt still fires and the word already means "placed by
+     * inference". `parcel` would only be true if the registers published parcel
+     * polygons, and they publish points.
      */
-    async reverse(): Promise<ProviderResult<GeocodeResult | null>> {
-      return { ok: true, value: null }
+    async reverse(lat, lng): Promise<ProviderResult<GeocodeResult | null>> {
+      // The escape hatch: reverse goes back to Geoapify and autocomplete is
+      // untouched. One environment variable, no deploy, seconds.
+      if (process.env.REVERSE_SELFHOSTED !== '1') return { ok: true, value: null }
+
+      const streets = await store.nearby(lat, lng, REVERSE_SEARCH_RADIUS_DEG, REVERSE_CANDIDATES)
+      // Nothing here at all, and not one blob fetched to find that out.
+      if (streets.length === 0) return { ok: true, value: null }
+
+      const payloads = await store.payloads(streets.map((s) => s.id))
+
+      let best: { street: StreetRow; point: NearestPoint } | null = null
+      for (const street of streets) {
+        const payload = payloads.get(street.id)
+        if (!payload) continue
+        const point = nearestPoint(payload, lat, lng)
+        if (!best || point.distanceM < best.point.distanceM) best = { street, point }
+      }
+
+      // No register within reach. Null rather than a guess, which lets the
+      // chain hand the question to a provider that may know better -- open
+      // water, farmland, and the counties that publish nothing at all.
+      if (!best || best.point.distanceM > REVERSE_COVERAGE_M) return { ok: true, value: null }
+
+      const near = best.point.distanceM <= REVERSE_NUMBER_M
+      const precision: GeocodeSuggestion['precision'] =
+        best.point.distanceM <= REVERSE_ROOFTOP_M ? 'rooftop' : near ? 'interpolated' : 'street'
+
+      // Past NUMBER_M the number leaves the label, not just the precision.
+      const parsed = parseUsAddress(
+        near
+          ? `${best.point.number} ${best.street.name_display}`
+          : best.street.name_display
+      )
+
+      const stub: RankedStreet = {
+        ...best.street,
+        rank: 1,
+        nameScore: 1,
+        numberInRange: near,
+        // The point came from this street's own blob, so there is nothing to
+        // corroborate and nothing that could disagree.
+        agreement: 1,
+      }
+
+      const suggestion = toSuggestion(
+        stub,
+        { ...parsed, number: near ? best.point.number : null },
+        // The register's coordinate when we are claiming its door, and the
+        // queried point when we are only naming the street: moving the pin the
+        // user just placed, to a door we are not claiming they are at, would be
+        // a worse answer than leaving it alone.
+        near ? { lat: best.point.lat, lng: best.point.lng } : { lat, lng },
+        precision
+      )
+
+      return {
+        ok: true,
+        value: {
+          ...suggestion,
+          lat: near ? best.point.lat : lat,
+          lng: near ? best.point.lng : lng,
+          needsResolve: false,
+        },
+      }
     },
   }
 }

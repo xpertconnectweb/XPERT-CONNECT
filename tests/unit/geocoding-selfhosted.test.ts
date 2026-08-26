@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { createSelfHostedProvider } from '@/lib/geocoding/selfhosted'
 import type { StreetRow, StreetStore } from '@/lib/geocoding/street-index'
-import { encodePoints } from '@/lib/geocoding/payload-codec'
+import { encodePoints, type StreetPoint } from '@/lib/geocoding/payload-codec'
 
 /**
  * The self-hosted adapter, over a store that answers from memory.
@@ -32,9 +32,13 @@ function street(over: Partial<StreetRow> = {}): StreetRow {
   }
 }
 
-function storeOf(options: { rows?: StreetRow[]; covers?: boolean } = {}): StreetStore {
+function storeOf(
+  options: { rows?: StreetRow[]; covers?: boolean; nearby?: StreetRow[]; points?: StreetPoint[] } = {}
+): StreetStore {
   const rows = options.rows ?? []
-  const payload = encodePoints([{ number: 862, lat: 27.491257, lng: -82.481824 }])
+  const payload = encodePoints(
+    options.points ?? [{ number: 862, lat: 27.491257, lng: -82.481824 }]
+  )
 
   return {
     search: vi.fn(async () => rows),
@@ -44,6 +48,7 @@ function storeOf(options: { rows?: StreetRow[]; covers?: boolean } = {}): Street
       return out
     }),
     covers: vi.fn(async () => options.covers ?? false),
+    nearby: vi.fn(async () => options.nearby ?? []),
   }
 }
 
@@ -136,34 +141,153 @@ describe('when an empty answer is authoritative', () => {
 })
 
 /**
- * The gap that was described as handled and was not.
+ * Reverse geocoding: what is at this point.
  *
- * `selfhosted.reverse` returns null on purpose — the spatial lookup does not
- * exist yet. What made that a live bug rather than a documented limitation is
- * that `/api/geocode` called `provider.reverse` directly, with no chain behind
- * it, so switching to this provider made every pin drag answer nothing at all.
- * A comment claimed `fallbackOnEmpty` covered it. `fallbackOnEmpty` is read only
- * by `autocompleteChain`.
+ * The question the map asks on every pin drag, and until now the one place the
+ * addresses still left the building -- `MapView` drags the HOME ADDRESS of a
+ * personal-injury client, and those coordinates went to a third party.
  *
- * These two tests are the thing that was missing: one pins the stub so its
- * eventual implementation is a deliberate act, and the chain's own test pins
- * that an empty answer reaches somebody else.
+ * Every threshold these tests exercise is measured by
+ * `scripts/geo/gate-reverse.ts` over 104,000 lookups, not chosen. The rule they
+ * enforce is that the label and the precision must agree.
  */
-describe('reverse, until the spatial lookup exists', () => {
-  it('answers null rather than guessing', async () => {
-    const provider = createSelfHostedProvider(storeOf())
-    const result = await provider.reverse(27.491257, -82.481824, { limit: 1 })
+describe('reverse', () => {
+  const here = { lat: 27.491257, lng: -82.481824 }
+
+  /** Doors along one block, so distance from the query is controllable. */
+  const block: StreetPoint[] = [
+    { number: 858, lat: 27.49116, lng: -82.481824 },
+    { number: 860, lat: 27.49121, lng: -82.481824 },
+    { number: 862, lat: 27.491257, lng: -82.481824 },
+    { number: 864, lat: 27.49131, lng: -82.481824 },
+  ]
+
+  const on = () => {
+    process.env.REVERSE_SELFHOSTED = '1'
+  }
+
+  beforeEach(() => {
+    delete process.env.REVERSE_SELFHOSTED
+  })
+
+  it('names the door the pin is standing on, and calls it rooftop', async () => {
+    on()
+    const store = storeOf({ nearby: [street()], points: block })
+    const result = await createSelfHostedProvider(store).reverse(here.lat, here.lng, { limit: 1 })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok || !result.value) throw new Error('expected an answer')
+    expect(result.value.address?.street).toBe('862 62nd Street Cir E')
+    expect(result.value.precision).toBe('rooftop')
+    expect(result.value.providerId).toBe('selfhosted')
+  })
+
+  /**
+   * The rule that makes this honest rather than decorative. Past
+   * REVERSE_NUMBER_M the house number comes off the TEXT, not just the
+   * precision -- saying "you are at 862" when the nearest recorded door is
+   * a hundred metres away is the confident wrong answer this engine exists to
+   * stop producing.
+   */
+  it('drops the house number once the nearest door is too far to claim', async () => {
+    on()
+    // About 550 m north of the block: inside coverage, far outside NUMBER_M.
+    const store = storeOf({ nearby: [street()], points: block })
+    const result = await createSelfHostedProvider(store).reverse(27.4962, -82.481824, { limit: 1 })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok || !result.value) throw new Error('expected an answer')
+    expect(result.value.precision).toBe('street')
+    expect(result.value.address?.street).toBe('62nd Street Cir E')
+    // Not "contains no digit": this street is called 62nd, and the reported
+    // address is on 62nd Street Circle East. What must be gone is a house
+    // number in front of it.
+    expect(result.value.address?.street).not.toMatch(/^\d+\s/)
+  })
+
+  it('leaves the pin where the user put it when it is only naming the street', async () => {
+    on()
+    const store = storeOf({ nearby: [street()], points: block })
+    const result = await createSelfHostedProvider(store).reverse(27.4962, -82.481824, { limit: 1 })
+
+    if (!result.ok || !result.value) throw new Error('expected an answer')
+    // Moving someone's pin to a door we are explicitly not claiming they are at
+    // would be worse than leaving it alone.
+    expect(result.value.lat).toBeCloseTo(27.4962, 5)
+  })
+
+  it('answers null beyond the radius the index covers, so the chain can try', async () => {
+    on()
+    // Ten kilometres away: no register here, and a guess would be worse than
+    // handing the question to Geoapify.
+    const store = storeOf({ nearby: [street()], points: block })
+    const result = await createSelfHostedProvider(store).reverse(27.58, -82.481824, { limit: 1 })
 
     expect(result.ok).toBe(true)
     expect(result.ok && result.value).toBeNull()
   })
 
-  it('does not touch the store to say so', async () => {
-    const store = storeOf()
-    await createSelfHostedProvider(store).reverse(27.491257, -82.481824, { limit: 1 })
+  it('answers null with no candidates, without fetching a single blob', async () => {
+    on()
+    const store = storeOf({ nearby: [] })
+    const result = await createSelfHostedProvider(store).reverse(here.lat, here.lng, { limit: 1 })
 
-    expect(store.search).not.toHaveBeenCalled()
+    expect(result.ok && result.value).toBeNull()
     expect(store.payloads).not.toHaveBeenCalled()
-    expect(store.covers).not.toHaveBeenCalled()
+  })
+
+  /**
+   * `parcel` is never claimed, deliberately. `isExactPrecision` treats it as
+   * exact and that predicate is what silences the drag-the-pin prompt; on a
+   * browser geolocation, which can be blocks out, claiming it would suppress
+   * the warning exactly where it is most needed. And it would only be true if
+   * the registers published parcel polygons, which they do not -- they publish
+   * points.
+   */
+  it('never claims parcel', async () => {
+    on()
+    const store = storeOf({ nearby: [street()], points: block })
+    for (const at of [here, { lat: 27.4913, lng: -82.4818 }, { lat: 27.4962, lng: -82.4818 }]) {
+      const result = await createSelfHostedProvider(store).reverse(at.lat, at.lng, { limit: 1 })
+      if (result.ok && result.value) expect(result.value.precision).not.toBe('parcel')
+    }
+  })
+
+  /**
+   * The escape hatch. Reverse goes back to Geoapify and autocomplete is
+   * untouched: one environment variable, no deploy, seconds. It is the first
+   * of the three rollbacks in the plan and the only one that does not need a
+   * redeploy, so it has to actually work.
+   */
+  describe('the escape hatch', () => {
+    it('answers null when REVERSE_SELFHOSTED is not set', async () => {
+      const store = storeOf({ nearby: [street()], points: block })
+      const result = await createSelfHostedProvider(store).reverse(here.lat, here.lng, { limit: 1 })
+
+      expect(result.ok && result.value).toBeNull()
+    })
+
+    it('does not touch the store to say so', async () => {
+      const store = storeOf({ nearby: [street()], points: block })
+      await createSelfHostedProvider(store).reverse(here.lat, here.lng, { limit: 1 })
+
+      expect(store.nearby).not.toHaveBeenCalled()
+      expect(store.payloads).not.toHaveBeenCalled()
+    })
+
+    it('leaves autocomplete alone either way', async () => {
+      const store = storeOf({ rows: [street()], points: block })
+      const off = await createSelfHostedProvider(store).autocomplete('862 62nd St Cir E', {
+        limit: 5,
+        state: 'FL',
+      })
+      on()
+      const upon = await createSelfHostedProvider(store).autocomplete('862 62nd St Cir E', {
+        limit: 5,
+        state: 'FL',
+      })
+
+      expect(off.ok && off.value.length).toBe(upon.ok && upon.value.length)
+    })
   })
 })
