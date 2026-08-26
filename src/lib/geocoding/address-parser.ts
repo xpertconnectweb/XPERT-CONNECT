@@ -21,6 +21,7 @@
  * hundred other ordinary Florida street names.
  */
 import { parseAddress } from '../address'
+import { fold } from '../search/text'
 import {
   canonicalDirectional,
   canonicalSuffix,
@@ -88,6 +89,22 @@ const EMPTY: ParsedUsAddress = {
 function splitHouseNumber(token: string): [number, string | null] | null {
   const match = /^(\d{1,7})(.*)$/.exec(token)
   if (!match) return null
+
+  /**
+   * An ordinal is a street name, not a house number.
+   *
+   * "62nd St Cir E" with no house number in front of it parsed as house number
+   * 62 with the suffix "nd", leaving the street as "ST CIR E" — which then
+   * matched "17th Street Cir E", a different road. "1st Ave N" and "3rd St"
+   * failed the same way, and both are ordinary street names in Saint Petersburg
+   * and Minneapolis.
+   *
+   * The test is exact: a remainder of precisely st, nd, rd or th. "123A" keeps
+   * its A, "123-125" keeps its range, and "100 1st St" is unaffected because
+   * the house number there is its own token.
+   */
+  if (/^(st|nd|rd|th)$/i.test(match[2])) return null
+
   const value = Number(match[1])
   if (value <= 0) return null
   const rest = match[2].replace(/^[-\s]+/, '').trim()
@@ -414,7 +431,28 @@ export function parseUsAddress(raw: string | null | undefined): ParsedUsAddress 
   const usable = rest.length > 0 ? rest : streetTokens
   const { preDirectional, suffix, postDirectional, typed, names } = analyseStreet(usable)
 
-  const variants = buildVariants(preDirectional, names, suffix, postDirectional)
+  const spellings = buildVariants(preDirectional, names, suffix, postDirectional)
+
+  /**
+   * "Bradenton, FL" names a city, not a street.
+   *
+   * `parseAddress` has nothing else to do with a single-segment head, so it puts
+   * the same word in both `street` and `city`. Left alone, the engine searched
+   * for a street called Bradenton and answered with "Braden Run" — a road four
+   * postcodes away that merely starts the same way.
+   *
+   * The comparison is against the WHOLE street, suffix included, and getting
+   * that wrong is easy: an earlier version compared only the name part, so
+   * "Miami St, Miami" reduced to "MIAMI" against "Miami" and a real street
+   * stopped being searchable. "MIAMI ST" does not equal "miami" and is fine.
+   *
+   * Only with no house number, since "100 Bradenton, Bradenton" says a building
+   * was meant.
+   */
+  const namesTheCityAndNothingElse =
+    number === null && tail.city !== null && fold(spellings[0] ?? '') === fold(tail.city)
+
+  const variants = namesTheCityAndNothingElse ? [] : spellings
 
   return {
     number,

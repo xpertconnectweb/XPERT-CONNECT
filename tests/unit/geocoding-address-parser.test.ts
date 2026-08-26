@@ -188,6 +188,47 @@ describe('parseUsAddress', () => {
     expect(parseUsAddress('34208, FL').number).toBeNull()
   })
 
+  /**
+   * Found by typing addresses at production. "62nd St Cir E" with no house
+   * number parsed as number 62 with the suffix "nd", leaving the street as
+   * "ST CIR E" — which matched "17th Street Cir E", a different road entirely.
+   */
+  it('does not eat an ordinal street name as a house number', () => {
+    for (const [typed, street] of [
+      ['62nd St Cir E, Bradenton, FL 34208', '62ND ST CIR E'],
+      ['1st Ave N, Saint Petersburg, FL 33701', '1ST AVE N'],
+      ['3rd St, Miami, FL', '3RD ST'],
+      ['4th Ave, Tampa, FL', '4TH AVE'],
+    ] as const) {
+      const parsed = parseUsAddress(typed)
+      expect(parsed.number, typed).toBeNull()
+      expect(parsed.street, typed).toBe(street)
+    }
+  })
+
+  it('still reads a house number in front of an ordinal street', () => {
+    const parsed = parseUsAddress('100 1st St, Miami, FL 33132')
+    expect(parsed.number).toBe(100)
+    expect(parsed.street).toBe('1ST ST')
+  })
+
+  /**
+   * `parseAddress` has nothing else to do with a single-segment head, so it puts
+   * the same word in both `street` and `city`. Searching for it returned "Braden
+   * Run", a road four postcodes from Bradenton that merely starts the same way.
+   */
+  it('declines to search for a street when the query only names a city', () => {
+    for (const typed of ['Bradenton, FL', 'Ocala, FL 34471']) {
+      expect(parseUsAddress(typed).variants, typed).toEqual([])
+    }
+  })
+
+  /** The regression that rule caused first: comparing the name without its suffix. */
+  it('still searches for a street named after its own city', () => {
+    expect(parseUsAddress('Miami St, Miami, FL').street).toBe('MIAMI ST')
+    expect(parseUsAddress('100 Bradenton, Bradenton, FL').number).toBe(100)
+  })
+
   it('emits the canonical form first and the spelled-out one after it', () => {
     const parsed = parseUsAddress('862 62nd St Cir E, Bradenton, FL 34208')
     expect(parsed.variants[0]).toBe('62ND ST CIR E')
