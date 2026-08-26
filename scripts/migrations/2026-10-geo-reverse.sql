@@ -3,11 +3,25 @@
 -- Date: 2026-10-01
 --
 -- Depends on scripts/migrations/2026-09-geo-index.sql (both parts)
--- and on the index having been loaded. Run
+-- and on the index having been loaded.
+--
+-- ⚠ THIS FILE ONLY CREATES EMPTY THINGS. Afterwards, IN THE SQL
+-- EDITOR, run:
 --
 --   select geo_rebuild_cells();
 --
--- after this file, and again after every quarterly re-ingest.
+-- and again after every quarterly re-ingest. Until that runs, the
+-- table is empty and geo_street_nearby answers nothing at all —
+-- which does not fail, it just quietly finds no streets.
+--
+-- In the SQL Editor and not over the API, deliberately: through
+-- PostgREST the call dies with
+--
+--   57014: canceling statement due to statement timeout
+--
+-- because 1.9 M intermediate rows take longer than the API's
+-- statement timeout allows. The rebuild is transactional, so a
+-- cancelled attempt leaves the table exactly as it was.
 --
 -- ── What this is for ─────────────────────────────────────────
 --
@@ -51,11 +65,23 @@
 --
 -- ── One row per cell, not per pair ───────────────────────────
 --
--- Coverage means 1,941,305 (street, cell) pairs, 3.4 per street.
--- Stored as one row each that is ~116 MB. Stored as an array per
--- cell it is 114,016 rows and ~17 MB, on a 500 MB plan already
--- near half full. Same trick as geo_street_points: pack many
--- small things into one row, because the cost is the row.
+-- Coverage means 1,941,305 (street, cell) pairs, 3.4 per street —
+-- and the widest single street covers 2,904 cells on its own,
+-- which is the box problem above stated as a number.
+--
+-- One row per pair is 1,941,305 rows. One row per cell, holding
+-- an array, is 316,011 — six times fewer, on a 500 MB plan
+-- already near half full. Same trick as geo_street_points: pack
+-- many small things into one row, because the cost is the row.
+--
+-- ⚠ An earlier version of this file said 114,016 cells and ~17 MB.
+-- That was wrong: the figure came from a different experiment and
+-- was never re-measured against the covering scheme this file
+-- actually implements. The counts below are the real ones, and
+-- they agree to the digit with cellsCovering() in
+-- src/lib/geocoding/cells.ts run over the same index — which is
+-- the check that matters, because it says the writer and the
+-- reader are on the same grid.
 --
 -- ── Why not PostGIS ──────────────────────────────────────────
 --
@@ -67,9 +93,14 @@
 --      nothing behind. Removing PostGIS with a generated column
 --      and a GiST index on top of it is not a thing to do in a
 --      hurry.
---   2. 17 MB against ~114 MB, plus a transient ~80 MB while the
---      table is rewritten, on a plan at 48% of its ceiling that
---      the application tables share.
+--   2. Size. PostGIS wants an envelope column and a GiST index on
+--      geo_street itself — a rewrite of an 80 MB table, with a
+--      transient ~80 MB while it happens, on a plan at 48% of its
+--      ceiling that the application tables share. This adds a
+--      separate 316,011-row table and touches nothing existing.
+--      (An earlier version of this line quoted "17 MB against
+--      ~114 MB". The 17 came from the wrong cell count; measure
+--      with pg_total_relation_size rather than trusting it.)
 --   3. Precedent. This project runs one extension and the
 --      migration that added it says so.
 --
@@ -121,7 +152,7 @@ as $$
 declare
   pairs bigint;
 begin
-  -- Rebuilt whole rather than reconciled. 114,016 rows rewrite
+  -- Rebuilt whole rather than reconciled. 316,011 rows rewrite
   -- more cheaply than they diff, and an incremental version is
   -- exactly the kind of bookkeeping that breaks in silence — a
   -- stale cell does not error, it answers with the wrong street.
@@ -281,15 +312,16 @@ grant execute on function geo_street_nearby(double precision, double precision, 
 --
 --   select geo_rebuild_cells();
 --
--- Expect ≈ 1,941,305 — the measured pair count. A materially
--- different number means the index changed underneath, not that
--- the function is flexible.
+-- Expect exactly 1,941,305 — not "about". That number and the
+-- cell count below are what cellsCovering() produces over the
+-- same index, so a discrepancy is not slack, it means the SQL and
+-- the TypeScript have drifted onto different grids and the
+-- reverse lookup is reading the wrong neighbourhood.
 --
 -- Then confirm the shape and the plan:
 --
---   select count(*) from geo_street_cell;               -- ≈ 114,016
+--   select count(*) from geo_street_cell;               -- 316,011
 --   select pg_size_pretty(pg_total_relation_size('geo_street_cell'));
---                                                       -- ≤ 25 MB
 --
 --   explain analyze select * from geo_street_nearby(27.491257, -82.481824);
 --   explain analyze select * from geo_street_nearby(25.774, -80.194);

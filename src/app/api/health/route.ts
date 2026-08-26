@@ -192,9 +192,9 @@ export async function GET() {
                 `scripts/migrations/2026-10-geo-reverse.sql applied? ${cells.error.message}`
             )
           }
-          // 100,000 against the 114,016 a full rebuild produces: comfortably
+          // 250,000 against the 316,011 a full rebuild produces: comfortably
           // below a complete run and far above a truncated one.
-          if (typeof cells.count !== 'number' || cells.count < 100_000) {
+          if (typeof cells.count !== 'number' || cells.count < 250_000) {
             throw new Error(
               `geo_street_cell holds ${cells.count ?? 0} cells — run select geo_rebuild_cells()`
             )

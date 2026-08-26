@@ -136,12 +136,17 @@ export const INTERPOLATION_MAX_SPAN_M = 100
  *   6 — an interpolated address is bracketed by the two doors on ITS OWN side
  *       of the street, instead of by the numeric neighbours across the road,
  *       and a bracket too wide to be placing a door now says so.
+ *   7 — reverse geocoding is answered here rather than by Geoapify. Every
+ *       stored reverse answer came from a different engine with a different
+ *       idea of what `rooftop` means, and a coordinate whose cached answer
+ *       still says `rooftop` on a 60 m guess would keep the drag-the-pin
+ *       prompt suppressed for another thirty days.
  *
  * Note the direction of travel: to undo a change, bump this AGAIN rather than
  * putting it back. Reverting the number resurrects exactly the answers the
  * revert was meant to retire.
  */
-export const GEOCODE_CACHE_REVISION = 6
+export const GEOCODE_CACHE_REVISION = 7
 
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,
