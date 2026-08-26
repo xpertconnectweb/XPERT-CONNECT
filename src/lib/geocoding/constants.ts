@@ -98,8 +98,10 @@ export const SCOPED_TRIGRAM_THRESHOLD = 0.12
  *
  *   2 — ordinals are no longer eaten as house numbers, and a query that names
  *       only a city is no longer answered with a street.
+ *   3 — an address the register says is not there no longer falls through to a
+ *       provider that will invent one.
  */
-export const GEOCODE_CACHE_REVISION = 2
+export const GEOCODE_CACHE_REVISION = 3
 
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,
