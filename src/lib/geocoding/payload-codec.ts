@@ -439,3 +439,86 @@ export function findNumber(payload: Buffer, number: number | null): NumberMatch 
   const middle = count >> 1
   return { lat: latOf(middle), lng: lngOf(middle), kind: 'street', spanM: null, sameSide: null }
 }
+
+/** The nearest recorded door to a coordinate, for reverse geocoding. */
+export interface NearestPoint {
+  number: number
+  lat: number
+  lng: number
+  /** Metres from the queried coordinate. */
+  distanceM: number
+}
+
+/**
+ * The closest address point in a street's blob to an arbitrary coordinate.
+ *
+ * The reverse of `findNumber`, and the primitive reverse geocoding is built on:
+ * given where the pin was dropped, which door is it on?
+ *
+ * -- Two passes, and why ----------------------------------------------------
+ *
+ * The scan compares SQUARED planar distance in a locally-scaled degree space,
+ * and only the winner is converted to metres. A street with four hundred doors
+ * must not pay four hundred haversines -- each is two square roots and six
+ * trigonometric calls -- to answer a question that only needs an ordering, and
+ * squared distance orders identically to distance.
+ *
+ * Planar is safe here for the same reason it is safe in the SQL: over the few
+ * hundred metres a street spans, the error against a great-circle distance is
+ * submetric, and it is used only to pick a winner. The number that leaves this
+ * function is a real haversine.
+ *
+ * The longitude scaling is not optional. At Minneapolis's latitude a degree of
+ * longitude is 0.7 of a degree of latitude, so comparing raw degree differences
+ * would treat a point 100 m east as nearer than one 80 m north.
+ *
+ * Note it reads the coordinate columns and never touches the numbers until it
+ * has a winner -- which is the columnar layout paying for itself in the other
+ * direction from `findNumber`, where the numbers are read and the coordinates
+ * are not.
+ */
+export function nearestPoint(payload: Buffer, lat: number, lng: number): NearestPoint {
+  const { count, baseLat, baseLng, numbersAt } = readHeader(payload)
+
+  // Skip the number column to reach the coordinates. Variable-width deltas, so
+  // there is no arithmetic shortcut -- but this reads no numbers, it only walks
+  // past them.
+  let at = numbersAt
+  for (let i = 0; i < count; i++) at = readVarint(payload, at)[1]
+
+  const latAt = at
+  const lngAt = at + count * 2
+  const lngScale = Math.cos((lat * Math.PI) / 180)
+
+  let bestAt = 0
+  let best = Infinity
+
+  for (let i = 0; i < count; i++) {
+    const dLat = baseLat + payload.readUInt16LE(latAt + i * 2) / OFFSET_SCALE - lat
+    const dLng = (baseLng + payload.readUInt16LE(lngAt + i * 2) / OFFSET_SCALE - lng) * lngScale
+    const d2 = dLat * dLat + dLng * dLng
+    if (d2 < best) {
+      best = d2
+      bestAt = i
+    }
+  }
+
+  // Only now is the number column worth reading, and only up to the winner.
+  let number = 0
+  let numberAt = numbersAt
+  for (let i = 0; i <= bestAt; i++) {
+    const read = readVarint(payload, numberAt)
+    number += read[0]
+    numberAt = read[1]
+  }
+
+  const bestLat = baseLat + payload.readUInt16LE(latAt + bestAt * 2) / OFFSET_SCALE
+  const bestLng = baseLng + payload.readUInt16LE(lngAt + bestAt * 2) / OFFSET_SCALE
+
+  return {
+    number,
+    lat: bestLat,
+    lng: bestLng,
+    distanceM: metresBetween(lat, lng, bestLat, bestLng),
+  }
+}

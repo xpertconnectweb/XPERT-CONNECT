@@ -19,6 +19,7 @@ import { createReadStream } from 'node:fs'
 import { createInterface } from 'node:readline'
 import type { StreetRow } from '../../../src/lib/geocoding/street-index'
 import { SCOPED_TRIGRAM_THRESHOLD, TRIGRAM_THRESHOLD } from '../../../src/lib/geocoding/constants'
+import { boxDistanceSq, cellRange, cellsCovering } from '../../../src/lib/geocoding/cells'
 import type { LoadableStreet } from '../build-index'
 
 const MERGED = 'data/geo/index/merged.ndjson'
@@ -35,6 +36,18 @@ function trigramsOf(value: string): string[] {
     out.push(gram)
   }
   return out
+}
+
+
+/**
+ * One integer per cell, so the map keys on a number instead of a string.
+ *
+ * 1.9 million (street, cell) pairs go into this map. String keys would cost
+ * more in headers than the posting lists hold in data -- the same reasoning
+ * that made the rest of this class columnar.
+ */
+function packCell(lat: number, lng: number): number {
+  return lat * 100_000 + lng
 }
 
 export interface LocalHit extends StreetRow {
@@ -56,6 +69,14 @@ export class LocalIndex {
   private readonly lngMax: number[] = []
   private readonly pointCount: number[] = []
   private readonly payloads: Buffer[] = []
+
+  /**
+   * packed cell key -> the rows whose bounding box touches that cell.
+   *
+   * The in-memory twin of `geo_street_cell`. Coverage, not centroids: see
+   * `src/lib/geocoding/cells.ts` for the measurement that ruled centroids out.
+   */
+  private readonly cells = new Map<number, number[]>()
 
   /** trigram -> the rows containing it. */
   private readonly postings = new Map<string, number[]>()
@@ -106,6 +127,14 @@ export class LocalIndex {
       const list = this.postings.get(grams[i])
       if (list) list.push(at)
       else this.postings.set(grams[i], [at])
+    }
+
+    const covering = cellsCovering(row.y0, row.y1, row.x0, row.x1)
+    for (let i = 0; i < covering.length; i++) {
+      const key = packCell(covering[i].lat, covering[i].lng)
+      const list = this.cells.get(key)
+      if (list) list.push(at)
+      else this.cells.set(key, [at])
     }
   }
 
@@ -205,6 +234,71 @@ export class LocalIndex {
       score,
       payload: this.payloads[at],
     }
+  }
+
+  /**
+   * The streets nearest a coordinate, for reverse geocoding.
+   *
+   * The twin of `geo_street_nearby`, and it has to stay a faithful one: this is
+   * what `gate-reverse.ts` measures the thresholds on, and a threshold measured
+   * against a different candidate set than production produces is a threshold
+   * measured against nothing.
+   *
+   * Reads the cell neighbourhood, orders by planar distance to each street's
+   * BOX -- not its centroid, see `cells.ts` -- and cuts. The metres a caller
+   * ends up seeing are recomputed by `nearestPoint` on the winning blob; this
+   * distance only ever orders.
+   */
+  nearby(lat: number, lng: number, radiusDeg: number, limit = 12): LocalHit[] {
+    const range = cellRange(lat, lng, radiusDeg)
+
+    // A street whose box spans several cells appears in each of them, so the
+    // same row arrives more than once and has to be collapsed before scoring.
+    const seen = new Set<number>()
+    const scored: Array<{ at: number; d2: number; area: number }> = []
+
+    for (let cLat = range.latMin; cLat <= range.latMax; cLat++) {
+      for (let cLng = range.lngMin; cLng <= range.lngMax; cLng++) {
+        const list = this.cells.get(packCell(cLat, cLng))
+        if (!list) continue
+        for (let i = 0; i < list.length; i++) {
+          const at = list[i]
+          if (seen.has(at)) continue
+          seen.add(at)
+          scored.push({
+            at,
+            d2: boxDistanceSq(
+              lat,
+              lng,
+              this.latMin[at],
+              this.latMax[at],
+              this.lngMin[at],
+              this.lngMax[at]
+            ),
+            area:
+              (this.latMax[at] - this.latMin[at]) * (this.lngMax[at] - this.lngMin[at]),
+          })
+        }
+      }
+    }
+
+    // Distance first, then the SMALLER box.
+    //
+    // The tie-break is not cosmetic. Downtown, dozens of street boxes contain
+    // the same point, so dozens score zero and the order among them decides
+    // what survives the cut -- and `gate-reverse.ts` caught the consequence: at
+    // a displacement of two metres from a known door, one lookup in a hundred
+    // did not return the street that door is on at all, because twelve other
+    // boxes containing the point sorted ahead of it. The p99 distance to the
+    // named door was 1,341 m for a query two metres from an address.
+    //
+    // Area breaks it the right way. A box that contains the point and is a
+    // block across is far likelier to be the street you are standing on than
+    // one that contains it and spans the county -- and those county-wide boxes
+    // are exactly the 1% with no city and no postcode that made coverage
+    // indexing necessary in the first place.
+    scored.sort((a, b) => a.d2 - b.d2 || a.area - b.area)
+    return scored.slice(0, limit).map((s) => this.rowAt(s.at, 0))
   }
 
   /** Whether any street is held in this place. Mirrors the Supabase store. */

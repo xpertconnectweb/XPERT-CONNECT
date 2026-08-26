@@ -198,3 +198,89 @@ export const ATTRIBUTION: Partial<Record<GeocodeProviderId, string>> = {
   // Attribution is the one obligation that survives dropping the provider.
   selfhosted: 'Datos de los registros oficiales de direcciones de los condados (OpenAddresses)',
 }
+
+/**
+ * The side of one cell in the reverse-geocoding index, in degrees.
+ *
+ * 0.01 degrees is about 1.1 km of latitude and 0.9 km of longitude in Florida.
+ *
+ * The number appears in three places -- `geo_rebuild_cells`, `geo_street_nearby`
+ * and the TypeScript that works out which cell a query falls in -- and the three
+ * MUST agree or the lookup silently reads the wrong neighbourhood and answers
+ * with whatever street happens to be there. That is the same hazard that put
+ * `SCOPED_TRIGRAM_THRESHOLD` in this file, so it lives here too, with a test
+ * pinning the value: changing it is a deliberate act with a migration attached,
+ * not an edit.
+ *
+ * Sized against a measurement, not a guess. A street row is a BOX, not a point,
+ * and the widest one percent of them are 8-11 km across -- the streets whose
+ * source published neither city nor postcode. Indexing each street by every
+ * cell its box touches, and reading the 3x3 neighbourhood of the query, found
+ * the truly nearest street in 60 of 60 sampled cases against a brute-force scan
+ * of all 567,767 rows. Indexing by the box's CENTROID instead, which is cheaper
+ * and was the obvious first design, found it in 46 of 60.
+ */
+export const REVERSE_CELL_DEGREES = 0.01
+
+/**
+ * What a reverse geocode may claim, by how far the nearest recorded door is.
+ *
+ * All three are measured by `scripts/geo/gate-reverse.ts`, which takes a door
+ * the county recorded, moves it N metres, asks the engine what is there, and
+ * checks the answer against where it started. 8,000 probes, 13 displacements,
+ * 104,000 lookups, stratified into terciles by how many doors lie within 100 m
+ * -- because density, not the county line, is what drives the answer: a bar
+ * that holds on a Minneapolis block where doors are 10 m apart is a fantasy on
+ * a county road where they are 400 m apart, and both exist inside one county.
+ *
+ * How far the named door strays from the true one, p95:
+ *
+ *   from      sparse   middling    dense
+ *    5 m        1 m       1 m       5 m
+ *   10 m        1 m      11 m      17 m
+ *   25 m       36 m      44 m      44 m
+ *   40 m       64 m      66 m      61 m
+ */
+
+/**
+ * Within this, the pin is on the building the register names, and the answer
+ * may claim `rooftop`.
+ *
+ * The criterion is NOT "names the exact door". That looked right and broke on
+ * the data: even a two-metre displacement recovers the exact door only 97% of
+ * the time, because the registers publish co-located records -- the two halves
+ * of a duplex, a parcel exported twice -- a metre or so apart. Losing that coin
+ * toss is not an error a user could observe, and scoring it as one would set
+ * this threshold to zero. The bar is that the named door is within 10 m of the
+ * true one: the right building, or the one next to it.
+ */
+export const REVERSE_ROOFTOP_M = 5
+
+/**
+ * Past this the house number comes off the label and only the street is
+ * claimed.
+ *
+ * 25 m is the widest displacement whose named door still lands inside the 50 m
+ * this project already calls "the right building" -- in every stratum, not on
+ * average.
+ *
+ * The rule this enforces is that the LABEL AND THE PRECISION MUST AGREE.
+ * Answering "you are at 862" when the nearest recorded door is 120 m away is
+ * exactly the confident, wrong answer this engine exists to stop producing --
+ * and it is what the measurement says happens: past 25 m the p95 stray is 60 m
+ * and climbing.
+ */
+export const REVERSE_NUMBER_M = 25
+
+/**
+ * Past this, the index has no register here and the answer is `null` -- which
+ * sends the question down the chain to Geoapify rather than guessing.
+ *
+ * Not a precision threshold but a coverage one. Measured from points a
+ * kilometre off a known address, the nearest recorded door is 72 m away at the
+ * median and 971 m at the 99th percentile. So a kilometre answers essentially
+ * every drag near a real address, and declines in the places where the register
+ * genuinely holds nothing -- open water, farmland, and the counties that
+ * publish no register at all.
+ */
+export const REVERSE_COVERAGE_M = 1000

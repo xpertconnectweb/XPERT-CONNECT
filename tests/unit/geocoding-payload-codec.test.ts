@@ -4,6 +4,7 @@ import {
   decodePoints,
   countPoints,
   findNumber,
+  nearestPoint,
   PayloadSpanError,
   PAYLOAD_VERSION,
   type StreetPoint,
@@ -252,5 +253,97 @@ describe('findNumber', () => {
     expect(findNumber(rural, 25503).kind).toBe('exact')
     expect(findNumber(rural, 25503).lat).toBeCloseTo(27.1, 4)
     expect(findNumber(rural, 148000).lat).toBeCloseTo(27.2, 4)
+  })
+})
+
+/**
+ * The other direction: given where the pin was dropped, which door is it?
+ *
+ * This is what lets reverse geocoding stop leaving the building. Today dragging
+ * the pin over a personal-injury client's home sends those exact coordinates to
+ * a third party, which is the one privacy hole the self-hosted engine was
+ * supposed to close and has not yet.
+ */
+describe('nearestPoint', () => {
+  const street = encodePoints([
+    { number: 800, lat: 27.49, lng: -82.48 },
+    { number: 802, lat: 27.491, lng: -82.4805 },
+    { number: 804, lat: 27.492, lng: -82.481 },
+    { number: 806, lat: 27.493, lng: -82.4815 },
+  ])
+
+  it('finds the door a coordinate is standing on', () => {
+    const hit = nearestPoint(street, 27.492, -82.481)
+    expect(hit.number).toBe(804)
+    expect(hit.distanceM).toBeLessThan(2)
+  })
+
+  it('finds the nearest door when the coordinate is between two', () => {
+    // Nudged towards 806.
+    const hit = nearestPoint(street, 27.4928, -82.4814)
+    expect(hit.number).toBe(806)
+  })
+
+  it('reports the distance in metres, not the degrees it compared', () => {
+    // A tenth of a degree of latitude is about eleven kilometres.
+    const far = nearestPoint(street, 27.59, -82.48)
+    expect(far.distanceM).toBeGreaterThan(10_000)
+    expect(far.distanceM).toBeLessThan(12_000)
+  })
+
+  it('returns the register coordinate, not the queried one', () => {
+    const hit = nearestPoint(street, 27.4915, -82.4802)
+    expect(hit.lat).toBeCloseTo(27.491, 4)
+    expect(hit.lng).toBeCloseTo(-82.4805, 4)
+  })
+
+  it('handles a street of one', () => {
+    const one = encodePoints([{ number: 862, lat: 27.491257, lng: -82.481824 }])
+    const hit = nearestPoint(one, 27.4, -82.4)
+    expect(hit.number).toBe(862)
+  })
+
+  /**
+   * The scan compares squared distance in degree space, so longitude has to be
+   * scaled by cos(latitude) or the ordering is wrong. At Minneapolis a degree
+   * of longitude is 0.7 of a degree of latitude: without the scaling, a door
+   * 100 m east reads as nearer than one 80 m north.
+   */
+  it('does not mistake a degree of longitude for a degree of latitude', () => {
+    const north = { number: 1, lat: 44.9786, lng: -93.265 }
+    const east = { number: 3, lat: 44.9778, lng: -93.2637 }
+    const hit = nearestPoint(encodePoints([north, east]), 44.9778, -93.265)
+
+    // 89 m north against 103 m east once the cosine is applied. Comparing raw
+    // degrees would answer 3, because 0.0013 degrees of longitude looks smaller
+    // than 0.0008 of latitude only after scaling -- and larger before it.
+    expect(hit.number).toBe(1)
+    expect(hit.distanceM).toBeCloseTo(89, -1)
+  })
+
+  it('agrees with a brute-force scan over a long street', () => {
+    const long = Array.from({ length: 400 }, (_, i) => ({
+      number: 100 + i * 2,
+      lat: 27.49 + Math.sin(i / 9) * 0.002 + i * 0.000004,
+      lng: -82.48 + Math.cos(i / 7) * 0.002,
+    }))
+    const payload = encodePoints(long)
+
+    for (const probe of [
+      { lat: 27.4905, lng: -82.4795 },
+      { lat: 27.4915, lng: -82.4822 },
+      { lat: 27.4885, lng: -82.4788 },
+    ]) {
+      const hit = nearestPoint(payload, probe.lat, probe.lng)
+      const brute = long
+        .map((p) => ({
+          number: p.number,
+          d:
+            (p.lat - probe.lat) ** 2 +
+            ((p.lng - probe.lng) * Math.cos((probe.lat * Math.PI) / 180)) ** 2,
+        }))
+        .sort((a, b) => a.d - b.d)[0]
+      expect(hit.number).toBe(brute.number)
+    }
   })
 })
