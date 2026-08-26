@@ -375,8 +375,18 @@ export function precisionOf(match: NumberMatch, agreement = 1): GeocodePrecision
  */
 export interface StreetStore {
   search(query: string, options: StreetSearchOptions): Promise<StreetRow[]>
-  /** The packed points for one street, or null if the row has none. */
-  payload(streetId: number): Promise<Buffer | null>
+  /**
+   * The packed points for several streets at once.
+   *
+   * Plural because it has to be. Measured against the live database, fetching
+   * eight blobs in one request took 226 ms and fetching one took 218 -- the
+   * cost is the round trip and almost nothing else. Resolving a house number
+   * for each of eight suggestions one at a time therefore paid the round trip
+   * eight times to move the same bytes.
+   *
+   * Streets with no stored blob are simply absent from the result.
+   */
+  payloads(streetIds: readonly number[]): Promise<Map<number, Buffer>>
 }
 
 export interface StreetSearchOptions {
@@ -401,24 +411,27 @@ export const supabaseStreetStore: StreetStore = {
   },
 
   /**
-   * A primary-key read of a few hundred bytes, once, after the user has
-   * chosen. Autocomplete never comes here -- that is the entire reason the
-   * points live in their own table.
+   * A primary-key read of a few hundred bytes per street, in one request.
    *
    * PostgREST returns bytea as Postgres' hex format: a backslash, an x, then
    * the bytes. `scripts/geo/load-index.ts` verifies that round trip against
    * the first row it writes, before writing the other 567,000.
    */
-  async payload(streetId) {
+  async payloads(streetIds) {
+    const out = new Map<number, Buffer>()
+    if (streetIds.length === 0) return out
+
     const { data, error } = await supabaseAdmin
       .from('geo_street_points')
-      .select('payload')
-      .eq('street_id', streetId)
-      .single()
+      .select('street_id, payload')
+      .in('street_id', streetIds as number[])
 
-    if (error || !data) return null
-    const raw = String((data as { payload: string }).payload)
-    return Buffer.from(raw.replace(/^\\x/, ''), 'hex')
+    if (error || !data) return out
+
+    for (const row of data as Array<{ street_id: number; payload: string }>) {
+      out.set(row.street_id, Buffer.from(String(row.payload).replace(/^\\x/, ''), 'hex'))
+    }
+    return out
   },
 }
 
@@ -439,12 +452,19 @@ export async function searchStreets(
   })
 }
 
-/** Resolves a house number against a street, reading exactly one blob. */
-export async function resolveNumber(
+/**
+ * Resolves one house number against each of several streets, in one round trip.
+ *
+ * Returns a map rather than an array so a street whose blob is missing is
+ * absent rather than silently shifting the others along.
+ */
+export async function resolveNumbers(
   store: StreetStore,
-  streetId: number,
+  streetIds: readonly number[],
   number: number | null
-): Promise<NumberMatch | null> {
-  const payload = await store.payload(streetId)
-  return payload ? findNumber(payload, number) : null
+): Promise<Map<number, NumberMatch>> {
+  const payloads = await store.payloads(streetIds)
+  const out = new Map<number, NumberMatch>()
+  payloads.forEach((payload, id) => out.set(id, findNumber(payload, number)))
+  return out
 }

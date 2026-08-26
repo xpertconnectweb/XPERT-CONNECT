@@ -49,7 +49,7 @@ import { MIN_GEOCODE_QUERY } from './constants'
 import {
   precisionOf,
   rankStreets,
-  resolveNumber,
+  resolveNumbers,
   searchStreets,
   streetCentre,
   supabaseStreetStore,
@@ -183,21 +183,24 @@ export function createSelfHostedProvider(store: StreetStore): GeocodeProvider {
         limit: ctx.limit,
       })
 
-      const suggestions = await Promise.all(
-        ranked.map(async (street) => {
-          const match = await resolveNumber(store, street.id, parsed.number)
-          // A street whose blob is missing is a load that did not finish. Show
-          // the street rather than nothing: the centre of its bounding box is
-          // honest at `street` precision, and the pin can be dragged.
-          if (!match) return toSuggestion(street, parsed, streetCentre(street), 'street')
-          return toSuggestion(
-            street,
-            parsed,
-            { lat: match.lat, lng: match.lng },
-            precisionOf(match, street.agreement)
-          )
-        })
-      )
+      // One request for every blob, not one per suggestion. Measured against
+      // the live database, eight in a single query cost 226 ms and one cost
+      // 218 -- the round trip is the whole price.
+      const matches = await resolveNumbers(store, ranked.map((s) => s.id), parsed.number)
+
+      const suggestions = ranked.map((street) => {
+        const match = matches.get(street.id)
+        // A street whose blob is missing is a load that did not finish. Show
+        // the street rather than nothing: the centre of its bounding box is
+        // honest at `street` precision, and the pin can be dragged.
+        if (!match) return toSuggestion(street, parsed, streetCentre(street), 'street')
+        return toSuggestion(
+          street,
+          parsed,
+          { lat: match.lat, lng: match.lng },
+          precisionOf(match, street.agreement)
+        )
+      })
 
       return { ok: true, value: suggestions }
     },
@@ -214,7 +217,7 @@ export function createSelfHostedProvider(store: StreetStore): GeocodeProvider {
 
       let match
       try {
-        match = await resolveNumber(store, parsedId.streetId, parsedId.number)
+        match = (await resolveNumbers(store, [parsedId.streetId], parsedId.number)).get(parsedId.streetId) ?? null
       } catch {
         return { ok: false, kind: 'upstream' }
       }

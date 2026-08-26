@@ -23,8 +23,13 @@ export function localStreetStore(index: LocalIndex): StreetStore {
       })
     },
 
-    async payload(streetId) {
-      return index.payloadOf(streetId)
+    async payloads(streetIds) {
+      const out = new Map<number, Buffer>()
+      for (const id of streetIds) {
+        const payload = index.payloadOf(id)
+        if (payload) out.set(id, payload)
+      }
+      return out
     },
   }
 }
