@@ -132,7 +132,28 @@ export function locationAgreement(
 
   if (askedZip && row.zip) {
     if (row.zip === askedZip) return 1
-    if (row.zip.slice(0, 3) === askedZip.slice(0, 3)) return 0.7
+    if (row.zip.slice(0, 3) === askedZip.slice(0, 3)) {
+      /**
+       * The sectional centre rescues a postcode one boundary out, and in that
+       * case the city almost always still matches. When the city contradicts
+       * as well, the two disagreements are not independent noise -- together
+       * they are evidence that this is somewhere else, and the three-digit
+       * match is just saying "same corner of the state".
+       *
+       * This was found by re-geocoding the platform's own records. Asked for
+       * "411 West Main Street, Kasson, MN 55944" the engine answered "411 Main
+       * Street West, Wabasha, MN 55981" and called it `rooftop` -- 69.6 km
+       * away, and written into a clinic record before anyone looked. Both are
+       * 559xx, so the branch above scored 0.7, cleared CONFIDENT_LOCATION, and
+       * the contradicting city was never consulted.
+       *
+       * 0.45 keeps the candidate -- it is still the best guess if nothing else
+       * matches, and MIN_LOCATION_AGREEMENT is 0.25 -- while capping it at
+       * `street`, so the UI asks for the pin instead of claiming a building.
+       */
+      if (askedCity && row.city && fold(row.city) !== askedCity) return 0.45
+      return 0.7
+    }
   }
 
   if (askedCity && row.city && fold(row.city) === askedCity) return 0.85

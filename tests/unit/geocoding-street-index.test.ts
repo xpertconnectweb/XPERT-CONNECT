@@ -87,6 +87,34 @@ describe('locationAgreement', () => {
     expect(locationAgreement(asked, { zip: '34209', city: '' })).toBeCloseTo(0.7)
   })
 
+  /**
+   * The Kasson case, found by re-geocoding the platform's own records rather
+   * than by reading the code.
+   *
+   * Asked for "411 West Main Street, Kasson, MN 55944", the engine answered
+   * "411 Main Street West, Wabasha, MN 55981" and called it `rooftop`. Both
+   * postcodes are 559xx, so the sectional-centre branch scored 0.7, cleared
+   * CONFIDENT_LOCATION, and the contradicting city was never looked at. The
+   * wrong coordinate went into a clinic record 69.6 km from the clinic.
+   *
+   * A three-digit postcode says "same corner of the state". It must not
+   * outrank a city that says otherwise.
+   */
+  it('will not let a sectional centre outvote a city that disagrees', () => {
+    const kasson = { zip: '55944', city: 'Kasson' }
+    const wabasha = locationAgreement(kasson, { zip: '55981', city: 'Wabasha' })
+
+    // Still a candidate -- it may be the only thing resembling the address.
+    expect(wabasha).toBeGreaterThan(0.25)
+    // But it cannot claim rooftop: CONFIDENT_LOCATION is 0.6.
+    expect(wabasha).toBeLessThan(0.6)
+  })
+
+  it('still rescues the neighbouring postcode when the city agrees', () => {
+    // The case the sectional-centre rule exists for, and it must keep working.
+    expect(locationAgreement(asked, { zip: '34209', city: 'Bradenton' })).toBeCloseTo(0.7)
+  })
+
   it('accepts the city when the postcode is absent', () => {
     expect(locationAgreement(asked, { zip: '', city: 'Bradenton' })).toBeCloseTo(0.85)
   })
@@ -141,6 +169,29 @@ describe('rankStreets', () => {
     const parsed = parseUsAddress('100 Main St, Bradenton, FL 34208')
     const ranked = rankStreets(parsed, [street({ zip: '34209', city: 'Palmetto' })])
     expect(ranked).toHaveLength(1)
+  })
+
+  /**
+   * Keeping it is right. Calling it the building is not, and this assertion
+   * used to say 0.7 -- enough to clear CONFIDENT_LOCATION and claim `rooftop`.
+   *
+   * Bradenton 34208 and Palmetto 34209 are adjacent towns across the Manatee
+   * River. A Main St in one is not the Main St in the other, and the same rule
+   * put a clinic 69.6 km from itself when the towns were Kasson and Wabasha.
+   * The candidate survives, because it may be the closest thing to the address
+   * that exists; the claim does not, so the UI asks for the pin.
+   */
+  it('will not call it the building when the city disagrees too', () => {
+    const parsed = parseUsAddress('100 Main St, Bradenton, FL 34208')
+    const ranked = rankStreets(parsed, [street({ zip: '34209', city: 'Palmetto' })])
+    expect(ranked[0].agreement).toBeLessThan(0.6)
+    expect(precisionOf({ lat: 0, lng: 0, kind: 'exact', spanM: null, sameSide: null }, ranked[0].agreement))
+      .toBe('street')
+  })
+
+  it('still rescues the postcode one boundary out when the city agrees', () => {
+    const parsed = parseUsAddress('100 Main St, Bradenton, FL 34208')
+    const ranked = rankStreets(parsed, [street({ zip: '34209', city: 'Bradenton' })])
     expect(ranked[0].agreement).toBeCloseTo(0.7)
   })
 
