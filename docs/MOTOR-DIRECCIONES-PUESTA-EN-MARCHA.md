@@ -165,7 +165,24 @@ En Vercel, **Settings → Environment Variables**:
 GEOCODER_PROVIDER = selfhosted
 ```
 
-Y redespliega. No hay clave de API que poner: ese es el objetivo.
+Y redespliega. No hay clave de API que poner para el motor propio: ese es el
+objetivo.
+
+Junto a ella va una segunda, y no es opcional:
+
+```
+GEOCODER_FALLBACK = geoapify
+```
+
+`getFallbackProvider()` usa **`nominatim` por defecto**, y esa es la cobertura
+que provocó el problema original. El motor propio devuelve vacío para todo lo
+que no sea una dirección postal de Florida o Minnesota — otro estado, un negocio
+por su nombre, y **toda** la geocodificación inversa, que no implementa. Todo eso
+cae por la red, así que la red tiene que ser la buena. `GEOAPIFY_API_KEY` debe
+seguir configurada.
+
+Verificado en producción: `1200 Market St, Philadelphia, PA` resuelve a nivel de
+tejado vía `geoapify`, y `862 62nd St Cir E, Bradenton` vía `selfhosted`.
 
 Comprueba `/api/health`. El chequeo `env_geocoder` ahora cuenta las filas de
 `geo_street` y falla si son menos de 500.000 — un despliegue apuntando a una base
