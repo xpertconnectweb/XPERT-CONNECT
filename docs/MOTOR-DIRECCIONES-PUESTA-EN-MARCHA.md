@@ -35,7 +35,7 @@ Hay que decir la letra pequeña: ese corpus sale de los mismos registros con los
 que se construyó el índice, así que demuestra que el motor **devuelve fielmente
 lo que el condado dice**, no que el condado acierte. La prueba independiente son
 las 876 fichas reales de la plataforma, tecleadas por personas y resueltas con
-otro proveedor: **97,4 % de cobertura**.
+otro proveedor: **97,5 % de cobertura**.
 
 Y el hallazgo que motivó buena parte de esto: **Geoapify etiqueta el 100 % de
 sus resultados como «tejado», pero solo el 71 % cae dentro de 50 m.** Como
@@ -111,6 +111,14 @@ De nuevo en el SQL Editor:
 1. La **PARTE 2** de `scripts/migrations/2026-09-geo-index.sql` (índices +
    `analyze`). Tarda varios minutos.
 2. `scripts/migrations/2026-09-geo-search.sql` (la función `geo_street_search`).
+
+> Una versión anterior de esa función bajaba el umbral de trigramas con una
+> cláusula `SET`, y Supabase la rechaza: `ERROR: 42501: permission denied to set
+> parameter "pg_trgm.similarity_threshold"` — el rol `postgres` de Supabase no es
+> superusuario. Ya no lo hace: el umbral se queda en el 0,3 por defecto y la
+> generosidad se compra donde sale barata, dentro del código postal o la ciudad
+> que traiga la consulta. Salió **mejor**: la cobertura sobre tus 876 fichas pasó
+> de 97,4 % a 97,5 %.
 
 ---
 
@@ -193,7 +201,7 @@ escrito y no uno recordado.
   implementada en el motor propio: hace falta un índice espacial que hoy no
   existe. Devuelve vacío y la cadena cae en Geoapify, que es quien lo hace hoy.
   El comportamiento visible no cambia.
-- **23 de las 876 fichas** no las encuentra. Casi todas son fichas sin dirección
+- **22 de las 876 fichas** no las encuentra. Casi todas son fichas sin dirección
   de calle — solo ciudad y código postal — o texto libre como
   `Janet Ct / Spring Hill area (consultar ubicación exacta por llamada)`.
 - **Al menos una ficha tiene la coordenada mal guardada**: `c-516`, Gundersen

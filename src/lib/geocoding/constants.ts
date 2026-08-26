@@ -41,6 +41,44 @@ export const MEMORY_CACHE_MAX_ENTRIES = 500
  *    licence ceiling but a freshness one — addresses change, and a cache older
  *    than a month stops being an optimisation and starts being stale data.
  */
+/**
+ * How similar a stored street name must be to the query for the trigram index
+ * to offer it as a candidate.
+ *
+ * pg_trgm's own default, and deliberately not lowered. Overriding it means
+ * either `set_limit()`, which changes the setting for the whole session and
+ * would leak across a connection pooler, or a `SET` clause on the search
+ * function -- which Supabase refuses outright:
+ *
+ *   ERROR: 42501: permission denied to set parameter
+ *          "pg_trgm.similarity_threshold"
+ *
+ * So the generosity that a lower threshold would buy is bought a different
+ * way, in `geo_street_search`: a query carrying a postcode also matches
+ * anything in that postcode down to a far lower bar, because a postcode holds
+ * a few hundred streets and can be scanned outright.
+ *
+ * Declared here so the in-memory index the benchmarks run against uses the
+ * same number as the database. A benchmark measuring a different threshold
+ * than production measures nothing.
+ */
+export const TRIGRAM_THRESHOLD = 0.3
+
+/**
+ * The same bar, for candidates inside the postcode or city the query named.
+ *
+ * Far lower, and affordable because it is scoped: a postcode holds a few
+ * hundred streets and even a large city holds a few thousand, so the btree on
+ * (state, zip) narrows the set before similarity is computed at all. Outside
+ * that anchor the same generosity would mean scanning 567,000 rows.
+ *
+ * This is what buys back what the fixed 0.3 threshold costs. Measured on the
+ * platform's own 876 addresses, dropping from 0.24 to 0.3 lost four of them;
+ * the scoped branch recovers them, and it is a better rule anyway -- a query
+ * that tells you where to look has earned a closer look.
+ */
+export const SCOPED_TRIGRAM_THRESHOLD = 0.12
+
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,
   geoapify: 30 * 24 * 60 * 60 * 1000,

@@ -18,6 +18,7 @@
 import { createReadStream } from 'node:fs'
 import { createInterface } from 'node:readline'
 import type { StreetRow } from '../../../src/lib/geocoding/street-index'
+import { SCOPED_TRIGRAM_THRESHOLD, TRIGRAM_THRESHOLD } from '../../../src/lib/geocoding/constants'
 import type { LoadableStreet } from '../build-index'
 
 const MERGED = 'data/geo/index/merged.ndjson'
@@ -128,7 +129,11 @@ export class LocalIndex {
     options: { state?: string | null; zip?: string | null; city?: string | null; limit?: number; threshold?: number } = {}
   ): LocalHit[] {
     const limit = options.limit ?? 50
-    const threshold = options.threshold ?? 0.24
+    // Both bars come from the shared constants and nothing overrides them.
+    // An env var here would let a benchmark report a number production
+    // cannot reproduce, which is worse than having no benchmark.
+    const threshold = options.threshold ?? TRIGRAM_THRESHOLD
+    const scopedThreshold = Math.min(SCOPED_TRIGRAM_THRESHOLD, threshold)
     const wantState = options.state ?? null
     const wantZip = options.zip ?? null
     const wantCity = options.city ? options.city.toUpperCase() : null
@@ -159,11 +164,18 @@ export class LocalIndex {
       const shared = this.shared[at]
       const union = grams.length + this.gramCount[at] - shared
       const score = union === 0 ? 0 : shared / union
-      if (score < threshold) continue
+
+      const inZip = Boolean(wantZip && this.zip[at] === wantZip)
+      const inCity = Boolean(wantCity && this.city[at].toUpperCase() === wantCity)
+      // Mirrors the OR branch in geo_street_search: a candidate inside the
+      // postcode or city the query named is held to a far lower bar, because
+      // the anchor narrows the set enough to afford it.
+      const bar = inZip || inCity ? scopedThreshold : threshold
+      if (score < bar) continue
 
       let ordered = score
-      if (wantZip && this.zip[at] === wantZip) ordered += 0.15
-      if (wantCity && this.city[at].toUpperCase() === wantCity) ordered += 0.1
+      if (inZip) ordered += 0.15
+      if (inCity) ordered += 0.1
 
       scored.push({ at, score, ordered })
     }
