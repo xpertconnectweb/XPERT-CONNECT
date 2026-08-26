@@ -89,3 +89,7 @@ data/backups/
 # The HTML is the source; a 955 KB binary regenerated on every edit does not
 # belong in history.
 docs/*.pdf
+
+# Bulk geocoding data: hundreds of MB of county address points,
+# downloaded by scripts/geo/fetch-*.ts. Regenerable, never committed.
+data/geo/

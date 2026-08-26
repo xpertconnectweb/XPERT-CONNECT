@@ -1,0 +1,15 @@
+{
+  "geoapify": {
+    "provider": "geoapify",
+    "cases": 201,
+    "hitRate": 1,
+    "within50m": 0.7114427860696517,
+    "within200m": 0.8955223880597015,
+    "medianErrorM": 23.789766415885328,
+    "p95ErrorM": 780.8571812123452,
+    "exactRate": 1,
+    "p50Ms": 699,
+    "p95Ms": 1272,
+    "corpusSize": 201
+  }
+}
