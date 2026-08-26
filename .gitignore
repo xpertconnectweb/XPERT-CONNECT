@@ -85,9 +85,8 @@ data/abogados-lista-completa.csv
 # pnpm-lock.yaml
 data/backups/
 
-# Generated from docs/informe-buscador-direcciones.html by `npm run report:pdf`.
-# The HTML is the source; a 955 KB binary regenerated on every edit does not
-# belong in history.
+# Built by `npm run report:pdf <informe.html>`. The HTML is the source; a
+# ~1 MB binary regenerated on every edit does not belong in history.
 docs/*.pdf
 
 # Bulk geocoding data: hundreds of MB of county address points,

@@ -1,5 +1,18 @@
 /**
- * Renders `docs/informe-buscador-direcciones.html` to a real PDF.
+ * Renders an HTML report to a real PDF, beside it.
+ *
+ *   npm run report:pdf docs/mi-informe.html
+ *   node scripts/build-report-pdf.mjs docs/mi-informe.html
+ *
+ * The path is REQUIRED. It used to default to
+ * `docs/informe-buscador-direcciones.html`, which was deleted: the deliverable
+ * for these reports is the PDF, and that file was only ever the print template
+ * behind one of them. A default pointing at a file that no longer exists would
+ * turn a forgotten argument into a confusing "Not found".
+ *
+ * The HTML is a source, not an output. Write it self-contained — its own
+ * `@page` rules, its own page-break hints, no external assets — so it prints
+ * identically wherever it is opened.
  *
  * Uses the Chromium that Playwright already manages, so there is no new
  * dependency — but the browser binary is downloaded separately from the npm
@@ -9,18 +22,19 @@
  *   npx playwright install chromium
  *
  * There is also a zero-dependency route that needs none of this: open the HTML
- * file in any browser and print to PDF. The page carries its own `@page` rules
- * and page-break hints, so the output is the same.
- *
- *   npm run report:pdf
- *   node scripts/build-report-pdf.mjs docs/otro-informe.html
+ * in any browser and print to PDF. Same output, given the rules above.
  */
 import { chromium } from 'playwright-core'
 import { pathToFileURL } from 'node:url'
 import { resolve, dirname, basename, join } from 'node:path'
 import { existsSync } from 'node:fs'
 
-const input = resolve(process.argv[2] ?? 'docs/informe-buscador-direcciones.html')
+if (!process.argv[2]) {
+  console.error('Usage: npm run report:pdf <ruta/al/informe.html>')
+  process.exit(1)
+}
+
+const input = resolve(process.argv[2])
 
 if (!existsSync(input)) {
   console.error(`Not found: ${input}`)
