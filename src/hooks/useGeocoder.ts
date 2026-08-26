@@ -77,11 +77,13 @@ function buildUrl(
   query: string,
   limit: number,
   prox: string | null,
-  sid: string | null
+  sid: string | null,
+  state: string | null
 ): string {
   const params = new URLSearchParams({ q: query, limit: String(limit) })
   if (prox) params.set('prox', prox)
   if (sid) params.set('sid', sid)
+  if (state) params.set('state', state)
   return `/api/geocode?${params}`
 }
 
@@ -130,7 +132,7 @@ export async function resolveSuggestion(
  */
 export async function resolveOnce(
   query: string,
-  options: { limit?: number; proximity?: ProximityHint | null } = {}
+  options: { limit?: number; proximity?: ProximityHint | null; state?: string | null } = {}
 ): Promise<GeocodeResult | null> {
   const trimmed = query.trim()
   if (trimmed.length < MIN_GEOCODE_QUERY) return null
@@ -139,7 +141,7 @@ export async function resolveOnce(
   const prox = proximityParam(options.proximity)
 
   try {
-    const res = await fetch(buildUrl(trimmed, limit, prox, null))
+    const res = await fetch(buildUrl(trimmed, limit, prox, null, options.state ?? null))
     if (!res.ok) return null
     const results: GeocodeSuggestion[] = await res.json()
     const first = Array.isArray(results) ? results[0] : null
@@ -158,6 +160,20 @@ export interface UseGeocoderOptions {
   enabled?: boolean
   /** The map's current view, so the provider ranks nearby answers first. */
   proximity?: ProximityHint | null
+  /**
+   * Which state this search is FOR, when the page knows and the session does not.
+   *
+   * The referral form is the case. A referrer belongs to no clinic and no firm,
+   * and picks Florida or Minnesota from two cards before typing anything. That
+   * choice never reached the geocoder, so the self-hosted engine — where the
+   * state is a hard filter — searched both, and a Bradenton address could come
+   * back as a street in Minnesota.
+   *
+   * The server validates it and lets the session win wherever there is one, so
+   * this can only narrow a search the caller could already make over public
+   * register data.
+   */
+  state?: string | null
 }
 
 export interface UseGeocoderState {
@@ -182,6 +198,9 @@ export function useGeocoder(
     limit = 6,
     enabled = true,
     proximity = null,
+    // Renamed on the way in: `state` is already this hook's own React state,
+    // and shadowing it compiles into a URL containing "[object Object]".
+    state: searchState = null,
   }: UseGeocoderOptions = {}
 ): UseGeocoderApi {
   const debounced = useDebounce(query, delayMs)
@@ -248,7 +267,9 @@ export function useGeocoder(
     }
 
     // The bias changes the answer, so it has to change the key too.
-    const key = `${trimmed.toLowerCase()}|${limit}|${prox ?? '-'}`
+    // The bias changes the answer, so it has to change the key. So does the
+    // state, which is a hard filter in the self-hosted engine.
+    const key = `${trimmed.toLowerCase()}|${limit}|${prox ?? '-'}|${searchState ?? '-'}`
     const cached = cacheGet(key)
     if (cached) {
       setState({
@@ -266,7 +287,7 @@ export function useGeocoder(
 
     setState((prev) => ({ ...prev, loading: true, error: false, status: 'loading' }))
 
-    fetch(buildUrl(trimmed, limit, prox, sessionId()), { signal: controller.signal })
+    fetch(buildUrl(trimmed, limit, prox, sessionId(), searchState), { signal: controller.signal })
       .then((res) => {
         if (res.ok) return res.json()
         return Promise.reject(Object.assign(new Error(String(res.status)), { status: res.status }))
@@ -294,7 +315,7 @@ export function useGeocoder(
       })
 
     return () => controller.abort()
-  }, [debounced, enabled, minLength, limit, prox, sessionId])
+  }, [debounced, enabled, minLength, limit, prox, searchState, sessionId])
 
   return { ...state, resolve, resetSession }
 }

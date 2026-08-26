@@ -214,6 +214,11 @@ export function ReferrerReferralForm({ state, stateName, onBack }: ReferrerRefer
               onResolved={setResolvedAddress}
               resolved={resolvedAddress}
               placeholder="Street, City, State, ZIP"
+              // The state the referrer picked on the previous screen. Their
+              // session carries none — a referrer belongs to no clinic and no
+              // firm — so without this the engine searches Florida and
+              // Minnesota at once.
+              state={state}
               hint="Pick a suggestion to pin the exact spot, or type the address as you have it."
               data-testid="client-address"
             />

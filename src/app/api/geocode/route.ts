@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
+import { VALID_STATES } from '@/lib/validation'
 import { biasKey, parseProximity } from '@/lib/geocoding/bias'
+import { resolveCallerBias } from '@/lib/geocoding/caller-bias'
 import {
   DEFAULT_LIMIT,
   MAX_GEOCODE_QUERY,
@@ -97,9 +99,46 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'sid must be a UUID' }, { status: 400 })
   }
 
+  /**
+   * The bias, in order of how much it knows.
+   *
+   * The client's `prox` is the map's own viewport and always wins: wherever the
+   * user is looking beats wherever their office is. Only when there is no map —
+   * the referral form, the admin address fields, none of which render one — does
+   * the caller's own entity get a say.
+   *
+   * Resolved server-side, like `state` directly above it and for the same
+   * reason: one code path serves every caller instead of three components
+   * remembering to pass a prop.
+   */
+  const sent = parseProximity(params.get('prox'))
+
+  /**
+   * The state, and a deliberate change of posture.
+   *
+   * `bias.ts` documents that the client never sends this, on the grounds that
+   * not accepting it adds no leak surface. That was right when the session
+   * always had one. A `referrer` does not: they belong to no clinic and no firm,
+   * and pick Florida or Minnesota from two cards on the page before typing an
+   * address. The self-hosted engine treats the state as a HARD filter, so with
+   * nothing to filter on it searched both — which is how a Bradenton address
+   * came back as a street in Minnesota.
+   *
+   * Accepting it is safe because of what it is not. It gates nothing: these are
+   * public county registers, and every caller is already authenticated and
+   * already entitled to search both states. It can only narrow. It is validated
+   * against `VALID_STATES` exactly as `/api/professionals/referrer-referrals`
+   * already validates the same value out of a request body. And the session
+   * still wins wherever there is one, so a user WITH a state cannot claim
+   * another.
+   */
+  const claimed = params.get('state')?.trim().toUpperCase()
+  const requestedState =
+    claimed && (VALID_STATES as readonly string[]).includes(claimed) ? claimed : null
+
   const ctx: GeocodeContext = {
-    state: session.user?.state ?? null,
-    proximity: parseProximity(params.get('prox')),
+    state: session.user?.state ?? requestedState,
+    proximity: sent ?? (await resolveCallerBias(session.user)),
     sessionToken: sid ? deriveSessionToken(userId, sid) : null,
     limit: DEFAULT_LIMIT,
   }

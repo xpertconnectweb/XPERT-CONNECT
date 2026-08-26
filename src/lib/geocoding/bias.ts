@@ -80,11 +80,23 @@ export function parseProximity(raw: string | null): { lat: number; lng: number; 
   return quantizeProximity(lat, lng, zoom)
 }
 
-/** The bias component of a cache key. Low cardinality by construction. */
+/**
+ * The bias component of a cache key. Low cardinality by construction.
+ *
+ * BOTH parts, always — not the proximity or else the state.
+ *
+ * The earlier version treated the state as a fallback for a missing proximity,
+ * which was defensible while both were soft hints that merely reordered the same
+ * answers. The self-hosted engine changed that: there the state is a HARD filter
+ * (`street-index.ts`), so two callers looking at the same map from different
+ * states get genuinely different results and must not share a cache entry.
+ *
+ * Cardinality is unchanged in practice — this platform has two states.
+ */
 export function biasKey(ctx: GeocodeContext): string {
-  if (ctx.proximity) return `p${formatProximity(ctx.proximity)}`
-  if (ctx.state && STATE_BBOX[ctx.state]) return `s${ctx.state}`
-  return '-'
+  const where = ctx.state && STATE_BBOX[ctx.state] ? ctx.state : '-'
+  const near = ctx.proximity ? formatProximity(ctx.proximity) : '-'
+  return `s${where}|p${near}`
 }
 
 /**

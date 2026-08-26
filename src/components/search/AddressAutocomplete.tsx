@@ -59,6 +59,12 @@ export interface AddressAutocompleteProps {
   placeholder?: string
   proximity?: ProximityHint | null
   /**
+   * Which state this address is expected to be in, when the page knows and
+   * the session does not. The referral form is the case — see
+   * `UseGeocoderOptions.state`.
+   */
+  state?: string | null
+  /**
    * Show a small map with a draggable pin once an address resolves.
    *
    * For the write paths — the admin forms — where the coordinate is about to be
@@ -89,13 +95,14 @@ export function AddressAutocomplete({
   required = false,
   placeholder = 'Start typing an address…',
   proximity = null,
+  state = null,
   confirmOnMap = false,
   hint,
   className,
   'data-testid': testId,
 }: AddressAutocompleteProps) {
   const [resolving, setResolving] = useState(false)
-  const geocode = useGeocoder(value, { proximity, limit: 5, enabled: !resolved })
+  const geocode = useGeocoder(value, { proximity, state, limit: 5, enabled: !resolved })
 
   const groups = useMemo<SuggestionGroup[]>(() => {
     // Nothing to offer once an address has been chosen — the lookup is disabled

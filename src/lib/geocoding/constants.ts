@@ -102,12 +102,15 @@ export const SCOPED_TRIGRAM_THRESHOLD = 0.12
  *       provider that will invent one.
  *   4 — reverse geocoding answers again. An empty self-hosted answer now
  *       reaches the fallback instead of being cached as "nowhere".
+ *   5 — the search knows where the caller is. A clinic or firm user is biased
+ *       toward its own address, and the state a referrer picked finally reaches
+ *       the engine instead of both states being searched at once.
  *
  * Note the direction of travel: to undo a change, bump this AGAIN rather than
  * putting it back. Reverting the number resurrects exactly the answers the
  * revert was meant to retire.
  */
-export const GEOCODE_CACHE_REVISION = 4
+export const GEOCODE_CACHE_REVISION = 5
 
 export const MAX_SHARED_CACHE_TTL_MS: Record<GeocodeProviderId, number> = {
   nominatim: 30 * 24 * 60 * 60 * 1000,

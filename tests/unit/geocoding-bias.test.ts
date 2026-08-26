@@ -77,18 +77,55 @@ describe('parsing the client hint', () => {
 })
 
 describe('cache keys', () => {
-  it('prefers the viewport over the session state', () => {
-    // Where the user is LOOKING beats a default derived from their account.
-    const key = biasKey({ limit: 5, state: 'FL', proximity: { lat: 27.5, lng: -82.5, zoom: 12 } })
-    expect(key).toContain('27.5')
-    expect(key).not.toBe('sFL')
+  /**
+   * Both parts, always. The key used to carry the proximity OR the state, which
+   * was fine while both were soft hints that merely reordered the same answers.
+   * The self-hosted engine made the state a HARD filter, so two callers looking
+   * at the same map from different states get genuinely different results and
+   * must not share an entry.
+   */
+  it('separates two states looking at the same place', () => {
+    const at = { lat: 27.5, lng: -82.5, zoom: 12 }
+    expect(biasKey({ limit: 5, state: 'FL', proximity: at })).not.toBe(
+      biasKey({ limit: 5, state: 'MN', proximity: at })
+    )
   })
 
-  it('falls back to the state, and then to nothing', () => {
-    expect(biasKey({ limit: 5, state: 'FL' })).toBe('sFL')
-    expect(biasKey({ limit: 5 })).toBe('-')
-    // An unknown state is no bias at all rather than an error.
-    expect(biasKey({ limit: 5, state: 'ZZ' })).toBe('-')
+  it('separates two places within one state', () => {
+    expect(biasKey({ limit: 5, state: 'FL', proximity: { lat: 27.5, lng: -82.5, zoom: 12 } })).not.toBe(
+      biasKey({ limit: 5, state: 'FL', proximity: { lat: 30.4, lng: -87.2, zoom: 12 } })
+    )
+  })
+
+  it('carries the viewport when there is one', () => {
+    expect(
+      biasKey({ limit: 5, state: 'FL', proximity: { lat: 27.5, lng: -82.5, zoom: 12 } })
+    ).toContain('27.5')
+  })
+
+  it('still distinguishes a state on its own', () => {
+    expect(biasKey({ limit: 5, state: 'FL' })).not.toBe(biasKey({ limit: 5, state: 'MN' }))
+    expect(biasKey({ limit: 5, state: 'FL' })).not.toBe(biasKey({ limit: 5 }))
+  })
+
+  it('treats an unknown state as no bias rather than an error', () => {
+    expect(biasKey({ limit: 5, state: 'ZZ' })).toBe(biasKey({ limit: 5 }))
+  })
+
+  /**
+   * The key is built per keystroke, so a coordinate at full precision would give
+   * every pixel of pan its own cached copy of every answer.
+   *
+   * Note where the rounding happens: `biasKey` formats but does not quantise.
+   * `parseProximity` does it on the way in, which is the only path a client
+   * value can take, so the test goes through it rather than around it.
+   */
+  it('stays low-cardinality, because it is built per keystroke', () => {
+    const near = (raw: string) =>
+      biasKey({ limit: 5, state: 'FL', proximity: parseProximity(raw) })
+
+    // Two viewports a few hundred metres apart collapse onto one entry.
+    expect(near('27.53,-82.51,12')).toBe(near('27.54,-82.52,12'))
   })
 })
 
