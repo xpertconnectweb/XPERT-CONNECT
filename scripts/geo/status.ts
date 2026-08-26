@@ -28,8 +28,15 @@ if (!url || !key) {
 
 const supabase = createClient(url, key, { auth: { persistSession: false } })
 
-/** PostgREST's code for "no such table". Anything else is a real failure. */
-const MISSING_TABLE = '42P01'
+/**
+ * What "no such table" looks like coming back from PostgREST.
+ *
+ * `PGRST205` is what it actually answers — "Could not find the table
+ * 'public.geo_street' in the schema cache". `42P01` is Postgres' own code and
+ * arrives only when the failure happens inside a function body. Both mean the
+ * migration has not been applied.
+ */
+const MISSING_TABLE = ['PGRST205', '42P01']
 /** And for "no such function", which is what an unapplied search migration looks like. */
 const MISSING_FUNCTION = 'PGRST202'
 
@@ -38,15 +45,36 @@ type Step = { label: string; state: 'done' | 'missing' | 'partial'; detail: stri
 const steps: Step[] = []
 const add = (label: string, state: Step['state'], detail: string) => steps.push({ label, state, detail })
 
+/**
+ * Rows in a table, or null when the table does not exist.
+ *
+ * `limit(0)` and NOT `head: true`, which is the whole point of this function.
+ * A head request has no response body, so when PostgREST answers 404 there is
+ * no JSON for supabase-js to read the error out of — it returns
+ * `{ error: null, count: null }`, indistinguishable from an empty table. This
+ * reported "both tables exist, empty" for two tables that had never been
+ * created, and sent the user to load data into nothing.
+ *
+ * With `limit(0)` the body is `[]`, the error parses, and the count still comes
+ * from the content-range header. Same one request, and it can tell the
+ * difference.
+ */
 async function countRows(table: string): Promise<number | null> {
-  // `*` rather than a named column: geo_street_points is keyed on street_id
-  // and has no `id`, and a head-count does not fetch the rows anyway.
-  const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
+  // `*` rather than a named column: geo_street_points is keyed on street_id and
+  // has no `id`, and limit(0) fetches no rows either way.
+  const { count, error } = await supabase.from(table).select('*', { count: 'exact' }).limit(0)
+
   if (error) {
-    if (error.code === MISSING_TABLE) return null
-    throw new Error(`${table}: ${error.message}`)
+    if (MISSING_TABLE.indexOf(error.code ?? '') !== -1) return null
+    throw new Error(`${table}: ${error.message} (${error.code ?? 'no code'})`)
   }
-  return count ?? 0
+
+  // A successful response with no count would mean PostgREST answered without
+  // the header it was asked for. Treat it as unknown rather than as zero.
+  if (count === null || count === undefined) {
+    throw new Error(`${table}: responded without a count — cannot tell whether it is empty or absent`)
+  }
+  return count
 }
 
 async function main() {
@@ -66,7 +94,8 @@ async function main() {
   ].filter(Boolean)
 
   if (missing.length > 0) {
-    add('migration part 1', 'missing', `${missing.join(' and ')} does not exist`)
+    const verb = missing.length > 1 ? 'do not exist' : 'does not exist'
+    add('migration part 1', 'missing', `${missing.join(' and ')} ${verb}`)
   } else if (streets === 0) {
     add('migration part 1', 'done', 'both tables exist, empty')
   } else {
