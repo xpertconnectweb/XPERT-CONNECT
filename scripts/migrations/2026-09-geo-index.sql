@@ -14,7 +14,7 @@
 -- The data is OpenAddresses, which aggregates what US counties
 -- publish themselves under licences permitting commercial use.
 -- 144 sources across the two states the platform serves,
--- 17.2 million address points, 589,000 distinct streets.
+-- 17.1 million address points, 567,767 distinct streets.
 --
 -- ── The shape, and why it is two tables ──────────────────────
 --
@@ -33,7 +33,7 @@
 --   documented there. Stored one row per point this table would
 --   be several gigabytes; packed it is a hundred megabytes.
 --
--- Projected total with indexes: ~252 MB of the free plan's
+-- Projected total with indexes: ~240 MB of the free plan's
 -- 500 MB. Measured, not guessed — `npx tsx
 -- scripts/geo/build-index.ts --report` prints the breakdown.
 --
@@ -45,7 +45,7 @@
 -- #  THEN RUN PART 2.                                        #
 -- #                                                          #
 -- #  Part 2 builds the trigram index. Creating it before the #
--- #  load would make all 589,000 inserts maintain it row by  #
+-- #  load would make all 567,767 inserts maintain it row by  #
 -- #  row, which turns a twenty-minute load into hours. This  #
 -- #  is the one ordering that matters here.                  #
 -- ############################################################
@@ -106,7 +106,17 @@ create table if not exists geo_street (
   lng_min       double precision not null,
   lng_max       double precision not null,
 
-  point_count   integer     not null
+  point_count   integer     not null,
+
+  -- A hash of the packed points and the published name.
+  --
+  -- This is what makes the quarterly refresh differential. Counties change
+  -- very little between publications -- a new subdivision, a renumbered
+  -- block -- so re-ingesting rewrites 567,000 rows to change a few hundred
+  -- unless there is something cheap to compare. Reading back 100 MB of
+  -- payloads to diff them would cost more than the rewrite; reading back
+  -- 567,000 integers costs almost nothing.
+  checksum      integer     not null
 );
 
 
@@ -143,7 +153,7 @@ alter table geo_street_points enable row level security;
 -- =============================================================
 
 -- The autocomplete index. GIN over trigrams is what makes
--- `name_norm % $1` an index scan instead of 589,000 comparisons,
+-- `name_norm % $1` an index scan instead of 567,767 comparisons,
 -- and what makes a misspelling still find the street.
 --
 -- Expect this to take several minutes and a few hundred MB of

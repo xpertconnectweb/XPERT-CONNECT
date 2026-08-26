@@ -25,7 +25,7 @@ import { createReadStream } from 'node:fs'
 import { createInterface } from 'node:readline'
 import { createClient } from '@supabase/supabase-js'
 import { config } from 'dotenv'
-import { countPoints } from '../../src/lib/geocoding/payload-codec'
+import { countPoints, payloadChecksum } from '../../src/lib/geocoding/payload-codec'
 import type { LoadableStreet } from './build-index'
 
 config({ path: '.env.local' })
@@ -74,9 +74,10 @@ interface StreetRow {
   lng_min: number
   lng_max: number
   point_count: number
+  checksum: number
 }
 
-function toStreetRow(street: LoadableStreet): StreetRow {
+function toStreetRow(street: LoadableStreet, payload: Buffer): StreetRow {
   return {
     id: street.i,
     name_norm: street.n,
@@ -91,6 +92,9 @@ function toStreetRow(street: LoadableStreet): StreetRow {
     lng_min: street.x0,
     lng_max: street.x1,
     point_count: street.k,
+    // Stored so the quarterly refresh can tell in one integer comparison
+    // whether this street changed, instead of reading 100 MB of payloads back.
+    checksum: payloadChecksum(payload, street.d),
   }
 }
 
@@ -200,7 +204,7 @@ async function main() {
     const street = JSON.parse(line) as LoadableStreet
     const payload = Buffer.from(street.p, 'base64')
 
-    streetBatch.push(toStreetRow(street))
+    streetBatch.push(toStreetRow(street, payload))
     pointBatch.push({ street_id: street.i, payload: toBytea(payload) })
     points += street.k
 

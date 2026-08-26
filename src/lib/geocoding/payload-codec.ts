@@ -230,6 +230,31 @@ export function decodePoints(payload: Buffer): StreetPoint[] {
   return points
 }
 
+/**
+ * A 32-bit FNV-1a hash of a payload and the name published alongside it.
+ *
+ * Stored on the street row so a re-ingest can tell in one integer comparison
+ * whether anything about a street actually changed. FNV-1a because it is four
+ * lines, has no dependencies, and is being asked to detect accidental
+ * difference rather than resist an adversary -- nothing here is a security
+ * boundary.
+ *
+ * Signed, because Postgres has no unsigned integer and `| 0` is exactly the
+ * conversion that round-trips through an int4 column.
+ */
+export function payloadChecksum(payload: Buffer, name: string): number {
+  let hash = 0x811c9dc5
+  for (let i = 0; i < payload.length; i++) {
+    hash ^= payload[i]
+    hash = Math.imul(hash, 0x01000193)
+  }
+  for (let i = 0; i < name.length; i++) {
+    hash ^= name.charCodeAt(i) & 0xff
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return hash | 0
+}
+
 export interface NumberMatch {
   lat: number
   lng: number

@@ -1,0 +1,90 @@
+name: Refresh Address Index
+
+# Quarterly, plus a manual trigger.
+#
+# The address index is not a one-off cost. Counties publish new subdivisions
+# continuously, and the reason the address the client reported was missing is
+# that OpenStreetMap had not caught up with Manatee County. An index nobody
+# refreshes becomes the same problem it was built to solve, only slower.
+#
+# Four times a year is a judgement, not a measurement: OpenAddresses rebuilds
+# most sources monthly, and a new house takes months to appear in a register
+# anyway, so a shorter cycle would spend an hour of compute to change almost
+# nothing. Run it by hand whenever an address is reported missing.
+#
+# Deliberately does NOT run on push. It downloads half a gigabyte, holds the
+# whole index in memory, and writes to the production database.
+
+on:
+  schedule:
+    # 03:00 UTC on the first of January, April, July and October.
+    - cron: "0 3 1 1,4,7,10 *"
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the changes. Unchecked, it reports what would change and stops."
+        type: boolean
+        default: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    # Downloading 144 county sources and packing 17 million address points is
+    # not quick, and the default 360-minute cap would let a hung source burn
+    # six hours of it.
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # 144 sources, ~515 MB compressed. Resumable, so a county server timing
+      # out costs one retry rather than the whole run.
+      - name: Fetch the county registers
+        run: npx tsx scripts/geo/fetch-openaddresses.ts
+
+      # Peak memory is the merge pass, which holds every street and its packed
+      # points at once. Node's default heap is well under what that needs.
+      - name: Build the index
+        run: npx tsx scripts/geo/build-index.ts --rebuild
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      # The parser and the ETL share one canonicaliser, so a change to either
+      # can silently make the index unreachable. This is the cheapest place to
+      # catch that, and it costs seconds.
+      - name: Check the parser still reaches the index
+        run: npx tsx scripts/geo/gate-parser.ts --sample=2000
+
+      # Writes only what changed. On a quarter where no county published
+      # anything new, this writes nothing at all.
+      - name: Refresh
+        run: npx tsx scripts/geo/refresh-index.ts ${{ (github.event_name == 'schedule' || inputs.apply) && '--apply' || '' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      # A refresh that fails silently leaves the index frozen at whatever it
+      # was, and address search keeps working -- which is exactly why nobody
+      # would notice for a year. Same alerting path as the keep-alive cron.
+      - name: Alert on failure
+        if: failure()
+        run: node scripts/notify-keepalive-failure.mjs
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+          ALERT_TITLE: El refresco del índice de direcciones falló
+          ALERT_DETAIL: >-
+            La re-ingesta trimestral de los registros de direcciones de los condados
+            <strong>falló</strong>. El buscador sigue funcionando con el índice anterior,
+            así que nadie lo notará: las direcciones nuevas simplemente no aparecerán.
+          ALERT_CHECK: >-
+            el log del run, y si una fuente de OpenAddresses dejó de publicar.
+            Se puede relanzar a mano desde la pestaña Actions.
