@@ -138,6 +138,15 @@ De nuevo en el SQL Editor: la **PARTE 2** de
 `scripts/migrations/2026-09-geo-index.sql` — el índice de trigramas, los dos
 btree y el `analyze`. Tarda varios minutos.
 
+> **Solo si tu base se creó antes del 3 de septiembre de 2026**, ejecuta también
+> `scripts/migrations/2026-09-geo-column-types.sql`. La versión original de la
+> parte 1 declaraba `state char(2)` y `zip char(5)`, y como la función de
+> búsqueda recibe `text`, Postgres convertía la **columna** — lo que inutiliza
+> cualquier índice sobre ella y, por la regla del `BitmapOr`, arrastraba también
+> al índice de trigramas. Coste medido: 1.400 ms de trabajo de base de datos en
+> vez de 42. La parte 1 ya está corregida, así que una instalación nueva no lo
+> necesita.
+
 > Una versión anterior de esa función bajaba el umbral de trigramas con una
 > cláusula `SET`, y Supabase la rechaza: `ERROR: 42501: permission denied to set
 > parameter "pg_trgm.similarity_threshold"` — el rol `postgres` de Supabase no es
@@ -167,6 +176,28 @@ es exactamente el problema que este chequeo existe para no esconder.
 
 Cambia `GEOCODER_PROVIDER` a `geoapify` y redespliega. Nada más. Las tablas
 pueden quedarse donde están.
+
+---
+
+## Rendimiento — cómo leer las cifras
+
+Medido con el índice cargado y los índices construidos:
+
+| | |
+|---|---:|
+| búsqueda: trabajo real de base de datos | **42 ms** |
+| lectura de los blobs de coordenadas | ~0 ms |
+| viajes de ida y vuelta por autocompletado | 2 |
+
+El banco de pruebas informa 581 / 864 ms p50/p95, y esa cifra **no es la que verá
+el usuario**: está medida desde una máquina de desarrollo hasta la región de
+Supabase, donde un solo viaje de ida y vuelta cuesta 220-320 ms. Las funciones de
+Vercel están junto a la base de datos. Lo único que se puede afirmar desde aquí
+es lo que cuesta la base: 42 ms.
+
+Si el buscador se nota lento en producción, la primera pregunta es si algún
+índice se perdió. `scripts/geo/diagnose.sql` responde eso en cuatro bloques de
+solo lectura, y el bloque 5 imprime el plan real de la función.
 
 ---
 
@@ -211,7 +242,8 @@ npx tsx scripts/geo/gate-parser.ts
 npx tsx scripts/geo/gate-coverage.ts
 
 # comparar contra Geoapify sobre el mismo corpus
-npx tsx scripts/geo/benchmark.ts --provider=local
+npx tsx scripts/geo/benchmark.ts --provider=local        # el índice en memoria
+npx tsx scripts/geo/benchmark.ts --provider=selfhosted   # contra Postgres real
 npx tsx scripts/geo/benchmark.ts --provider=geoapify
 ```
 

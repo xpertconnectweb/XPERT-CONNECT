@@ -24,5 +24,18 @@
     "p50Ms": 5,
     "p95Ms": 13,
     "corpusSize": 201
+  },
+  "selfhosted": {
+    "provider": "selfhosted",
+    "cases": 201,
+    "hitRate": 1,
+    "within50m": 1,
+    "within200m": 1,
+    "medianErrorM": 0.4002649343800416,
+    "p95ErrorM": 1.0003147665406862,
+    "exactRate": 0.9950248756218906,
+    "p50Ms": 581,
+    "p95Ms": 864,
+    "corpusSize": 201
   }
 }
