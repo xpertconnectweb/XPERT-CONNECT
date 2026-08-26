@@ -91,9 +91,20 @@ create table if not exists geo_street (
   -- the unique key with name_norm, and in Postgres a NULL never
   -- equals a NULL — a nullable column here would let the same
   -- street be inserted an unlimited number of times.
+  --
+  -- `text`, and NOT char(2)/char(5) however well those would
+  -- document a state code and a postcode. This file declared them
+  -- that way and it cost a factor of eleven: geo_street_search
+  -- takes text parameters, comparing bpchar to text casts the
+  -- COLUMN, and an index cannot serve a predicate on
+  -- `(column)::text`. Worse, a BitmapOr needs every branch of an
+  -- OR to be indexable — so losing the postcode branch lost the
+  -- trigram index too, and the planner fell back to scanning all
+  -- 567,767 rows. See 2026-09-geo-column-types.sql, which repairs
+  -- a database created before this line was fixed.
   city          text        not null default '',
-  state         char(2)     not null,
-  zip           char(5)     not null default '',
+  state         text        not null,
+  zip           text        not null default '',
 
   -- The house numbers present on this street. Lets a query reject
   -- an out-of-range number before fetching the blob at all.

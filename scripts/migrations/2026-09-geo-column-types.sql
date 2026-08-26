@@ -1,0 +1,80 @@
+-- =============================================================
+-- Migration: geo_street.state and .zip from char(n) to text
+-- Date: 2026-09-03
+--
+-- Fixes a mistake in 2026-09-geo-index.sql that cost a factor of
+-- eleven, and that nothing about the schema made visible.
+--
+-- ── What happened ────────────────────────────────────────────
+--
+-- `state char(2)` and `zip char(5)` looked like good documentation:
+-- a state code IS two letters and a postcode IS five digits. But
+-- `geo_street_search` declares its parameters as `text`, and
+-- comparing bpchar to text makes Postgres cast the COLUMN:
+--
+--   Filter: ((zip)::text = '34208'::text)
+--
+-- An index on a bpchar column cannot serve a predicate on
+-- `(column)::text`, so `geo_street_state_zip` became unusable.
+--
+-- And that alone was enough to lose the trigram index too. A
+-- BitmapOr needs EVERY branch of an OR to be indexable; one branch
+-- that is not disqualifies the whole thing, so the planner fell
+-- back to a parallel sequential scan and computed similarity()
+-- against all 567,767 rows:
+--
+--   Parallel Seq Scan on geo_street s
+--     Rows Removed by Filter: 283232
+--   Execution Time: 774 ms          (and ~1.5 s under real load)
+--
+-- The identical query with its values written in as literals —
+-- which need no cast, because an unknown literal simply resolves
+-- to bpchar — planned as intended and ran in 133 ms:
+--
+--   BitmapOr
+--     -> Bitmap Index Scan on geo_street_trgm
+--     -> Bitmap Index Scan on geo_street_state_zip
+--
+-- ── Why text and not matching parameter types ────────────────
+--
+-- Declaring the function's parameters as char(2) and char(5) would
+-- have fixed the plan in one line and left the trap in place: any
+-- future query comparing these columns to a text value steps on it
+-- again, and the symptom is a query that is merely slow rather
+-- than one that fails.
+--
+-- Postgres' own documentation is direct about this — char(n) has
+-- no performance advantage, is usually the slowest of the three
+-- string types, and text or varchar should be preferred. The
+-- padding semantics are a second, separate hazard.
+--
+-- ── Cost, and why now ────────────────────────────────────────
+--
+-- This rewrites the table, so every index on it is rebuilt —
+-- including the GIN trigram index, which is the slow one. Expect
+-- a few minutes and an ACCESS EXCLUSIVE lock for the duration.
+--
+-- Which is exactly why it should happen now: GEOCODER_PROVIDER is
+-- still `geoapify`, so no request touches these tables. There is
+-- no cheaper moment than before the switch, and the alternative is
+-- carrying the trap into production to avoid a lock nobody would
+-- notice.
+--
+-- Values are preserved. Casting bpchar to text strips the trailing
+-- blanks char(n) padded them with, so '34208' stays '34208' and an
+-- empty postcode stays ''.
+--
+-- Run this in the Supabase SQL Editor on the prod DB.
+-- Idempotent: re-running it on text columns is a no-op that
+-- Postgres skips without a rewrite.
+-- =============================================================
+
+alter table geo_street
+  alter column state type text,
+  alter column zip   type text;
+
+-- The rewrite left the planner with no statistics for the new
+-- columns. Without this it will estimate from nothing and can
+-- choose a sequential scan over the indexes it has just rebuilt —
+-- the same failure, from a different cause.
+analyze geo_street;
