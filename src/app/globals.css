@@ -266,3 +266,26 @@
     transition: none !important;
   }
 }
+
+/* ── The OpenStreetMap credit, on a phone ──
+   The results sheet is `absolute inset-x-0 bottom-0` and rests over the bottom
+   of the map, which is exactly where Leaflet puts its attribution control. And
+   Leaflet sets `z-index: 1000` on its corner containers — higher than the
+   sheet — so the credit does not go behind the sheet, it paints on top of it.
+   At the bottom edge that read as a glitch; lifted naively with a fixed
+   margin, it landed in the middle of the results list.
+
+   This line is a licence term (ODbL), not decoration, so "in the DOM" is not
+   the bar. It has to be legible, over the map, wherever the sheet happens to
+   be — hence a variable the map publishes rather than a guess.
+
+   `bottom` and not `margin-bottom`: a percentage margin resolves against the
+   containing block's WIDTH, so on a 390px phone it would lift by a third of
+   390 regardless of where the sheet actually is. `bottom` resolves against the
+   height, which is the thing being asked about. Capped at half, because at the
+   sheet's full snap the map is a sliver and there is nothing left to credit. */
+@media (max-width: 639px) {
+  .leaflet-bottom.leaflet-right {
+    bottom: min(var(--xc-sheet, 0px), 50%);
+  }
+}

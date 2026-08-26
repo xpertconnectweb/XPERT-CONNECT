@@ -77,7 +77,15 @@ export const PanelRow = memo(function PanelRow({
           onBlur={() => onHover?.(null)}
           data-testid="map-panel-row-focus"
           aria-label={`Show ${item.name} on the map`}
-          className="text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
+          // `block w-full` is load-bearing, not tidiness. Without it the button
+          // is only as wide as its content, so a long provider name makes the
+          // inner flex row wider than the panel and pushes the distance badge
+          // off the right edge -- `flex-shrink-0` keeps the badge its full size
+          // and `truncate` on the name never fires because the name is not the
+          // thing being constrained. On a 390px phone
+          // "Madison Healthcare Services Rehabilitation" clipped its distance
+          // to "226.".
+          className="block w-full text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
         >
           <div className="flex items-start justify-between gap-2">
             <h3

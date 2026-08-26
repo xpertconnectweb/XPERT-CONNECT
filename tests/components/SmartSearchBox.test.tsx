@@ -33,7 +33,10 @@ const entity = (id: string, label: string): Suggestion => ({
   kind: 'entity',
   label,
   sublabel: 'Clinic',
-  payload: { kind: 'entity', id },
+  // Coordinates ride along so choosing a suggestion never depends on the
+  // chooser being able to look the record up again -- see the payload comment
+  // in components/search/types.ts.
+  payload: { kind: 'entity', id, lat: 27.49, lng: -82.48, name: label },
 })
 
 const GROUPS: SuggestionGroup[] = [

@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 export type SheetSnap = 'peek' | 'half' | 'full'
 
 /** Fraction of the container height the sheet occupies at each snap point. */
-const SNAP_FRACTION: Record<SheetSnap, number> = {
+export const SNAP_FRACTION: Record<SheetSnap, number> = {
   peek: 0.12,
   half: 0.5,
   full: 0.92,

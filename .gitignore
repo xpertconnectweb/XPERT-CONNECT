@@ -92,3 +92,7 @@ docs/*.pdf
 # Bulk geocoding data: hundreds of MB of county address points,
 # downloaded by scripts/geo/fetch-*.ts. Regenerable, never committed.
 data/geo/
+
+# Before/after evidence from scripts/ux/shoot.ts. Regenerable, and a PNG per
+# state per viewport is not something history needs to carry.
+docs/ux-shots/

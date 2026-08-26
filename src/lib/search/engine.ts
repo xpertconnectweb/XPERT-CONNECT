@@ -400,5 +400,10 @@ export function suggestEntities<T>(
   anchor?: readonly [number, number] | null
 ): SearchHit<T>[] {
   if (!rawQuery || rawQuery.trim().length < 2) return []
-  return search(index, rawQuery, { anchor, limit, sort: 'relevance' }).hits
+  // `allowCorrection: false`, and it is not a detail. A dropdown query is
+  // short and half-typed, so `total < 3` is the NORMAL case here -- which meant
+  // `verifiedCorrection` ran a second full scan of the corpus on nearly every
+  // keystroke to produce a `didYouMean` this function then discarded. The
+  // suggestion list has never shown one.
+  return search(index, rawQuery, { anchor, limit, sort: 'relevance' }, false).hits
 }

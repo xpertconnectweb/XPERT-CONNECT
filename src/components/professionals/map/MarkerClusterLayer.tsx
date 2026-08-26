@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, memo, useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet.markercluster'
@@ -55,7 +55,17 @@ function baseIcon(type: MapItem['type'], available: boolean): L.Icon | L.DivIcon
   return available ? clinicAvailIcon : clinicUnavailIcon
 }
 
-export const MarkerClusterLayer = forwardRef<MarkerRegistry, MarkerClusterLayerProps>(
+/**
+ * Memoised, because it renders nothing and all of its work is in effects.
+ *
+ * Without this it re-rendered on every render of `MapView` — so hovering a
+ * result row, which repaints markers imperatively and needs no React work here
+ * at all, still ran this component and rebuilt a ~700-entry Map. Its props are
+ * `items`, memoised upstream, and four callbacks that are already held in refs
+ * precisely so their identity does not matter.
+ */
+export const MarkerClusterLayer = memo(
+  forwardRef<MarkerRegistry, MarkerClusterLayerProps>(
   function MarkerClusterLayer({ items, userRole, onReferral, onMarkerHover, onMarkerClick }, ref) {
     const map = useMap()
     const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
@@ -71,11 +81,26 @@ export const MarkerClusterLayer = forwardRef<MarkerRegistry, MarkerClusterLayerP
     const onHoverRef = useRef(onMarkerHover)
     const onClickRef = useRef(onMarkerClick)
 
-    itemsByIdRef.current = new Map(items.map((item) => [item.id, item]))
-    userRoleRef.current = userRole
-    onReferralRef.current = onReferral
-    onHoverRef.current = onMarkerHover
-    onClickRef.current = onMarkerClick
+    // In an effect, not the render body. This used to rebuild a ~700-entry Map
+    // on EVERY render of the parent -- which is every hover of a row, every
+    // hover of a marker and every keystroke in the search box. Only the lazy
+    // popup and tooltip factories read it, and those cannot fire before
+    // effects have flushed.
+    useEffect(() => {
+      itemsByIdRef.current = new Map(items.map((item) => [item.id, item]))
+    }, [items])
+
+    // These four are genuinely per-render: the point of holding them in refs is
+    // that a new callback identity never rebuilds the layer. A layout effect
+    // rather than the render body so the component stays side-effect free,
+    // and without a dependency array because "mirror every render" is exactly
+    // what is meant.
+    useLayoutEffect(() => {
+      userRoleRef.current = userRole
+      onReferralRef.current = onReferral
+      onHoverRef.current = onMarkerHover
+      onClickRef.current = onMarkerClick
+    })
 
     // Create the cluster group once. It used to be torn down and rebuilt on
     // every `items` change — which meant every keystroke AND every pan, since
@@ -238,4 +263,5 @@ export const MarkerClusterLayer = forwardRef<MarkerRegistry, MarkerClusterLayerP
 
     return null
   }
+  )
 )

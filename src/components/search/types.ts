@@ -26,7 +26,22 @@ export type SuggestionPayload =
        */
       suggestion: GeocodeSuggestion
     }
-  | { kind: 'entity'; id: string }
+  /**
+   * A provider, carrying enough to navigate to it WITHOUT looking it up again.
+   *
+   * The id alone was not enough, and the gap was invisible. `suggestEntities`
+   * ignores spatial and type filters on purpose -- its own comment says a
+   * dropdown should be able to jump you to a firm that is off-screen -- but the
+   * map resolved the id against its FILTERED result set. With Attorneys
+   * switched off, a radius applied, or 'This area only' set, the lookup missed
+   * and the handler returned silently. The row rendered, the click did nothing,
+   * and nothing anywhere said why.
+   *
+   * Carrying the coordinates makes the suggestion self-sufficient, so the jump
+   * is always possible and the filter question becomes what it should have been
+   * all along: something to TELL the user about, not a reason to do nothing.
+   */
+  | { kind: 'entity'; id: string; lat: number; lng: number; name: string }
   | { kind: 'category'; tag: string }
   | { kind: 'recent'; query: string }
   /** "None of these — let me point at it on the map." */

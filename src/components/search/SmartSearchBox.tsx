@@ -7,6 +7,7 @@ import {
   Landmark, Mailbox, Building, Map, Crosshair,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { splitOnMatch } from '@/lib/search/highlight'
 import {
   flattenSuggestions,
   groupStatus,
@@ -56,6 +57,16 @@ export interface SmartSearchBoxProps {
   className?: string
   /** DOM id for the input, so a form can point a visible `<label>` at it. */
   inputId?: string
+  /**
+   * What to emphasise inside each suggestion. Defaults to `value`.
+   *
+   * A prop rather than reading `value` directly so a caller can pass `''` and
+   * switch it off. This component is shared by the map, the attorney
+   * directory, the specialists list and every address field in the
+   * application; a change that is right on three of them and merely arguable
+   * on the fourth should be a prop, not a fait accompli.
+   */
+  highlight?: string
   'data-testid'?: string
 }
 
@@ -99,6 +110,35 @@ function iconFor(suggestion: Suggestion) {
  * rendered here has to be invisible to the arrow keys. Making one of these
  * focusable would put a dead stop in the middle of the list.
  */
+/**
+ * Emphasises the part of a label the query is responsible for.
+ *
+ * A `<mark>` with no background, because the browser default is a yellow
+ * highlighter pen and this is a product, not a search-results page from 1998.
+ * Weight and colour carry it. `<mark>` rather than a `<span>` because the
+ * element means 'marked for reference in another context', which is exactly
+ * what this is, and screen readers can be told about it.
+ *
+ * Splitting a label into several text nodes does not change `textContent`, so
+ * `getByText` and Playwright text selectors keep resolving.
+ */
+function Marked({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>
+  return (
+    <>
+      {splitOnMatch(text, query).map((segment, i) =>
+        segment.hit ? (
+          <mark key={i} className="bg-transparent p-0 font-bold text-navy">
+            {segment.text}
+          </mark>
+        ) : (
+          <span key={i}>{segment.text}</span>
+        )
+      )}
+    </>
+  )
+}
+
 function StatusRow({
   testId,
   tone,
@@ -137,6 +177,7 @@ export function SmartSearchBox({
   placeholder = 'Search by name, specialty, city or ZIP...',
   'aria-label': ariaLabel = 'Search providers by name, specialty, city or ZIP',
   autoFocus = false,
+  highlight,
   className,
   inputId,
   'data-testid': testId = 'map-search',
@@ -169,6 +210,10 @@ export function SmartSearchBox({
     const timer = setTimeout(() => setShowSpinner(true), SPINNER_DELAY_MS)
     return () => clearTimeout(timer)
   }, [anyLoading])
+
+  // What the suggestions emphasise. The typed text unless a caller overrides,
+  // including with '' to switch emphasis off entirely.
+  const emphasis = highlight ?? value
 
   // Any change to the suggestion set invalidates the highlight. Resetting to
   // -1 rather than 0 keeps Enter meaning "search what I typed".
@@ -449,7 +494,13 @@ export function SmartSearchBox({
                         // Keep focus on the input: a blur here would close the
                         // list before the click ever lands.
                         onMouseDown={(e) => e.preventDefault()}
-                        onMouseEnter={() => setActiveIndex(index)}
+                        // Deliberately no `onMouseEnter={() => setActiveIndex(index)}`.
+                        // It let the pointer drive `aria-activedescendant`: arrow
+                        // down twice, brush the mouse on the way to nothing in
+                        // particular, and Enter committed whatever the cursor
+                        // happened to be over. On a place row that is a network
+                        // resolve and a map that teleports. The visual hover is
+                        // CSS below, and clicks pass `item` directly.
                         onClick={(e) => {
                           // The dismiss affordance lives inside the option
                           // rather than as a nested <button>, which would be
@@ -482,11 +533,11 @@ export function SmartSearchBox({
                               active ? 'text-navy' : 'text-gray-700'
                             )}
                           >
-                            {item.label}
+                            <Marked text={item.label} query={emphasis} />
                           </span>
                           {item.sublabel && (
                             <span className="block truncate text-[11px] text-gray-400">
-                              {item.sublabel}
+                              <Marked text={item.sublabel} query={emphasis} />
                             </span>
                           )}
                         </span>

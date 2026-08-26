@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useGeocoder, type ProximityHint } from './useGeocoder'
 import { addRecent, readRecents, removeRecent } from '@/lib/search/recents'
 import { suggestEntities, type SearchIndex } from '@/lib/search'
+import type { SearchDoc } from '@/lib/search/types'
 import { tokenSimilarity } from '@/lib/search/fuzzy'
 import { fold } from '@/lib/search/text'
 import { ATTRIBUTION, MIN_GEOCODE_QUERY } from '@/lib/geocoding/constants'
@@ -37,6 +38,26 @@ const MAX_ENTITIES = 5
 const MAX_PLACES = 4
 /** How close a query token must be to a tag before we offer it as a filter. */
 const CATEGORY_MATCH_FLOOR = 0.6
+
+/**
+ * The name as it should be READ, not as it is matched.
+ *
+ * `doc.text.name` is the folded form the scorer works on: lowercased and
+ * stripped of punctuation. Rendering it put
+ * "st cloud orthopedics physical therapy" in the dropdown directly above
+ * "St. Cloud Orthopedics Physical Therapy" in the results panel, three
+ * centimetres apart on the same screen. That reads as a bug because it is one.
+ *
+ * `doc.source` carries the original record back out precisely so that
+ * rendering never has to reconstruct anything -- the comment on `SearchDoc`
+ * says so. It is typed as the caller's `T`, so the name is read defensively
+ * rather than by widening the constraint on every call site of this hook.
+ */
+function displayName<T>(doc: SearchDoc<T>): string {
+  const source = doc.source as { name?: unknown } | null | undefined
+  if (typeof source?.name === 'string' && source.name.trim()) return source.name
+  return doc.text.name ?? doc.id
+}
 
 export interface UseSmartSearchOptions<T> {
   index: SearchIndex<T>
@@ -167,14 +188,26 @@ export function useSmartSearch<T>({
 
   const entityItems = useMemo<Suggestion[]>(() => {
     if (!active) return []
-    return suggestEntities(index, trimmed, MAX_ENTITIES, anchor).map((hit) => ({
-      id: `ent-${hit.doc.id}`,
-      kind: 'entity' as const,
-      label: hit.doc.text.name ?? hit.doc.id,
-      sublabel: hit.doc.type === 'lawyer' ? 'Attorney' : 'Clinic',
-      meta: Number.isFinite(hit.distance) ? `${hit.distance.toFixed(1)} mi` : undefined,
-      payload: { kind: 'entity' as const, id: hit.doc.id },
-    }))
+    return suggestEntities(index, trimmed, MAX_ENTITIES, anchor).map((hit) => {
+      const name = displayName(hit.doc)
+      return {
+        id: `ent-${hit.doc.id}`,
+        kind: 'entity' as const,
+        label: name,
+        sublabel: hit.doc.type === 'lawyer' ? 'Attorney' : 'Clinic',
+        meta: Number.isFinite(hit.distance) ? `${hit.distance.toFixed(1)} mi` : undefined,
+        // Coordinates travel with the suggestion so choosing it never depends
+        // on the chooser being able to find the record again. See the comment
+        // on the entity payload in components/search/types.ts.
+        payload: {
+          kind: 'entity' as const,
+          id: hit.doc.id,
+          lat: hit.doc.lat,
+          lng: hit.doc.lng,
+          name,
+        },
+      }
+    })
   }, [active, index, trimmed, anchor])
 
   const placeItems = useMemo<Suggestion[]>(() => {

@@ -3,6 +3,7 @@
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import type { CSSProperties } from 'react'
 import { MapContainer, TileLayer, ZoomControl, Circle, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { useRouter } from 'next/navigation'
@@ -20,7 +21,7 @@ import { VirtualPanelList, type ScrollRequest } from './map/VirtualPanelList'
 import { SmartSearchBox } from '@/components/search/SmartSearchBox'
 import { LocationAnchor } from '@/components/search/LocationAnchor'
 import type { Suggestion } from '@/components/search/types'
-import { Chip, EmptyState, Segmented, Sheet, type SheetSnap } from '@/components/ui'
+import { Chip, EmptyState, Segmented, Sheet, SNAP_FRACTION, type SheetSnap } from '@/components/ui'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapSearch } from '@/hooks/useMapSearch'
@@ -272,6 +273,18 @@ export function MapView({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   /** Scroll request for the results list, raised only by map interaction. */
   const [scrollTo, setScrollTo] = useState<ScrollRequest | null>(null)
+
+  /**
+   * A record the user named that the current filters exclude.
+   *
+   * Set only by the entity branch of `handleSuggestionSelect`. Naming a
+   * provider is an unambiguous intent, so the map goes there either way -- but
+   * the results panel will not contain it, and an empty-looking panel after a
+   * successful search is the kind of thing people read as broken. Clearing
+   * their filters for them would be worse: this codebase rejects that move
+   * everywhere else it comes up.
+   */
+  const [hiddenByFilters, setHiddenByFilters] = useState<{ id: string; name: string } | null>(null)
   /** Phone-only: how far the results sheet is pulled up. */
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>('peek')
 
@@ -833,6 +846,89 @@ export function MapView({
     allowManualPin: true,
   })
 
+  const handleFocusItem = useCallback((item: MapItem) => {
+    setSelectedId(item.id)
+    markersRef.current?.setSelected(item.id)
+    // Opens the pin's popup, spiderfying its cluster first if needed — the
+    // panel used to only re-centre, leaving no sign of which result was picked.
+    markersRef.current?.focus(item.id)
+    // Get out of the way only where the panel covers the map. On a phone the
+    // sheet drops to peek rather than vanishing, so the list is one drag away.
+    if (window.matchMedia('(max-width: 639px)').matches) setSheetSnap('peek')
+    else if (window.matchMedia('(max-width: 1023px)').matches) setShowPanel(false)
+  }, [])
+
+  /**
+   * How many results the camera is allowed to frame.
+   *
+   * A search for "chiropractic" matches hundreds across two states; fitting all
+   * of them puts the view back where it started, at the whole country. Framing
+   * the nearest fifty answers the question the user is actually asking — where
+   * are the ones I would use — and one outlier in Pensacola cannot drag the
+   * camera off it.
+   */
+  const FIT_RESULTS = 50
+
+  /**
+   * Move the camera to where the results are.
+   *
+   * The gap this closes: committing a search did nothing spatially. Typing
+   * "chiropractic" and pressing Enter filled the panel with four hundred rows
+   * while the map sat on the state centroid, so the number told you how many
+   * and the map told you nothing about where — which is the one thing a map is
+   * for. "400 results" means something completely different when twelve are
+   * near your client and when none are within sixty miles.
+   *
+   * Called only when the user COMMITS an intent, never on a keystroke. Panning
+   * the map while someone is still typing is the silent reshuffle that
+   * `map-search.spec.ts` was written to forbid.
+   */
+  const fitResults = useCallback((items: readonly MapItem[]) => {
+    const map = mapRef.current
+    if (!map || items.length === 0) return
+
+    // A radius search has already been framed by `applyRadius`, and re-framing
+    // it to the results would quietly contradict the circle drawn on screen.
+    if (searchedLocation && radiusMiles) return
+
+    programmaticMoveRef.current = true
+
+    if (items.length === 1) {
+      map.setView([items[0].lat, items[0].lng], 14, { animate: !prefersReducedMotion() })
+      return
+    }
+
+    const bounds = L.latLngBounds(
+      items.slice(0, FIT_RESULTS).map((item) => [item.lat, item.lng] as [number, number])
+    )
+    map.fitBounds(bounds, {
+      maxZoom: 14,
+      padding: [48, 48],
+      animate: !prefersReducedMotion(),
+    })
+  }, [searchedLocation, radiusMiles])
+
+  /**
+   * Ask for a fit on the NEXT render, once the results have caught up.
+   *
+   * Choosing a specialty calls `setTagFilters`, and `panelItems` is a memo
+   * derived from that state — so calling `fitResults(panelItems)` in the same
+   * handler frames the results the filter was about to replace. A bump-a-nonce
+   * effect reads whatever `panelItems` has become, and fires even when the
+   * result set happens not to have changed, which an effect keyed on
+   * `panelItems` would not.
+   */
+  const [fitNonce, setFitNonce] = useState(0)
+  const requestFit = useCallback(() => setFitNonce((n) => n + 1), [])
+
+  useEffect(() => {
+    if (fitNonce === 0) return
+    fitResults(panelItems)
+    // `panelItems` is deliberately not a dependency: this must fire when a fit
+    // is REQUESTED, not whenever the results happen to change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitNonce])
+
   const handleSuggestionSelect = useCallback(
     async (suggestion: Suggestion) => {
       const { payload } = suggestion
@@ -878,12 +974,38 @@ export function MapView({
         case 'entity': {
           // Jump to the record itself and open its popup, rather than merely
           // filtering the list down to it.
-          const item = byId.get(payload.id)
-          if (!item) return
-          remember(item.name)
+          //
+          // Three things were wrong here and they compounded. The handler
+          // resolved the id against `byId`, which holds only the FILTERED
+          // results, while `suggestEntities` ignores filters on purpose -- so
+          // with Attorneys off, a radius set, or "This area only" active, this
+          // hit `if (!item) return` and the click did nothing at all. When it
+          // did resolve it contradicted the comment above: `setView` only, no
+          // selection and no popup. And it never marked the move as
+          // programmatic, so a jump of more than MOVED_THRESHOLD_MILES raised
+          // "Search this area" immediately after the action that framed it.
+          //
+          // The payload now carries its own coordinates, so the jump never
+          // depends on the lookup succeeding. Whether the record is in the
+          // current results becomes something to SAY rather than a reason to
+          // do nothing.
+          remember(payload.name)
           setFilterText('')
-          mapRef.current?.setView([item.lat, item.lng], 15)
-          setShowPanel(false)
+          programmaticMoveRef.current = true
+
+          const item = byId.get(payload.id)
+          if (item) {
+            setHiddenByFilters(null)
+            handleFocusItem(item)
+            return
+          }
+
+          // Asked for by name, excluded by a filter the user set earlier and
+          // may well have forgotten. Go there anyway -- naming a record is a
+          // clear enough intent -- and offer the way back rather than
+          // silently clearing filters on their behalf.
+          mapRef.current?.setView([payload.lat, payload.lng], 15)
+          setHiddenByFilters({ id: payload.id, name: payload.name })
           return
         }
         case 'category':
@@ -893,13 +1015,16 @@ export function MapView({
           setTagFilters((current) =>
             current.includes(payload.tag) ? current : [...current, payload.tag]
           )
+          // Choosing a specialty is a commit like pressing Enter, so the map
+          // follows. Deferred, because the filter has not been applied yet.
+          requestFit()
           return
         case 'recent':
           setFilterText(payload.query)
           return
       }
     },
-    [remember, applyPlace, byId, resolvePlace, resetSession]
+    [remember, applyPlace, byId, resolvePlace, resetSession, handleFocusItem, requestFit]
   )
 
   const handleSuggestionRemove = useCallback(
@@ -909,14 +1034,16 @@ export function MapView({
     [forget]
   )
 
+
   const handleSearchSubmit = useCallback(
     (value: string) => {
       if (value.trim()) remember(value)
       setShowPanel(true)
       // On a phone, committing a search should reveal what it found.
       setSheetSnap((current) => (current === 'peek' ? 'half' : current))
+      requestFit()
     },
-    [remember]
+    [remember, requestFit]
   )
 
   /* ── Shareable URL ── */
@@ -1155,17 +1282,6 @@ export function MapView({
     setMapMoved(moved > MOVED_THRESHOLD_MILES)
   }, [publishZoom, syncProximity])
 
-  const handleFocusItem = useCallback((item: MapItem) => {
-    setSelectedId(item.id)
-    markersRef.current?.setSelected(item.id)
-    // Opens the pin's popup, spiderfying its cluster first if needed — the
-    // panel used to only re-centre, leaving no sign of which result was picked.
-    markersRef.current?.focus(item.id)
-    // Get out of the way only where the panel covers the map. On a phone the
-    // sheet drops to peek rather than vanishing, so the list is one drag away.
-    if (window.matchMedia('(max-width: 639px)').matches) setSheetSnap('peek')
-    else if (window.matchMedia('(max-width: 1023px)').matches) setShowPanel(false)
-  }, [])
 
   const userRole = session?.user?.role
 
@@ -1251,18 +1367,51 @@ export function MapView({
     />
   )
 
+  /**
+   * "You asked for this one and your filters exclude it."
+   *
+   * Sits above the list rather than inside the empty state, because the list is
+   * usually NOT empty in this case -- the record the user named is simply not
+   * in it, which is a more confusing thing to look at than nothing at all.
+   */
+  const hiddenNotice = hiddenByFilters && (
+    <div
+      data-testid="map-hidden-by-filters"
+      role="status"
+      className="flex items-center gap-2 border-b border-amber-200/70 bg-amber-50/70 px-5 py-2.5 text-[11px] leading-snug text-amber-900"
+    >
+      <span className="min-w-0 flex-1 truncate">
+        <span className="font-semibold">{hiddenByFilters.name}</span> is hidden by your filters
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          handleClearFilters()
+          setHiddenByFilters(null)
+        }}
+        data-testid="map-hidden-by-filters-clear"
+        className="flex-shrink-0 rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-semibold text-amber-900 transition-colors hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+      >
+        Show it
+      </button>
+    </div>
+  )
+
   const panelBody = (
-    <VirtualPanelList
-      items={panelItems}
-      onFocus={handleFocusItem}
-      onHover={handleHoverItem}
-      onRefer={handleReferral}
-      userRole={userRole}
-      hoveredId={hoveredId}
-      selectedId={selectedId}
-      scrollTo={scrollTo}
-      emptyState={emptyState}
-    />
+    <>
+      {hiddenNotice}
+      <VirtualPanelList
+        items={panelItems}
+        onFocus={handleFocusItem}
+        onHover={handleHoverItem}
+        onRefer={handleReferral}
+        userRole={userRole}
+        hoveredId={hoveredId}
+        selectedId={selectedId}
+        scrollTo={scrollTo}
+        emptyState={emptyState}
+      />
+    </>
   )
 
   /* ── Loading state ── */
@@ -1289,7 +1438,22 @@ export function MapView({
 
   /* ── Main map ── */
   return (
-    <div className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-2xl overflow-hidden shadow-md">
+    <div
+      className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-2xl overflow-hidden shadow-md"
+      style={
+        // How much of the map the results sheet is currently covering, so the
+        // OpenStreetMap credit can sit just above it. Leaflet puts z-index
+        // 1000 on its corner containers, which is higher than the sheet, so
+        // the credit has always painted OVER the sheet rather than behind it
+        // -- it just used to do so at the very bottom edge where it was easy
+        // to miss. A percentage, because `bottom` resolves against the
+        // container height while `margin-bottom` would resolve against its
+        // width.
+        useSheet
+          ? ({ ['--xc-sheet']: `${SNAP_FRACTION[sheetSnap] * 100}%` } as CSSProperties)
+          : undefined
+      }
+    >
       {/* MAP */}
       {/* The map is inset on desktop so the docked results panel sits
           beside it rather than covering it. */}
@@ -1300,7 +1464,6 @@ export function MapView({
         className="h-full w-full"
         scrollWheelZoom={true}
         zoomControl={false}
-        preferCanvas={true}
         ref={mapRef}
       >
         <MapEvents
@@ -1309,7 +1472,14 @@ export function MapView({
           // moves someone's anchor by accident.
           onPick={placingPin ? handlePickPin : undefined}
         />
-        <ZoomControl position="bottomleft" />
+        {/* Bottom-left, and not on a phone at all.
+
+            The results sheet owns the bottom of a phone screen -- at its peek
+            snap it sits over exactly where these buttons are, so the sort
+            control was rendered underneath a + and a −. Pinch is how anyone
+            zooms a map on a touch screen anyway; the buttons are there for a
+            mouse, and a mouse comes with a scroll wheel and a wider window. */}
+        {!isPhone && <ZoomControl position="bottomleft" />}
         {/* Standard OpenStreetMap tiles. A muted CARTO basemap was tried, on
             the theory that a quieter background lets the pins carry the
             colour, but the client prefers this one: the green land and blue
