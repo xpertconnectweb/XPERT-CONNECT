@@ -2493,8 +2493,16 @@ export function MapView({
           bound, and the user was told nothing — because on a freshly loaded map
           neither `mapMoved` nor `viewportBounds` is true, so the whole slot was
           absent. Three E2E cases caught it; nothing in the type system could. */}
+      {/* The row is never wider than the screen, and wraps by whole pills.
+
+          At 390px "Search as I move the map" and "Search this area" together
+          are wider than the phone, and a centred row with no cap overflowed
+          both edges at once — so each label broke into four lines of one or two
+          words and the pair sat on top of the pins. It was easy to miss because
+          in the default view the results sheet covers that corner; with the map
+          on its own there is nothing left to hide it. */}
       {(mapMoved || viewportBounds || placingPin || hasPanned) && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-1/2 z-[502] flex items-center gap-2">
+        <div className="absolute bottom-6 left-1/2 z-[502] flex max-w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2">
           {/* Armed by "place the pin yourself". Occupies the same slot as the
               other pills, and suppresses "Search this area" while it is up so
               two competing calls to action never stack. */}
@@ -2502,7 +2510,7 @@ export function MapView({
             <div
               role="status"
               data-testid="map-pin-placing"
-              className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-xs font-bold text-navy shadow-lg shadow-gold/30"
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gold px-4 py-2 text-xs font-bold text-navy shadow-lg shadow-gold/30"
             >
               <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
               Click the map to set the location
@@ -2529,7 +2537,7 @@ export function MapView({
           {!placingPin && hasPanned && (
             <label
               className={cn(
-                'inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-semibold shadow-lg backdrop-blur-xl transition-all',
+                'inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-3 py-2 text-[11px] font-semibold shadow-lg backdrop-blur-xl transition-all',
                 autoSearchArea
                   ? 'border-navy/20 bg-navy text-white shadow-navy/30'
                   : 'border-white/60 bg-white/[0.92] text-gray-600 shadow-black/[0.08] hover:text-navy'
@@ -2554,7 +2562,7 @@ export function MapView({
               type="button"
               onClick={handleSearchThisArea}
               data-testid="map-search-this-area"
-              className="inline-flex items-center gap-2 rounded-full bg-navy px-4 py-2 text-xs font-bold text-white shadow-lg shadow-navy/30 hover:bg-navy-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 transition-all"
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-navy px-4 py-2 text-xs font-bold text-white shadow-lg shadow-navy/30 hover:bg-navy-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 transition-all"
             >
               <Search className="h-3.5 w-3.5" aria-hidden="true" />
               Search this area
@@ -2566,7 +2574,7 @@ export function MapView({
               onClick={handleClearViewport}
               aria-label="Stop limiting results to this area"
               data-testid="map-clear-viewport"
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.92] backdrop-blur-xl px-3 py-2 text-[11px] font-semibold text-gray-600 border border-white/60 shadow-lg shadow-black/[0.08] hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 transition-all"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/[0.92] backdrop-blur-xl px-3 py-2 text-[11px] font-semibold text-gray-600 border border-white/60 shadow-lg shadow-black/[0.08] hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 transition-all"
             >
               This area only
               <X className="h-3 w-3" aria-hidden="true" />
