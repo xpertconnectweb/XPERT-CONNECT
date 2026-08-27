@@ -43,7 +43,16 @@ export type SuggestionPayload =
    */
   | { kind: 'entity'; id: string; lat: number; lng: number; name: string }
   | { kind: 'category'; tag: string }
-  | { kind: 'recent'; query: string }
+  /**
+   * A search the user ran before.
+   *
+   * `near` rides along when the search was anchored to a place, and it has to
+   * — the row RENDERS that place as its subtitle, so choosing the row and
+   * getting only the text back is the interface promising a location and
+   * delivering a string. The history had the coordinates the whole time and
+   * the payload dropped them.
+   */
+  | { kind: 'recent'; query: string; near?: { lat: number; lng: number; label: string } }
   /** "Start from wherever I am." Offered only with an empty box. */
   | { kind: 'geolocate' }
   /** "None of these — let me point at it on the map." */

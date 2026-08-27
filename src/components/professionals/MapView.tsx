@@ -1216,9 +1216,36 @@ export function MapView({
           // follows. Deferred, because the filter has not been applied yet.
           requestFit()
           return
-        case 'recent':
+        case 'recent': {
+          /**
+           * Go back to the search, not just to the words.
+           *
+           * A recent row shows the place it was anchored to as its subtitle, and
+           * choosing it only set the query text — so picking "862 62nd St Cir E ·
+           * Bradenton" filtered the current results by the string "862 62nd St
+           * Cir E", matched no provider name, and emptied the panel. The user
+           * reported it as "nothing happens", which is the right description of
+           * an interface that offers a location and hands back a filter.
+           *
+           * With a place: restore the place, exactly as choosing it from the
+           * Places group does — including clearing the text, because an address
+           * is not a thing to filter provider names by.
+           */
+          if (payload.near) {
+            setFilterText('')
+            applyPlace(
+              payload.near.lat,
+              payload.near.lng,
+              payload.near.label,
+              ZOOM_FOR_KIND.address
+            )
+            return
+          }
+          // No place behind it: it really was just a text search.
           setFilterText(payload.query)
+          requestFit()
           return
+        }
       }
     },
     [remember, applyPlace, byId, resolvePlace, resetSession, handleFocusItem, requestFit, handleGeolocate]
@@ -2086,68 +2113,86 @@ export function MapView({
                   </div>
                 )}
 
-                {/* Type toggles + availability. Toned to match the pins they
-                    control, so the legend is the control rather than a separate
-                    thing to learn. */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {showClinicsProp && (
-                    <Chip
-                      selected={showClinics}
-                      onToggle={() => setShowClinics(!showClinics)}
-                      tone="clinic"
-                      count={typeCount('clinic')}
-                      icon={
-                        isClinicViewer
-                          ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
-                          : <Building2 className="h-3 w-3" aria-hidden="true" />
-                      }
-                    >
-                      {isClinicViewer ? 'Specialists' : 'Clinics'}
-                    </Chip>
-                  )}
-                  {showLawyersProp && (
-                    <Chip
-                      selected={showLawyers}
-                      onToggle={() => setShowLawyers(!showLawyers)}
-                      tone="lawyer"
-                      count={typeCount('lawyer')}
-                      icon={<Scale className="h-3 w-3" aria-hidden="true" />}
-                    >
-                      Attorneys
-                    </Chip>
-                  )}
-                  <Chip
-                    selected={showAvailableOnly}
-                    onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
-                    tone="available"
-                    aria-label="Show only providers accepting referrals"
-                    data-testid="map-available-chip"
-                    icon={
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          'h-1.5 w-1.5 rounded-full transition-colors',
-                          showAvailableOnly ? 'bg-white' : 'bg-gray-300'
-                        )}
-                      />
-                    }
-                  >
-                    Available
-                  </Chip>
-                </div>
               </div>
             )}
 
-            {/* The summary line. Owns the counter, so no control above it can
-                reflow when a number appears or changes width. */}
+            {/* The state of the search, in one line.
+                Owns the counter, so no control above it can reflow when a
+                number appears or changes width.
+
+                It used to end on "Clear 1 filter" from the very first render,
+                because `showAvailableOnly` starts true. So every session opened
+                by telling the user they had a filter — naming a quantity rather
+                than a thing, for a filter they had not set and whose own chip
+                now sits at the other end of this very line.
+
+                `Clear all` now appears only once something is genuinely stacked
+                up. With one filter the chip that set it is the way to unset it,
+                and a second control for the same job is what made this line
+                read as a warning. */}
             <div className="flex items-center gap-2 border-t border-gray-200/50 pt-2">
+              {/* The type toggles live on this line rather than a row of their
+                  own. On the clinic map exactly one of them renders, and a
+                  whole row of glass for a single chip is why this card was
+                  taller than what it controlled.
+
+                  NOT removed, which is what I tried first. It looks like a
+                  dead switch -- turning off the only type on the map empties
+                  the screen -- but `map-search.spec.ts:347` records that a
+                  real user pressed it on the live site and reported it as
+                  broken when it did nothing. Someone reaching for a control
+                  is the evidence that settles whether it is one. */}
+              {showClinicsProp && (
+                <Chip
+                  selected={showClinics}
+                  onToggle={() => setShowClinics(!showClinics)}
+                  tone="clinic"
+                  count={typeCount('clinic')}
+                  icon={
+                    isClinicViewer
+                      ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
+                      : <Building2 className="h-3 w-3" aria-hidden="true" />
+                  }
+                >
+                  {isClinicViewer ? 'Specialists' : 'Clinics'}
+                </Chip>
+              )}
+              {showLawyersProp && (
+                <Chip
+                  selected={showLawyers}
+                  onToggle={() => setShowLawyers(!showLawyers)}
+                  tone="lawyer"
+                  count={typeCount('lawyer')}
+                  icon={<Scale className="h-3 w-3" aria-hidden="true" />}
+                >
+                  Attorneys
+                </Chip>
+              )}
+              <Chip
+                selected={showAvailableOnly}
+                onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
+                tone="available"
+                aria-label="Show only providers accepting referrals"
+                data-testid="map-available-chip"
+                icon={
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full transition-colors',
+                      showAvailableOnly ? 'bg-white' : 'bg-gray-300'
+                    )}
+                  />
+                }
+              >
+                Available
+              </Chip>
               <p className="min-w-0 flex-1 text-[11px] leading-tight text-gray-500" data-testid="map-summary">
                 <span className="font-semibold tabular-nums text-navy">{resultTotal}</span>
                 {areaTotal > resultTotal && (
                   <span className="tabular-nums"> of {areaTotal}</span>
                 )}
                 {radiusMiles ? ` within ${radiusMiles} mi` : ' shown'}
-                {activeFilterCount > 0 && (
+                {activeFilterCount > 1 && (
                   <>
                     {' · '}
                     <button
@@ -2156,7 +2201,7 @@ export function MapView({
                       data-testid="map-clear-filters"
                       className="font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                     >
-                      Clear {activeFilterCount} {activeFilterCount === 1 ? 'filter' : 'filters'}
+                      Clear all
                     </button>
                   </>
                 )}

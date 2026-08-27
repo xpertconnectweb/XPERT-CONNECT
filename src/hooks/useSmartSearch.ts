@@ -310,7 +310,7 @@ export function useSmartSearch<T>({
             label: entry.query,
             sublabel: entry.near?.label,
             removable: true,
-            payload: { kind: 'recent' as const, query: entry.query },
+            payload: { kind: 'recent' as const, query: entry.query, near: entry.near },
           })),
         },
       ]
