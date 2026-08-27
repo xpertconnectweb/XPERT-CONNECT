@@ -55,6 +55,20 @@ export interface SmartSearchBoxProps {
   'aria-label'?: string
   autoFocus?: boolean
   className?: string
+  /**
+   * Extra classes for the suggestion listbox, so a caller can give it the room
+   * it has. The default 22rem is right for a dropdown floating over a map and
+   * wrong for a phone's search screen, where the list IS the screen.
+   */
+  listClassName?: string
+  /**
+   * Fires when the widget opens or closes, so a caller can react to the search
+   * being entered rather than having to guess from focus events. Reports `open`
+   * — the user's intent — and not `expanded`, which additionally requires
+   * something to show: on a phone the screen has to take over the moment the
+   * box is tapped, before a single character has been typed.
+   */
+  onOpenChange?: (open: boolean) => void
   /** DOM id for the input, so a form can point a visible `<label>` at it. */
   inputId?: string
   /**
@@ -187,6 +201,8 @@ export function SmartSearchBox({
   autoFocus = false,
   highlight,
   className,
+  listClassName,
+  onOpenChange,
   inputId,
   inputRef: externalInputRef,
   'data-testid': testId = 'map-search',
@@ -251,6 +267,17 @@ export function SmartSearchBox({
     const el = listRef.current.querySelector<HTMLElement>(`[data-index="${activeIndex}"]`)
     el?.scrollIntoView({ block: 'nearest' })
   }, [activeIndex])
+
+  /**
+   * Reported from an effect rather than from each `setOpen` call site: there
+   * are five of them, and one forgotten would be a phone stuck on a search
+   * screen it could not leave.
+   */
+  const openChangeRef = useRef(onOpenChange)
+  openChangeRef.current = onOpenChange
+  useEffect(() => {
+    openChangeRef.current?.(open)
+  }, [open])
 
   const close = useCallback(() => {
     setOpen(false)
@@ -432,6 +459,7 @@ export function SmartSearchBox({
         data-testid={`${testId}-listbox`}
         className={cn(
           'absolute z-[501] top-full left-0 right-0 mt-2 max-h-[22rem] overflow-y-auto rounded-xl bg-white shadow-2xl shadow-black/[0.12] border border-gray-200/60 py-1',
+          listClassName,
           !expanded && 'hidden'
         )}
       >

@@ -670,6 +670,98 @@ export function MapView({
   }, [searchedOrigin])
 
   /**
+   * Re-scope to the viewport on every pan, instead of offering to.
+   *
+   * Off by default, and deliberately so: a list that reshuffles under your
+   * thumb while you are still moving the map is disorienting, and the manual
+   * pill is the safer thing to meet first. But once someone is sweeping a
+   * corridor -- which is what a lawyer looking for a clinic near a client
+   * actually does -- confirming every single pan is the tax, so the preference
+   * is remembered.
+   */
+  const [autoSearchArea, setAutoSearchArea] = useState(false)
+
+  /**
+   * Whether the user has panned this map themselves, even once.
+   *
+   * Gates the follow-the-map switch, and it has to be something other than the
+   * switch's own value or the control unmounts the instant you turn it off:
+   * the setting went false, the condition that rendered it went false with it,
+   * and the checkbox you had just clicked vanished from under the cursor with
+   * no way back short of panning again. Caught by driving it rather than by
+   * reading it.
+   */
+  const [hasPanned, setHasPanned] = useState(false)
+
+  /**
+   * Whether the search box is open, which on a phone means the search takes
+   * over the screen.
+   *
+   * On a 390px phone the box was a 250px field in a card floating over a map,
+   * with a dropdown capped at 22rem competing with the pins behind it for the
+   * reader's attention. It is the single most-used control on the page and it
+   * had the least room of anything. Full screen while you are searching is
+   * what every map application does on a phone, and it costs nothing here: the
+   * SAME input node grows into the screen, so focus, the ARIA combobox
+   * contract and every test that addresses `map-search-input` are untouched.
+   */
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  /** Phone only. On a tablet or wider the dropdown has room to just be a dropdown. */
+  const searchTakeover = isPhone && searchOpen
+
+  // Read through a ref: the `moveend` listener is bound once when the map is
+  // ready, so a value captured in the closure would be frozen at whatever the
+  // setting was at mount. The same reason `appliedCenterRef` exists.
+  const autoSearchAreaRef = useRef(autoSearchArea)
+  autoSearchAreaRef.current = autoSearchArea
+
+  useEffect(() => {
+    let stored = false
+    try {
+      stored = window.localStorage.getItem('xc:map-auto-area') === '1'
+    } catch {
+      // Storage disabled; the preference simply will not persist.
+    }
+    setAutoSearchArea(stored)
+    // Show the switch straight away when the setting comes back on, rather
+    // than waiting for a pan. Otherwise the mode is live and invisible: the
+    // next drag silently re-scopes the whole list and the only control that
+    // explains why has not been rendered yet.
+    if (stored) setHasPanned(true)
+  }, [])
+
+  /**
+   * Reached from `moveend`, which is bound once and cannot see a later
+   * `useCallback`, and from `setAutoArea`, which is declared above the handler
+   * so that `applyRadius` can retire the setting. A ref rather than a
+   * dependency because re-binding the Leaflet listener on every render is what
+   * `MapEvents` exists to avoid.
+   */
+  const searchThisAreaRef = useRef<() => void>(() => {})
+
+  /**
+   * The one control for "follow the map". Turning it on re-scopes immediately —
+   * a switch that takes effect only on your NEXT pan looks broken — and turning
+   * it off releases the viewport, so the user never has to find and press a
+   * second control to undo what this one did.
+   */
+  const setAutoArea = useCallback(
+    (next: boolean) => {
+      setAutoSearchArea(next)
+      try {
+        window.localStorage.setItem('xc:map-auto-area', next ? '1' : '0')
+      } catch {
+        // Storage disabled; the preference simply will not persist.
+      }
+      if (next) searchThisAreaRef.current()
+      else setViewportBounds(null)
+      setMapMoved(false)
+    },
+    []
+  )
+
+  /**
    * Frame the radius the user just chose.
    *
    * Changing 5 mi to 50 mi used to alter nothing on screen but a small number:
@@ -680,6 +772,11 @@ export function MapView({
   const applyRadius = useCallback(
     (miles: number | null) => {
       setRadiusMiles(miles)
+      // A radius and a live viewport are two competing answers to "how far out
+      // are we looking?", which is why handleSearchThisArea clears the radius.
+      // The same has to hold in this direction, or the next pan would silently
+      // throw away the radius the user just chose.
+      if (miles) setAutoArea(false)
       if (!miles || !searchedLocation || !mapRef.current) return
       programmaticMoveRef.current = true
       mapRef.current.fitBounds(radiusBounds(searchedLocation, miles), {
@@ -687,7 +784,7 @@ export function MapView({
         animate: !prefersReducedMotion(),
       })
     },
-    [searchedLocation]
+    [searchedLocation, setAutoArea]
   )
 
   /**
@@ -1349,6 +1446,8 @@ export function MapView({
     setShowPanel(true)
   }, [])
 
+  searchThisAreaRef.current = handleSearchThisArea
+
   const handleClearViewport = useCallback(() => {
     setViewportBounds(null)
     setMapMoved(false)
@@ -1511,6 +1610,7 @@ export function MapView({
     // A move that reached here is the user's own. The opening-view fetch reads
     // this so it cannot snap them home from wherever they had already gone.
     userMovedRef.current = true
+    setHasPanned(true)
 
     const centre = map.getCenter()
     // Offer to re-scope rather than doing it unasked.
@@ -1538,7 +1638,20 @@ export function MapView({
       bounds.getEast()
     )
     const threshold = Math.max(MOVED_THRESHOLD_MILES * 0.25, spanMiles * 0.3)
-    setMapMoved(moved > threshold)
+    if (moved <= threshold) {
+      setMapMoved(false)
+      return
+    }
+
+    // Same threshold either way. Re-running the search on a three-pixel nudge
+    // would thrash the list for no gain, and the reason the pill uses a
+    // proportion of the visible width rather than a fixed distance applies
+    // exactly as much when nobody is being asked first.
+    if (autoSearchAreaRef.current) {
+      searchThisAreaRef.current()
+      return
+    }
+    setMapMoved(true)
   }, [publishZoom, syncProximity])
 
 
@@ -1835,6 +1948,16 @@ export function MapView({
                 value={filterText}
                 onChange={setFilterText}
                 inputRef={searchInputRef}
+                onOpenChange={setSearchOpen}
+                listClassName={
+                  // Not a dropdown any more: it starts under the field and runs
+                  // to the bottom of the screen. dvh rather than vh because the
+                  // mobile keyboard is about to take a third of the window and
+                  // vh would not notice.
+                  searchTakeover
+                    ? 'sm:!max-h-[22rem] !max-h-[calc(100dvh-10rem)] !border-0 !shadow-none !rounded-xl'
+                    : undefined
+                }
                 onSubmit={handleSearchSubmit}
                 onSelect={handleSuggestionSelect}
                 onRemove={handleSuggestionRemove}
@@ -2292,7 +2415,7 @@ export function MapView({
           bound, and the user was told nothing — because on a freshly loaded map
           neither `mapMoved` nor `viewportBounds` is true, so the whole slot was
           absent. Three E2E cases caught it; nothing in the type system could. */}
-      {(mapMoved || viewportBounds || placingPin) && (
+      {(mapMoved || viewportBounds || placingPin || hasPanned) && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-1/2 z-[502] flex items-center gap-2">
           {/* Armed by "place the pin yourself". Occupies the same slot as the
               other pills, and suppresses "Search this area" while it is up so
@@ -2316,7 +2439,39 @@ export function MapView({
               </button>
             </div>
           )}
-          {mapMoved && !placingPin && (
+          {/* Follow-the-map, in the same spot as the pill it replaces.
+
+              Deliberately NOT in the filter card: it is a decision about the
+              map, taken while looking at the map, and it appears at the moment
+              it becomes relevant — the first time a pan raises "Search this
+              area" — which is the only moment anyone would think to want it.
+              A checkbox rather than a pill, because it has a state rather than
+              an action, and it reports that state to a screen reader without
+              needing to be told what it means. */}
+          {!placingPin && hasPanned && (
+            <label
+              className={cn(
+                'inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-semibold shadow-lg backdrop-blur-xl transition-all',
+                autoSearchArea
+                  ? 'border-navy/20 bg-navy text-white shadow-navy/30'
+                  : 'border-white/60 bg-white/[0.92] text-gray-600 shadow-black/[0.08] hover:text-navy'
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={autoSearchArea}
+                onChange={(event) => setAutoArea(event.target.checked)}
+                data-testid="map-auto-area"
+                // `accent-` rather than `text-`: without the forms plugin a
+                // native checkbox ignores the text colour and paints itself the
+                // browser's blue, which on a navy pill is the one colour on the
+                // page that belongs to no one.
+                className="h-3.5 w-3.5 cursor-pointer rounded border-gray-300 accent-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-1"
+              />
+              Search as I move the map
+            </label>
+          )}
+          {mapMoved && !placingPin && !autoSearchArea && (
             <button
               type="button"
               onClick={handleSearchThisArea}
@@ -2327,7 +2482,7 @@ export function MapView({
               Search this area
             </button>
           )}
-          {viewportBounds && (
+          {viewportBounds && !autoSearchArea && (
             <button
               type="button"
               onClick={handleClearViewport}
@@ -2355,7 +2510,21 @@ export function MapView({
           half the card empty beside them. Above 640px the card hits its
           420px cap long before the buttons, so the margin is phone-only. */}
       <div
-        className="absolute top-4 left-4 right-4 z-[500] max-w-[420px]"
+        className={cn(
+          'z-[500]',
+          searchTakeover
+            ? // Fixed, not absolute: the search screen belongs to the viewport,
+              // not to the map pane it was floating over.
+              //
+              // 1100 because Leaflet stacks `.leaflet-bottom` at 1000 — not the
+              // 800 its controls advertise — and neither wrapper in between
+              // opens a stacking context, so the two compete at the root and
+              // the OpenStreetMap attribution was painting straight through the
+              // middle of the search screen. The same 1000 is why the zoom
+              // control had to be dropped on a phone.
+              'fixed inset-0 z-[1100]'
+            : 'absolute top-4 left-4 right-4 max-w-[420px]'
+        )}
         style={{ pointerEvents: 'none' }}
       >
         {/* Search is here at every width and in every state -- it is never
@@ -2365,19 +2534,46 @@ export function MapView({
             homes. Collapsing the results is a request to see the map, not to
             put the controls away. */}
         <div
-          className="space-y-2.5 rounded-2xl border border-white/60 bg-white/[0.92] p-3 shadow-xl shadow-black/[0.08] backdrop-blur-xl"
+          className={cn(
+            'space-y-2.5 border bg-white/[0.92] backdrop-blur-xl',
+            searchTakeover
+              ? 'h-full rounded-none border-transparent bg-white p-4 shadow-none'
+              : 'rounded-2xl border-white/60 p-3 shadow-xl shadow-black/[0.08]'
+          )}
           style={{ pointerEvents: 'auto' }}
         >
+          {/* A way out that is not "tap the one part of the map still showing".
+              A full-screen overlay covers whatever you would otherwise tap to
+              dismiss it, so it has to carry its own exit. */}
+          {searchTakeover && (
+            <div className="flex items-center justify-between pb-1">
+              <span className="text-sm font-bold text-navy">Search</span>
+              <button
+                type="button"
+                onClick={() => {
+                  // Blur first: the box closes when focus leaves it, and going
+                  // through its own path keeps the active-option state in step
+                  // instead of leaving a highlighted row behind a closed list.
+                  searchInputRef.current?.blur()
+                  setSearchOpen(false)
+                }}
+                data-testid="map-search-cancel"
+                className="rounded-lg px-2 py-1 text-xs font-semibold text-gray-500 hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
           {/* Only the search input dodges the locate/list buttons in the top
               right, and only on a phone: reserving that width for the whole
               card left the expanded specialties 211px to wrap into, which is
               one chip per row with half the card empty beside it. */}
-          <div className="mr-[4.5rem] sm:mr-0">{searchBlock}</div>
+          <div className={cn(!searchTakeover && 'mr-[4.5rem] sm:mr-0')}>{searchBlock}</div>
           {/* The filters follow the results. With a rail open they sit at the
               head of it, next to the list they narrow; with no rail they have
               nowhere else to be, so they come back here under the box —
               in the same card, not a second one below it. */}
-          {!(panelDocked && showPanel) && filterBlock}
+          {!(panelDocked && showPanel) && !searchTakeover && filterBlock}
         </div>
       </div>
 
