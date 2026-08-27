@@ -11,7 +11,7 @@ import { useSession } from 'next-auth/react'
 import {
   AlertTriangle, RefreshCw, Search, X,
   Locate, Loader2, List as ListIcon, ChevronRight, Building2, Scale, Stethoscope,
-  Copy, Check, SlidersHorizontal, MapPin,
+  Copy, Check, SlidersHorizontal, MapPin, Maximize2, Minimize2,
 } from 'lucide-react'
 import { ReferralFormModal } from './ReferralFormModal'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
@@ -388,6 +388,22 @@ export function MapView({
    * everywhere else it comes up.
    */
   const [hiddenByFilters, setHiddenByFilters] = useState<{ id: string; name: string } | null>(null)
+  /**
+   * Full-map mode: the app chrome and every overlay the map carries are put
+   * away, leaving the map, the locate button and the way back out.
+   *
+   * The comment on the search card says collapsing the results is a request
+   * to see the map and not to put the controls away, and that is still true
+   * of the rail toggle. This is the other request, made explicitly, with a
+   * control of its own that says what it does and undoes it in one press.
+   *
+   * Deliberately NOT persisted, unlike the rail and the follow-the-map
+   * preference. Those are preferences; this is a mode you are in. Restoring
+   * it on the next visit would open the page with no navigation, no search
+   * and no results, and nothing on screen to explain why.
+   */
+  const [immersive, setImmersive] = useState(false)
+
   /** Phone-only: how far the results sheet is pulled up. */
   const [sheetSnap, setSheetSnap] = useState<SheetSnap>('peek')
 
@@ -1545,6 +1561,30 @@ export function MapView({
     return () => clearTimeout(timer)
   }, [showPanel, panelDocked])
 
+  // Escape leaves full-map mode. A mode that hides the navigation has to be
+  // reversible by the key people already try when a thing has taken over the
+  // screen -- the button alone is not enough if it is ever missed.
+  useEffect(() => {
+    if (!immersive) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setImmersive(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [immersive])
+
+  // Same reason as the docked panel above: Leaflet caches its container size
+  // and only re-measures on a window resize. Entering and leaving full-map
+  // mode changes that size through CSS, which it never hears about, so the
+  // strip that was the sidebar would stay blank.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    map.invalidateSize()
+    const timer = setTimeout(() => map.invalidateSize(), 350)
+    return () => clearTimeout(timer)
+  }, [immersive])
+
   useEffect(() => {
     if (!panelAttention) return
     // Nudge, do not nag.
@@ -2327,7 +2367,16 @@ export function MapView({
   /* ── Main map ── */
   return (
     <div
-      className="relative h-[calc(100vh-4rem)] bg-gray-100 rounded-2xl overflow-hidden shadow-md"
+      className={cn(
+        'bg-gray-100 overflow-hidden',
+        immersive
+          ? // Fixed over the whole viewport, which is what takes the sidebar
+            // and the top bar off the screen without either of them having to
+            // know this mode exists. 1200 clears the phone search screen at
+            // 1100, which clears Leaflet's own 1000.
+            'fixed inset-0 z-[1200] rounded-none shadow-none'
+          : 'relative h-[calc(100vh-4rem)] rounded-2xl shadow-md'
+      )}
       style={
         // How much of the map the results sheet is currently covering, so the
         // OpenStreetMap credit can sit just above it. Leaflet puts z-index
@@ -2345,7 +2394,7 @@ export function MapView({
       {/* MAP */}
       {/* The map is inset on desktop so the docked results panel sits
           beside it rather than covering it. */}
-      <div ref={mapShellRef} data-testid="map-shell" className={cn('absolute inset-0 transition-[right] duration-300 ease-out motion-reduce:transition-none', panelDocked && showPanel && 'lg:right-[400px]')}>
+      <div ref={mapShellRef} data-testid="map-shell" className={cn('absolute inset-0 transition-[right] duration-300 ease-out motion-reduce:transition-none', panelDocked && showPanel && !immersive && 'lg:right-[400px]')}>
       <MapContainer
         center={initialCenter}
         zoom={initialZoom}
@@ -2541,6 +2590,10 @@ export function MapView({
       <div
         className={cn(
           'z-[500]',
+          // Put away in full-map mode. This is the one state in which the
+          // note above does not apply: the user asked for the map, not for
+          // the map plus the controls.
+          immersive && 'hidden',
           searchTakeover
             ? // Fixed, not absolute: the search screen belongs to the viewport,
               // not to the map pane it was floating over.
@@ -2611,7 +2664,7 @@ export function MapView({
         className={cn(
           'absolute top-4 right-4 z-[500] flex flex-col gap-2',
           // Clear of the docked panel at desktop widths.
-          panelDocked && showPanel && 'lg:right-[calc(400px+1rem)]'
+          panelDocked && showPanel && !immersive && 'lg:right-[calc(400px+1rem)]'
         )}
       >
         <button onClick={handleGeolocate} disabled={locating}
@@ -2623,8 +2676,9 @@ export function MapView({
           {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Locate className="h-4 w-4" />}
         </button>
         {/* On a phone this raises and lowers the sheet; everywhere else it
-            shows and hides the results list. */}
-        <div className="relative">
+            shows and hides the results list. Gone in full-map mode, where
+            there is no list for it to act on. */}
+        <div className={cn('relative', immersive && 'hidden')}>
           {/* A search can produce results while the list is hidden. The ring
               says "something arrived", the badge says how much. */}
           {panelAttention && (
@@ -2662,6 +2716,29 @@ export function MapView({
             )}
           </button>
         </div>
+        {/* Last in the stack on purpose: locate and the list have been in
+            the same two places since the client signed off on this surface,
+            and a new control should not push them down. */}
+        <button
+          type="button"
+          onClick={() => setImmersive((current) => !current)}
+          aria-pressed={immersive}
+          aria-label={immersive ? 'Exit full map' : 'Full map'}
+          title={immersive ? 'Exit full map (Esc)' : 'Full map'}
+          data-testid="map-immersive-toggle"
+          className={cn(
+            'flex items-center justify-center h-10 w-10 rounded-xl backdrop-blur-xl border shadow-xl shadow-black/[0.08] transition-all duration-200',
+            immersive
+              ? 'bg-navy text-white border-navy shadow-navy/30'
+              : 'bg-white/[0.92] text-gray-500 border-white/60 hover:text-navy hover:bg-white'
+          )}
+        >
+          {immersive ? (
+            <Minimize2 className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Maximize2 className="h-4 w-4" aria-hidden="true" />
+          )}
+        </button>
       </div>
 
       {/* ═══ RESULTS PANEL ═══
@@ -2669,7 +2746,7 @@ export function MapView({
           overlay on tablets, a docked column on desktop. The list is what makes
           results comparable, so on a wide screen it stays put rather than
           sliding away the moment it is used. */}
-      {useSheet ? (
+      {immersive ? null : useSheet ? (
         <Sheet
           snap={sheetSnap}
           onSnapChange={setSheetSnap}
