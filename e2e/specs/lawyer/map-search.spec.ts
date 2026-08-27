@@ -279,6 +279,13 @@ test.describe('unified map search', () => {
     await page.getByTestId('map-search-input').fill('chiro')
     await expect(heading).toHaveText('Best Matches')
 
+    // Close the suggestions before reaching past them. At desktop widths the
+    // search box is the head of the results rail, so its dropdown opens over
+    // the ordering control directly beneath it — which is what a dropdown is
+    // supposed to do, and was invisible when the box floated over the map in a
+    // different corner of the screen.
+    await page.keyboard.press('Escape')
+
     await page.getByRole('radio', { name: 'Alphabetical' }).click()
     await expect(heading).toHaveText('All Results, A–Z')
   })

@@ -1357,7 +1357,7 @@ export function MapView({
     setShowPanel((current) => {
       const next = !current
       try {
-        window.localStorage.setItem('xc:map-panel-open', next ? '1' : '0')
+        window.localStorage.setItem('xc:map-rail-open', next ? '1' : '0')
       } catch {
         // Storage disabled; the preference simply will not persist.
       }
@@ -1381,7 +1381,14 @@ export function MapView({
 
     let stored: string | null = null
     try {
-      stored = window.localStorage.getItem('xc:map-panel-open')
+        // A new key, not the old `xc:map-panel-open`.
+        //
+        // What the stored value MEANS changed: it used to hide a list of
+        // results, and now it decides whether search and filters live in the
+        // rail or float over the map. Anyone who had collapsed the old panel
+        // would have opened the redesign to the layout they were trying to get
+        // away from, and concluded nothing had changed.
+      stored = window.localStorage.getItem('xc:map-rail-open')
     } catch {
       stored = null
     }
@@ -1775,6 +1782,268 @@ export function MapView({
    */
   const detailItem = detailId ? (byId.get(detailId) ?? null) : null
 
+  /**
+   * Search, filters, and the state of both.
+   *
+   * One definition, two homes. On a wide screen it is the HEAD of the results
+   * rail, so search, filters and results are one surface — before this the map
+   * carried three floating things and none of them was the primary one, which
+   * is why the screen read as "a map with controls on top" rather than as a
+   * tool. Below `lg` it stays a card over the map, because a permanent 400px
+   * rail on a 700px screen is most of the screen.
+   *
+   * A constant rather than a second copy: `map-search-input` has to be exactly
+   * one node. The ARIA combobox contract and most of the E2E suite are written
+   * against that, and two would break both.
+   */
+  const controls = (
+    <div className="flex flex-col gap-2.5">
+
+          {/* Glass card container */}
+          <div
+            className={cn(
+              'space-y-2.5',
+              // Glass only where it floats. Inside the rail it would be a
+              // card sitting on a panel, which is one surface too many —
+              // the thing this restructure exists to stop.
+              !(panelDocked && showPanel) &&
+                'rounded-2xl border border-white/60 bg-white/[0.92] p-3 shadow-xl shadow-black/[0.08] backdrop-blur-xl'
+            )}
+          >
+
+            {/* Where the search is anchored. A sibling of the box, never a
+                replacement for it — see LocationAnchor for why. */}
+            {locationLabel && (
+              <LocationAnchor
+                label={locationLabel}
+                address={locationAddress}
+                onClear={handleClearLocation}
+                adjusted={anchorAdjusted}
+                resolving={reverseLoading}
+                precision={locationPrecision}
+                onReset={searchedOrigin ? handleResetAnchor : undefined}
+              />
+            )}
+
+            {/* One box that understands names, specialties, cities and ZIPs.
+                Replaces the two unrelated inputs the map used to have. */}
+              <SmartSearchBox
+                value={filterText}
+                onChange={setFilterText}
+                inputRef={searchInputRef}
+                onSubmit={handleSearchSubmit}
+                onSelect={handleSuggestionSelect}
+                onRemove={handleSuggestionRemove}
+                groups={suggestionGroups}
+                resultCount={resultTotal}
+                aria-label={
+                  isClinicViewer
+                    ? 'Search specialists by name, specialty, city or ZIP'
+                    : 'Search providers by name, specialty, city or ZIP'
+                }
+                placeholder={
+                  // With an anchor set the box's job has changed from "find me a
+                  // place" to "narrow what is already around it", and saying so
+                  // is the difference between people using it and not.
+                  locationLabel
+                    ? `Filter these ${resultTotal} results...`
+                    : isClinicViewer
+                      ? 'Search specialists, specialty, city or ZIP...'
+                      : 'Search providers, specialty, city or ZIP...'
+                }
+              />
+
+            {/* Everything that narrows the results. Collapsed behind a button
+                on a phone: anchor + box + five radius chips + a tag rail + two
+                type chips is ~300px of glass on a 667px screen. */}
+            {(!isPhone || filtersOpen) && (
+              <div className="space-y-2.5">
+
+                {/* Radius — one radiogroup, not five loose toggles. The counter
+                    that used to live at the end of this row moved to the summary
+                    line below: inside a 420px card it wrapped onto a second line
+                    and pushed every control under it down by ~20px, so simply
+                    picking a radius made the card jump. */}
+                {locationLabel && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="mr-0.5 shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                      Radius
+                    </span>
+                    <Segmented
+                      options={RADIUS_OPTIONS}
+                      value={radiusMiles === null ? 'any' : String(radiusMiles)}
+                      onChange={(v) => applyRadius(v === 'any' ? null : Number(v))}
+                      label="Search radius"
+                      data-testid="map-radius"
+                    />
+                  </div>
+                )}
+
+                {/* Specialties, straight from the facet counts. These were only
+                    reachable before by typing two characters and hoping the tag
+                    made the dropdown's top three. */}
+                {visibleTags.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    {/* The rail scrolls; the disclosure does not. Putting the
+                        "+N more" button inside the scroller meant you had to
+                        scroll to find the control that saves you scrolling. */}
+                    <div className="xc-rail flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5">
+                    {visibleTags.map((tag) => {
+                      const selected = tagFilters.includes(tag.value)
+                      return (
+                        <Chip
+                          key={tag.value}
+                          selected={selected}
+                          onToggle={() =>
+                            setTagFilters((current) =>
+                              selected
+                                ? current.filter((t) => t !== tag.value)
+                                : [...current, tag.value]
+                            )
+                          }
+                          count={tag.count}
+                          disabled={tag.count === 0 && !selected}
+                          aria-label={`${selected ? 'Remove' : 'Add'} ${tag.value} filter`}
+                          data-testid="map-filter-chip"
+                        >
+                          {tag.value}
+                          {selected && <X className="h-3 w-3" aria-hidden="true" />}
+                        </Chip>
+                      )
+                    })}
+                    </div>
+                    {facets.tags.length > MAX_VISIBLE_TAGS && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllTags((v) => !v)}
+                        data-testid="map-more-tags"
+                        className="shrink-0 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                      >
+                        {showAllTags ? 'Less' : `+${facets.tags.length - MAX_VISIBLE_TAGS}`}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+              </div>
+            )}
+
+            {/* The state of the search, in one line.
+                Owns the counter, so no control above it can reflow when a
+                number appears or changes width.
+
+                It used to end on "Clear 1 filter" from the very first render,
+                because `showAvailableOnly` starts true. So every session opened
+                by telling the user they had a filter — naming a quantity rather
+                than a thing, for a filter they had not set and whose own chip
+                now sits at the other end of this very line.
+
+                `Clear all` now appears only once something is genuinely stacked
+                up. With one filter the chip that set it is the way to unset it,
+                and a second control for the same job is what made this line
+                read as a warning. */}
+            <div
+              className={cn(
+                'flex flex-wrap items-center gap-x-2 gap-y-1.5 border-t border-gray-200/50 pt-2',
+                // Wraps, because this line carries the type chip, the
+                // availability chip, the count and — on a phone — the Filters
+                // button. On 390px they do not fit, and without wrapping the
+                // count printed straight through the button on top of it.
+              )}
+            >
+              {/* The type toggles live on this line rather than a row of their
+                  own. On the clinic map exactly one of them renders, and a
+                  whole row of glass for a single chip is why this card was
+                  taller than what it controlled.
+
+                  NOT removed, which is what I tried first. It looks like a
+                  dead switch -- turning off the only type on the map empties
+                  the screen -- but `map-search.spec.ts:347` records that a
+                  real user pressed it on the live site and reported it as
+                  broken when it did nothing. Someone reaching for a control
+                  is the evidence that settles whether it is one. */}
+              {showClinicsProp && (
+                <Chip
+                  selected={showClinics}
+                  onToggle={() => setShowClinics(!showClinics)}
+                  tone="clinic"
+                  count={typeCount('clinic')}
+                  icon={
+                    isClinicViewer
+                      ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
+                      : <Building2 className="h-3 w-3" aria-hidden="true" />
+                  }
+                >
+                  {isClinicViewer ? 'Specialists' : 'Clinics'}
+                </Chip>
+              )}
+              {showLawyersProp && (
+                <Chip
+                  selected={showLawyers}
+                  onToggle={() => setShowLawyers(!showLawyers)}
+                  tone="lawyer"
+                  count={typeCount('lawyer')}
+                  icon={<Scale className="h-3 w-3" aria-hidden="true" />}
+                >
+                  Attorneys
+                </Chip>
+              )}
+              <Chip
+                selected={showAvailableOnly}
+                onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
+                tone="available"
+                aria-label="Show only providers accepting referrals"
+                data-testid="map-available-chip"
+                icon={
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full transition-colors',
+                      showAvailableOnly ? 'bg-white' : 'bg-gray-300'
+                    )}
+                  />
+                }
+              >
+                Available
+              </Chip>
+              <p className="min-w-[5rem] flex-1 text-[11px] leading-tight text-gray-500" data-testid="map-summary">
+                <span className="font-semibold tabular-nums text-navy">{resultTotal}</span>
+                {areaTotal > resultTotal && (
+                  <span className="tabular-nums"> of {areaTotal}</span>
+                )}
+                {radiusMiles ? ` within ${radiusMiles} mi` : ' shown'}
+                {activeFilterCount > 1 && (
+                  <>
+                    {' · '}
+                    <button
+                      type="button"
+                      onClick={handleClearFilters}
+                      data-testid="map-clear-filters"
+                      className="font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                    >
+                      Clear all
+                    </button>
+                  </>
+                )}
+              </p>
+
+              {isPhone && (
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                  aria-expanded={filtersOpen}
+                  data-testid="map-filters-toggle"
+                  className="shrink-0 rounded-lg border border-gray-200/40 bg-gray-50/80 px-2.5 py-1.5 text-[11px] font-semibold text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  <SlidersHorizontal className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                  Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                </button>
+              )}
+            </div>
+          </div>
+    </div>
+  )
+
   const panelBody = detailItem ? (
     <ProviderDetail
       item={detailItem}
@@ -1992,237 +2261,20 @@ export function MapView({
         </div>
       )}
 
-      {/* ═══ CONTROLS PANEL (top-left) ═══ */}
-      <div className="absolute top-4 left-4 z-[500] w-[calc(100%-7rem)] max-w-[420px]" style={{ pointerEvents: 'none' }}>
-        <div className="flex flex-col gap-2.5" style={{ pointerEvents: 'auto' }}>
+      {/* The controls, floating over the map.
 
-          {/* Glass card container */}
-          <div className="rounded-2xl bg-white/[0.92] backdrop-blur-xl shadow-xl shadow-black/[0.08] border border-white/60 p-3 space-y-2.5">
-
-            {/* Where the search is anchored. A sibling of the box, never a
-                replacement for it — see LocationAnchor for why. */}
-            {locationLabel && (
-              <LocationAnchor
-                label={locationLabel}
-                address={locationAddress}
-                onClear={handleClearLocation}
-                adjusted={anchorAdjusted}
-                resolving={reverseLoading}
-                precision={locationPrecision}
-                onReset={searchedOrigin ? handleResetAnchor : undefined}
-              />
-            )}
-
-            {/* One box that understands names, specialties, cities and ZIPs.
-                Replaces the two unrelated inputs the map used to have. */}
-              <SmartSearchBox
-                value={filterText}
-                onChange={setFilterText}
-                inputRef={searchInputRef}
-                onSubmit={handleSearchSubmit}
-                onSelect={handleSuggestionSelect}
-                onRemove={handleSuggestionRemove}
-                groups={suggestionGroups}
-                resultCount={resultTotal}
-                aria-label={
-                  isClinicViewer
-                    ? 'Search specialists by name, specialty, city or ZIP'
-                    : 'Search providers by name, specialty, city or ZIP'
-                }
-                placeholder={
-                  // With an anchor set the box's job has changed from "find me a
-                  // place" to "narrow what is already around it", and saying so
-                  // is the difference between people using it and not.
-                  locationLabel
-                    ? `Filter these ${resultTotal} results...`
-                    : isClinicViewer
-                      ? 'Search specialists, specialty, city or ZIP...'
-                      : 'Search providers, specialty, city or ZIP...'
-                }
-              />
-
-            {/* Everything that narrows the results. Collapsed behind a button
-                on a phone: anchor + box + five radius chips + a tag rail + two
-                type chips is ~300px of glass on a 667px screen. */}
-            {(!isPhone || filtersOpen) && (
-              <div className="space-y-2.5">
-
-                {/* Radius — one radiogroup, not five loose toggles. The counter
-                    that used to live at the end of this row moved to the summary
-                    line below: inside a 420px card it wrapped onto a second line
-                    and pushed every control under it down by ~20px, so simply
-                    picking a radius made the card jump. */}
-                {locationLabel && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="mr-0.5 shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                      Radius
-                    </span>
-                    <Segmented
-                      options={RADIUS_OPTIONS}
-                      value={radiusMiles === null ? 'any' : String(radiusMiles)}
-                      onChange={(v) => applyRadius(v === 'any' ? null : Number(v))}
-                      label="Search radius"
-                      data-testid="map-radius"
-                    />
-                  </div>
-                )}
-
-                {/* Specialties, straight from the facet counts. These were only
-                    reachable before by typing two characters and hoping the tag
-                    made the dropdown's top three. */}
-                {visibleTags.length > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    {/* The rail scrolls; the disclosure does not. Putting the
-                        "+N more" button inside the scroller meant you had to
-                        scroll to find the control that saves you scrolling. */}
-                    <div className="xc-rail flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5">
-                    {visibleTags.map((tag) => {
-                      const selected = tagFilters.includes(tag.value)
-                      return (
-                        <Chip
-                          key={tag.value}
-                          selected={selected}
-                          onToggle={() =>
-                            setTagFilters((current) =>
-                              selected
-                                ? current.filter((t) => t !== tag.value)
-                                : [...current, tag.value]
-                            )
-                          }
-                          count={tag.count}
-                          disabled={tag.count === 0 && !selected}
-                          aria-label={`${selected ? 'Remove' : 'Add'} ${tag.value} filter`}
-                          data-testid="map-filter-chip"
-                        >
-                          {tag.value}
-                          {selected && <X className="h-3 w-3" aria-hidden="true" />}
-                        </Chip>
-                      )
-                    })}
-                    </div>
-                    {facets.tags.length > MAX_VISIBLE_TAGS && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAllTags((v) => !v)}
-                        data-testid="map-more-tags"
-                        className="shrink-0 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                      >
-                        {showAllTags ? 'Less' : `+${facets.tags.length - MAX_VISIBLE_TAGS}`}
-                      </button>
-                    )}
-                  </div>
-                )}
-
-              </div>
-            )}
-
-            {/* The state of the search, in one line.
-                Owns the counter, so no control above it can reflow when a
-                number appears or changes width.
-
-                It used to end on "Clear 1 filter" from the very first render,
-                because `showAvailableOnly` starts true. So every session opened
-                by telling the user they had a filter — naming a quantity rather
-                than a thing, for a filter they had not set and whose own chip
-                now sits at the other end of this very line.
-
-                `Clear all` now appears only once something is genuinely stacked
-                up. With one filter the chip that set it is the way to unset it,
-                and a second control for the same job is what made this line
-                read as a warning. */}
-            <div className="flex items-center gap-2 border-t border-gray-200/50 pt-2">
-              {/* The type toggles live on this line rather than a row of their
-                  own. On the clinic map exactly one of them renders, and a
-                  whole row of glass for a single chip is why this card was
-                  taller than what it controlled.
-
-                  NOT removed, which is what I tried first. It looks like a
-                  dead switch -- turning off the only type on the map empties
-                  the screen -- but `map-search.spec.ts:347` records that a
-                  real user pressed it on the live site and reported it as
-                  broken when it did nothing. Someone reaching for a control
-                  is the evidence that settles whether it is one. */}
-              {showClinicsProp && (
-                <Chip
-                  selected={showClinics}
-                  onToggle={() => setShowClinics(!showClinics)}
-                  tone="clinic"
-                  count={typeCount('clinic')}
-                  icon={
-                    isClinicViewer
-                      ? <Stethoscope className="h-3 w-3" aria-hidden="true" />
-                      : <Building2 className="h-3 w-3" aria-hidden="true" />
-                  }
-                >
-                  {isClinicViewer ? 'Specialists' : 'Clinics'}
-                </Chip>
-              )}
-              {showLawyersProp && (
-                <Chip
-                  selected={showLawyers}
-                  onToggle={() => setShowLawyers(!showLawyers)}
-                  tone="lawyer"
-                  count={typeCount('lawyer')}
-                  icon={<Scale className="h-3 w-3" aria-hidden="true" />}
-                >
-                  Attorneys
-                </Chip>
-              )}
-              <Chip
-                selected={showAvailableOnly}
-                onToggle={() => setShowAvailableOnly(!showAvailableOnly)}
-                tone="available"
-                aria-label="Show only providers accepting referrals"
-                data-testid="map-available-chip"
-                icon={
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full transition-colors',
-                      showAvailableOnly ? 'bg-white' : 'bg-gray-300'
-                    )}
-                  />
-                }
-              >
-                Available
-              </Chip>
-              <p className="min-w-0 flex-1 text-[11px] leading-tight text-gray-500" data-testid="map-summary">
-                <span className="font-semibold tabular-nums text-navy">{resultTotal}</span>
-                {areaTotal > resultTotal && (
-                  <span className="tabular-nums"> of {areaTotal}</span>
-                )}
-                {radiusMiles ? ` within ${radiusMiles} mi` : ' shown'}
-                {activeFilterCount > 1 && (
-                  <>
-                    {' · '}
-                    <button
-                      type="button"
-                      onClick={handleClearFilters}
-                      data-testid="map-clear-filters"
-                      className="font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                    >
-                      Clear all
-                    </button>
-                  </>
-                )}
-              </p>
-
-              {isPhone && (
-                <button
-                  type="button"
-                  onClick={() => setFiltersOpen((v) => !v)}
-                  aria-expanded={filtersOpen}
-                  data-testid="map-filters-toggle"
-                  className="shrink-0 rounded-lg border border-gray-200/40 bg-gray-50/80 px-2.5 py-1.5 text-[11px] font-semibold text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                >
-                  <SlidersHorizontal className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                  Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-                </button>
-              )}
-            </div>
-          </div>
+          Only when the rail is not carrying them: below `lg`, or when a
+          desktop user has collapsed the rail to get the whole map back. They
+          have to live somewhere — collapsing the results should not take the
+          way to start a search with it. */}
+      {!(panelDocked && showPanel) && (
+        <div
+          className="absolute top-4 left-4 z-[500] w-[calc(100%-7rem)] max-w-[420px]"
+          style={{ pointerEvents: 'none' }}
+        >
+          <div style={{ pointerEvents: 'auto' }}>{controls}</div>
         </div>
-      </div>
+      )}
 
       {/* ═══ RIGHT BUTTONS ═══ */}
       <div
@@ -2346,6 +2398,11 @@ export function MapView({
             )}
             style={{ willChange: 'transform' }}
           >
+            {/* The rail head. Everything that starts a search, above
+                everything that answers one. */}
+            {panelDocked && showPanel && (
+              <div className="border-b border-gray-100/80 px-4 pb-3 pt-4">{controls}</div>
+            )}
             {/* Panel header.
 
                 Hidden while a record is open: the heading names an ordering,
