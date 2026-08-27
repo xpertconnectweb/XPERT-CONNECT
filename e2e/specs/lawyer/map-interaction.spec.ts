@@ -65,6 +65,52 @@ test.describe('the map answers back', () => {
     await expect(current).toContainText(name)
   })
 
+  /**
+   * The row shows two specialties and a "+N" that used to be a dead label.
+   * 39% of clinics have more than two, so for those the rest were simply
+   * unreachable — the row is 96 fixed pixels and there was nowhere else to
+   * look.
+   */
+  test('opens one record in full, and gets back to the list', async ({ page }) => {
+    await page.goto(NEAR_BRADENTON)
+    const first = page.getByTestId('map-panel-row').first()
+    await expect(first).toBeVisible({ timeout: 20_000 })
+    // `map-panel-row`'s first text node is the provider name, and the suite
+    // relies on that elsewhere too.
+    const name = (await first.innerText()).split('\n')[0].trim()
+
+    await first.getByTestId('map-panel-row-details').click()
+
+    const detail = page.getByTestId('map-detail')
+    await expect(detail).toBeVisible()
+    await expect(detail).toContainText(name)
+    // Every tag, not the two the row had room for.
+    await expect(page.getByTestId('map-detail-tags')).toBeVisible()
+    // Refer survives into the detail, under the name the suite already knows.
+    await expect(
+      page.getByRole('button', { name: new RegExp('^Refer a patient to') })
+    ).toBeVisible()
+
+    await page.getByTestId('map-detail-back').click()
+    await expect(detail).toBeHidden()
+    await expect(page.getByTestId('map-panel-row').first()).toBeVisible()
+  })
+
+  /**
+   * Contact details are withheld from this map on purpose — `public-shape.ts`
+   * strips `phone` so a provider cannot be reached around the referral flow.
+   * The Call action is therefore conditional, and its absence here is the
+   * privacy rule working rather than a missing feature.
+   */
+  test('does not offer a way around the referral flow', async ({ page }) => {
+    await page.goto(NEAR_BRADENTON)
+    await expect(page.getByTestId('map-panel-row').first()).toBeVisible({ timeout: 20_000 })
+    await page.getByTestId('map-panel-row-details').first().click()
+
+    await expect(page.getByTestId('map-detail')).toBeVisible()
+    await expect(page.getByTestId('map-detail-call')).toHaveCount(0)
+  })
+
   test('puts the cursor in the search box on /', async ({ page }) => {
     await page.goto('/professionals/map')
     const input = page.getByTestId('map-search-input')

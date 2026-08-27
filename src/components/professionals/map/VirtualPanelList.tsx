@@ -10,6 +10,7 @@ import { PanelRow } from './PanelRow'
 type VirtualRowProps = {
   items: MapItem[]
   onFocus: (item: MapItem) => void
+  onOpen?: (item: MapItem) => void
   onHover?: (id: string | null) => void
   onRefer?: (item: MapItem) => void
   userRole?: string
@@ -23,6 +24,7 @@ function VirtualPanelRow({
   ariaAttributes,
   items,
   onFocus,
+  onOpen,
   onHover,
   onRefer,
   userRole,
@@ -34,6 +36,7 @@ function VirtualPanelRow({
   ariaAttributes: object
   items: MapItem[]
   onFocus: (item: MapItem) => void
+  onOpen?: (item: MapItem) => void
   onHover?: (id: string | null) => void
   onRefer?: (item: MapItem) => void
   userRole?: string
@@ -51,6 +54,7 @@ function VirtualPanelRow({
       <PanelRow
         item={item}
         onFocus={onFocus}
+        onOpen={onOpen}
         onHover={onHover}
         onRefer={onRefer}
         userRole={userRole}
@@ -70,6 +74,7 @@ export interface ScrollRequest {
 export function VirtualPanelList({
   items,
   onFocus,
+  onOpen,
   onHover,
   onRefer,
   userRole,
@@ -80,6 +85,7 @@ export function VirtualPanelList({
 }: {
   items: MapItem[]
   onFocus: (item: MapItem) => void
+  onOpen?: (item: MapItem) => void
   onHover?: (id: string | null) => void
   onRefer?: (item: MapItem) => void
   userRole?: string
@@ -156,7 +162,7 @@ export function VirtualPanelList({
         aria-label={`${items.length} ${items.length === 1 ? 'result' : 'results'}`}
         rowHeight={96}
         overscanCount={5}
-        rowProps={{ items, onFocus, onHover, onRefer, userRole, hoveredId, selectedId }}
+        rowProps={{ items, onFocus, onOpen, onHover, onRefer, userRole, hoveredId, selectedId }}
         rowComponent={VirtualPanelRow}
       />
     </div>

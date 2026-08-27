@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { Building2, Scale, Send } from 'lucide-react'
+import { Building2, ChevronRight, Scale, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { canRefer, referLabel } from '@/lib/map/referral-policy'
 import type { MapItem } from '@/lib/map/types'
@@ -23,6 +23,7 @@ import type { MapItem } from '@/lib/map/types'
 export const PanelRow = memo(function PanelRow({
   item,
   onFocus,
+  onOpen,
   onHover,
   onRefer,
   userRole,
@@ -31,6 +32,8 @@ export const PanelRow = memo(function PanelRow({
 }: {
   item: MapItem
   onFocus: (item: MapItem) => void
+  /** Opens the full record. Absent where there is nowhere to open it. */
+  onOpen?: (item: MapItem) => void
   onHover?: (id: string | null) => void
   onRefer?: (item: MapItem) => void
   userRole?: string
@@ -139,10 +142,44 @@ export const PanelRow = memo(function PanelRow({
             </span>
           ))}
           {tags.length > 2 && (
-            <span className="flex-shrink-0 text-[10px] text-gray-400">+{tags.length - 2}</span>
+            /**
+             * A button, not a label. It said "+3" and could not be pressed,
+             * which on 39% of clinics meant the rest of their specialties were
+             * simply unreachable — the row shows two and there was nowhere else
+             * to look. Now it opens the detail, which lists all of them.
+             */
+            <button
+              type="button"
+              onClick={() => onOpen?.(item)}
+              data-testid="map-panel-row-more-tags"
+              aria-label={`See all ${tags.length} ${isClinic ? 'specialties' : 'practice areas'} for ${item.name}`}
+              className="relative z-10 flex-shrink-0 rounded px-1 text-[10px] font-semibold text-gray-400 transition-colors hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              +{tags.length - 2}
+            </button>
           )}
         </div>
       </div>
+
+      {/**
+       * The way into the detail.
+       *
+       * A separate control rather than repurposing the row click, which
+       * focuses the pin and is asserted as doing exactly that. Two jobs, two
+       * buttons — the same reasoning that stopped the whole row being one
+       * `<button>` when Refer arrived.
+       */}
+      {onOpen && (
+        <button
+          type="button"
+          onClick={() => onOpen(item)}
+          data-testid="map-panel-row-details"
+          aria-label={`See details for ${item.name}`}
+          className="relative z-10 -mr-1.5 mt-0.5 flex-shrink-0 self-center rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-gray-100 hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold group-hover:text-gray-400"
+        >
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
 
       {allowed && (
         <div className="relative z-10 mt-0.5 flex-shrink-0 self-center">

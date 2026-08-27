@@ -149,6 +149,21 @@ const SHOTS: Shot[] = [
     at: NEAR_BRADENTON,
   },
   {
+    name: 'detail',
+    looking_for:
+      'One provider in full. Whether the four actions read as a hierarchy rather than a row of equals, and whether everything the row had to truncate is finally here.',
+    run: async (page, viewport) => {
+      if (viewport === 'phone') {
+        await page.getByTestId('map-panel-toggle').click().catch(() => {})
+        await page.waitForTimeout(600)
+      }
+      await page.waitForSelector('[data-testid="map-panel-row"]', { timeout: 20_000 }).catch(() => {})
+      await page.getByTestId('map-panel-row-details').first().click({ timeout: 10_000 }).catch(() => {})
+      await page.waitForTimeout(900)
+    },
+    at: NEAR_BRADENTON,
+  },
+  {
     name: 'empty',
     looking_for: 'The dead end. Whether it offers a way out or just says no.',
     run: async (page) => {

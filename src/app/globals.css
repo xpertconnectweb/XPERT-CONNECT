@@ -282,11 +282,16 @@
    `bottom` and not `margin-bottom`: a percentage margin resolves against the
    containing block's WIDTH, so on a 390px phone it would lift by a third of
    390 regardless of where the sheet actually is. `bottom` resolves against the
-   height, which is the thing being asked about. Capped at half, because at the
-   sheet's full snap the map is a sliver and there is nothing left to credit. */
+   height, which is the thing being asked about.
+
+   Not capped. An earlier version stopped it at 50% on the theory that the map
+   is a sliver at the sheet's full snap and there was nothing left to credit —
+   which put the credit in the middle of the sheet, over the buttons. Following
+   the sheet exactly puts it in whatever strip of map is left, which is where it
+   belongs however thin that strip is. */
 @media (max-width: 639px) {
   .leaflet-bottom.leaflet-right {
-    bottom: min(var(--xc-sheet, 0px), 50%);
+    bottom: var(--xc-sheet, 0px);
   }
 }
 

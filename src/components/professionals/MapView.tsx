@@ -17,6 +17,7 @@ import { ReferralFormModal } from './ReferralFormModal'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
 import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
 import { MarkerClusterLayer, type MarkerRegistry } from './map/MarkerClusterLayer'
+import { ProviderDetail } from './map/ProviderDetail'
 import { VirtualPanelList, type ScrollRequest } from './map/VirtualPanelList'
 import { SmartSearchBox } from '@/components/search/SmartSearchBox'
 import { LocationAnchor } from '@/components/search/LocationAnchor'
@@ -300,6 +301,15 @@ export function MapView({
    * rendered, so there is no map to move.
    */
   const pendingFrameRef = useRef<{ at: [number, number]; radius: number | null } | null>(null)
+
+  /**
+   * The record the panel is showing in full, if any.
+   *
+   * An id rather than the item, so it survives the results being refiltered
+   * underneath it: `panelItems` is a memo, and holding the object would pin
+   * a stale copy of a record whose distance and availability move.
+   */
+  const [detailId, setDetailId] = useState<string | null>(null)
 
   /**
    * A record the user named that the current filters exclude.
@@ -887,6 +897,32 @@ export function MapView({
     allowManualPin: true,
     allowGeolocate: true,
   })
+
+  /**
+   * Open the full record.
+   *
+   * Also selects it, so the pin is painted and the URL carries `sel`. A link
+   * copied from here therefore lands the recipient on the same record with the
+   * same filters and framing — SELECTED, not with the detail already open.
+   *
+   * That is deliberate rather than unfinished. Opening the detail from a link
+   * would replace the list before the recipient has seen what the sender was
+   * looking at, and `map-interaction.spec.ts` pins the current behaviour: a
+   * shared link marks its row `aria-current`, which cannot be true if there
+   * are no rows.
+   */
+  const handleOpenDetail = useCallback((item: MapItem) => {
+    setDetailId(item.id)
+    setSelectedId(item.id)
+    markersRef.current?.setSelected(item.id)
+    // Centre the pin, but do NOT open its popup: the popup says a shorter
+    // version of what the panel is now showing in full, and on desktop it lands
+    // over the map the user is trying to read it against.
+    markersRef.current?.focus(item.id, { openPopup: false })
+    if (window.matchMedia('(max-width: 639px)').matches) setSheetSnap('full')
+  }, [])
+
+  const handleCloseDetail = useCallback(() => setDetailId(null), [])
 
   const handleFocusItem = useCallback((item: MapItem) => {
     setSelectedId(item.id)
@@ -1548,12 +1584,29 @@ export function MapView({
     </div>
   )
 
-  const panelBody = (
+  /**
+   * The record being shown in full, resolved from the current results.
+   *
+   * Null when it has been filtered away, which closes the detail rather than
+   * showing a record the list no longer contains — the alternative is a panel
+   * whose Back button returns to a list that never had it.
+   */
+  const detailItem = detailId ? (byId.get(detailId) ?? null) : null
+
+  const panelBody = detailItem ? (
+    <ProviderDetail
+      item={detailItem}
+      onBack={handleCloseDetail}
+      onRefer={handleReferral}
+      userRole={userRole}
+    />
+  ) : (
     <>
       {hiddenNotice}
       <VirtualPanelList
         items={panelItems}
         onFocus={handleFocusItem}
+        onOpen={handleOpenDetail}
         onHover={handleHoverItem}
         onRefer={handleReferral}
         userRole={userRole}
@@ -2041,24 +2094,36 @@ export function MapView({
           aria-label="Search results"
           data-testid="map-results-sheet"
           handleLabel={
-            <p className="text-[11px] font-semibold text-gray-500" data-testid="map-results-summary">
-              {resultsSummary}
+            <p
+              className="truncate px-6 text-[11px] font-semibold text-gray-500"
+              data-testid="map-results-summary"
+            >
+              {/* With a record open the sheet is showing one thing, so counting
+                  results on its handle describes something that is no longer on
+                  screen. */}
+              {detailItem ? detailItem.name : resultsSummary}
             </p>
           }
         >
           {/* Sort parity with the docked panel. A control that only exists on
-              desktop is a control half the users do not have. */}
-          <div className="border-b border-gray-100/80 px-4 pb-3">
-            <Segmented
-              className="w-full"
-              variant="track"
-              options={SORT_OPTIONS}
-              value={sortMode}
-              onChange={setSortMode}
-              label="Order results by"
-              data-testid="map-sort-sheet"
-            />
-          </div>
+              desktop is a control half the users do not have.
+
+              Gone while a record is open: there is no list to order, and
+              leaving it would suggest the detail is one of several things being
+              sorted. */}
+          {!detailItem && (
+            <div className="border-b border-gray-100/80 px-4 pb-3">
+              <Segmented
+                className="w-full"
+                variant="track"
+                options={SORT_OPTIONS}
+                value={sortMode}
+                onChange={setSortMode}
+                label="Order results by"
+                data-testid="map-sort-sheet"
+              />
+            </div>
+          )}
           {panelBody}
         </Sheet>
       ) : (
@@ -2081,7 +2146,14 @@ export function MapView({
             )}
             style={{ willChange: 'transform' }}
           >
-            {/* Panel header */}
+            {/* Panel header.
+
+                Hidden while a record is open: the heading names an ordering,
+                the summary counts results, and Copy copies the list. None of
+                the three has anything to say about one clinic, and leaving
+                them would make the detail read as a filter applied to the list
+                rather than a different view of one row. */}
+            {!detailItem && (
             <div className="border-b border-gray-100/80 px-5 py-4" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
              <div className="flex items-center justify-between">
               <div className="min-w-0">
@@ -2125,6 +2197,7 @@ export function MapView({
                data-testid="map-sort"
              />
             </div>
+            )}
             {panelBody}
           </div>
         </>
