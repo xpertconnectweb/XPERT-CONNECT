@@ -85,6 +85,14 @@ export interface UseSmartSearchOptions<T> {
    * this work, and the one no provider switch can fully eliminate.
    */
   allowManualPin?: boolean
+  /**
+   * Offer "Use my location" in the idle dropdown.
+   *
+   * Only where there is a map to move. In an address field it would resolve
+   * the browsing user's own position into a form about someone else, which
+   * is a different and much worse thing than it sounds like.
+   */
+  allowGeolocate?: boolean
 }
 
 export interface UseSmartSearchResult {
@@ -124,6 +132,7 @@ export function useSmartSearch<T>({
   hasAnchor = false,
   proximity = null,
   allowManualPin = false,
+  allowGeolocate = false,
 }: UseSmartSearchOptions<T>): UseSmartSearchResult {
   const trimmed = query.trim()
   const active = trimmed.length >= MIN_QUERY
@@ -254,8 +263,42 @@ export function useSmartSearch<T>({
   const groups = useMemo<SuggestionGroup[]>(() => {
     // With an empty box, offer history rather than an empty dropdown.
     if (!active) {
-      if (recents.length === 0) return []
+      /**
+       * "Use my location", as a row.
+       *
+       * It exists as a 40x40 icon button pinned to the opposite corner of the
+       * map from the search box — reachable, and nowhere near the place people
+       * look when the question in their head is "where do I start". The
+       * manual-pin row already proved that an action belongs in this list when
+       * it answers the same question the list is for.
+       *
+       * Only with an empty box. It is an idle-state affordance rather than a
+       * search result, and mixing it into live results would put a
+       * non-matching row among matching ones.
+       *
+       * The button stays where it is. It is the only way to re-locate without
+       * opening the dropdown, and taking an affordance away buys nothing.
+       */
+      const idle: SuggestionGroup[] = []
+      if (allowGeolocate && typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+        idle.push({
+          key: 'geolocate',
+          heading: 'Start from',
+          items: [
+            {
+              id: 'geo-self',
+              kind: 'manual' as const,
+              label: 'Use my location',
+              sublabel: 'Find providers near where you are now',
+              payload: { kind: 'geolocate' as const },
+            },
+          ],
+        })
+      }
+
+      if (recents.length === 0) return idle
       return [
+        ...idle,
         {
           key: 'recent',
           heading: 'Recent searches',
@@ -302,6 +345,7 @@ export function useSmartSearch<T>({
         : []),
     ]
   }, [
+    allowGeolocate,
     active,
     recents,
     // `allowManualPin` is NOT here: it stopped being read in this memo when the

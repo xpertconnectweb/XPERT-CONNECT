@@ -44,6 +44,8 @@ export type SuggestionPayload =
   | { kind: 'entity'; id: string; lat: number; lng: number; name: string }
   | { kind: 'category'; tag: string }
   | { kind: 'recent'; query: string }
+  /** "Start from wherever I am." Offered only with an empty box. */
+  | { kind: 'geolocate' }
   /** "None of these — let me point at it on the map." */
   | { kind: 'manual'; query: string }
 

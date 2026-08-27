@@ -14,6 +14,7 @@ import {
   createHighlightIcon,
 } from '@/lib/map/icons'
 import { buildPopupContent } from '@/lib/map/popup'
+import { buildMarkerTip } from '@/lib/map/tooltip'
 
 /**
  * Imperative handle so the results panel can drive the map.
@@ -68,6 +69,7 @@ export const MarkerClusterLayer = memo(
   forwardRef<MarkerRegistry, MarkerClusterLayerProps>(
   function MarkerClusterLayer({ items, userRole, onReferral, onMarkerHover, onMarkerClick }, ref) {
     const map = useMap()
+
     const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
     const markersRef = useRef<Map<string, Entry>>(new Map())
     const hoveredRef = useRef<string | null>(null)
@@ -181,9 +183,49 @@ export const MarkerClusterLayer = memo(
           { minWidth: 260, maxWidth: 310, className: 'premium-popup' }
         )
 
+        /**
+         * Says what the pin IS, without a click.
+         *
+         * Lazy against the same ref as the popup, for the same reason: the
+         * content is always current and nothing ever needs rebinding.
+         *
+         * `interactive: false` so the tip never becomes a target of its own —
+         * a tooltip that can be hovered sits between the pointer and the pin.
+         *
+         * -- Not gated on `(hover: hover)`, and that was a mistake worth
+         * recording. The first version bound this only where the media query
+         * said hovering happens, to keep it from flashing under a finger on a
+         * touch screen. Headless Chromium reports `(hover: none)` — it has no
+         * real pointer — so the feature silently switched itself off in the
+         * test suite, and would do the same on any desktop the query
+         * misreported. A capability check that fails closed on a feature this
+         * cheap trades a visible benefit for an invisible one. The touch case
+         * is handled below instead, by closing the tip on the tap that opens
+         * the popup, which is a fact rather than a prediction.
+         */
+        marker.bindTooltip(
+          () => {
+            const current = itemsByIdRef.current.get(item.id)
+            return current ? buildMarkerTip(current) : document.createElement('div')
+          },
+          {
+            direction: 'top',
+            offset: [0, -36],
+            opacity: 1,
+            className: 'xc-marker-tip',
+            interactive: false,
+          }
+        )
+
         marker.on('mouseover', () => onHoverRef.current?.(item.id))
         marker.on('mouseout', () => onHoverRef.current?.(null))
-        marker.on('click', () => onClickRef.current?.(item.id))
+        marker.on('click', () => {
+          // On a touch screen Leaflet synthesises `mouseover` from the tap, so
+          // without this the tip would sit under the finger in front of the
+          // popup it was meant to save you from opening.
+          marker.closeTooltip()
+          onClickRef.current?.(item.id)
+        })
 
         registry.set(item.id, {
           marker,

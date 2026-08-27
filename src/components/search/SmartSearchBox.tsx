@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, MutableRefObject, Ref } from 'react'
 import {
   Search, X, Loader2, MapPin, Building2, Scale, Clock, Tag, AlertTriangle,
   Landmark, Mailbox, Building, Map, Crosshair,
@@ -57,6 +57,14 @@ export interface SmartSearchBoxProps {
   className?: string
   /** DOM id for the input, so a form can point a visible `<label>` at it. */
   inputId?: string
+  /**
+   * A handle on the input, for callers that need to focus it from outside.
+   *
+   * The map binds `/` and Cmd-K to it. A ref rather than reaching through
+   * `inputId` and `getElementById`, which would work and would quietly
+   * repurpose a prop whose whole job is `<label htmlFor>`.
+   */
+  inputRef?: Ref<HTMLInputElement>
   /**
    * What to emphasise inside each suggestion. Defaults to `value`.
    *
@@ -180,11 +188,27 @@ export function SmartSearchBox({
   highlight,
   className,
   inputId,
+  inputRef: externalInputRef,
   'data-testid': testId = 'map-search',
 }: SmartSearchBoxProps) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  /**
+   * One node, two refs. The internal one drives focus and blur here; the
+   * external one lets a caller focus the field. A callback ref rather than
+   * `useImperativeHandle` because the caller wants the element itself, not a
+   * bespoke handle.
+   */
+  const setInputRef = useCallback(
+    (node: HTMLInputElement | null) => {
+      inputRef.current = node
+      if (typeof externalInputRef === 'function') externalInputRef(node)
+      else if (externalInputRef) (externalInputRef as MutableRefObject<HTMLInputElement | null>).current = node
+    },
+    [externalInputRef]
+  )
   const listRef = useRef<HTMLUListElement>(null)
   const baseId = useId()
 
@@ -323,7 +347,7 @@ export function SmartSearchBox({
       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10 pointer-events-none" />
 
       <input
-        ref={inputRef}
+        ref={setInputRef}
         // Only set when a caller renders a visible <label htmlFor>. The map has
         // no visible label — its accessible name comes from `aria-label`,
         // because its placeholder is contextual and a changing placeholder is

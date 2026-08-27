@@ -52,9 +52,15 @@ import type { DecoratedClinic, DecoratedLawyer } from '@/types/professionals'
 L.Marker.prototype.options.icon = clinicAvailIcon
 
 /**
- * How far the map has to move before "Search this area" is offered. Opening a
- * popup nudges the centre slightly, and a pill that appears every time you
- * click a pin is noise.
+ * The FLOOR under how far the map has to move before "Search this area" is
+ * offered. Opening a popup nudges the centre slightly, and a pill that appears
+ * every time you click a pin is noise.
+ *
+ * A floor rather than the threshold itself — see `handleMapMoveEnd`, where the
+ * real bar is a share of the visible width. Two miles is most of a city block
+ * at street zoom and a rounding error at state zoom, so as an absolute it was
+ * wrong at both ends; it just happened to be wrong in the quiet direction at
+ * the zoom people spend most of their time at, which is why nobody noticed.
  */
 const MOVED_THRESHOLD_MILES = 2
 
@@ -275,6 +281,27 @@ export function MapView({
   const [scrollTo, setScrollTo] = useState<ScrollRequest | null>(null)
 
   /**
+   * A selection restored from `?sel=` that has not been shown yet.
+   *
+   * `setSelectedId` alone left the pin unpainted and the row somewhere in an
+   * unscrolled virtual list, so a link that carried a selection -- and every
+   * selection is serialised into the URL -- opened looking like nothing had
+   * been shared at all. One-shot: cleared as soon as it is honoured, so it
+   * never fights a later click.
+   */
+  const pendingSelectRef = useRef<string | null>(null)
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
+
+  /**
+   * A view a shared link asked for that has not been shown yet.
+   *
+   * Same shape and same reason as `pendingSelectRef`: URL hydration runs on
+   * mount, and while the data is loading `MapContainer` has not been
+   * rendered, so there is no map to move.
+   */
+  const pendingFrameRef = useRef<{ at: [number, number]; radius: number | null } | null>(null)
+
+  /**
    * A record the user named that the current filters exclude.
    *
    * Set only by the entity branch of `handleSuggestionSelect`. Naming a
@@ -344,7 +371,14 @@ export function MapView({
     if (state.sort) setSortMode(state.sort)
     if (state.radius) setRadiusMiles(state.radius)
     if (state.bbox) setViewportBounds(state.bbox)
-    if (state.selected) setSelectedId(state.selected)
+    if (state.selected) {
+      setSelectedId(state.selected)
+      // Painting the pin and scrolling the list cannot happen yet: the
+      // results are not loaded and the markers are not on the map. Parked
+      // for the effect below, which is the difference between a shareable
+      // link and a link that looks broken.
+      pendingSelectRef.current = state.selected
+    }
 
     if (state.at) {
       // Already resolved, so skip the geocoder entirely — a shared link lands
@@ -352,6 +386,13 @@ export function MapView({
       setSearchedLocation(state.at)
       setAppliedCenter(state.at)
       setLocationLabel(state.near ?? 'Shared location')
+      // ...and point the camera at it. Setting the anchor alone left the panel
+      // listing clinics five miles from Bradenton while the map showed the
+      // whole country — and, because the view then disagreed with the applied
+      // centre, raised "Search this area" over the top of it. Deferred, because
+      // there is no map to move yet: the loading state returns before
+      // `MapContainer` is rendered at all.
+      pendingFrameRef.current = { at: state.at, radius: state.radius ?? null }
     } else if (state.near && state.near.length >= 3) {
       // The original contract: geocode the address text and auto-select the
       // first match, so "View clinics near this client" from a referral lands
@@ -844,6 +885,7 @@ export function MapView({
     // There is a map right here to point at, so an address the provider has
     // never heard of does not have to be a dead end.
     allowManualPin: true,
+    allowGeolocate: true,
   })
 
   const handleFocusItem = useCallback((item: MapItem) => {
@@ -929,6 +971,55 @@ export function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitNonce])
 
+  /**
+   * Show the selection a shared link asked for, once there is something to
+   * show it on.
+   *
+   * Waits for results because `markers.focus` needs the marker to exist and
+   * `scrollTo` needs the row to be in the list. Runs at most once.
+   */
+  useEffect(() => {
+    const id = pendingSelectRef.current
+    if (!id || panelItems.length === 0) return
+    const item = panelItems.find((candidate) => candidate.id === id)
+    // Gone, or filtered out by the same link that named it. Drop the request
+    // rather than retrying on every result change for the rest of the session.
+    pendingSelectRef.current = null
+    if (!item) return
+    markersRef.current?.setSelected(id)
+    markersRef.current?.focus(id)
+    setScrollTo((current) => ({ id, nonce: (current?.nonce ?? 0) + 1 }))
+  }, [panelItems])
+
+  /**
+   * Frame the location a shared link named, once there is a map to frame it
+   * on. Runs at most once.
+   *
+   * Keyed on `panelItems` rather than `loading`, and that is not arbitrary:
+   * react-leaflet assigns `mapRef` when the map instance is created, which is
+   * not the same render as the one where `loading` turns false. Waiting for
+   * results waits for something that cannot happen before the map exists.
+   */
+  useEffect(() => {
+    const pending = pendingFrameRef.current
+    const map = mapRef.current
+    if (!pending || !map) return
+    pendingFrameRef.current = null
+
+    programmaticMoveRef.current = true
+    const [lat, lng] = pending.at
+    if (pending.radius) {
+      // Show the whole circle the link asked for, not an arbitrary zoom that
+      // happens to contain its centre.
+      map.fitBounds(radiusBounds([lat, lng], pending.radius), {
+        padding: [40, 40],
+        animate: false,
+      })
+    } else {
+      map.setView([lat, lng], ZOOM_FOR_KIND.address, { animate: false })
+    }
+  }, [panelItems])
+
   const handleSuggestionSelect = useCallback(
     async (suggestion: Suggestion) => {
       const { payload } = suggestion
@@ -963,6 +1054,12 @@ export function MapView({
           )
           return
         }
+        case 'geolocate':
+          // The same action the corner button performs. One implementation,
+          // two ways in.
+          setFilterText('')
+          handleGeolocate()
+          return
         case 'manual':
           // Arm the map. The next click sets the anchor, and the pin is
           // draggable from there like any other.
@@ -1024,7 +1121,7 @@ export function MapView({
           return
       }
     },
-    [remember, applyPlace, byId, resolvePlace, resetSession, handleFocusItem, requestFit]
+    [remember, applyPlace, byId, resolvePlace, resetSession, handleFocusItem, requestFit, handleGeolocate]
   )
 
   const handleSuggestionRemove = useCallback(
@@ -1275,13 +1372,67 @@ export function MapView({
     }
 
     const centre = map.getCenter()
-    // Offer to re-scope rather than doing it unasked. The threshold keeps the
-    // pill from flashing up on the tiny recentre that follows opening a popup.
+    // Offer to re-scope rather than doing it unasked.
     const [appliedLat, appliedLng] = appliedCenterRef.current
     const moved = haversineDistance(centre.lat, centre.lng, appliedLat, appliedLng)
-    setMapMoved(moved > MOVED_THRESHOLD_MILES)
+
+    /**
+     * Relative to what is on screen, not an absolute two miles.
+     *
+     * The intent behind the fixed threshold was right — a pill that appears
+     * every time you click a pin is noise — but a viewport spans about 0.6
+     * miles at street zoom and 300 at state zoom, so one number cannot serve
+     * both. It made "Search this area" unreachable exactly where re-scoping
+     * matters most: panning to a completely different neighbourhood at z16
+     * moves well under two miles and offered nothing.
+     *
+     * A third of the visible width, with the old constant as a floor so the
+     * tiny recentre after opening a popup still cannot raise it.
+     */
+    const bounds = map.getBounds()
+    const spanMiles = haversineDistance(
+      centre.lat,
+      bounds.getWest(),
+      centre.lat,
+      bounds.getEast()
+    )
+    const threshold = Math.max(MOVED_THRESHOLD_MILES * 0.25, spanMiles * 0.3)
+    setMapMoved(moved > threshold)
   }, [publishZoom, syncProximity])
 
+
+  /**
+   * `/` and Cmd/Ctrl-K put the cursor in the search box.
+   *
+   * The two shortcuts every search-first product has taught people to try.
+   * Someone comparing four clinics does not want to travel back to a 420px
+   * card in the top-left corner with the mouse each time.
+   *
+   * Four things it must not do, all of them ways a global key handler goes
+   * wrong: swallow a slash somebody is typing into a field, fire underneath
+   * an open referral modal, interrupt an IME composing a character, or
+   * override the browser when a modifier the page has no claim on is held.
+   */
+  useEffect(() => {
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.isComposing) return
+      if (showModal || showClinicModal || showSpecialistModal) return
+
+      const target = event.target as HTMLElement | null
+      const tag = target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return
+
+      const slash = event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey
+      const cmdK = event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)
+      if (!slash && !cmdK) return
+
+      event.preventDefault()
+      searchInputRef.current?.focus()
+      searchInputRef.current?.select()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showModal, showClinicModal, showSpecialistModal])
 
   const userRole = session?.user?.role
 
@@ -1632,6 +1783,7 @@ export function MapView({
               <SmartSearchBox
                 value={filterText}
                 onChange={setFilterText}
+                inputRef={searchInputRef}
                 onSubmit={handleSearchSubmit}
                 onSelect={handleSuggestionSelect}
                 onRemove={handleSuggestionRemove}
@@ -1829,6 +1981,9 @@ export function MapView({
       >
         <button onClick={handleGeolocate} disabled={locating}
           className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/[0.92] backdrop-blur-xl border border-white/60 shadow-xl shadow-black/[0.08] text-gray-500 hover:text-navy hover:bg-white disabled:opacity-50 transition-all"
+          // A `title` is a tooltip, not a name: it is unreliable on touch, and
+          // a screen reader announced this as "button" with a lone icon inside.
+          aria-label="Use my location"
           title="Use my location">
           {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Locate className="h-4 w-4" />}
         </button>

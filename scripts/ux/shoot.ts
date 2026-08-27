@@ -52,7 +52,20 @@ type Shot = {
   /** What a reviewer should be looking at. Printed, and worth writing well. */
   looking_for: string
   run: (page: Page, viewport: string) => Promise<void>
+  /** Query string to open with. Defaults to the bare map. */
+  at?: string
 }
+
+/**
+ * A deep link that lands on real pins.
+ *
+ * Zooming the default view goes to Springfield, Illinois: the map opens on the
+ * whole country and its middle is a long way from either state this platform
+ * covers. Anchoring at the address the client reported, with a radius, makes
+ * `applyRadius` frame it — and exercises the shareable-link path while it is
+ * at it.
+ */
+const NEAR_BRADENTON = '?at=27.491257,-82.481824&near=862%2062nd%20St%20Cir%20E&r=25'
 
 /** The map is dynamically imported and Leaflet paints late. */
 async function waitForMap(page: Page) {
@@ -115,6 +128,27 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    name: 'tooltip',
+    looking_for:
+      'Hovering a pin. Whether you can tell what a pin is without clicking it, and whether the tip stays out of the way of the pin it describes.',
+    run: async (page, viewport) => {
+      // Desktop only, because a hover on a phone is a tap and a tap opens the
+      // popup instead.
+      if (viewport !== 'desktop') return
+
+      // Opened anchored with a radius — see `at` below — which frames Bradenton
+      // closely enough that several pins render on their own rather than as one
+      // cluster. Clicking a result would centre one for certain, but it also
+      // opens the popup, which then covers the very thing being photographed.
+      const pin = page
+        .locator('.leaflet-marker-icon:not(.custom-cluster-icon):not(.xc-home-pin)')
+        .first()
+      await pin.hover({ timeout: 5000 }).catch(() => {})
+      await page.waitForTimeout(700)
+    },
+    at: NEAR_BRADENTON,
+  },
+  {
     name: 'empty',
     looking_for: 'The dead end. Whether it offers a way out or just says no.',
     run: async (page) => {
@@ -140,7 +174,7 @@ async function shoot(browser: Browser, viewport: (typeof VIEWPORTS)[number]) {
 
     const page = await context.newPage()
     try {
-      await page.goto(`${BASE}/professionals/map`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${BASE}/professionals/map${shot.at ?? ''}`, { waitUntil: 'domcontentloaded' })
       await waitForMap(page)
       await shot.run(page, viewport.name)
 

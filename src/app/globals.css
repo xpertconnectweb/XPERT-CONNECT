@@ -289,3 +289,57 @@
     bottom: min(var(--xc-sheet, 0px), 50%);
   }
 }
+
+/* ── Marker tooltips ──
+   "What is this pin", on hover. Styled here rather than inline because this is
+   Leaflet chrome, and `globals.css` already owns Leaflet chrome — putting hex
+   codes in `tooltip.ts` would give `popup.ts`'s inline-colour problem a
+   sibling instead of leaving it as the last of its kind.
+
+   Deliberately quiet: dark, small, one line of detail. It identifies a pin so
+   the reader can decide whether to click it. Anything more and it competes
+   with the popup it exists to save you from opening. */
+.leaflet-tooltip.xc-marker-tip {
+  background: rgba(15, 26, 46, 0.96);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(15, 26, 46, 0.28);
+  color: #fff;
+  padding: 7px 10px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  white-space: nowrap;
+  /* Under the popup and the panel, over the tiles. Leaflet's own panes sit at
+     400-700; a tooltip that outranked the results panel would hang over it. */
+  z-index: 650;
+}
+
+.leaflet-tooltip.xc-marker-tip::before {
+  border-top-color: rgba(15, 26, 46, 0.96);
+}
+
+.xc-tip__name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.xc-tip__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.xc-tip__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #34d399;
+  flex-shrink: 0;
+}
+
+.xc-tip__dot--off {
+  background: rgba(255, 255, 255, 0.35);
+}
