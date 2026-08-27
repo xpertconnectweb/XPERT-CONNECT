@@ -75,6 +75,12 @@ export const PHRASE_EXPANSIONS: Readonly<Record<string, string>> = {
   'workers comp': 'workers compensation',
   'auto accident': 'auto injuries',
   'car accident': 'auto injuries',
+  'spine surgeon': 'spine neurosurgery orthopedics',
+  'back surgeon': 'spine neurosurgery',
+  'brain surgeon': 'neurosurgery',
+  'bone doctor': 'orthopedics',
+  'cirujano ortopedico': 'orthopedics',
+  'cirugia de columna': 'spine neurosurgery',
 }
 
 /**
@@ -90,12 +96,23 @@ export const PHRASE_EXPANSIONS: Readonly<Record<string, string>> = {
  */
 export const TOKEN_EXPANSIONS: Readonly<Record<string, readonly string[]>> = {
   // Medical
-  ortho: ['orthopedic', 'orthopedics', 'orthopedist', 'orthopaedic'],
+  ortho: ['orthopedic', 'orthopedics', 'orthopedist', 'orthopaedic', 'orthopaedics'],
   orthopedic: ['orthopedics', 'orthopedist'],
+  orthopaedic: ['orthopedic', 'orthopedics', 'orthopedist'],
+  orthopedist: ['orthopedic', 'orthopedics'],
   chiro: ['chiropractic', 'chiropractor'],
   chiropractor: ['chiropractic'],
   pt: ['physical', 'therapy'],
-  neuro: ['neurological', 'neurology', 'neurologist'],
+  // Three letters that now mean two different things. The DATA alias in
+  // clinic-specialties.ts keeps 'neuro' pointed at rehab, so this is where a
+  // person typing it still reaches the surgeons.
+  neuro: ['neurological', 'neurology', 'neurologist', 'neurosurgery', 'neurosurgeon'],
+  neurosurgeon: ['neurosurgery', 'neurological', 'surgery'],
+  neurosurgery: ['neurosurgeon', 'neurological'],
+  surgeon: ['surgery', 'surgical'],
+  surgery: ['surgeon'],
+  spine: ['spinal'],
+  spinal: ['spine'],
   rehab: ['rehabilitation'],
   pip: ['personal', 'injury', 'protection'],
   mri: ['imaging', 'radiology'],
@@ -103,6 +120,16 @@ export const TOKEN_EXPANSIONS: Readonly<Record<string, readonly string[]>> = {
   ent: ['otolaryngology'],
   ob: ['obstetrics'],
   gyn: ['gynecology'],
+
+  // Spanish. fold() in this module already strips accents, so 'traumatólogo'
+  // and 'traumatologo' arrive at the same key.
+  neurocirujano: ['neurosurgery', 'neurosurgeon', 'neurological'],
+  neurocirugia: ['neurosurgery', 'neurosurgeon'],
+  ortopedista: ['orthopedics', 'orthopedic', 'orthopedist'],
+  ortopedico: ['orthopedics', 'orthopedic'],
+  ortopedia: ['orthopedics', 'orthopedic'],
+  traumatologo: ['orthopedics', 'orthopedic'],
+  columna: ['spine', 'spinal'],
 
   // Legal
   pi: ['personal', 'injury'],

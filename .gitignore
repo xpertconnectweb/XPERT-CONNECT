@@ -93,6 +93,16 @@ docs/*.pdf
 # downloaded by scripts/geo/fetch-*.ts. Regenerable, never committed.
 data/geo/
 
+# The NPPES harvest: 6700 records straight from a federal API, regenerable by
+# re-running scripts/nppes/fetch.ts. Same reasoning as data/geo above. What IS
+# committed from that directory is the small stuff a human reviews — the
+# candidate rows, the merge instructions and the report.
+data/nppes/providers.json
+data/nppes/org-names.json
+data/nppes/_index.json
+data/nppes/rejected.json
+data/nppes/raw-byzip/
+
 # Before/after evidence from scripts/ux/shoot.ts. Regenerable, and a PNG per
 # state per viewport is not something history needs to carry.
 docs/ux-shots/

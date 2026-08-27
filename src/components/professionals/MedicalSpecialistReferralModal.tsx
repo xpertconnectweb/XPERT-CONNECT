@@ -5,7 +5,7 @@ import {
   X, Send, Loader2, CheckCircle, User, Phone, Briefcase, StickyNote,
   Stethoscope, Shield, FileCheck, Building2, Hash, Contact, Mail, Calendar,
 } from 'lucide-react'
-import { MEDICAL_SPECIALTY_TYPES } from '@/lib/medical-specialties'
+import { MEDICAL_SPECIALTY_TYPES, specialtyTypeForClinicTags } from '@/lib/medical-specialties'
 import type { Clinic } from '@/types/professionals'
 
 type TargetClinicOption = Pick<Clinic, 'id' | 'name' | 'specialties' | 'region' | 'county'>
@@ -41,20 +41,14 @@ interface MedicalSpecialistReferralModalProps {
 const TODAY_ISO = new Date().toISOString().slice(0, 10)
 
 function inferSpecialty(target?: TargetClinicOption): string {
-  if (!target?.specialties) return ''
-  const knownSet = new Set<string>(MEDICAL_SPECIALTY_TYPES as readonly string[])
-  // Prefer an exact-listed specialty; otherwise fall back to a case-insensitive match.
-  const direct = target.specialties.find((s) => knownSet.has(s))
-  if (direct) return direct
-  const lc = target.specialties.find((s) =>
-    (MEDICAL_SPECIALTY_TYPES as readonly string[]).some((k) => k.toLowerCase() === s.toLowerCase())
-  )
-  if (lc) {
-    return (MEDICAL_SPECIALTY_TYPES as readonly string[]).find(
-      (k) => k.toLowerCase() === lc.toLowerCase()
-    ) ?? ''
-  }
-  return ''
+  // Clinic tags and specialist TYPES are two different vocabularies, and
+  // 'Pain Management' is the only string that appears in both — so comparing
+  // them directly, as this did, meant the dropdown almost never pre-filled.
+  // `specialtyTypeForClinicTags` is the lookup written to bridge them; its
+  // docstring has been asking to be wired up here since it was added. It
+  // matters more now: a clinic tagged 'Neurosurgery' has to reach
+  // 'Neurosurgeon', and no amount of string equality will get it there.
+  return specialtyTypeForClinicTags(target?.specialties) ?? ''
 }
 
 export function MedicalSpecialistReferralModal({ targetClinic, onClose, onCreated }: MedicalSpecialistReferralModalProps) {

@@ -1,5 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+// normalizeAddress / normalizeStreetName / extractCore moved to scripts/lib so
+// the NPPES import can dedupe against this directory with the same judgement
+// this script uses. Two copies would drift, and the drift would show up as
+// duplicate clinics.
+const { normalizeAddress, normalizeStreetName, extractCore } = require('./lib/address-key');
 
 // Read both files
 const clinicsJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'clinics.json'), 'utf8'));
@@ -15,79 +20,6 @@ clinicsJson.forEach(c => {
   existingAddresses.add(norm);
   existingAddressesRaw.push({ norm, raw: c.address, name: c.name });
 });
-
-function normalizeAddress(addr) {
-  if (!addr) return '';
-  return addr
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/,\s*/g, ', ')
-    .replace(/\bste\b/g, 'suite')
-    .replace(/\bunit\b/g, 'suite')
-    .replace(/\bblvd\b/g, 'boulevard')
-    .replace(/\bdr\b/g, 'drive')
-    .replace(/\bst\b/g, 'street')
-    .replace(/\bave\b/g, 'avenue')
-    .replace(/\brd\b/g, 'road')
-    .replace(/\bhwy\b/g, 'highway')
-    .replace(/\bpkwy\b/g, 'parkway')
-    .replace(/\bln\b/g, 'lane')
-    .replace(/\bct\b/g, 'court')
-    .replace(/\bpl\b/g, 'place')
-    .replace(/\bcir\b/g, 'circle')
-    .replace(/\bter\b/g, 'terrace')
-    .replace(/[–—\-]+/g, '-')
-    .replace(/suite\s*[#]?\s*/g, 'suite ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// Normalize common abbreviations
-function normalizeStreetName(s) {
-  return s
-    .replace(/\bmartin luther king jr\b/g, 'mlk jr')
-    .replace(/\bmartin luther king\b/g, 'mlk')
-    .replace(/\bn\.?\s*/g, 'n ')
-    .replace(/\bs\.?\s*/g, 's ')
-    .replace(/\be\.?\s*/g, 'e ')
-    .replace(/\bw\.?\s*/g, 'w ')
-    .replace(/\bnw\.?\s*/g, 'nw ')
-    .replace(/\bne\.?\s*/g, 'ne ')
-    .replace(/\bsw\.?\s*/g, 'sw ')
-    .replace(/\bse\.?\s*/g, 'se ')
-    .replace(/\bst\.\s/g, 'st ')
-    .replace(/\bave\.\s/g, 'ave ')
-    .replace(/\bblvd\.\s/g, 'blvd ')
-    .replace(/\bdr\.\s/g, 'dr ')
-    .replace(/\brd\.\s/g, 'rd ')
-    .replace(/\bhwy\.\s/g, 'hwy ')
-    .replace(/\bpkwy\.\s/g, 'pkwy ')
-    .replace(/\(hq\)\s*/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// Extract street number, street name, and city for comparison
-function extractCore(addr) {
-  if (!addr) return '';
-  const lower = addr.toLowerCase().trim().replace(/\s+/g, ' ');
-  // Get everything before FL or the state abbreviation
-  const parts = lower.split(/,\s*fl\b/);
-  if (parts.length < 1) return lower;
-  // Remove suite/unit numbers for comparison
-  let core = parts[0]
-    .replace(/\bsuite\b\s*\S*/gi, '')
-    .replace(/\bste\b\s*\S*/gi, '')
-    .replace(/\bunit\b\s*\S*/gi, '')
-    .replace(/\bbuilding\b\s*\S*/gi, '')
-    .replace(/\b#\s*\S*/gi, '')
-    .replace(/,\s*$/, '')
-    .replace(/,/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return normalizeStreetName(core);
-}
 
 // Extract just the street number and first few words of the street for fuzzy matching
 function extractStreetKey(addr) {

@@ -150,3 +150,45 @@ describe('interpretQuery', () => {
     expect(q.tokens).toHaveLength(2)
   })
 })
+
+describe('prepareQuery — orthopedics and neurosurgery', () => {
+  it('lets "neuro" reach the rehab and the surgical vocabulary at once', () => {
+    // The DATA alias keeps 'neuro' pointed at Neurological Rehabilitation,
+    // because that is what the stored rows mean. The ambiguity is paid for
+    // here instead, where a wider reading costs one comparison.
+    const [neuro] = prepareQuery('neuro')
+    expect(neuro.variants).toContain('neurological')
+    expect(neuro.variants).toContain('neurosurgery')
+  })
+
+  it('expands the Spanish a referrer would type', () => {
+    expect(prepareQuery('neurocirujano')[0].variants).toContain('neurosurgery')
+    expect(prepareQuery('ortopedista')[0].variants).toContain('orthopedics')
+  })
+
+  it('accepts the accented spelling too', () => {
+    // fold() strips diacritics before the lookup, so both spellings of
+    // "traumatólogo" arrive at one key.
+    expect(prepareQuery('traumatólogo')[0].variants).toContain('orthopedics')
+    expect(prepareQuery('traumatologo')[0].variants).toContain('orthopedics')
+  })
+
+  it('turns "spine surgeon" into the tags that can answer it', () => {
+    const raw = prepareQuery('spine surgeon').map((t) => t.raw)
+    expect(raw).toContain('neurosurgery')
+    expect(raw).toContain('spine')
+  })
+
+  it('does not chain one phrase expansion into the next', () => {
+    // applyPhraseExpansions is a substring replace over the already-rewritten
+    // string, iterated in key order. A phrase whose output contains another
+    // phrase key would expand twice.
+    expect(prepareQuery('brain surgeon').map((t) => t.raw)).toEqual(['neurosurgery'])
+    expect(prepareQuery('bone doctor').map((t) => t.raw)).toEqual(['orthopedics'])
+  })
+
+  it('keeps the ae spelling reachable from the abbreviation', () => {
+    expect(prepareQuery('ortho')[0].variants).toContain('orthopaedic')
+    expect(prepareQuery('ortho')[0].variants).toContain('orthopaedics')
+  })
+})

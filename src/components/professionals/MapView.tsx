@@ -36,7 +36,9 @@ import {
   US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance,
   toLatLngBounds, radiusBounds, prefersReducedMotion,
 } from '@/lib/map/geo'
+import { FEATURED_SPECIALTIES } from '@/lib/clinic-specialties'
 import { search } from '@/lib/search'
+import { orderFilterChips } from '@/lib/search/facets'
 import type { Bounds, SortMode } from '@/lib/search'
 import { parseMapUrlState, toMapUrlQuery } from '@/lib/search/url-state'
 import {
@@ -991,13 +993,32 @@ export function MapView({
   /** Whether the tag rail has more than it can show at its collapsed height. */
   const overflowTags = facets.tags.length > MAX_VISIBLE_TAGS
 
-  /** Tags worth offering, most common first, with the selected ones pinned on. */
-  const visibleTags = useMemo(() => {
-    const selected = facets.tags.filter((t) => tagFilters.includes(t.value))
-    const rest = facets.tags.filter((t) => !tagFilters.includes(t.value))
-    const shown = showAllTags ? rest : rest.slice(0, Math.max(0, MAX_VISIBLE_TAGS - selected.length))
-    return [...selected, ...shown]
-  }, [facets.tags, tagFilters, showAllTags])
+  /**
+   * Tags worth offering: the selected ones first, then the featured ones, then
+   * the rest by count.
+   *
+   * Count alone could not deliver what was asked for here. These counts are
+   * computed over the current viewport and radius, so a statewide total says
+   * nothing about the six chips someone in Orlando actually sees — and
+   * 'Neurosurgery' will not out-count 'Auto Injuries' anywhere, at any volume
+   * of import. Promotion is the only way the two specialties the client named
+   * are reliably in reach without typing.
+   *
+   * `count > 0` is the honesty gate: a featured tag jumps the queue only where
+   * such providers exist in view, so the rail never offers a chip that leads
+   * to an empty list.
+   */
+  const visibleTags = useMemo(
+    () =>
+      orderFilterChips(
+        facets.tags,
+        tagFilters,
+        FEATURED_SPECIALTIES,
+        MAX_VISIBLE_TAGS,
+        showAllTags
+      ),
+    [facets.tags, tagFilters, showAllTags]
+  )
 
   /** Everything currently narrowing the list, so it can be undone in one go. */
   const activeFilterCount =
@@ -2016,117 +2037,125 @@ export function MapView({
                   </div>
                 )}
 
-                {/* Specialties, straight from the facet counts. These were only
-                    reachable before by typing two characters and hoping the tag
-                    made the dropdown's top three. */}
-                {visibleTags.length > 0 && (
-                  <div className="space-y-1.5">
-                  <div
-                    className={cn(
-                      'flex gap-1.5',
-                      showAllTags
-                        ? 'items-start'
-                        : // Collapsed, the rail's right edge — and the "+N" sitting
-                          // on it — ran underneath the locate/list buttons on a
-                          // phone, so the control that reveals the other seventeen
-                          // specialties could not be pressed at all. That is the
-                          // "+17 does nothing" report: it was not doing nothing,
-                          // it was under a button.
-                          'items-center mr-[4.5rem] sm:mr-0'
-                    )}
-                  >
-                    {/* The rail scrolls; the disclosure does not. Putting the
-                        "+N more" button inside the scroller meant you had to
-                        scroll to find the control that saves you scrolling.
-
-                        Expanded, it WRAPS instead of scrolling. It used to keep
-                        scrolling, so pressing "+17" added seventeen chips off
-                        the right-hand edge of a 400px column — and once the
-                        scrollbar track was hidden there was nothing left to
-                        suggest they were there at all. Reported as "+17 does
-                        nothing", which is exactly what it looked like. "Show
-                        more" has to mean shown. */}
-                    <div
-                      className={cn(
-                        'flex min-w-0 flex-1 items-center gap-1.5',
-                        showAllTags
-                          ? // Fades at the bottom edge instead of guillotining a
-                            // row of chips in half, which reads as a rendering
-                            // fault rather than as "keep going".
-                            // 45vh, not a fixed height: the twenty-three
-                            // specialties come to 359px, so a 192px box still
-                            // hid three rows behind a scroll nobody asked for
-                            // — a quieter version of the same complaint. Tied
-                            // to the viewport it fits them all on any normal
-                            // window and still cannot swallow a short one.
-                            'max-h-[45vh] flex-wrap overflow-y-auto [mask-image:linear-gradient(to_bottom,#000_calc(100%-20px),transparent)]'
-                          : cn(
-                              'xc-rail flex-nowrap overflow-x-auto pb-0.5',
-                              // Same idea sideways, and only when something is
-                              // actually cut off: at 400px the collapsed rail
-                              // sliced "Rehabilitation" mid-word against the
-                              // "+17", which looks like a bug and not like a
-                              // scroller. Skipped when everything fits, so the
-                              // last chip is never dimmed for no reason.
-                              overflowTags &&
-                                '[mask-image:linear-gradient(to_right,#000_calc(100%-28px),transparent)]'
-                            )
-                      )}
-                    >
-                    {visibleTags.map((tag) => {
-                      const selected = tagFilters.includes(tag.value)
-                      return (
-                        <Chip
-                          key={tag.value}
-                          selected={selected}
-                          onToggle={() =>
-                            setTagFilters((current) =>
-                              selected
-                                ? current.filter((t) => t !== tag.value)
-                                : [...current, tag.value]
-                            )
-                          }
-                          count={tag.count}
-                          disabled={tag.count === 0 && !selected}
-                          aria-label={`${selected ? 'Remove' : 'Add'} ${tag.value} filter`}
-                          data-testid="map-filter-chip"
-                        >
-                          {tag.value}
-                          {selected && <X className="h-3 w-3" aria-hidden="true" />}
-                        </Chip>
-                      )
-                    })}
-                    </div>
-                    {overflowTags && !showAllTags && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAllTags(true)}
-                        data-testid="map-more-tags"
-                        className="shrink-0 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                      >
-                        +{facets.tags.length - MAX_VISIBLE_TAGS}
-                      </button>
-                    )}
-                  </div>
-                  {/* Open, the way back gets its own row under the chips rather
-                      than floating at the top right of a block ten rows tall,
-                      where it read as belonging to nothing and — on a phone —
-                      sat under the list button. */}
-                  {overflowTags && showAllTags && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllTags(false)}
-                      data-testid="map-more-tags"
-                      className="w-full rounded-lg border border-gray-200/50 py-1.5 text-[11px] font-semibold text-navy/70 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                    >
-                      Show fewer specialties
-                    </button>
-                  )}
-                  </div>
-                )}
-
               </div>
             )}
+
+            {/* The specialty rail sits OUTSIDE the collapse above.
+                On a phone the whole filter block hides behind the "Filters"
+                button, so at rest — which is the state anyone screenshots, and
+                the state a first-time visitor sees — the phone showed a button
+                and no specialties at all. The chips are the cheapest thing on
+                that screen and the most useful; the radius row, which is taller
+                and less valuable, stays collapsed. */}
+            {/* Specialties, straight from the facet counts. These were only
+                reachable before by typing two characters and hoping the tag
+                made the dropdown's top three. */}
+            {visibleTags.length > 0 && (
+              <div className="space-y-1.5">
+              <div
+                className={cn(
+                  'flex gap-1.5',
+                  showAllTags
+                    ? 'items-start'
+                    : // Collapsed, the rail's right edge — and the "+N" sitting
+                      // on it — ran underneath the locate/list buttons on a
+                      // phone, so the control that reveals the other seventeen
+                      // specialties could not be pressed at all. That is the
+                      // "+17 does nothing" report: it was not doing nothing,
+                      // it was under a button.
+                      'items-center mr-[4.5rem] sm:mr-0'
+                )}
+              >
+                {/* The rail scrolls; the disclosure does not. Putting the
+                    "+N more" button inside the scroller meant you had to
+                    scroll to find the control that saves you scrolling.
+
+                    Expanded, it WRAPS instead of scrolling. It used to keep
+                    scrolling, so pressing "+17" added seventeen chips off
+                    the right-hand edge of a 400px column — and once the
+                    scrollbar track was hidden there was nothing left to
+                    suggest they were there at all. Reported as "+17 does
+                    nothing", which is exactly what it looked like. "Show
+                    more" has to mean shown. */}
+                <div
+                  className={cn(
+                    'flex min-w-0 flex-1 items-center gap-1.5',
+                    showAllTags
+                      ? // Fades at the bottom edge instead of guillotining a
+                        // row of chips in half, which reads as a rendering
+                        // fault rather than as "keep going".
+                        // 45vh, not a fixed height: the twenty-three
+                        // specialties come to 359px, so a 192px box still
+                        // hid three rows behind a scroll nobody asked for
+                        // — a quieter version of the same complaint. Tied
+                        // to the viewport it fits them all on any normal
+                        // window and still cannot swallow a short one.
+                        'max-h-[45vh] flex-wrap overflow-y-auto [mask-image:linear-gradient(to_bottom,#000_calc(100%-20px),transparent)]'
+                      : cn(
+                          'xc-rail flex-nowrap overflow-x-auto pb-0.5',
+                          // Same idea sideways, and only when something is
+                          // actually cut off: at 400px the collapsed rail
+                          // sliced "Rehabilitation" mid-word against the
+                          // "+17", which looks like a bug and not like a
+                          // scroller. Skipped when everything fits, so the
+                          // last chip is never dimmed for no reason.
+                          overflowTags &&
+                            '[mask-image:linear-gradient(to_right,#000_calc(100%-28px),transparent)]'
+                        )
+                  )}
+                >
+                {visibleTags.map((tag) => {
+                  const selected = tagFilters.includes(tag.value)
+                  return (
+                    <Chip
+                      key={tag.value}
+                      selected={selected}
+                      onToggle={() =>
+                        setTagFilters((current) =>
+                          selected
+                            ? current.filter((t) => t !== tag.value)
+                            : [...current, tag.value]
+                        )
+                      }
+                      count={tag.count}
+                      disabled={tag.count === 0 && !selected}
+                      aria-label={`${selected ? 'Remove' : 'Add'} ${tag.value} filter`}
+                      data-testid="map-filter-chip"
+                    >
+                      {tag.value}
+                      {selected && <X className="h-3 w-3" aria-hidden="true" />}
+                    </Chip>
+                  )
+                })}
+                </div>
+                {overflowTags && !showAllTags && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTags(true)}
+                    data-testid="map-more-tags"
+                    className="shrink-0 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                  >
+                    +{facets.tags.length - visibleTags.length}
+                  </button>
+                )}
+              </div>
+              {/* Open, the way back gets its own row under the chips rather
+                  than floating at the top right of a block ten rows tall,
+                  where it read as belonging to nothing and — on a phone —
+                  sat under the list button. */}
+              {overflowTags && showAllTags && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllTags(false)}
+                  data-testid="map-more-tags"
+                  className="w-full rounded-lg border border-gray-200/50 py-1.5 text-[11px] font-semibold text-navy/70 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  Show fewer specialties
+                </button>
+              )}
+              </div>
+            )}
+
 
             {/* The state of the search, in one line.
                 Owns the counter, so no control above it can reflow when a

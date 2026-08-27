@@ -6,6 +6,7 @@ import {
   resolveSpecialtyCatalog,
   sanitizeSpecialties,
   sanitizeSpecialty,
+  FEATURED_SPECIALTIES,
 } from '@/lib/clinic-specialties'
 import {
   SPECIALTY_TYPE_TO_CLINIC_TAGS,
@@ -131,5 +132,90 @@ describe('specialtyTypeForClinicTags', () => {
     expect(specialtyTypeForClinicTags(['Auto Injuries'])).toBeNull()
     expect(specialtyTypeForClinicTags([])).toBeNull()
     expect(specialtyTypeForClinicTags(null)).toBeNull()
+  })
+})
+
+describe('normalizeSpecialty — the vocabulary the NPPES registry speaks', () => {
+  it('carries Neurosurgery in the catalog', () => {
+    // Before the August 2026 import there was no neurosurgical tag at any
+    // level: not in the catalog, not in the aliases, not on a single clinic.
+    expect(CLINIC_SPECIALTIES).toContain('Neurosurgery')
+  })
+
+  it('maps the exact strings the registry returns', () => {
+    // Copied from real `taxonomies[].desc` values. NPPES spells it with the
+    // 'ae', which the catalog did not previously recognise at all.
+    expect(normalizeSpecialty('Neurological Surgery')).toBe('Neurosurgery')
+    expect(normalizeSpecialty('Orthopaedic Surgery')).toBe('Orthopedics')
+    expect(normalizeSpecialty('Orthopaedic Surgery, Sports Medicine')).toBe('Sports Medicine')
+    expect(normalizeSpecialty('Orthopaedic Surgery, Orthopaedic Surgery of the Spine')).toBe('Spine')
+  })
+
+  it('lands the subspecialties on tags that already existed', () => {
+    // Eight NPPES subspecialties onto three catalog values. A tag each would
+    // split one count eight ways and bury every one of them under the fold.
+    for (const desc of [
+      'Orthopaedic Surgery, Hand Surgery',
+      'Orthopaedic Surgery, Foot and Ankle Surgery',
+      'Orthopaedic Surgery, Orthopaedic Trauma',
+      'Orthopaedic Surgery, Pediatric Orthopaedic Surgery',
+      'Orthopaedic Surgery, Adult Reconstructive Orthopaedic Surgery',
+    ]) {
+      expect(normalizeSpecialty(desc)).toBe('Orthopedics')
+    }
+  })
+
+  it('keeps neuro rehabilitation and neurosurgery apart', () => {
+    expect(normalizeSpecialty('Neurological Rehabilitation')).toBe('Neurological Rehabilitation')
+    expect(normalizeSpecialty('neurosurgeon')).toBe('Neurosurgery')
+    // Bare 'neuro' deliberately stays with rehab. It is what the stored rows
+    // mean, and the lenient path would otherwise pass it through as a literal
+    // tag — one more chip on the map. The query side reaches both instead.
+    expect(normalizeSpecialty('neuro')).toBe('Neurological Rehabilitation')
+  })
+
+  it('reads Spanish, accented or not', () => {
+    expect(normalizeSpecialty('ortopedista')).toBe('Orthopedics')
+    expect(normalizeSpecialty('traumatología')).toBe('Orthopedics')
+    expect(normalizeSpecialty('Neurocirugía')).toBe('Neurosurgery')
+    expect(normalizeSpecialty('neurocirujano')).toBe('Neurosurgery')
+    expect(normalizeSpecialty('columna')).toBe('Spine')
+  })
+
+  it('folds diacritics without disturbing anything that has none', () => {
+    // The guarantee that made adding NFD folding safe: no catalog entry and no
+    // alias key carries an accent, so every pre-existing lookup is unchanged.
+    for (const specialty of CLINIC_SPECIALTIES) {
+      expect(normalizeSpecialty(specialty)).toBe(specialty)
+    }
+  })
+})
+
+describe('FEATURED_SPECIALTIES', () => {
+  it('names only values that exist in the catalog', () => {
+    // A typo here fails silently: the chip simply never gets promoted, and
+    // nothing anywhere says why.
+    for (const specialty of FEATURED_SPECIALTIES) {
+      expect(CLINIC_SPECIALTIES).toContain(specialty)
+    }
+  })
+
+  it('is the two the client asked for, in that order', () => {
+    expect(FEATURED_SPECIALTIES).toEqual(['Orthopedics', 'Neurosurgery'])
+  })
+})
+
+describe('specialtyTypeForClinicTags — reaching a surgeon', () => {
+  it('routes a neurosurgical clinic to the Neurosurgeon type', () => {
+    expect(specialtyTypeForClinicTags(['Neurosurgery'])).toBe('Neurosurgeon')
+  })
+
+  it('routes the Orthopedics tag to a surgeon, and rehab to an orthopedist', () => {
+    // 'Orthopedics' appears under both types, and the reverse index is built
+    // by flatMap, so the later key wins. That lands on 'Orthopedic Surgeon',
+    // which is the right answer now that the tag comes off a surgical
+    // taxonomy in the registry rather than off one lone imported row.
+    expect(specialtyTypeForClinicTags(['Orthopedics'])).toBe('Orthopedic Surgeon')
+    expect(specialtyTypeForClinicTags(['Orthopedic Rehabilitation'])).toBe('Orthopedist')
   })
 })

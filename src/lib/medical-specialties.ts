@@ -2,6 +2,7 @@ export const MEDICAL_SPECIALTY_TYPES = [
   'Orthopedist',
   'Orthopedic Surgeon',
   'Neurologist',
+  'Neurosurgeon',
   'Physical Therapist',
   'Pain Management',
   'General Practitioner',
@@ -27,13 +28,18 @@ export type MedicalSpecialtyType = typeof MEDICAL_SPECIALTY_TYPES[number]
 // nothing in the referral picker. Every tag below is now one that actually
 // occurs, with its corpus count in the comment.
 export const SPECIALTY_TYPE_TO_CLINIC_TAGS: Record<MedicalSpecialtyType, string[]> = {
-  // 'Orthopedics' 1 · 'Orthopedic Rehabilitation' 12
+  // 'Orthopedics' · 'Orthopedic Rehabilitation'
   Orthopedist: ['Orthopedics', 'Orthopedic Rehabilitation'],
-  // 'Orthopedics' 1 — no surgical tag exists in the data. Kept narrow on
-  // purpose: rehab clinics must not be offered as surgeons.
+  // 'Orthopedics'. Kept narrow on purpose: rehab clinics must not be offered
+  // as surgeons. This one was pointing at a single row until the August 2026
+  // NPPES import gave it a real corpus.
   'Orthopedic Surgeon': ['Orthopedics'],
-  // 'Neurological Rehabilitation' 2 — the only neuro tag present.
+  // 'Neurological Rehabilitation' — rehab, not surgery. See 'Neurosurgeon'.
   Neurologist: ['Neurological Rehabilitation'],
+  // 'Neurosurgery'. Added with the tag itself; before the NPPES import there
+  // was no neurosurgical clinic in the directory at all, which is the gap the
+  // client reported.
+  Neurosurgeon: ['Neurosurgery'],
   // 'Physical Therapy' 170 · 'Outpatient Therapy' 23 · 'Manual Therapy' 1 · 'Dry Needling' 1
   'Physical Therapist': [
     'Physical Therapy',

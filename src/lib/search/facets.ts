@@ -68,6 +68,45 @@ function toSortedValues(counts: Map<string, number>): FacetValue[] {
   )
 }
 
+/**
+ * Decides which specialty chips are worth the room the rail has.
+ *
+ * Order: whatever is already selected, then the featured ones, then the
+ * rest by count. Pure, and separate from the component, because the rule it
+ * encodes is a product decision that deserves to be readable and tested —
+ * not six lines of array arithmetic inside a two-thousand-line view.
+ *
+ * Featured tags jump the queue only where `count > 0`. A chip pinned into
+ * view over an empty result set is a promise the list cannot keep, and the
+ * Chip component renders a zero-count chip disabled, so it would arrive
+ * greyed out and inert — which reads as a rendering fault, not as a filter.
+ */
+export function orderFilterChips(
+  tags: readonly FacetValue[],
+  selectedValues: readonly string[],
+  featuredValues: readonly string[],
+  maxVisible: number,
+  showAll: boolean
+): FacetValue[] {
+  const selected = tags.filter((t) => selectedValues.includes(t.value))
+
+  const featured: FacetValue[] = []
+  for (const value of featuredValues) {
+    const tag = tags.find(
+      (t) => t.value === value && t.count > 0 && !selectedValues.includes(value)
+    )
+    if (tag) featured.push(tag)
+  }
+  const featuredSet = new Set(featured.map((t) => t.value))
+
+  const rest = tags.filter(
+    (t) => !selectedValues.includes(t.value) && !featuredSet.has(t.value)
+  )
+
+  const pool = [...featured, ...rest]
+  const room = Math.max(0, maxVisible - selected.length)
+  return [...selected, ...(showAll ? pool : pool.slice(0, room))]
+}
 export function computeFacets(
   hits: readonly SearchHit[],
   filters?: SearchFilters
