@@ -66,6 +66,39 @@ export async function getUserByUsername(
   return rowToModel<User>(data)
 }
 
+/**
+ * Reads every row of a query, a page at a time.
+ *
+ * PostgREST answers with at most 1000 rows and says nothing whatsoever about
+ * the ones it left behind — no error, no flag, no count. A truncated answer
+ * and a complete one are the same shape.
+ *
+ * This was latent for as long as the directory was smaller than that. The
+ * August 2026 orthopedic import took it to 1031 clinics, and the map started
+ * reporting "999 results" — 1000 rows minus the one legacy row sitting at
+ * (0, 0) that `hasRealCoordinates` drops. Thirty-two clinics existed, were
+ * geocoded, were tagged, and could not be found by anyone.
+ *
+ * A stable `order` is not optional: without it PostgREST may return pages in
+ * different orders and paging would both skip and repeat rows.
+ */
+const PAGE_SIZE = 1000
+
+async function readAll<Row>(
+  page: (from: number, to: number) => PromiseLike<{
+    data: Row[] | null
+    error: { message: string } | null
+  }>
+): Promise<{ rows: Row[]; error: string | null }> {
+  const rows: Row[] = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1)
+    if (error) return { rows: [], error: error.message }
+    const batch = data ?? []
+    rows.push(...batch)
+    if (batch.length < PAGE_SIZE) return { rows, error: null }
+  }
+}
 // Clinics
 //
 // ONE string literal, not a concatenation. `'a' + 'b'` widens to `string`,
@@ -126,14 +159,14 @@ function decorateLawyer(lawyer: Lawyer): DecoratedLawyer {
 }
 
 export async function getClinics(): Promise<DecoratedClinic[]> {
-  const { data, error } = await supabaseAdmin
-    .from('clinics')
-    .select(CLINIC_COLUMNS)
+  const { rows, error } = await readAll((from, to) =>
+    supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).order('id').range(from, to)
+  )
   if (error) {
     console.error('getClinics error:', error)
     return []
   }
-  return rowsToModels<Clinic>(data).map(decorateClinic)
+  return rowsToModels<Clinic>(rows).map(decorateClinic)
 }
 
 export async function getClinicsByState(state: string): Promise<DecoratedClinic[]> {
@@ -156,8 +189,18 @@ export async function getClinicsByState(state: string): Promise<DecoratedClinic[
   // whole branch can go. The JS filter below stays either way: it is the
   // authoritative decision, and it is what makes the union provably harmless.
   const [structured, legacy] = await Promise.all([
-    supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).eq('state', state),
-    supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).is('state', null).ilike('address', `%${state}%`),
+    readAll((from, to) =>
+      supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).eq('state', state).order('id').range(from, to)
+    ),
+    readAll((from, to) =>
+      supabaseAdmin
+        .from('clinics')
+        .select(CLINIC_COLUMNS)
+        .is('state', null)
+        .ilike('address', `%${state}%`)
+        .order('id')
+        .range(from, to)
+    ),
   ])
 
   if (structured.error || legacy.error) {
@@ -165,7 +208,7 @@ export async function getClinicsByState(state: string): Promise<DecoratedClinic[
     return []
   }
 
-  return rowsToModels<Clinic>([...(structured.data ?? []), ...(legacy.data ?? [])])
+  return rowsToModels<Clinic>([...structured.rows, ...legacy.rows])
     .map(decorateClinic)
     .filter((clinic) => clinic.state === state)
 }
@@ -216,22 +259,32 @@ export async function getClinicById(
 const LAWYER_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, email, website, region, county, zip_code, available, street, city, state, place_id, place_provider, geocode_precision, geocoded_at'
 
 export async function getLawyers(): Promise<DecoratedLawyer[]> {
-  const { data, error } = await supabaseAdmin
-    .from('lawyers')
-    .select(LAWYER_COLUMNS)
+  const { rows, error } = await readAll((from, to) =>
+    supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).order('id').range(from, to)
+  )
   if (error) {
     console.error('getLawyers error:', error)
     return []
   }
-  return rowsToModels<Lawyer>(data).map(decorateLawyer)
+  return rowsToModels<Lawyer>(rows).map(decorateLawyer)
 }
 
 export async function getLawyersByState(state: string): Promise<DecoratedLawyer[]> {
   // Same loose-superset-plus-JS-filter approach as getClinicsByState, and the
   // same transition-phase union; see the comments there.
   const [structured, legacy] = await Promise.all([
-    supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).eq('state', state),
-    supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).is('state', null).ilike('address', `%${state}%`),
+    readAll((from, to) =>
+      supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).eq('state', state).order('id').range(from, to)
+    ),
+    readAll((from, to) =>
+      supabaseAdmin
+        .from('lawyers')
+        .select(LAWYER_COLUMNS)
+        .is('state', null)
+        .ilike('address', `%${state}%`)
+        .order('id')
+        .range(from, to)
+    ),
   ])
 
   if (structured.error || legacy.error) {
@@ -239,7 +292,7 @@ export async function getLawyersByState(state: string): Promise<DecoratedLawyer[
     return []
   }
 
-  return rowsToModels<Lawyer>([...(structured.data ?? []), ...(legacy.data ?? [])])
+  return rowsToModels<Lawyer>([...structured.rows, ...legacy.rows])
     .map(decorateLawyer)
     .filter((lawyer) => lawyer.state === state)
 }
