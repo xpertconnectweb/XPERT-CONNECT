@@ -80,7 +80,7 @@ npx tsx scripts/nppes/resolve-names.ts
 
 # 3. Agrupar, filtrar, etiquetar y comparar contra lo que ya hay.
 #    No toca la base de datos. Deja data/nppes/report.md — léelo.
-npx tsx scripts/nppes/build-practices.ts
+npx tsx scripts/nppes/build-practices.ts --confirmed
 
 # 4. Geocodificar y cargar. Sin --apply no escribe nada.
 npx tsx scripts/geo/status.ts
@@ -117,19 +117,68 @@ cosechados salen 2.581 direcciones distintas, de las cuales pasan 1.708:
 Un `APT` con varios proveedores **no** se descarta: es una suite mal etiquetada
 en un edificio médico. Con uno solo, es la casa de alguien.
 
-De las 1.708 que pasan, se cargan las mejores por estado y especialidad —
-`CAPS` en `build-practices.ts`. Es un tope de producto, no de datos: el registro
-tiene miles de sociedades unipersonales de facturación en Florida, y meterlas
-todas para arreglar el orden de unos chips duplicaría el directorio con filas a
-las que nadie derivaría jamás. **Lo que el tope deja fuera se cuenta en el
-informe**, nunca se traga en silencio.
+De las 1.708 que pasan hay dos maneras de elegir cuáles cargar.
+
+`CAPS` en `build-practices.ts` es un tope de **cantidad**: las N mejores por
+puntuación, por estado y especialidad. Se usó en la primera importación, mientras
+todavía se estaba aprendiendo la forma de los datos.
+
+`--confirmed` es un tope de **calidad**, y responde a una pregunta mejor —
+cuáles sabemos que son reales— en lugar de a cuántas queremos. Exige tres cosas,
+y cada una descarta algo concreto que se ha visto en los datos, no una hipótesis:
+
+- **Dos médicos como mínimo en la dirección.** Un solo médico con una razón social
+  registrada es exactamente el aspecto de la sociedad unipersonal de facturación,
+  y en Florida hay miles. De las 1.332 retenidas en la segunda pasada, **1.174
+  caían por esto**.
+- **Un teléfono utilizable.** Este directorio existe para derivar a alguien a algún
+  sitio; una fila a la que no se puede llamar no es una derivación.
+- **Un nombre de una organización registrada en esa dirección**, no uno deducido
+  para ella. Los deducidos por código postal se inspeccionaron uno a uno: junto a
+  aciertos claros (`Orthopedic Center of Florida`, `All Florida Orthopaedic
+  Associates`) salían `Alzheimers Diagnostic Centers`, `Anesthesia Dynamics LLC` y
+  un `Public Health Trust of Miami Dade` colgado de una suite en Plantation.
+  Etiquetar eso como ortopedia sería inventar. `--names=any` los admite, y no
+  debería usarse sin volver a mirar la muestra.
+
+La cuarta y última prueba la aplica el geocodificador al cargar: la dirección tiene
+que resolver al código postal o a la ciudad que declara el registro.
+
+**Lo que cualquiera de los dos deja fuera se cuenta en el informe, con el motivo**,
+nunca se traga en silencio.
 
 ---
 
-## 5. Fusionar en vez de duplicar
+## 5. Fusionar en vez de duplicar — y cuándo NO fusionar
 
 Cuando una práctica encontrada ya está en el directorio, **no se inserta una
 segunda fila**: se emite un parche que añade las etiquetas que le faltan.
+
+Hay dos formas de reconocerla, y la segunda casi provoca un desastre. El emparejamiento
+por dirección normalizada es fiable. El emparejamiento de respaldo por **nombre +
+código postal** fue correcto en la primera importación —25 de 25 casaron por
+dirección, el respaldo ni llegó a dispararse— y se volvió peligroso en la segunda,
+en cuanto hubo 334 filas de sistemas hospitalarios multi-sede contra las que
+comparar: acertó **3 de 12**. Iba a fundir `745 Meadows Rd` dentro de `800 Meadows
+Rd`, una dirección de Pompano Beach dentro de otra de Deerfield Beach, y el
+edificio entero de ortopedia de la Universidad de Florida en Jacksonville
+(`655 W 8th St UFJP Orthopedics`) dentro del de neurocirugía calle abajo.
+
+Una fusión **borra** una práctica. Una heurística que se equivoca tres de cada
+cuatro veces borra sobre todo sitios reales. Ahora el respaldo exige además que
+coincida el **número de portal**, lo que separa "escrito de dos maneras" de "otro
+sitio en el mismo código postal": con esa regla, los 12 casos salen bien.
+
+El parche guarda las dos direcciones, la previa y la candidata. Un registro de
+algo descartado que no dice qué descartó no se puede revisar ni deshacer.
+
+**Dos plantas de un mismo edificio se quedan como dos filas.** `streetCore` quita
+`suite`, `unit` y `floor`, pero no la abreviatura `Fl 2`. En Broward Health eso deja
+`1601 S Andrews Ave Fl 2` (ortopedia) y `Fl 3` (neurocirugía) como filas separadas —
+y está bien, porque cada una tiene su teléfono directo y su especialidad: quien
+deriva un caso de neurocirugía marca la línea de neurocirugía. Si alguna vez hay
+que unificarlas, la palanca es `streetCore`, con la advertencia de que cambiarla
+invalida las claves ya escritas en `org-names.json`.
 
 Es la mitad del arreglo, y la menos obvia. `Summit Orthopedics Physical Therapy`
 llevaba desde el principio con `Orthopedic Rehabilitation, Physical Therapy` — y
@@ -201,7 +250,7 @@ SELECT s.value AS specialty, count(*) AS n
 FROM clinics c, jsonb_array_elements_text(c.specialties) AS s(value)
 GROUP BY 1 ORDER BY n DESC;
 
-SELECT count(*) FROM clinics WHERE id LIKE 'n-%';           -- lo insertado
+SELECT count(*) FROM clinics WHERE id LIKE 'n-%';           -- lo insertado (416)
 SELECT count(*) FROM clinics WHERE lat = 0 AND lng = 0;     -- no debe subir
 SELECT state, count(*) FROM clinics GROUP BY state;         -- sin nuevos NULL
 SELECT geocode_precision, count(*) FROM clinics GROUP BY 1 ORDER BY 2 DESC;

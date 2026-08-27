@@ -163,13 +163,27 @@ async function main(): Promise<void> {
 
   // ---- backup --------------------------------------------------------------
   if (APPLY) {
-    const { data, error } = await supabase.from('clinics').select('*').limit(5000)
-    if (error) throw new Error(`Backup failed, refusing to write: ${error.message}`)
+    // Paged. `.limit(5000)` reads at most 1000 rows, because that is where
+    // PostgREST stops regardless of what you ask for -- and it does not say so.
+    // A safety net that silently holds a thousand of eleven hundred rows is
+    // worse than none, because it is trusted.
+    const all: unknown[] = []
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase
+        .from('clinics')
+        .select('*')
+        .order('id')
+        .range(from, from + 999)
+      if (error) throw new Error(`Backup failed, refusing to write: ${error.message}`)
+      const batch = data ?? []
+      all.push(...batch)
+      if (batch.length < 1000) break
+    }
     mkdirSync(join(process.cwd(), 'data', 'backups'), { recursive: true })
     const stamp = new Date().toISOString().replace(/[:.]/g, '-')
     const path = join(process.cwd(), 'data', 'backups', `clinics-${stamp}.json`)
-    writeFileSync(path, JSON.stringify(data, null, 2))
-    console.log(`Backed up ${data?.length ?? 0} clinics -> ${path}`)
+    writeFileSync(path, JSON.stringify(all, null, 2))
+    console.log(`Backed up ${all.length} clinics -> ${path}`)
   }
 
   // ---- geocode -------------------------------------------------------------

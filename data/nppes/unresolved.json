@@ -16,6 +16,7 @@
       "region": null,
       "county": null,
       "providerCount": 4,
+      "namedByOrg": true,
       "score": 10,
       "sourceNpis": [
         "1164963252",
@@ -23,6 +24,37 @@
         "1104009067",
         "1285697094",
         "1942254339"
+      ],
+      "available": true,
+      "email": "",
+      "website": null
+    },
+    "reason": "selfhosted found nothing; geoapify landed in Boynton Beach 33435, the registry says Atlantis 33462"
+  },
+  {
+    "candidate": {
+      "id": "n-1073767968",
+      "name": "Drs Penner Norris and Routman PA",
+      "address": "130 Jfk Dr Suite 201, Atlantis, FL 33462",
+      "street": "130 Jfk Dr Suite 201",
+      "city": "Atlantis",
+      "state": "FL",
+      "zipCode": "33462",
+      "phone": "(561) 967-4400",
+      "specialties": [
+        "Orthopedics",
+        "Sports Medicine"
+      ],
+      "region": null,
+      "county": null,
+      "providerCount": 2,
+      "namedByOrg": true,
+      "score": 8,
+      "sourceNpis": [
+        "1073767968",
+        "1942829429",
+        "1831124825",
+        "1912157751"
       ],
       "available": true,
       "email": "",
