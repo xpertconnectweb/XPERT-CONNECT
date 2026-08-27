@@ -111,6 +111,33 @@ test.describe('the map answers back', () => {
     await expect(page.getByTestId('map-detail-call')).toHaveCount(0)
   })
 
+  /**
+   * The results list is virtualised: about twenty of four hundred rows are in
+   * the DOM at a time, and every row carries a real `<button>`. Tab therefore
+   * reached row twenty and left the list, because the browser will not scroll
+   * a virtual list to look for the next focusable. Four hundred results,
+   * twenty reachable.
+   */
+  test('lets the keyboard reach past the rendered window', async ({ page }) => {
+    await page.goto(NEAR_BRADENTON)
+    await expect(page.getByTestId('map-panel-row').first()).toBeVisible({ timeout: 20_000 })
+
+    await page.getByTestId('map-panel-row-focus').first().focus()
+    await page.keyboard.press('End')
+    // The row has to be scrolled into existence before it can be focused, so
+    // the focus lands a frame later. Waiting for the frame is the behaviour,
+    // not a workaround for flake.
+    await page.waitForTimeout(500)
+
+    // The last row exists, is focused, and is one the initial window never
+    // contained.
+    const total = await page.getByTestId('map-panel-row').count()
+    const focused = await page.evaluate(
+      () => document.activeElement?.closest('[aria-posinset]')?.getAttribute('aria-posinset')
+    )
+    expect(Number(focused)).toBeGreaterThan(total)
+  })
+
   test('puts the cursor in the search box on /', async ({ page }) => {
     await page.goto('/professionals/map')
     const input = page.getByTestId('map-search-input')

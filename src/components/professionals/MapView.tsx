@@ -36,6 +36,7 @@ import {
   US_DEFAULT_CENTER, US_DEFAULT_ZOOM, STATE_MAP_CONFIG, haversineDistance,
   toLatLngBounds, radiusBounds, prefersReducedMotion,
 } from '@/lib/map/geo'
+import { search } from '@/lib/search'
 import type { Bounds, SortMode } from '@/lib/search'
 import { parseMapUrlState, toMapUrlQuery } from '@/lib/search/url-state'
 import {
@@ -1499,6 +1500,67 @@ export function MapView({
     : null
 
   /**
+   * Where the providers actually are, when there are none here.
+   *
+   * "Nothing within 5 miles" plus a button that widens to 10 tells somebody how
+   * to keep guessing. A lawyer whose client lives forty miles from the nearest
+   * clinic needs a different sentence: the names of the places that do have one.
+   *
+   * The facets computed on every search cannot answer this. They are built from
+   * `textMatched`, which `engine.ts` fills AFTER the bounds and radius checks —
+   * so an empty spatial result has empty facets by construction. Asking
+   * properly means asking again without the spatial filter, which is what
+   * `verifiedCorrection` already does for "did you mean": one extra scan, on
+   * the empty path only, buying an answer somebody can act on.
+   */
+  const elsewhere = useMemo(() => {
+    if (panelItems.length > 0) return []
+    if (!radiusMiles && !viewportBounds) return []
+
+    const outcome = search(searchIndex, filterText, {
+      anchor,
+      // Sorted by distance and cut short, NOT `facets.cities`.
+      //
+      // The facet counts are ordered by how many providers a place has, which
+      // is a different question and produced a confidently wrong answer: five
+      // miles from Bradenton it offered "the nearest are in Gainesville and
+      // Ocala" — sixteen clinics each, and both over a hundred miles away,
+      // while Sarasota sat twelve miles off with fewer. The nearest results
+      // know where the nearest results are.
+      sort: 'distance',
+      limit: 60,
+      filters: {
+        ...(showAvailableOnly ? { availableOnly: true } : {}),
+        ...(tagFilters.length > 0 ? { tags: [...tagFilters] } : {}),
+        types: [
+          ...(showClinics ? (['clinic'] as const) : []),
+          ...(showLawyers ? (['lawyer'] as const) : []),
+        ],
+      },
+    })
+
+    const seen = new Map<string, number>()
+    for (const hit of outcome.hits) {
+      const city = hit.doc.city
+      if (!city || seen.has(city)) continue
+      seen.set(city, hit.distance)
+      if (seen.size === 2) break
+    }
+    return Array.from(seen, ([value, distance]) => ({ value, distance }))
+  }, [
+    panelItems.length,
+    radiusMiles,
+    viewportBounds,
+    searchIndex,
+    filterText,
+    anchor,
+    showAvailableOnly,
+    tagFilters,
+    showClinics,
+    showLawyers,
+  ])
+
+  /**
    * A dead end with a way out of it.
    *
    * `didYouMean` is only produced when the engine has already re-run the search
@@ -1512,9 +1574,12 @@ export function MapView({
       hint={
         didYouMean
           ? undefined
-          : nextRadius
-            ? `Nothing within ${radiusMiles} miles of here.`
-            : 'Try a different search, or clear a filter.'
+          : elsewhere.length > 0
+            ? // Says where they are, not just that they are not here.
+              `The nearest are in ${elsewhere.map((c) => c.value).join(' and ')}.`
+            : nextRadius
+              ? `Nothing within ${radiusMiles} miles of here.`
+              : 'Try a different search, or clear a filter.'
       }
       data-testid="map-panel-empty"
       action={
@@ -1529,6 +1594,29 @@ export function MapView({
               Did you mean <span className="italic">{didYouMean}</span>?
             </button>
           )}
+          {elsewhere.map((city) => (
+            <button
+              key={city.value}
+              type="button"
+              onClick={() => {
+                // Drop the spatial filter that produced the dead end and put
+                // the city in the box. Widening the radius by one step would
+                // often still not reach it, and clearing everything would
+                // throw away the specialty they had already chosen.
+                setRadiusMiles(null)
+                setViewportBounds(null)
+                setFilterText(city.value)
+                requestFit()
+              }}
+              data-testid="map-empty-city"
+              className="rounded-lg border border-navy/15 bg-navy/[0.04] px-3 py-1.5 text-[11px] font-semibold text-navy transition-colors hover:bg-navy/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              {city.value}
+              <span className="ml-1.5 tabular-nums text-navy/50">
+                {city.distance.toFixed(0)} mi
+              </span>
+            </button>
+          ))}
           {nextRadius && (
             <button
               type="button"

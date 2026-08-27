@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { List as VirtualList, useListRef } from 'react-window'
 import { MapPin } from 'lucide-react'
 import { EmptyState } from '@/components/ui'
@@ -130,6 +131,97 @@ export function VirtualPanelList({
     listRef.current?.scrollToRow({ index, align: 'auto', behavior: 'auto' })
   }, [scrollTo, items, listRef])
 
+  /**
+   * Arrow keys walk the whole list, not just the rendered window.
+   *
+   * Every row's focus button is a real `<button>`, and react-window keeps
+   * about twenty of four hundred rows in the DOM — so Tab reached row twenty
+   * and then left the list entirely. The browser will not scroll a virtual
+   * list to find the next focusable, because as far as it is concerned there
+   * is nothing further to find. Four hundred results, twenty reachable.
+   *
+   * Scroll first, then focus on the next frame: the row does not exist until
+   * react-window has rendered it.
+   */
+  const move = useCallback(
+    (to: number) => {
+      const index = Math.max(0, Math.min(items.length - 1, to))
+      listRef.current?.scrollToRow({ index, align: 'auto', behavior: 'auto' })
+
+      /**
+       * Focus the row once it exists, retrying for a few frames.
+       *
+       * Scrolling unmounts the row the focus was on, which drops focus to the
+       * body, and react-window renders the new window off its own scroll
+       * handler — so on a long jump the target is reliably NOT there on the
+       * next frame. One `requestAnimationFrame` worked for a step of one and
+       * silently did nothing for End, which is the worst of both.
+       *
+       * Six frames is about a tenth of a second: long enough for a jump to the
+       * end of four hundred rows, short enough that a failure is a dropped
+       * focus rather than a hang.
+       */
+      let attempts = 6
+      const grab = () => {
+        const rows = containerRef.current?.querySelectorAll<HTMLElement>(
+          '[data-testid="map-panel-row-focus"]'
+        )
+        // The rendered window is a slice of the list, so the nth row on screen
+        // is not the nth row overall. Match on where the scroll landed.
+        const target = rows
+          ? Array.from(rows).find(
+              (row) =>
+                row.closest('[aria-posinset]')?.getAttribute('aria-posinset') ===
+                String(index + 1)
+            )
+          : undefined
+
+        if (target) target.focus()
+        else if (--attempts > 0) requestAnimationFrame(grab)
+      }
+      requestAnimationFrame(grab)
+    },
+    [items.length, listRef]
+  )
+
+  const onKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      const active = document.activeElement as HTMLElement | null
+      const posinset = active?.closest('[aria-posinset]')?.getAttribute('aria-posinset')
+      if (!posinset) return
+      const at = Number(posinset) - 1
+
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault()
+          move(at + 1)
+          break
+        case 'ArrowUp':
+          event.preventDefault()
+          move(at - 1)
+          break
+        case 'Home':
+          event.preventDefault()
+          move(0)
+          break
+        case 'End':
+          event.preventDefault()
+          move(items.length - 1)
+          break
+        case 'PageDown':
+          event.preventDefault()
+          move(at + 10)
+          break
+        case 'PageUp':
+          event.preventDefault()
+          move(at - 10)
+          break
+        default:
+      }
+    },
+    [move, items.length]
+  )
+
   if (items.length === 0) {
     return (
       <div className="flex-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -147,11 +239,13 @@ export function VirtualPanelList({
     )
   }
 
+
   return (
     <div
       ref={containerRef}
       className="flex-1"
       data-testid="map-panel-list"
+      onKeyDown={onKeyDown}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <VirtualList<VirtualRowProps>

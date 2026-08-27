@@ -165,9 +165,15 @@ const SHOTS: Shot[] = [
   },
   {
     name: 'empty',
-    looking_for: 'The dead end. Whether it offers a way out or just says no.',
-    run: async (page) => {
-      await page.getByTestId('map-search-input').fill('qqqqzzzz')
+    looking_for:
+      'The dead end. Whether it says where the providers ARE, or only that they are not here.',
+    // A real address with a real five-mile radius and nothing inside it — the
+    // dead end people actually hit, rather than a nonsense query nobody types.
+    at: '?at=27.491257,-82.481824&near=862%2062nd%20St%20Cir%20E&r=5',
+    run: async (page, viewport) => {
+      if (viewport === 'phone') {
+        await page.getByTestId('map-panel-toggle').click().catch(() => {})
+      }
       await page.waitForTimeout(1500)
     },
   },
