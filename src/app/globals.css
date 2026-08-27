@@ -348,3 +348,58 @@
 .xc-tip__dot--off {
   background: rgba(255, 255, 255, 0.35);
 }
+
+
+/* ── Horizontal rails ──
+   A native scrollbar under a row of filter chips is a grey slab across the
+   middle of the one card that floats over the map, and it is drawn whether or
+   not there is anything to scroll to on this platform. Windows draws it
+   permanently; macOS does not, which is how it survived review.
+
+   The row still scrolls, by wheel, by drag, by touch and by keyboard. Only the
+   track is hidden — the chips themselves are the affordance, since a half-cut
+   chip at the edge says "there is more" more clearly than a scrollbar does. */
+.xc-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.xc-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Calming the basemap, without changing it ──
+   The tiles stay OpenStreetMap standard. The client chose them and the reason
+   they gave is right: the green land and blue water make it read as a map at a
+   glance. What that basemap is not is a BACKGROUND — every arterial road is a
+   saturated orange, county boundaries are drawn in purple and green, and water
+   areas carry blue hatching. On the clinic map the pins are blue, so the one
+   thing the user is looking for competes with the busiest colour on screen.
+
+   A filter on the tile pane only. The markers, the radius circle, the popups
+   and the controls all live in sibling panes and are untouched, so the pins
+   keep their full contrast while everything behind them steps back.
+
+   Measured by eye against the alternative, which was to change basemap
+   entirely: CARTO's Voyager is the closest keyless match to what this needs,
+   and as of this week its tiles come back stamped "API KEY REQUIRED". Adding a
+   keyed third party to make a map quieter is a bad trade when eight lines of
+   CSS do it.
+
+   Tuned by looking, not by taste. At 0.78 saturation the two screenshots were
+   indistinguishable, which is the same as not doing it. At 0.62 the arterial
+   reds and the boundary purples step back while the land stays green and the
+   water stays blue -- which is the specific thing the client said they liked.
+   Going further starts producing the grey basemap they already rejected. */
+.leaflet-tile-pane {
+  filter: saturate(0.62) brightness(1.07) contrast(0.92);
+}
+
+/* The filter creates a stacking context on the pane, which is harmless — but
+   Leaflet also fades tiles in by animating opacity on each tile, and a
+   filtered pane makes that fade visible as a flash on slower connections. */
+@media (prefers-reduced-motion: reduce) {
+  .leaflet-tile {
+    transition: none !important;
+  }
+}

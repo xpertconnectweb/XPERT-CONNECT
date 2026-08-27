@@ -13,23 +13,43 @@ export function createSvgIcon(
   opacity = 1,
   glyphColor = color
 ) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="32" height="42">
+  const id = color.replace('#', '')
+  /**
+   * A white collar around the pin, and why it is there.
+   *
+   * The OpenStreetMap basemap puts saturated blue over every body of water and
+   * over the wetland hatching that covers half of south Florida — and on the
+   * clinic map the pins are blue. On the old pin, a 1.5px stroke in a darker
+   * shade of the fill, the silhouette dissolved into the water: the thing the
+   * user is looking for was the same colour as the largest feature behind it.
+   *
+   * A white outline separates the pin from ANY background rather than from an
+   * assumed one, which is what map pins have done since paper. It is also why
+   * the shadow can stay soft: the collar does the separating, so the shadow
+   * only has to lift.
+   */
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 48" width="34" height="45">
     <defs>
-      <filter id="s${color.replace('#','')}" x="-20%" y="-10%" width="140%" height="130%">
-        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/>
+      <filter id="s${id}" x="-30%" y="-15%" width="160%" height="145%">
+        <feDropShadow dx="0" dy="2.5" stdDeviation="2" flood-color="rgba(15,26,46,0.32)"/>
       </filter>
     </defs>
-    <g filter="url(#s${color.replace('#','')})">
-      <path d="M18 2C10.27 2 4 8.27 4 16c0 10 14 26 14 26s14-16 14-26c0-7.73-6.27-14-14-14z" fill="${color}" stroke="${borderColor}" stroke-width="1.5" opacity="${opacity}"/>
-      <circle cx="18" cy="16" r="7" fill="white" opacity="${opacity > 0.6 ? 0.95 : 0.5}"/>
-      <text x="18" y="20" text-anchor="middle" font-size="11" font-weight="700" font-family="system-ui,sans-serif" fill="${glyphColor}" opacity="${opacity > 0.6 ? 1 : 0.6}">${symbol}</text>
+    <g filter="url(#s${id})" opacity="${opacity}">
+      <path d="M18 1.5C9.99 1.5 3.5 7.99 3.5 16c0 10.4 14.5 27 14.5 27s14.5-16.6 14.5-27c0-8.01-6.49-14.5-14.5-14.5z"
+            fill="white"/>
+      <path d="M18 3.6C11.15 3.6 5.6 9.15 5.6 16c0 8.9 12.4 23.6 12.4 23.6S30.4 24.9 30.4 16C30.4 9.15 24.85 3.6 18 3.6z"
+            fill="${color}" stroke="${borderColor}" stroke-width="0.8"/>
+      <circle cx="18" cy="16" r="6.6" fill="white" opacity="${opacity > 0.6 ? 1 : 0.6}"/>
+      <text x="18" y="20.2" text-anchor="middle" font-size="11" font-weight="700"
+            font-family="system-ui,sans-serif" fill="${glyphColor}"
+            opacity="${opacity > 0.6 ? 1 : 0.65}">${symbol}</text>
     </g>
   </svg>`
   return L.divIcon({
     html: svg,
-    iconSize: [32, 42],
-    iconAnchor: [16, 42],
-    popupAnchor: [0, -38],
+    iconSize: [34, 45],
+    iconAnchor: [17, 45],
+    popupAnchor: [0, -41],
     className: '',
   })
 }

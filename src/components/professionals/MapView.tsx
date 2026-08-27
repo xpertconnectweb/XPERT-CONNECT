@@ -67,6 +67,16 @@ L.Marker.prototype.options.icon = clinicAvailIcon
 const MOVED_THRESHOLD_MILES = 2
 
 /**
+ * How much ground the map shows when it opens on the user's own office.
+ *
+ * Twenty-five miles, because that is the radius a referral is realistically
+ * made within and it is one of the options the radius control already offers.
+ * Wide enough that a city reads as a city, tight enough that the pins are
+ * places rather than a cloud.
+ */
+const HOME_RADIUS_MILES = 25
+
+/**
  * `'any'` rather than `null` because a radiogroup needs a value for every
  * option, and "no limit" is a choice like any other.
  */
@@ -213,6 +223,14 @@ export function MapView({
   const hydratedRef = useRef(false)
   /** Set before any move we initiate, so `moveend` can tell it apart from a pan. */
   const programmaticMoveRef = useRef(false)
+  /**
+   * Whether the user has moved the map themselves.
+   *
+   * Read by the opening-view fetch below, which costs a database round trip and
+   * must not yank somebody back home from wherever they had already panned to
+   * while it was in flight.
+   */
+  const userMovedRef = useRef(false)
   const mapShellRef = useRef<HTMLDivElement>(null)
   /** Handles for the two things a drag moves without re-rendering React. */
   const circleRef = useRef<L.Circle | null>(null)
@@ -222,6 +240,51 @@ export function MapView({
   const stateConfig = userState ? STATE_MAP_CONFIG[userState] : undefined
   const initialCenter = stateConfig?.center ?? US_DEFAULT_CENTER
   const initialZoom = stateConfig?.zoom ?? US_DEFAULT_ZOOM
+  /**
+   * Open where the user works, not on the middle of the country.
+   *
+   * `STATE_MAP_CONFIG` covers the case where the session carries a state, and
+   * a state centroid is already much better than the continent. But a state is
+   * optional on a user, and the account this was reported from has none — so it
+   * fell all the way through to `US_DEFAULT_CENTER` and opened on Winnipeg to
+   * Bermuda with six hundred clinics as blue bubbles.
+   *
+   * The firm or clinic the user belongs to knows better than either. Fetched
+   * rather than read off the session, because the session carries the id and
+   * not the coordinates.
+   *
+   * Never overrides a link. A URL that names a place is a deliberate
+   * instruction from whoever shared it, and arriving somewhere else would make
+   * every shared map wrong.
+   */
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/me/location')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((home: { lat?: number; lng?: number } | null) => {
+        if (cancelled || !home?.lat || !home?.lng) return
+        // A link, a search or a pin that arrived first wins.
+        if (pendingFrameRef.current || searchedLocation || viewportBounds) return
+        if (userMovedRef.current) return
+        setAppliedCenter([home.lat, home.lng])
+        // Parked rather than applied, for the same reason `?at=` is:
+        // react-leaflet assigns `mapRef` when it creates the map, which is not
+        // a render this effect can see. Calling `setView` here moved the
+        // distances to Miami and left the camera on the whole country — a panel
+        // and a map disagreeing about where the user is, which is worse than
+        // either being wrong on its own.
+        pendingFrameRef.current = { at: [home.lat, home.lng], radius: HOME_RADIUS_MILES }
+      })
+      .catch(() => {
+        /* The country-wide view is the fallback, and it still works. */
+      })
+    return () => {
+      cancelled = true
+    }
+    // Once, on mount. Anything the user does afterwards outranks it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const [showPanel, setShowPanel] = useState(false)
 
   /**
@@ -1408,6 +1471,10 @@ export function MapView({
       return
     }
 
+    // A move that reached here is the user's own. The opening-view fetch reads
+    // this so it cannot snap them home from wherever they had already gone.
+    userMovedRef.current = true
+
     const centre = map.getCenter()
     // Offer to re-scope rather than doing it unasked.
     const [appliedLat, appliedLng] = appliedCenterRef.current
@@ -1981,7 +2048,7 @@ export function MapView({
                     {/* The rail scrolls; the disclosure does not. Putting the
                         "+N more" button inside the scroller meant you had to
                         scroll to find the control that saves you scrolling. */}
-                    <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5">
+                    <div className="xc-rail flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5">
                     {visibleTags.map((tag) => {
                       const selected = tagFilters.includes(tag.value)
                       return (
