@@ -891,6 +891,9 @@ export function MapView({
     [facets.types]
   )
 
+  /** Whether the tag rail has more than it can show at its collapsed height. */
+  const overflowTags = facets.tags.length > MAX_VISIBLE_TAGS
+
   /** Tags worth offering, most common first, with the selected ones pinned on. */
   const visibleTags = useMemo(() => {
     const selected = facets.tags.filter((t) => tagFilters.includes(t.value))
@@ -1796,20 +1799,21 @@ export function MapView({
    * one node. The ARIA combobox contract and most of the E2E suite are written
    * against that, and two would break both.
    */
-  const controls = (
-    <div className="flex flex-col gap-2.5">
-
-          {/* Glass card container */}
-          <div
-            className={cn(
-              'space-y-2.5',
-              // Glass only where it floats. Inside the rail it would be a
-              // card sitting on a panel, which is one surface too many —
-              // the thing this restructure exists to stop.
-              !(panelDocked && showPanel) &&
-                'rounded-2xl border border-white/60 bg-white/[0.92] p-3 shadow-xl shadow-black/[0.08] backdrop-blur-xl'
-            )}
-          >
+  /**
+   * The search box, and where the search is anchored.
+   *
+   * Floats over the map at every width. It was briefly the head of the
+   * results rail, which put search, filters and results in one column -- but
+   * the client kept the filters there and asked for the box back over the
+   * map, and they are the one looking at it every day. It also means the
+   * suggestion dropdown no longer opens on top of the ordering control.
+   */
+  const searchBlock = (
+    // No card of its own: it is one section of the floating card, whose chrome
+    // lives at the call site so that search and filters never stack into two
+    // separate panels. Two cards cost 34px of extra padding and gap, which was
+    // enough for the control stack to swallow a click meant for the map.
+    <div className="space-y-2.5">
 
             {/* Where the search is anchored. A sibling of the box, never a
                 replacement for it — see LocationAnchor for why. */}
@@ -1852,7 +1856,17 @@ export function MapView({
                       : 'Search providers, specialty, city or ZIP...'
                 }
               />
+    </div>
+  )
 
+  /**
+   * Everything that narrows the results.
+   *
+   * Lives with the results: in the rail head when there is a rail, and in a
+   * card under the search box when there is not.
+   */
+  const filterBlock = (
+    <div className="space-y-2.5">
             {/* Everything that narrows the results. Collapsed behind a button
                 on a phone: anchor + box + five radius chips + a tag rail + two
                 type chips is ~300px of glass on a 667px screen. */}
@@ -1883,11 +1897,59 @@ export function MapView({
                     reachable before by typing two characters and hoping the tag
                     made the dropdown's top three. */}
                 {visibleTags.length > 0 && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="space-y-1.5">
+                  <div
+                    className={cn(
+                      'flex gap-1.5',
+                      showAllTags
+                        ? 'items-start'
+                        : // Collapsed, the rail's right edge — and the "+N" sitting
+                          // on it — ran underneath the locate/list buttons on a
+                          // phone, so the control that reveals the other seventeen
+                          // specialties could not be pressed at all. That is the
+                          // "+17 does nothing" report: it was not doing nothing,
+                          // it was under a button.
+                          'items-center mr-[4.5rem] sm:mr-0'
+                    )}
+                  >
                     {/* The rail scrolls; the disclosure does not. Putting the
                         "+N more" button inside the scroller meant you had to
-                        scroll to find the control that saves you scrolling. */}
-                    <div className="xc-rail flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5">
+                        scroll to find the control that saves you scrolling.
+
+                        Expanded, it WRAPS instead of scrolling. It used to keep
+                        scrolling, so pressing "+17" added seventeen chips off
+                        the right-hand edge of a 400px column — and once the
+                        scrollbar track was hidden there was nothing left to
+                        suggest they were there at all. Reported as "+17 does
+                        nothing", which is exactly what it looked like. "Show
+                        more" has to mean shown. */}
+                    <div
+                      className={cn(
+                        'flex min-w-0 flex-1 items-center gap-1.5',
+                        showAllTags
+                          ? // Fades at the bottom edge instead of guillotining a
+                            // row of chips in half, which reads as a rendering
+                            // fault rather than as "keep going".
+                            // 45vh, not a fixed height: the twenty-three
+                            // specialties come to 359px, so a 192px box still
+                            // hid three rows behind a scroll nobody asked for
+                            // — a quieter version of the same complaint. Tied
+                            // to the viewport it fits them all on any normal
+                            // window and still cannot swallow a short one.
+                            'max-h-[45vh] flex-wrap overflow-y-auto [mask-image:linear-gradient(to_bottom,#000_calc(100%-20px),transparent)]'
+                          : cn(
+                              'xc-rail flex-nowrap overflow-x-auto pb-0.5',
+                              // Same idea sideways, and only when something is
+                              // actually cut off: at 400px the collapsed rail
+                              // sliced "Rehabilitation" mid-word against the
+                              // "+17", which looks like a bug and not like a
+                              // scroller. Skipped when everything fits, so the
+                              // last chip is never dimmed for no reason.
+                              overflowTags &&
+                                '[mask-image:linear-gradient(to_right,#000_calc(100%-28px),transparent)]'
+                            )
+                      )}
+                    >
                     {visibleTags.map((tag) => {
                       const selected = tagFilters.includes(tag.value)
                       return (
@@ -1912,16 +1974,31 @@ export function MapView({
                       )
                     })}
                     </div>
-                    {facets.tags.length > MAX_VISIBLE_TAGS && (
+                    {overflowTags && !showAllTags && (
                       <button
                         type="button"
-                        onClick={() => setShowAllTags((v) => !v)}
+                        onClick={() => setShowAllTags(true)}
                         data-testid="map-more-tags"
                         className="shrink-0 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold text-navy/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                       >
-                        {showAllTags ? 'Less' : `+${facets.tags.length - MAX_VISIBLE_TAGS}`}
+                        +{facets.tags.length - MAX_VISIBLE_TAGS}
                       </button>
                     )}
+                  </div>
+                  {/* Open, the way back gets its own row under the chips rather
+                      than floating at the top right of a block ten rows tall,
+                      where it read as belonging to nothing and — on a phone —
+                      sat under the list button. */}
+                  {overflowTags && showAllTags && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllTags(false)}
+                      data-testid="map-more-tags"
+                      className="w-full rounded-lg border border-gray-200/50 py-1.5 text-[11px] font-semibold text-navy/70 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                    >
+                      Show fewer specialties
+                    </button>
+                  )}
                   </div>
                 )}
 
@@ -2006,12 +2083,16 @@ export function MapView({
               >
                 Available
               </Chip>
+              {/* Scope and the way out of it — deliberately NOT a count.
+                  This used to read "696 of 1240 shown", seventy-five pixels
+                  above "696 of 1240 results" in the panel header: the same two
+                  numbers, twice, in one column. Now that the filters live in
+                  the rail head the pair sat together and the duplication was
+                  impossible to miss. The panel header keeps the counts, which
+                  is where the suite reads them from; this line keeps the thing
+                  the header does not say, which is how far the search reaches. */}
               <p className="min-w-[5rem] flex-1 text-[11px] leading-tight text-gray-500" data-testid="map-summary">
-                <span className="font-semibold tabular-nums text-navy">{resultTotal}</span>
-                {areaTotal > resultTotal && (
-                  <span className="tabular-nums"> of {areaTotal}</span>
-                )}
-                {radiusMiles ? ` within ${radiusMiles} mi` : ' shown'}
+                {radiusMiles ? `Within ${radiusMiles} mi` : 'Any distance'}
                 {activeFilterCount > 1 && (
                   <>
                     {' · '}
@@ -2040,9 +2121,9 @@ export function MapView({
                 </button>
               )}
             </div>
-          </div>
     </div>
   )
+
 
   const panelBody = detailItem ? (
     <ProviderDetail
@@ -2267,14 +2348,38 @@ export function MapView({
           desktop user has collapsed the rail to get the whole map back. They
           have to live somewhere — collapsing the results should not take the
           way to start a search with it. */}
-      {!(panelDocked && showPanel) && (
+      {/* Only the SEARCH box has to dodge the locate/list buttons in the top
+          right; the filters sit below them and do not. Reserving 7rem across
+          the whole stack cost the filters 126 of a phone's 390 pixels, which
+          was enough to force the expanded specialties to one chip per row with
+          half the card empty beside them. Above 640px the card hits its
+          420px cap long before the buttons, so the margin is phone-only. */}
+      <div
+        className="absolute top-4 left-4 right-4 z-[500] max-w-[420px]"
+        style={{ pointerEvents: 'none' }}
+      >
+        {/* Search is here at every width and in every state -- it is never
+            conditional on the rail. Pressing the rail toggle used to take the
+            box, the radius, the specialties and the ordering off the screen
+            together, because all four were one block that moved between two
+            homes. Collapsing the results is a request to see the map, not to
+            put the controls away. */}
         <div
-          className="absolute top-4 left-4 z-[500] w-[calc(100%-7rem)] max-w-[420px]"
-          style={{ pointerEvents: 'none' }}
+          className="space-y-2.5 rounded-2xl border border-white/60 bg-white/[0.92] p-3 shadow-xl shadow-black/[0.08] backdrop-blur-xl"
+          style={{ pointerEvents: 'auto' }}
         >
-          <div style={{ pointerEvents: 'auto' }}>{controls}</div>
+          {/* Only the search input dodges the locate/list buttons in the top
+              right, and only on a phone: reserving that width for the whole
+              card left the expanded specialties 211px to wrap into, which is
+              one chip per row with half the card empty beside it. */}
+          <div className="mr-[4.5rem] sm:mr-0">{searchBlock}</div>
+          {/* The filters follow the results. With a rail open they sit at the
+              head of it, next to the list they narrow; with no rail they have
+              nowhere else to be, so they come back here under the box —
+              in the same card, not a second one below it. */}
+          {!(panelDocked && showPanel) && filterBlock}
         </div>
-      )}
+      </div>
 
       {/* ═══ RIGHT BUTTONS ═══ */}
       <div
@@ -2398,10 +2503,12 @@ export function MapView({
             )}
             style={{ willChange: 'transform' }}
           >
-            {/* The rail head. Everything that starts a search, above
-                everything that answers one. */}
+            {/* The rail head: what narrows the list, directly above the list
+                it narrows. The search box is NOT here — it stayed over the map,
+                where the client wanted it, and where its dropdown does not open
+                on top of the ordering control. */}
             {panelDocked && showPanel && (
-              <div className="border-b border-gray-100/80 px-4 pb-3 pt-4">{controls}</div>
+              <div className="border-b border-gray-100/80 px-4 pb-3 pt-4">{filterBlock}</div>
             )}
             {/* Panel header.
 
