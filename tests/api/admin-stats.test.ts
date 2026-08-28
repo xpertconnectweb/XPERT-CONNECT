@@ -4,6 +4,7 @@ import {
   buildSession,
   buildSupabaseChainMock,
 } from './_helpers'
+import { REFERRAL_STATUSES } from '@/lib/referral-status'
 
 const sb = buildSupabaseChainMock({ data: [], error: null, count: 0 })
 
@@ -66,7 +67,9 @@ describe('GET /api/admin/stats — aggregation', () => {
         totalReferrals: expect.any(Number),
         totalUsers: expect.any(Number),
       },
-      funnel: { received: expect.any(Number), inProcess: expect.any(Number), attended: expect.any(Number) },
+      // Derived from the catalog, so a new lifecycle stage cannot drift out of
+      // sync with this assertion.
+      funnel: Object.fromEntries(REFERRAL_STATUSES.map((s) => [s, expect.any(Number)])),
       trend: expect.any(Array),
       mix: { byKind: expect.any(Object), byCreator: expect.any(Object), topCaseTypes: expect.any(Array) },
       partner: expect.any(Object),

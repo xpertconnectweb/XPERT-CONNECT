@@ -17,6 +17,12 @@ import { AlertCard } from '@/components/admin/dashboard/AlertCard'
 import { DateRangeControl } from '@/components/admin/dashboard/DateRangeControl'
 import { DashboardSkeleton } from '@/components/admin/dashboard/skeletons'
 import { cn } from '@/lib/utils'
+import {
+  REFERRAL_STATUSES,
+  REFERRAL_STATUS_LIST,
+  statusMeta,
+} from '@/lib/referral-status'
+import type { ReferralStatus } from '@/types/professionals'
 
 // ── Formatting ────────────────────────────────────────────────────────────
 const nf = new Intl.NumberFormat('en-US')
@@ -86,12 +92,6 @@ function actionTone(a: string): string {
   if (a.includes('deleted')) return 'bg-red-50 text-red-500'
   if (a.includes('updated') || a.includes('toggle') || a.includes('status') || a.includes('assigned')) return 'bg-amber-50 text-amber-600'
   return 'bg-gray-100 text-gray-500'
-}
-
-const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
-  received: { label: 'Received', cls: 'bg-blue-50 text-blue-700 ring-blue-600/10' },
-  in_process: { label: 'In Process', cls: 'bg-amber-50 text-amber-700 ring-amber-600/10' },
-  attended: { label: 'Attended', cls: 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' },
 }
 
 // ── Small visual building blocks ──────────────────────────────────────────
@@ -204,12 +204,14 @@ export default function AdminDashboardPage() {
   if (!stats) return null
 
   const { kpis, funnel, trend, mix, partner, network, topClinics, topLawyers, contacts, newsletter, alerts, recentReferrals, recentActivity } = stats
-  const funnelTotal = funnel.received + funnel.inProcess + funnel.attended
+  const funnelTotal = REFERRAL_STATUSES.reduce((n, s) => n + funnel[s], 0)
   const trendEmpty = !trend.some((t) => t.count > 0)
   const trendSpark = trend.map((t) => t.count)
 
   const alertItems = [
-    alerts.stuckReferrals > 0 && { count: alerts.stuckReferrals, label: 'Referrals stuck over 7 days', href: '/admin/referrals?status=received', tone: 'amber' as const, icon: Clock },
+    // No `?status=` here: "stuck" now spans every non-terminal stage, so any
+    // single-status deep link would show the wrong subset.
+    alerts.stuckReferrals > 0 && { count: alerts.stuckReferrals, label: 'Referrals stuck over 7 days', href: '/admin/referrals', tone: 'amber' as const, icon: Clock },
     alerts.partnerUnassigned > 0 && { count: alerts.partnerUnassigned, label: 'Partner referrals awaiting assignment', href: '/admin/referrer-referrals?status=pending', tone: 'blue' as const, icon: UserPlus },
     alerts.clinicsUnavailable > 0 && { count: alerts.clinicsUnavailable, label: 'Clinics currently unavailable', href: '/admin/clinics?availability=unavailable', tone: 'red' as const, icon: Warning },
   ].filter(Boolean) as { count: number; label: string; href: string; tone: 'amber' | 'blue' | 'red'; icon: typeof Clock }[]
@@ -247,7 +249,7 @@ export default function AdminDashboardPage() {
       {/* ── KPI row ── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiTile label={`Referrals · ${RANGE_LABEL[range]}`} value={kpis.referralsPeriod} delta={kpis.referralsDeltaPct} spark={trendSpark} icon={ChartLineUp} tone="navy" href="/admin/referrals" />
-        <KpiTile label="Active pipeline" value={kpis.activePipeline} sub={`${funnel.received} new · ${funnel.inProcess} in process`} icon={Stack} tone="blue" href="/admin/referrals?status=received" />
+        <KpiTile label="Active pipeline" value={kpis.activePipeline} sub={`${funnel.received} new · ${kpis.activePipeline - funnel.received} in treatment`} icon={Stack} tone="blue" href="/admin/referrals?status=received" />
         <KpiTile label="Partner referrals pending" value={kpis.partnerPending} sub={`${partner.total} total · ${partner.confirmedRate ?? 0}% confirmed`} icon={UserPlus} tone="gold" href="/admin/referrer-referrals?status=pending" />
         <KpiTile label="Clinics available" value={kpis.clinicsAvailable} sub={`of ${nf.format(kpis.clinicsTotal)} clinics`} icon={Buildings} tone="emerald" href="/admin/clinics?availability=available" />
       </div>
@@ -294,12 +296,18 @@ export default function AdminDashboardPage() {
 
         <SectionCard title="Status funnel" subtitle={`${nf.format(funnelTotal)} referrals total`} viewAllHref="/admin/referrals">
           <div className="space-y-4 pt-1">
-            <ProportionRow label="Received" value={funnel.received} total={funnelTotal} color="#3b82f6" />
-            <ProportionRow label="In process" value={funnel.inProcess} total={funnelTotal} color="#f59e0b" />
-            <ProportionRow label="Attended" value={funnel.attended} total={funnelTotal} color="#10b981" />
+            {/* SegmentBar rather than one ProportionRow per stage: five rows
+                would make this card much taller than the chart beside it. */}
+            <SegmentBar
+              segments={REFERRAL_STATUS_LIST.map((m) => ({
+                label: m.label,
+                value: funnel[m.value as ReferralStatus],
+                color: m.hex,
+              }))}
+            />
             <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
               <span className="text-xs text-gray-400">Completion rate</span>
-              <span className="font-mono text-sm font-semibold text-emerald-600 tabular-nums">{pct(funnel.attended, funnelTotal)}%</span>
+              <span className="font-mono text-sm font-semibold text-emerald-600 tabular-nums">{pct(funnel.final_mmi, funnelTotal)}%</span>
             </div>
           </div>
         </SectionCard>
@@ -455,14 +463,14 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-100/80">
                 {recentReferrals.map((r) => {
-                  const s = STATUS_STYLE[r.status] ?? { label: r.status, cls: 'bg-gray-100 text-gray-600 ring-gray-500/10' }
+                  const s = statusMeta(r.status)
                   return (
                     <tr key={r.id} className="transition-colors hover:bg-gray-50/50">
                       <td className="px-5 py-3 text-xs font-semibold text-gray-900">{r.patientName}</td>
                       <td className="px-5 py-3 text-xs text-gray-600">{truncate(r.lawyerName, 20)}</td>
                       <td className="px-5 py-3 text-xs text-gray-600">{truncate(r.clinicName, 20)}</td>
                       <td className="px-5 py-3">
-                        <span className={cn('inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1', s.cls)}>{s.label}</span>
+                        <span className={cn('inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset', s.badgeClass)}>{s.label}</span>
                       </td>
                       <td className="px-5 py-3 font-mono text-[11px] text-gray-400 tabular-nums">{fmtDate(r.createdAt)}</td>
                     </tr>

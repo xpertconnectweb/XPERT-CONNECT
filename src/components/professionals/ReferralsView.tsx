@@ -2,17 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import {
-  Inbox,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  FileText,
-  TrendingUp,
-} from 'lucide-react'
+import { AlertTriangle, RefreshCw, FileText, TrendingUp } from 'lucide-react'
 import { ReferralTable } from './ReferralTable'
 import { ReferralList } from './ReferralList'
+import { cn } from '@/lib/utils'
+import {
+  REFERRAL_STATUSES,
+  REFERRAL_STATUS_LIST,
+  TERMINAL_REFERRAL_STATUS,
+  isReferralStatus,
+} from '@/lib/referral-status'
+import { statusIcon } from '@/lib/referral-status-icons'
 import type { Referral, ReferralStatus } from '@/types/professionals'
 
 export function ReferralsView() {
@@ -67,11 +67,14 @@ export function ReferralsView() {
   const isLawyer = session?.user?.role === 'lawyer'
   const isClinic = session?.user?.role === 'clinic'
 
-  // Stats
-  const received = referrals.filter((r) => r.status === 'received').length
-  const inProcess = referrals.filter((r) => r.status === 'in_process').length
-  const attended = referrals.filter((r) => r.status === 'attended').length
+  // One pass, keyed by the catalog: adding a stage in `referral-status.ts`
+  // extends the tiles, the bar and the legend without touching this file.
+  const counts = Object.fromEntries(
+    REFERRAL_STATUSES.map((s) => [s, 0])
+  ) as Record<ReferralStatus, number>
+  for (const r of referrals) if (isReferralStatus(r.status)) counts[r.status]++
   const total = referrals.length
+  const completed = counts[TERMINAL_REFERRAL_STATUS]
 
   if (loading) {
     return (
@@ -104,7 +107,7 @@ export function ReferralsView() {
   }
 
   // Completion rate
-  const completionRate = total > 0 ? Math.round((attended / total) * 100) : 0
+  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
 
   return (
     <div className="space-y-6">
@@ -133,14 +136,13 @@ export function ReferralsView() {
         </div>
       )}
 
-      {/* Stats Cards */}
+      {/* Stats Cards — Total plus one tile per lifecycle stage */}
       {referrals.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {/* Total */}
-          <div className="group rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="group rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a2a4a] to-[#2a3f6a]">
-                <FileText className="h-4.5 w-4.5 text-white" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a2a4a] to-[#2a3f6a]">
+                <FileText className="h-4 w-4 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900 tabular-nums">{total}</p>
@@ -148,45 +150,26 @@ export function ReferralsView() {
               </div>
             </div>
           </div>
-          {/* Received */}
-          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-blue-400" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
-                <Inbox className="h-4.5 w-4.5 text-blue-500" />
+          {REFERRAL_STATUS_LIST.map((m) => {
+            const Icon = statusIcon(m.value)
+            return (
+              <div
+                key={m.value}
+                className="group relative rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+              >
+                <div className={cn('absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full', m.accentClass)} />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: m.tintGradient }}>
+                    <Icon className={cn('h-4 w-4', m.iconClass)} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900 tabular-nums">{counts[m.value as ReferralStatus]}</p>
+                    <p className="text-[11px] text-gray-400 font-medium">{m.label}</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 tabular-nums">{received}</p>
-                <p className="text-[11px] text-gray-400 font-medium">Received</p>
-              </div>
-            </div>
-          </div>
-          {/* In Process */}
-          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-amber-400" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }}>
-                <Clock className="h-4.5 w-4.5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 tabular-nums">{inProcess}</p>
-                <p className="text-[11px] text-gray-400 font-medium">In Process</p>
-              </div>
-            </div>
-          </div>
-          {/* Attended */}
-          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-emerald-400" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' }}>
-                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 tabular-nums">{attended}</p>
-                <p className="text-[11px] text-gray-400 font-medium">Attended</p>
-              </div>
-            </div>
-          </div>
+            )
+          })}
         </div>
       )}
 
@@ -195,44 +178,28 @@ export function ReferralsView() {
         <div className="rounded-2xl bg-white border border-gray-200/80 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Referral Pipeline</p>
-            <p className="text-xs text-gray-400">{attended} of {total} completed</p>
+            <p className="text-xs text-gray-400">{completed} of {total} completed</p>
           </div>
+          {/* minWidth keeps a single referral in a large book from rendering as
+              a sub-pixel sliver, which reads as a drawing bug in a screenshot. */}
           <div className="flex h-2.5 rounded-full overflow-hidden bg-gray-100 gap-0.5">
-            {received > 0 && (
+            {REFERRAL_STATUS_LIST.filter((m) => counts[m.value as ReferralStatus] > 0).map((m) => (
               <div
-                className="rounded-full bg-blue-400 transition-all duration-500"
-                style={{ width: `${(received / total) * 100}%` }}
-                title={`${received} Received`}
+                key={m.value}
+                className={cn('rounded-full transition-all duration-500', m.accentClass)}
+                style={{ width: `${(counts[m.value as ReferralStatus] / total) * 100}%`, minWidth: '3px' }}
+                title={`${counts[m.value as ReferralStatus]} ${m.label}`}
               />
-            )}
-            {inProcess > 0 && (
-              <div
-                className="rounded-full bg-amber-400 transition-all duration-500"
-                style={{ width: `${(inProcess / total) * 100}%` }}
-                title={`${inProcess} In Process`}
-              />
-            )}
-            {attended > 0 && (
-              <div
-                className="rounded-full bg-emerald-400 transition-all duration-500"
-                style={{ width: `${(attended / total) * 100}%` }}
-                title={`${attended} Attended`}
-              />
-            )}
+            ))}
           </div>
-          <div className="flex items-center gap-5 mt-3">
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-blue-400" />
-              <span className="text-[11px] text-gray-500">Received</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-amber-400" />
-              <span className="text-[11px] text-gray-500">In Process</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-emerald-400" />
-              <span className="text-[11px] text-gray-500">Attended</span>
-            </div>
+          {/* flex-wrap: five legend pills overflow a 360px viewport in one row. */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+            {REFERRAL_STATUS_LIST.map((m) => (
+              <div key={m.value} className="flex items-center gap-1.5">
+                <div className={cn('h-2 w-2 rounded-full', m.accentClass)} />
+                <span className="text-[11px] text-gray-500">{m.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}

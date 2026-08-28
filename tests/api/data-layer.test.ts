@@ -175,14 +175,14 @@ describe('getUsersByClinicId', () => {
 describe('updateReferralFields', () => {
   it('does NOT manually set updated_at (DB trigger handles it)', async () => {
     supabaseMock.setResult({
-      data: { id: 'ref-1', status: 'attended' },
+      data: { id: 'ref-1', status: 'final_mmi' },
       error: null,
     })
-    await updateReferralFields('ref-1', { status: 'attended' })
+    await updateReferralFields('ref-1', { status: 'final_mmi' })
     const updateCall = supabaseMock.calls.find((c) => c.method === 'update')
     const payload = updateCall?.args[0] as Record<string, unknown>
     expect(payload).not.toHaveProperty('updated_at')
-    expect(payload).toEqual({ status: 'attended' })
+    expect(payload).toEqual({ status: 'final_mmi' })
   })
 
   it('converts adjuster fields to snake_case', async () => {
@@ -210,7 +210,7 @@ describe('updateReferralFields', () => {
 
   it('returns null on error', async () => {
     supabaseMock.setResult({ data: null, error: { message: 'oops' } })
-    const result = await updateReferralFields('ref-1', { status: 'attended' })
+    const result = await updateReferralFields('ref-1', { status: 'final_mmi' })
     expect(result).toBeNull()
   })
 })

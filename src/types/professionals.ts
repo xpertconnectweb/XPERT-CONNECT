@@ -157,7 +157,12 @@ type WithheldFromPublic =
 export type PublicClinic = Omit<DecoratedClinic, WithheldFromPublic>
 export type PublicLawyer = Omit<DecoratedLawyer, WithheldFromPublic>
 
-export type ReferralStatus = 'received' | 'in_process' | 'attended'
+// The referral lifecycle is defined once, in `src/lib/referral-status.ts`,
+// alongside its labels and colours. Imported here for `Referral.status` below
+// and re-exported so the modules that already take the type from this file
+// keep working.
+import type { ReferralStatus } from '@/lib/referral-status'
+export type { ReferralStatus }
 
 export type ReferrerReferralStatus = 'pending' | 'assigned' | 'in_process' | 'completed'
 export type CaseConfirmedStatus = 'pending' | 'confirmed'

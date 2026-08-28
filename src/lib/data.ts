@@ -426,23 +426,6 @@ export async function createReferral(referral: Referral): Promise<Referral> {
   return rowToModel<Referral>(data)
 }
 
-export async function updateReferralStatus(
-  id: string,
-  status: Referral['status']
-): Promise<Referral | null> {
-  const { data, error } = await supabaseAdmin
-    .from('referrals')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
-    .single()
-  if (error || !data) {
-    console.error('updateReferralStatus error:', error)
-    return null
-  }
-  return rowToModel<Referral>(data)
-}
-
 export type ReferralPatch = Partial<Pick<Referral,
   'status' | 'insuranceCompany' | 'claimNumber' |
   'adjusterName' | 'adjusterPhone' | 'adjusterEmail'

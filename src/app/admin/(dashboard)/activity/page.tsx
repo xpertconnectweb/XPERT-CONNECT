@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { statusLabel } from '@/lib/referral-status'
 import type { ActivityLog } from '@/types/admin'
 
 const ACTION_BADGES: Record<string, { label: string; color: string }> = {
@@ -80,10 +81,12 @@ function formatDetails(details: Record<string, unknown> | undefined, action: str
     return `${count} item(s) deleted`
   }
 
-  // Referral status change: render "from → to"
+  // Referral status change: render "from → to". `statusLabel` rather than a
+  // underscore-strip, so the terminal stage reads "Final MMI" and not
+  // "final mmi" — and so retired values from before a lifecycle change, which
+  // live in this append-only log forever, still read as English.
   if (action === 'referral_status_changed' && details.from && details.to) {
-    const pretty = (s: unknown) => String(s).replace(/_/g, ' ')
-    return `${pretty(details.from)} → ${pretty(details.to)}`
+    return `${statusLabel(String(details.from))} → ${statusLabel(String(details.to))}`
   }
 
   // Generic fallback: show key=value pairs

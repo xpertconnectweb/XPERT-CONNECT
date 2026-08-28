@@ -4,15 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Sparkles, FileText, ArrowRight, Scale, Stethoscope } from 'lucide-react'
+import { statusMeta } from '@/lib/referral-status'
 import type { Referral } from '@/types/professionals'
 import { ClinicReferralFormModal } from './ClinicReferralFormModal'
 import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal'
-
-const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  received: { label: 'Received', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
-  in_process: { label: 'In Process', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
-  attended: { label: 'Attended', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -146,7 +141,7 @@ export function ClinicDashboard({ recentReferrals }: ClinicDashboardProps) {
               </thead>
               <tbody className="divide-y divide-gray-100/80">
                 {recentReferrals.map((ref) => {
-                  const sc = statusConfig[ref.status] || statusConfig.received
+                  const sc = statusMeta(ref.status)
                   const isMedical = ref.referralKind === 'medical_specialist'
                   return (
                     <tr key={ref.id} className="hover:bg-gray-50/50 transition-colors">
@@ -166,8 +161,8 @@ export function ClinicDashboard({ recentReferrals }: ClinicDashboardProps) {
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${sc.bg} ${sc.text}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${sc.badgeClass}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${sc.accentClass}`} />
                           {sc.label}
                         </span>
                       </td>

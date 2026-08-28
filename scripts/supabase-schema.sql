@@ -122,7 +122,11 @@ CREATE TABLE IF NOT EXISTS referrals (
   adjuster_phone      TEXT,
   adjuster_email      TEXT,
   notes               TEXT NOT NULL DEFAULT '',
-  status              TEXT NOT NULL CHECK (status IN ('received', 'in_process', 'attended')) DEFAULT 'received',
+  -- Named explicitly: the original inline anonymous CHECK is why
+  -- 2026-11-referral-status-lifecycle.sql had to guess Postgres's auto-name.
+  status              TEXT NOT NULL CONSTRAINT referrals_status_check
+                        CHECK (status IN ('received', 'scheduled', 'mri', 'specialist', 'final_mmi'))
+                        DEFAULT 'received',
   created_at          TIMESTAMPTZ DEFAULT now(),
   updated_at          TIMESTAMPTZ DEFAULT now()
 );

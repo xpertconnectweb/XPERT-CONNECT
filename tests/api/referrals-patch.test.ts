@@ -45,7 +45,7 @@ beforeEach(() => {
 describe('PATCH /api/professionals/referrals/[id] — auth', () => {
   it('returns 401 when no session', async () => {
     mockedAuth.requireAuth.mockImplementation(buildRequireAuth(null))
-    const res = await PATCH(buildRequest({ status: 'attended' }, { method: 'PATCH' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }, { method: 'PATCH' }), PARAMS)
     expect(res.status).toBe(401)
   })
 
@@ -54,7 +54,7 @@ describe('PATCH /api/professionals/referrals/[id] — auth', () => {
       buildRequireAuth(buildSession({ role: 'admin' }))
     )
     mockedData.getReferralById.mockResolvedValue(undefined)
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(404)
   })
 })
@@ -70,7 +70,7 @@ describe('PATCH — authorization matrix', () => {
     mockedAuth.requireAuth.mockImplementation(
       buildRequireAuth(buildSession({ role: 'admin' }))
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(200)
   })
 
@@ -80,7 +80,7 @@ describe('PATCH — authorization matrix', () => {
         buildSession({ role: 'lawyer', id: 'u-different', lawyerId: 'l-001' })
       )
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(200)
   })
 
@@ -90,7 +90,7 @@ describe('PATCH — authorization matrix', () => {
         buildSession({ role: 'lawyer', id: 'u-other', lawyerId: 'l-999' })
       )
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(403)
   })
 
@@ -98,7 +98,7 @@ describe('PATCH — authorization matrix', () => {
     mockedAuth.requireAuth.mockImplementation(
       buildRequireAuth(buildSession({ role: 'lawyer', id: 'u-orphan' }))
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(403)
   })
 
@@ -108,7 +108,7 @@ describe('PATCH — authorization matrix', () => {
         buildSession({ role: 'clinic', clinicId: 'c-001', id: 'u-clinic' })
       )
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(200)
   })
 
@@ -118,7 +118,7 @@ describe('PATCH — authorization matrix', () => {
         buildSession({ role: 'clinic', clinicId: 'c-999', id: 'u-clinic-2' })
       )
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(403)
   })
 
@@ -126,7 +126,7 @@ describe('PATCH — authorization matrix', () => {
     mockedAuth.requireAuth.mockImplementation(
       buildRequireAuth(buildSession({ role: 'referrer' }))
     )
-    const res = await PATCH(buildRequest({ status: 'attended' }), PARAMS)
+    const res = await PATCH(buildRequest({ status: 'final_mmi' }), PARAMS)
     expect(res.status).toBe(403)
   })
 })
@@ -147,7 +147,7 @@ describe('PATCH — allowlist enforcement', () => {
   it('silently drops fields outside the allowlist', async () => {
     const res = await PATCH(
       buildRequest({
-        status: 'attended',
+        status: 'final_mmi',
         patientName: 'OVERRIDE',
         lawyerId: 'l-attacker',
         clinicId: 'c-attacker',
@@ -156,7 +156,7 @@ describe('PATCH — allowlist enforcement', () => {
     )
     expect(res.status).toBe(200)
     const patch = mockedData.updateReferralFields.mock.calls[0][1]
-    expect(patch).toHaveProperty('status', 'attended')
+    expect(patch).toHaveProperty('status', 'final_mmi')
     expect(patch).not.toHaveProperty('patientName')
     expect(patch).not.toHaveProperty('lawyerId')
     expect(patch).not.toHaveProperty('clinicId')
@@ -181,8 +181,15 @@ describe('PATCH — allowlist enforcement', () => {
     expect(patch.adjusterEmail).toBe('adj@ins.com')
   })
 
+  // 'completed' belongs to the partner portal's referrer_referrals vocabulary.
+  // Keeping it here proves the two sets stay apart.
   it('rejects invalid status', async () => {
     const res = await PATCH(buildRequest({ status: 'completed' }), PARAMS)
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects the retired in_process status', async () => {
+    const res = await PATCH(buildRequest({ status: 'in_process' }), PARAMS)
     expect(res.status).toBe(400)
   })
 

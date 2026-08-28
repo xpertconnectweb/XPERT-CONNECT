@@ -5,6 +5,10 @@ const config: Config = {
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    // `src/lib` too: the referral-status catalog holds the class names for the
+    // lifecycle pills, and without this glob the purge silently drops any
+    // colour that no component happens to spell out as well.
+    './src/lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {

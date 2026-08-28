@@ -65,8 +65,10 @@ describe('role and status enums', () => {
   it('VALID_REFERRAL_STATUSES is the canonical lifecycle', () => {
     expect(VALID_REFERRAL_STATUSES).toEqual([
       'received',
-      'in_process',
-      'attended',
+      'scheduled',
+      'mri',
+      'specialist',
+      'final_mmi',
     ])
   })
 

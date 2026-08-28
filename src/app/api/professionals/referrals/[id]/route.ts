@@ -7,11 +7,8 @@ import {
 } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
-import {
-  VALID_REFERRAL_STATUSES,
-  REFERRAL_MUTABLE_FIELDS,
-  EMAIL_RE,
-} from '@/lib/validation'
+import { REFERRAL_MUTABLE_FIELDS, EMAIL_RE } from '@/lib/validation'
+import { isReferralStatus } from '@/lib/referral-status'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 
 export async function PATCH(
@@ -51,10 +48,10 @@ export async function PATCH(
     const raw = body[key]
     if (raw === undefined) continue
     if (key === 'status') {
-      if (typeof raw !== 'string' || !VALID_REFERRAL_STATUSES.includes(raw as typeof VALID_REFERRAL_STATUSES[number])) {
+      if (!isReferralStatus(raw)) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
       }
-      patch.status = raw as typeof VALID_REFERRAL_STATUSES[number]
+      patch.status = raw
       continue
     }
     if (typeof raw !== 'string') continue

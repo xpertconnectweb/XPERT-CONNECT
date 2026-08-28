@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
+import { DEFAULT_REFERRAL_STATUS } from '@/lib/referral-status'
 import {
   getReferralsByLawyerEntity,
   getReferralsByClinic,
@@ -218,7 +219,7 @@ async function handleLawyerToClinic(args: CreateArgs) {
       adjusterPhone: extras.adjusterPhone,
       adjusterEmail: extras.adjusterEmail,
       notes: cleanNotes,
-      status: 'received',
+      status: DEFAULT_REFERRAL_STATUS,
       createdAt: now,
       updatedAt: now,
     })
@@ -353,7 +354,7 @@ async function handleClinicToLawyer(args: CreateArgs) {
       adjusterPhone: extras.adjusterPhone,
       adjusterEmail: extras.adjusterEmail,
       notes: cleanNotes,
-      status: 'received',
+      status: DEFAULT_REFERRAL_STATUS,
       createdAt: now,
       updatedAt: now,
     })
@@ -498,7 +499,7 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
       adjusterPhone: extras.adjusterPhone,
       adjusterEmail: extras.adjusterEmail,
       notes: cleanNotes,
-      status: 'received',
+      status: DEFAULT_REFERRAL_STATUS,
       createdAt: now,
       updatedAt: now,
     })

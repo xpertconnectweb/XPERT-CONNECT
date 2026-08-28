@@ -1,6 +1,12 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { rowsToModels } from '@/lib/mappers'
-import type { Referral } from '@/types/professionals'
+import {
+  ACTIVE_REFERRAL_STATUSES,
+  REFERRAL_STATUSES,
+  isReferralStatus,
+  isTerminal,
+} from '@/lib/referral-status'
+import type { Referral, ReferralStatus } from '@/types/professionals'
 
 /**
  * Admin dashboard analytics. One broad fetch per table + in-JS aggregation
@@ -29,7 +35,8 @@ export interface AdminStats {
     totalReferrals: number
     totalUsers: number
   }
-  funnel: { received: number; inProcess: number; attended: number }
+  /** Keyed by the raw status, so a new lifecycle stage needs no new field. */
+  funnel: Record<ReferralStatus, number>
   trend: LabelCount[]
   mix: {
     byKind: { lawyer: number; medicalSpecialist: number }
@@ -166,7 +173,7 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
     recentReferralRows,
     activityRows,
   ] = await Promise.all([
-    supabaseAdmin.from('referrals').select('status, referral_kind, creator_role, case_type, clinic_name, lawyer_name, created_at'),
+    supabaseAdmin.from('referrals').select('status, referral_kind, creator_role, case_type, clinic_name, lawyer_name, created_at, updated_at'),
     supabaseAdmin.from('referrer_referrals').select('status, case_confirmed, service_needed, state, created_at'),
     supabaseAdmin.from('clinics').select('address, available'),
     supabaseAdmin.from('lawyers').select('address, available'),
@@ -187,7 +194,8 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
 
   const refs = (referralRows.data ?? []) as {
     status: string; referral_kind: string | null; creator_role: string | null
-    case_type: string | null; clinic_name: string | null; lawyer_name: string | null; created_at: string
+    case_type: string | null; clinic_name: string | null; lawyer_name: string | null
+    created_at: string; updated_at: string
   }[]
   const partners = (partnerRows.data ?? []) as {
     status: string; case_confirmed: string | null; service_needed: string | null; state: string | null; created_at: string
@@ -199,12 +207,10 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
   const subs = (newsletterRows.data ?? []) as { subscribed_at: string }[]
 
   // ── Referral status funnel ──
-  const funnel = { received: 0, inProcess: 0, attended: 0 }
-  for (const r of refs) {
-    if (r.status === 'received') funnel.received++
-    else if (r.status === 'in_process') funnel.inProcess++
-    else if (r.status === 'attended') funnel.attended++
-  }
+  const funnel = Object.fromEntries(
+    REFERRAL_STATUSES.map((s) => [s, 0])
+  ) as Record<ReferralStatus, number>
+  for (const r of refs) if (isReferralStatus(r.status)) funnel[r.status]++
 
   // ── Referral trend + period/prev counts + stuck alert ──
   const trend: LabelCount[] = buckets.map((b) => ({ label: b.label, count: 0 }))
@@ -221,7 +227,11 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
     } else if (t >= prevStart) {
       referralsPrev++
     }
-    if ((r.status === 'received' || r.status === 'in_process') && t < stuckBefore) stuckReferrals++
+    // Staleness is measured from the LAST MOVE, not from creation. Reaching
+    // Final MMI legitimately takes months, so "created 7+ days ago and not
+    // terminal" would flag the whole active book; "nobody has advanced this in
+    // a week" is the question this alert is actually asking.
+    if (!isTerminal(r.status) && new Date(r.updated_at).getTime() < stuckBefore) stuckReferrals++
   }
   const referralsDeltaPct = referralsPrev === 0
     ? (referralsPeriod > 0 ? null : 0)
@@ -334,7 +344,7 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
       referralsPeriod,
       referralsPrev,
       referralsDeltaPct,
-      activePipeline: funnel.received + funnel.inProcess,
+      activePipeline: ACTIVE_REFERRAL_STATUSES.reduce((n, s) => n + funnel[s], 0),
       partnerPending: partner.pending,
       clinicsAvailable: network.clinicsAvailable,
       clinicsTotal: network.clinicsTotal,

@@ -26,6 +26,7 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react'
+import { statusMeta } from '@/lib/referral-status'
 import type { Referral } from '@/types/professionals'
 
 type InsuranceField = 'insuranceCompany' | 'claimNumber' | 'adjusterName' | 'adjusterPhone' | 'adjusterEmail'
@@ -140,11 +141,7 @@ function ReferralDetailModal({
     }
   }
 
-  const statusColor = {
-    received: 'from-blue-500 to-blue-600',
-    in_process: 'from-amber-500 to-amber-600',
-    attended: 'from-emerald-500 to-emerald-600',
-  }[referral.status]
+  const statusInfo = statusMeta(referral.status)
 
   const rows = [
     { icon: User, label: 'Patient', value: referral.patientName },
@@ -189,10 +186,10 @@ function ReferralDetailModal({
           </div>
           {/* Status pill inside header */}
           <div className="relative mt-3">
-            <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${statusColor} px-3.5 py-1.5 shadow-lg`}>
+            <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${statusInfo.gradientClass} px-3.5 py-1.5 shadow-lg`}>
               <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
               <span className="text-xs font-bold text-white uppercase tracking-wider">
-                {referral.status === 'in_process' ? 'In Process' : referral.status === 'attended' ? 'Attended' : 'Received'}
+                {statusInfo.label}
               </span>
             </div>
           </div>

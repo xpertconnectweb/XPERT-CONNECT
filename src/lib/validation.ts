@@ -1,6 +1,7 @@
 import type { UserRole, ReferralStatus, ReferrerReferralStatus, CaseConfirmedStatus, ServiceNeeded, ReferralKind } from '@/types/professionals'
 import { MEDICAL_SPECIALTY_TYPES, type MedicalSpecialtyType } from './medical-specialties'
 import { PRACTICE_AREAS, type PracticeArea } from './practice-areas'
+import { REFERRAL_STATUSES } from './referral-status'
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
@@ -73,7 +74,9 @@ export function validateCoordinates(lat: unknown, lng: unknown): CoordinateCheck
 }
 
 export const VALID_ROLES: UserRole[] = ['lawyer', 'clinic', 'admin', 'referrer', 'partner', 'directory']
-export const VALID_REFERRAL_STATUSES: ReferralStatus[] = ['received', 'in_process', 'attended']
+// The lifecycle itself lives in `referral-status.ts`; this alias is the name
+// every write path already checks against.
+export const VALID_REFERRAL_STATUSES: readonly ReferralStatus[] = REFERRAL_STATUSES
 export const VALID_REFERRER_STATUSES: ReferrerReferralStatus[] = ['pending', 'assigned', 'in_process', 'completed']
 export const VALID_CASE_CONFIRMED: CaseConfirmedStatus[] = ['pending', 'confirmed']
 export const VALID_SERVICES: ServiceNeeded[] = ['clinic', 'lawyer', 'both']

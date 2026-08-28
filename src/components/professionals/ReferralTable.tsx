@@ -26,14 +26,8 @@ import {
   Save,
   CheckCircle2,
 } from 'lucide-react'
+import { nextStatus, statusLabel, statusMeta } from '@/lib/referral-status'
 import type { Referral, ReferralStatus } from '@/types/professionals'
-
-const STATUS_FLOW: ReferralStatus[] = ['received', 'in_process', 'attended']
-const STATUS_LABELS: Record<ReferralStatus, string> = {
-  received: 'Received',
-  in_process: 'In Process',
-  attended: 'Attended',
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -137,11 +131,7 @@ function ReferralDetailModal({
     }
   }
 
-  const statusColor = {
-    received: 'from-blue-500 to-blue-600',
-    in_process: 'from-amber-500 to-amber-600',
-    attended: 'from-emerald-500 to-emerald-600',
-  }[referral.status]
+  const statusInfo = statusMeta(referral.status)
 
   const isMedical = referral.referralKind === 'medical_specialist'
   const accidentRow = referral.accidentDate
@@ -198,10 +188,10 @@ function ReferralDetailModal({
           </div>
           {/* Status pill */}
           <div className="relative mt-3">
-            <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${statusColor} px-3.5 py-1.5 shadow-lg`}>
+            <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${statusInfo.gradientClass} px-3.5 py-1.5 shadow-lg`}>
               <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
               <span className="text-xs font-bold text-white uppercase tracking-wider">
-                {STATUS_LABELS[referral.status]}
+                {statusInfo.label}
               </span>
             </div>
           </div>
@@ -396,8 +386,7 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
             </thead>
             <tbody className="divide-y divide-gray-100/80">
               {referrals.map((ref) => {
-                const currentIdx = STATUS_FLOW.indexOf(ref.status)
-                const nextStatus = currentIdx < STATUS_FLOW.length - 1 ? STATUS_FLOW[currentIdx + 1] : null
+                const next = nextStatus(ref.status)
                 const isMed = ref.referralKind === 'medical_specialist'
                 const destName = isMed
                   ? (ref.targetClinicName || ref.specialistType || 'Medical specialist')
@@ -433,18 +422,18 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                       <StatusBadge status={ref.status} />
                     </td>
                     <td className="px-5 py-4">
-                      {nextStatus ? (
+                      {next ? (
                         <button
-                          onClick={() => handleStatusChange(ref.id, nextStatus)}
+                          onClick={() => handleStatusChange(ref.id, next)}
                           disabled={updatingId === ref.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#d4a84b] to-[#c49a3f] px-3.5 py-1.5 text-xs font-semibold text-white hover:shadow-md hover:shadow-gold/20 disabled:opacity-50 transition-all duration-200 shadow-sm"
+                          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-r from-[#d4a84b] to-[#c49a3f] px-3.5 py-1.5 text-xs font-semibold text-white hover:shadow-md hover:shadow-gold/20 disabled:opacity-50 transition-all duration-200 shadow-sm"
                         >
                           {updatingId === ref.id ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
                             <ArrowRight className="h-3 w-3" />
                           )}
-                          {STATUS_LABELS[nextStatus]}
+                          Mark {statusLabel(next)}
                         </button>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
@@ -472,8 +461,7 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-gray-100/60">
           {referrals.map((ref) => {
-            const currentIdx = STATUS_FLOW.indexOf(ref.status)
-            const nextStatus = currentIdx < STATUS_FLOW.length - 1 ? STATUS_FLOW[currentIdx + 1] : null
+            const next = nextStatus(ref.status)
             return (
               <div key={ref.id} className="relative p-5 space-y-3 hover:bg-gray-50/50 transition-colors">
                 <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-gold/40" />
@@ -513,9 +501,9 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                 {ref.notes && (
                   <p className="text-xs text-gray-500 bg-gray-50/80 rounded-xl p-3 border border-gray-100/60 line-clamp-2">{ref.notes}</p>
                 )}
-                {nextStatus && (
+                {next && (
                   <button
-                    onClick={() => handleStatusChange(ref.id, nextStatus)}
+                    onClick={() => handleStatusChange(ref.id, next)}
                     disabled={updatingId === ref.id}
                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#d4a84b] to-[#c49a3f] px-3 py-2.5 text-xs font-semibold text-white hover:shadow-md disabled:opacity-50 transition-all duration-200 shadow-sm"
                   >
@@ -524,7 +512,7 @@ export function ReferralTable({ referrals, onStatusChange, onUpdate }: ReferralT
                     ) : (
                       <ArrowRight className="h-3 w-3" />
                     )}
-                    Mark {STATUS_LABELS[nextStatus]}
+                    Mark {statusLabel(next)}
                   </button>
                 )}
               </div>

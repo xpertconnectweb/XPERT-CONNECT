@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, Search, Eye, Trash2, X } from 'lucide-react'
+import {
+  REFERRAL_STATUS_LIST,
+  isReferralStatus,
+  statusLabel,
+  statusMeta,
+} from '@/lib/referral-status'
 import type { ReferralStatus } from '@/types/professionals'
 
 interface ReferralRow {
@@ -27,18 +33,6 @@ function formatAccidentDate(iso: string): string {
   return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
   })
-}
-
-const statusColors: Record<string, string> = {
-  received: 'bg-blue-100 text-blue-700',
-  in_process: 'bg-yellow-100 text-yellow-700',
-  attended: 'bg-green-100 text-green-700',
-}
-
-const statusLabels: Record<string, string> = {
-  received: 'Received',
-  in_process: 'In Process',
-  attended: 'Attended',
 }
 
 export default function AdminReferralsPage() {
@@ -70,7 +64,7 @@ export default function AdminReferralsPage() {
   // Honor a ?status= deep link from the dashboard (drill-down).
   useEffect(() => {
     const s = new URLSearchParams(window.location.search).get('status')
-    if (s && ['received', 'in_process', 'attended'].includes(s)) setStatusFilter(s)
+    if (s && isReferralStatus(s)) setStatusFilter(s)
   }, [])
 
   const handleStatusChange = async (id: string, newStatus: ReferralStatus) => {
@@ -150,9 +144,9 @@ export default function AdminReferralsPage() {
           className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
         >
           <option value="">All Statuses</option>
-          <option value="received">Received</option>
-          <option value="in_process">In Process</option>
-          <option value="attended">Attended</option>
+          {REFERRAL_STATUS_LIST.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
         </select>
       </div>
 
@@ -195,11 +189,17 @@ export default function AdminReferralsPage() {
                       <select
                         value={ref.status}
                         onChange={(e) => handleStatusChange(ref.id, e.target.value as ReferralStatus)}
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium border-0 cursor-pointer ${statusColors[ref.status] || 'bg-gray-100 text-gray-600'}`}
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium border-0 cursor-pointer ${statusMeta(ref.status).pillClass}`}
                       >
-                        <option value="received">Received</option>
-                        <option value="in_process">In Process</option>
-                        <option value="attended">Attended</option>
+                        {/* A row still holding a retired value would otherwise
+                            render with nothing selected, and the first click
+                            would silently rewrite it. */}
+                        {!isReferralStatus(ref.status) && (
+                          <option value={ref.status} disabled>{statusLabel(ref.status)}</option>
+                        )}
+                        {REFERRAL_STATUS_LIST.map((m) => (
+                          <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
                       </select>
                     </td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
@@ -290,8 +290,8 @@ export default function AdminReferralsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[selectedReferral.status]}`}>
-                    {statusLabels[selectedReferral.status]}
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusMeta(selectedReferral.status).pillClass}`}>
+                    {statusLabel(selectedReferral.status)}
                   </span>
                 </div>
               </div>
