@@ -4,6 +4,8 @@ import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/da
 import { logActivity } from '@/lib/activity-log'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { EMAIL_RE, VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
+import { DEFAULT_REFERRAL_STATUS, isReferralStatus } from '@/lib/referral-status'
+import { DEFAULT_CASE_CONFIRMED } from '@/lib/case-confirmed'
 import type { ReferrerReferral } from '@/types/professionals'
 
 export const dynamic = 'force-dynamic'
@@ -17,6 +19,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
   const state = searchParams.get('state')
+
+  // Reject an unrecognised status rather than silently returning an empty list,
+  // which used to make a stale bookmark look like "you have no referrals".
+  if (status && !isReferralStatus(status)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+  }
 
   let filtered = all
   if (status) filtered = filtered.filter((r) => r.status === status)
@@ -74,8 +82,8 @@ export async function POST(request: NextRequest) {
     caseType: sanitize(caseType),
     accidentDate: cleanAccidentDate || undefined,
     notes: notes ? sanitize(notes) : '',
-    status: 'pending',
-    caseConfirmed: 'pending',
+    status: DEFAULT_REFERRAL_STATUS,
+    caseConfirmed: DEFAULT_CASE_CONFIRMED,
     adminNotes: '',
     createdAt: now,
     updatedAt: now,

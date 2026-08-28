@@ -108,3 +108,8 @@ COMMIT;
 -- Should return 0 -- the partner vocabulary must be untouched:
 --   SELECT count(*) FROM referrer_referrals
 --   WHERE status NOT IN ('pending','assigned','in_process','completed');
+--
+-- 2026-12 NOTE: the check immediately above is now historical. Partner
+-- referrals adopted this same five-stage vocabulary in
+-- 2026-12-referrer-referral-status-and-drop.sql; the two tables are no longer
+-- disjoint. Do not re-run that query expecting 0.

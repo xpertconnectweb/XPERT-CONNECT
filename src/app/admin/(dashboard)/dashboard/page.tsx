@@ -76,6 +76,7 @@ const ACTION_LABEL: Record<string, string> = {
   referral_created: 'created a referral for', referral_status_changed: 'changed referral status for',
   referral_deleted: 'deleted a referral for',
   referrer_referral_assigned: 'assigned a partner referral for',
+  referrer_referral_status_changed: 'changed partner referral status for',
   referrer_referral_updated: 'updated a partner referral for',
   referrer_referral_deleted: 'deleted a partner referral for',
 }
@@ -212,7 +213,7 @@ export default function AdminDashboardPage() {
     // No `?status=` here: "stuck" now spans every non-terminal stage, so any
     // single-status deep link would show the wrong subset.
     alerts.stuckReferrals > 0 && { count: alerts.stuckReferrals, label: 'Referrals stuck over 7 days', href: '/admin/referrals', tone: 'amber' as const, icon: Clock },
-    alerts.partnerUnassigned > 0 && { count: alerts.partnerUnassigned, label: 'Partner referrals awaiting assignment', href: '/admin/referrer-referrals?status=pending', tone: 'blue' as const, icon: UserPlus },
+    alerts.partnerUnassigned > 0 && { count: alerts.partnerUnassigned, label: 'Partner referrals awaiting assignment', href: '/admin/referrer-referrals?assignment=unassigned', tone: 'blue' as const, icon: UserPlus },
     alerts.clinicsUnavailable > 0 && { count: alerts.clinicsUnavailable, label: 'Clinics currently unavailable', href: '/admin/clinics?availability=unavailable', tone: 'red' as const, icon: Warning },
   ].filter(Boolean) as { count: number; label: string; href: string; tone: 'amber' | 'blue' | 'red'; icon: typeof Clock }[]
 
@@ -250,7 +251,7 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiTile label={`Referrals · ${RANGE_LABEL[range]}`} value={kpis.referralsPeriod} delta={kpis.referralsDeltaPct} spark={trendSpark} icon={ChartLineUp} tone="navy" href="/admin/referrals" />
         <KpiTile label="Active pipeline" value={kpis.activePipeline} sub={`${funnel.received} new · ${kpis.activePipeline - funnel.received} in treatment`} icon={Stack} tone="blue" href="/admin/referrals?status=received" />
-        <KpiTile label="Partner referrals pending" value={kpis.partnerPending} sub={`${partner.total} total · ${partner.confirmedRate ?? 0}% confirmed`} icon={UserPlus} tone="gold" href="/admin/referrer-referrals?status=pending" />
+        <KpiTile label="Partner referrals to assign" value={kpis.partnerUnassigned} sub={`${partner.total} total · ${partner.confirmedRate ?? 0}% confirmed`} icon={UserPlus} tone="gold" href="/admin/referrer-referrals?assignment=unassigned" />
         <KpiTile label="Clinics available" value={kpis.clinicsAvailable} sub={`of ${nf.format(kpis.clinicsTotal)} clinics`} icon={Buildings} tone="emerald" href="/admin/clinics?availability=available" />
       </div>
 
@@ -352,25 +353,28 @@ export default function AdminDashboardPage() {
         {/* Partner pipeline */}
         <SectionCard title="Partner pipeline" subtitle={`${nf.format(partner.total)} partner referrals`} viewAllHref="/admin/referrer-referrals">
           <div className="space-y-5">
+            {/* Same catalog as the Status funnel card beside it, so the two
+                finally read as one system. */}
             <SegmentBar
-              segments={[
-                { label: 'Pending', value: partner.pending, color: '#f59e0b' },
-                { label: 'Assigned', value: partner.assigned, color: '#3b82f6' },
-                { label: 'In process', value: partner.inProcess, color: '#6366f1' },
-                { label: 'Completed', value: partner.completed, color: '#10b981' },
-              ]}
+              segments={REFERRAL_STATUS_LIST.map((m) => ({
+                label: m.label,
+                value: partner.byStatus[m.value as ReferralStatus],
+                color: m.hex,
+              }))}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="rounded-xl border border-gray-100 p-3">
                 <p className="font-mono text-xl font-semibold text-navy tabular-nums">{partner.confirmedRate ?? 0}%</p>
                 <p className="text-[11px] text-gray-400">Cases confirmed</p>
               </div>
+              {/* Dropped cases stay inside the rate's denominator, so the count
+                  is shown outright rather than left to explain a lower %. */}
               <div className="rounded-xl border border-gray-100 p-3">
-                <p className="font-mono text-xl font-semibold text-navy tabular-nums">
-                  {partner.byService.both + partner.byService.clinic + partner.byService.lawyer > 0
-                    ? `${partner.byService.both}`
-                    : '0'}
-                </p>
+                <p className="font-mono text-xl font-semibold text-navy tabular-nums">{nf.format(partner.dropped)}</p>
+                <p className="text-[11px] text-gray-400">Dropped</p>
+              </div>
+              <div className="rounded-xl border border-gray-100 p-3">
+                <p className="font-mono text-xl font-semibold text-navy tabular-nums">{nf.format(partner.byService.both)}</p>
                 <p className="text-[11px] text-gray-400">Need clinic + lawyer</p>
               </div>
             </div>

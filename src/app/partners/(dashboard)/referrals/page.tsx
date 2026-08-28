@@ -4,40 +4,21 @@ import { useEffect, useState, useCallback } from 'react'
 import { Search, Eye, X, FileText, Clock, UserCheck, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 
-interface PartnerReferral {
-  id: string
-  referrerId: string
-  referrerName: string
-  state: string
-  clientName: string
-  clientPhone: string
-  clientEmail: string
-  clientAddress: string
-  serviceNeeded: string
-  caseType: string
-  accidentDate?: string
-  notes: string
-  status: string
-  assignedClinicId?: string
-  assignedClinicName?: string
-  assignedLawyerId?: string
-  assignedLawyerName?: string
-  caseConfirmed: string
-  createdAt: string
-  updatedAt: string
-}
+import { cn } from '@/lib/utils'
+import {
+  REFERRAL_STATUSES,
+  REFERRAL_STATUS_LIST,
+  isReferralStatus,
+  statusMeta,
+} from '@/lib/referral-status'
+import { statusIcon } from '@/lib/referral-status-icons'
+import { caseMeta } from '@/lib/case-confirmed'
+import type { ReferrerReferral, ReferralStatus } from '@/types/professionals'
 
-const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
-  assigned: { label: 'Assigned', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
-  in_process: { label: 'In Process', bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-400' },
-  completed: { label: 'Completed', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
-}
-
-const caseConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
-  confirmed: { label: 'Confirmed', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
-}
+// Exactly what /api/partners/referrals returns: the model minus the internal
+// notes the route strips. Re-declaring the shape here is how this screen used
+// to keep its own stale copy of both vocabularies.
+type PartnerReferral = Omit<ReferrerReferral, 'adminNotes'>
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -96,9 +77,10 @@ export default function PartnerReferralsPage() {
 
   // Stats
   const total = referrals.length
-  const pendingCount = referrals.filter((r) => r.status === 'pending').length
-  const activeCount = referrals.filter((r) => r.status === 'assigned' || r.status === 'in_process').length
-  const completedCount = referrals.filter((r) => r.status === 'completed').length
+  const counts = Object.fromEntries(
+    REFERRAL_STATUSES.map((s) => [s, 0])
+  ) as Record<ReferralStatus, number>
+  for (const r of referrals) if (isReferralStatus(r.status)) counts[r.status]++
 
   // Client-side filters
   const filtered = referrals.filter((r) => {
@@ -137,13 +119,13 @@ export default function PartnerReferralsPage() {
         </Link>
       </div>
 
-      {/* Stats */}
+      {/* Stats — Total plus one tile per lifecycle stage */}
       {total > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a2a4a] to-[#2a3f6a]">
-                <FileText className="h-[18px] w-[18px] text-white" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a2a4a] to-[#2a3f6a]">
+                <FileText className="h-4 w-4 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900 tabular-nums">{total}</p>
@@ -151,44 +133,29 @@ export default function PartnerReferralsPage() {
               </div>
             </div>
           </div>
-          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-amber-400" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }}>
-                <Clock className="h-[18px] w-[18px] text-amber-500" />
+          {REFERRAL_STATUS_LIST.map((m) => {
+            const Icon = statusIcon(m.value)
+            return (
+              <div
+                key={m.value}
+                className="group relative rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+              >
+                <div className={cn('absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full', m.accentClass)} />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: m.tintGradient }}>
+                    <Icon className={cn('h-4 w-4', m.iconClass)} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900 tabular-nums">{counts[m.value as ReferralStatus]}</p>
+                    <p className="text-[11px] text-gray-400 font-medium">{m.label}</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 tabular-nums">{pendingCount}</p>
-                <p className="text-[11px] text-gray-400 font-medium">Pending</p>
-              </div>
-            </div>
-          </div>
-          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-blue-400" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
-                <UserCheck className="h-[18px] w-[18px] text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 tabular-nums">{activeCount}</p>
-                <p className="text-[11px] text-gray-400 font-medium">Active</p>
-              </div>
-            </div>
-          </div>
-          <div className="group relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-emerald-400" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' }}>
-                <CheckCircle2 className="h-[18px] w-[18px] text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 tabular-nums">{completedCount}</p>
-                <p className="text-[11px] text-gray-400 font-medium">Completed</p>
-              </div>
-            </div>
-          </div>
+            )
+          })}
         </div>
       )}
+
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
@@ -208,10 +175,9 @@ export default function PartnerReferralsPage() {
           className="rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm focus:bg-white focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 transition-all duration-200"
         >
           <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="assigned">Assigned</option>
-          <option value="in_process">In Process</option>
-          <option value="completed">Completed</option>
+          {REFERRAL_STATUS_LIST.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
         </select>
         <select
           value={filterState}
@@ -250,7 +216,7 @@ export default function PartnerReferralsPage() {
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Client</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">State</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Service</th>
-                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Status</th>
+                  <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Medical Status</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Case</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400">Date</th>
                   <th className="px-5 py-3.5 font-semibold text-[11px] uppercase tracking-wider text-gray-400 text-right">View</th>
@@ -258,8 +224,8 @@ export default function PartnerReferralsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100/80">
                 {filtered.map((r) => {
-                  const sc = statusConfig[r.status] || statusConfig.pending
-                  const cc = caseConfig[r.caseConfirmed] || caseConfig.pending
+                  const sc = statusMeta(r.status)
+                  const cc = caseMeta(r.caseConfirmed)
                   return (
                     <tr key={r.id} className="hover:bg-gray-50/70 transition-colors duration-150">
                       <td className="px-5 py-4">
@@ -275,14 +241,14 @@ export default function PartnerReferralsPage() {
                         {r.serviceNeeded === 'lawyer' ? 'Attorney' : r.serviceNeeded === 'both' ? 'Both' : 'Clinic'}
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${sc.bg} ${sc.text}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${sc.badgeClass}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${sc.accentClass}`} />
                           {sc.label}
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${cc.bg} ${cc.text}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${cc.dot}`} />
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${cc.badgeClass}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${cc.accentClass}`} />
                           {cc.label}
                         </span>
                       </td>
@@ -355,19 +321,23 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div className="px-4 py-3 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Status</span>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${(statusConfig[selected.status] || statusConfig.pending).bg} ${(statusConfig[selected.status] || statusConfig.pending).text}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${(statusConfig[selected.status] || statusConfig.pending).dot}`} />
-                      {(statusConfig[selected.status] || statusConfig.pending).label}
+                    <span className="text-gray-400">Medical Status</span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusMeta(selected.status).badgeClass}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${statusMeta(selected.status).accentClass}`} />
+                      {statusMeta(selected.status).label}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Case Confirmed</span>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${(caseConfig[selected.caseConfirmed] || caseConfig.pending).bg} ${(caseConfig[selected.caseConfirmed] || caseConfig.pending).text}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${(caseConfig[selected.caseConfirmed] || caseConfig.pending).dot}`} />
-                      {(caseConfig[selected.caseConfirmed] || caseConfig.pending).label}
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${caseMeta(selected.caseConfirmed).badgeClass}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${caseMeta(selected.caseConfirmed).accentClass}`} />
+                      {caseMeta(selected.caseConfirmed).label}
                     </span>
                   </div>
+                  {/* Routing is no longer implied by the status, so say it. */}
+                  {!selected.assignedClinicName && !selected.assignedLawyerName && (
+                    <div className="flex justify-between"><span className="text-gray-400">Assignment</span><span className="text-gray-500">Awaiting assignment</span></div>
+                  )}
                   {selected.assignedClinicName && (
                     <div className="flex justify-between"><span className="text-gray-400">Assigned Clinic</span><span className="text-gray-700">{selected.assignedClinicName}</span></div>
                   )}

@@ -31,6 +31,7 @@ export type ActivityAction =
   | 'referral_status_changed'
   | 'referral_deleted'
   | 'referrer_referral_assigned'
+  | 'referrer_referral_status_changed'
   | 'referrer_referral_updated'
   | 'referrer_referral_deleted'
   // Opt-in, verification, opt-out and admin revocation. Only the

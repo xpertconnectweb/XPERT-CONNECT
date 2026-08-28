@@ -142,8 +142,8 @@ const PROBES: Probe[] = [
   },
   {
     table: 'referrer_referrals',
-    columns: ['id', 'referrer_id', 'service_needed', 'assigned_clinic_id', 'assigned_lawyer_id', 'status'],
-    why: 'referrer submissions + the columns admin uses to route them.',
+    columns: ['id', 'referrer_id', 'service_needed', 'assigned_clinic_id', 'assigned_lawyer_id', 'status', 'case_confirmed'],
+    why: 'referrer submissions, the medical status the referrer watches, the confirm/drop outcome, and the columns admin routes with.',
   },
   {
     table: 'settings',

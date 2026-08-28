@@ -107,12 +107,12 @@ describe('POST /api/partners/referrals — validation', () => {
 })
 
 describe('POST /api/partners/referrals — happy path', () => {
-  it('creates a referrer-referral with status=pending and returns 201', async () => {
+  it('creates a referrer-referral with status=received and returns 201', async () => {
     const res = await POST(nextReq(validPayload()))
     expect(res.status).toBe(201)
     expect(mockedData.createReferrerReferral).toHaveBeenCalledOnce()
     const arg = mockedData.createReferrerReferral.mock.calls[0][0]
-    expect(arg.status).toBe('pending')
+    expect(arg.status).toBe('received')
     expect(arg.caseConfirmed).toBe('pending')
     expect(arg.referrerId).toBe('p-1')
     expect(arg.referrerName).toBe('Partner Pro')

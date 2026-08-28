@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { statusLabel } from '@/lib/referral-status'
+import { caseLabel } from '@/lib/case-confirmed'
 import type { ActivityLog } from '@/types/admin'
 
 const ACTION_BADGES: Record<string, { label: string; color: string }> = {
@@ -22,6 +23,7 @@ const ACTION_BADGES: Record<string, { label: string; color: string }> = {
   referral_status_changed: { label: 'Status', color: 'bg-amber-100 text-amber-700' },
   referral_deleted: { label: 'Deleted', color: 'bg-red-100 text-red-700' },
   referrer_referral_assigned: { label: 'Assigned', color: 'bg-blue-100 text-blue-700' },
+  referrer_referral_status_changed: { label: 'Status', color: 'bg-amber-100 text-amber-700' },
   referrer_referral_updated: { label: 'Updated', color: 'bg-amber-100 text-amber-700' },
   referrer_referral_deleted: { label: 'Deleted', color: 'bg-red-100 text-red-700' },
 }
@@ -43,6 +45,7 @@ const ACTION_OPTIONS = [
   { value: 'referral_created', label: 'Referral Created' },
   { value: 'referral_status_changed', label: 'Referral Status Changed' },
   { value: 'referral_deleted', label: 'Referral Deleted' },
+  { value: 'referrer_referral_status_changed', label: 'Partner Status Changed' },
 ]
 
 const TARGET_OPTIONS = [
@@ -88,6 +91,20 @@ function formatDetails(details: Record<string, unknown> | undefined, action: str
   if (action === 'referral_status_changed' && details.from && details.to) {
     return `${statusLabel(String(details.from))} → ${statusLabel(String(details.to))}`
   }
+
+  // Partner referrals log a nested shape, because one save can move the medical
+  // status and the case outcome together.
+  const transitions: string[] = []
+  for (const [key, render] of [
+    ['status', statusLabel],
+    ['caseConfirmed', caseLabel],
+  ] as const) {
+    const t = details[key] as { from?: unknown; to?: unknown } | undefined
+    if (t && typeof t === 'object' && t.to !== undefined) {
+      transitions.push(`${render(String(t.from ?? ''))} → ${render(String(t.to))}`)
+    }
+  }
+  if (transitions.length > 0) return transitions.join(' · ')
 
   // Generic fallback: show key=value pairs
   const parts: string[] = []

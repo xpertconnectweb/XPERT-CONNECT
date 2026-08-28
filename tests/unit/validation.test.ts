@@ -72,13 +72,18 @@ describe('role and status enums', () => {
     ])
   })
 
-  it('VALID_REFERRER_STATUSES covers the partner lifecycle', () => {
-    expect(VALID_REFERRER_STATUSES).toContain('pending')
-    expect(VALID_REFERRER_STATUSES).toContain('completed')
+  it('VALID_REFERRER_STATUSES is the same lifecycle as the referral one', () => {
+    expect([...VALID_REFERRER_STATUSES]).toEqual([
+      'received',
+      'scheduled',
+      'mri',
+      'specialist',
+      'final_mmi',
+    ])
   })
 
-  it('VALID_CASE_CONFIRMED has only pending/confirmed', () => {
-    expect(VALID_CASE_CONFIRMED.sort()).toEqual(['confirmed', 'pending'])
+  it('VALID_CASE_CONFIRMED is pending/confirmed/drop', () => {
+    expect([...VALID_CASE_CONFIRMED].sort()).toEqual(['confirmed', 'drop', 'pending'])
   })
 
   it('VALID_SERVICES are clinic/lawyer/both', () => {

@@ -5,6 +5,8 @@ import { logActivity } from '@/lib/activity-log'
 import { referrerReferralNotificationEmail } from '@/lib/email'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
 import { VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
+import { DEFAULT_REFERRAL_STATUS } from '@/lib/referral-status'
+import { DEFAULT_CASE_CONFIRMED } from '@/lib/case-confirmed'
 import { v4 as uuidv4 } from 'uuid'
 import { waitUntil } from '@vercel/functions'
 
@@ -85,8 +87,8 @@ export async function POST(request: NextRequest) {
       caseType: cleanCase,
       accidentDate: cleanAccidentDate || undefined,
       notes: cleanNotes,
-      status: 'pending',
-      caseConfirmed: 'pending',
+      status: DEFAULT_REFERRAL_STATUS,
+      caseConfirmed: DEFAULT_CASE_CONFIRMED,
       adminNotes: '',
       createdAt: now,
       updatedAt: now,

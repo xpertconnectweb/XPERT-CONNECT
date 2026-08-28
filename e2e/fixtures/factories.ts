@@ -1,6 +1,7 @@
 import { test as base, type TestInfo } from '@playwright/test'
 import { createServiceClient } from '../helpers/supabase-admin'
 import { makeNamespace, rand } from '../helpers/namespace'
+import type { ReferrerReferralStatus, CaseConfirmedStatus } from '../../src/types/professionals'
 
 type CreatedRecord = { table: string; id: string }
 
@@ -92,8 +93,11 @@ export interface ReferrerReferralInput {
   clientAddress?: string
   serviceNeeded?: 'clinic' | 'lawyer' | 'both'
   caseType?: string
-  status?: 'pending' | 'assigned' | 'in_process' | 'completed'
-  caseConfirmed?: 'pending' | 'confirmed'
+  // Imported, not re-declared: these values are inserted raw through the
+  // service client, so a stale literal here fails against the live CHECK at
+  // runtime rather than at compile time.
+  status?: ReferrerReferralStatus
+  caseConfirmed?: CaseConfirmedStatus
   notes?: string
 }
 export type ReferrerReferralRow = ReferrerReferralInput & {
@@ -300,7 +304,7 @@ export const test = base.extend<Factories>({
         client_address: overrides.clientAddress ?? '1 E2E Ave, Miami, FL 33101',
         service_needed: overrides.serviceNeeded ?? 'both',
         case_type: overrides.caseType ?? 'Auto Accident',
-        status: overrides.status ?? 'pending',
+        status: overrides.status ?? 'received',
         case_confirmed: overrides.caseConfirmed ?? 'pending',
         notes: overrides.notes ?? '',
       }

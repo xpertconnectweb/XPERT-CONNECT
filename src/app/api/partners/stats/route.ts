@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { getReferrerReferralsByReferrer } from '@/lib/data'
+import {
+  REFERRAL_STATUSES,
+  REFERRAL_STATUS_LIST,
+  TERMINAL_REFERRAL_STATUS,
+  isReferralStatus,
+} from '@/lib/referral-status'
+import type { ReferralStatus } from '@/types/professionals'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,18 +18,27 @@ export async function GET() {
   const referrals = await getReferrerReferralsByReferrer(session.user.id)
 
   const total = referrals.length
-  const pending = referrals.filter((r) => r.status === 'pending').length
-  const assigned = referrals.filter((r) => r.status === 'assigned').length
-  const inProcess = referrals.filter((r) => r.status === 'in_process').length
-  const completed = referrals.filter((r) => r.status === 'completed').length
-  const confirmed = referrals.filter((r) => r.caseConfirmed === 'confirmed').length
+  const byStatus = Object.fromEntries(
+    REFERRAL_STATUSES.map((s) => [s, 0])
+  ) as Record<ReferralStatus, number>
+  let confirmed = 0
+  let dropped = 0
+  let unassigned = 0
+  for (const r of referrals) {
+    if (isReferralStatus(r.status)) byStatus[r.status]++
+    if (r.caseConfirmed === 'confirmed') confirmed++
+    else if (r.caseConfirmed === 'drop') dropped++
+    // Routing is read off the assignment columns, never off a status value.
+    if (!r.assignedClinicId && !r.assignedLawyerId) unassigned++
+  }
 
-  const statusBreakdown = [
-    { name: 'Pending', value: pending },
-    { name: 'Assigned', value: assigned },
-    { name: 'In Process', value: inProcess },
-    { name: 'Completed', value: completed },
-  ]
+  // The raw key is what the client colours by, so the pie is no longer coupled
+  // to array position; the label rides along so the response explains itself.
+  const statusBreakdown = REFERRAL_STATUS_LIST.map((m) => ({
+    status: m.value,
+    label: m.label,
+    value: byStatus[m.value as ReferralStatus],
+  }))
 
   const recentReferrals = referrals.slice(0, 5).map((r) => ({
     id: r.id,
@@ -37,10 +53,11 @@ export async function GET() {
   return NextResponse.json(
     {
       total,
-      pending,
-      active: assigned + inProcess,
-      completed,
+      byStatus,
+      completed: byStatus[TERMINAL_REFERRAL_STATUS],
       confirmed,
+      dropped,
+      unassigned,
       statusBreakdown,
       recentReferrals,
     },

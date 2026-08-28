@@ -29,7 +29,7 @@ export interface AdminStats {
     referralsPrev: number
     referralsDeltaPct: number | null
     activePipeline: number
-    partnerPending: number
+    partnerUnassigned: number
     clinicsAvailable: number
     clinicsTotal: number
     totalReferrals: number
@@ -45,10 +45,14 @@ export interface AdminStats {
   }
   partner: {
     total: number
-    pending: number
-    assigned: number
-    inProcess: number
-    completed: number
+    /** Keyed by the raw status, like `funnel` — a new stage needs no new field. */
+    byStatus: Record<ReferralStatus, number>
+    /** No clinic AND no lawyer attached. The real "awaiting assignment". */
+    unassigned: number
+    confirmed: number
+    /** Surfaced as a raw count because `drop` stays inside `confirmedRate`'s
+     *  denominator — otherwise a lost case hides behind a lower percentage. */
+    dropped: number
     confirmedRate: number | null
     byService: { clinic: number; lawyer: number; both: number }
     byState: { FL: number; MN: number; other: number }
@@ -174,7 +178,7 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
     activityRows,
   ] = await Promise.all([
     supabaseAdmin.from('referrals').select('status, referral_kind, creator_role, case_type, clinic_name, lawyer_name, created_at, updated_at'),
-    supabaseAdmin.from('referrer_referrals').select('status, case_confirmed, service_needed, state, created_at'),
+    supabaseAdmin.from('referrer_referrals').select('status, case_confirmed, service_needed, state, created_at, assigned_clinic_id, assigned_lawyer_id'),
     supabaseAdmin.from('clinics').select('address, available'),
     supabaseAdmin.from('lawyers').select('address, available'),
     supabaseAdmin.from('contacts').select('service, created_at'),
@@ -199,6 +203,7 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
   }[]
   const partners = (partnerRows.data ?? []) as {
     status: string; case_confirmed: string | null; service_needed: string | null; state: string | null; created_at: string
+    assigned_clinic_id: string | null; assigned_lawyer_id: string | null
   }[]
   const clinics = (clinicRows.data ?? []) as { address: string | null; available: boolean }[]
   const lawyers = (lawyerRows.data ?? []) as { address: string | null; available: boolean }[]
@@ -255,25 +260,34 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
   // ── Partner (referrer) pipeline ──
   const partner = {
     total: partners.length,
-    pending: 0, assigned: 0, inProcess: 0, completed: 0,
+    byStatus: Object.fromEntries(REFERRAL_STATUSES.map((s) => [s, 0])) as Record<ReferralStatus, number>,
+    unassigned: 0,
+    confirmed: 0,
+    dropped: 0,
     confirmedRate: null as number | null,
     byService: { clinic: 0, lawyer: 0, both: 0 },
     byState: { FL: 0, MN: 0, other: 0 },
   }
-  let confirmedCount = 0
   for (const p of partners) {
-    if (p.status === 'pending') partner.pending++
-    else if (p.status === 'assigned') partner.assigned++
-    else if (p.status === 'in_process') partner.inProcess++
-    else if (p.status === 'completed') partner.completed++
-    if (p.case_confirmed === 'confirmed') confirmedCount++
+    if (isReferralStatus(p.status)) partner.byStatus[p.status]++
+    if (p.case_confirmed === 'confirmed') partner.confirmed++
+    else if (p.case_confirmed === 'drop') partner.dropped++
+    // Awaiting assignment is read off the assignment columns, not aliased from
+    // a status. It used to be a verbatim copy of `status === 'pending'`, which
+    // could disagree with reality in both directions: a row could carry a
+    // clinic and still be counted as awaiting one. `!x` rather than
+    // `x === null` because the PATCH route writes `body.… || null`, so an
+    // empty-string id could have landed historically and is equally unassigned.
+    if (!p.assigned_clinic_id && !p.assigned_lawyer_id) partner.unassigned++
     if (p.service_needed === 'clinic') partner.byService.clinic++
     else if (p.service_needed === 'lawyer') partner.byService.lawyer++
     else if (p.service_needed === 'both') partner.byService.both++
     const st = p.state === 'FL' ? 'FL' : p.state === 'MN' ? 'MN' : 'other'
     partner.byState[st]++
   }
-  partner.confirmedRate = partner.total === 0 ? null : Math.round((confirmedCount / partner.total) * 100)
+  // Denominator stays `total`: a dropped case counts against the rate, so the
+  // raw `dropped` figure is surfaced everywhere the percentage is.
+  partner.confirmedRate = partner.total === 0 ? null : Math.round((partner.confirmed / partner.total) * 100)
 
   // ── Network (availability + geography) ──
   const network = {
@@ -345,7 +359,7 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
       referralsPrev,
       referralsDeltaPct,
       activePipeline: ACTIVE_REFERRAL_STATUSES.reduce((n, s) => n + funnel[s], 0),
-      partnerPending: partner.pending,
+      partnerUnassigned: partner.unassigned,
       clinicsAvailable: network.clinicsAvailable,
       clinicsTotal: network.clinicsTotal,
       totalReferrals: refs.length,
@@ -363,7 +377,7 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
     newsletter: { total: subs.length, periodCount: nlPeriod, prevCount: nlPrev },
     alerts: {
       stuckReferrals,
-      partnerUnassigned: partner.pending,
+      partnerUnassigned: partner.unassigned,
       clinicsUnavailable,
     },
     recentReferrals,

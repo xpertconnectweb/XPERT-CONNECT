@@ -190,14 +190,18 @@ CREATE TABLE IF NOT EXISTS referrer_referrals (
   case_type           TEXT NOT NULL,
   accident_date       DATE,
   notes               TEXT NOT NULL DEFAULT '',
-  status              TEXT NOT NULL DEFAULT 'pending'
-                      CHECK (status IN ('pending', 'assigned', 'in_process', 'completed')),
+  -- Named explicitly: the original inline anonymous CHECKs are why
+  -- 2026-12-referrer-referral-status-and-drop.sql has to rediscover them.
+  status              TEXT NOT NULL DEFAULT 'received'
+                      CONSTRAINT referrer_referrals_status_check
+                      CHECK (status IN ('received', 'scheduled', 'mri', 'specialist', 'final_mmi')),
   assigned_clinic_id  TEXT REFERENCES clinics(id) ON DELETE SET NULL,
   assigned_clinic_name TEXT,
   assigned_lawyer_id  TEXT REFERENCES lawyers(id) ON DELETE SET NULL,
   assigned_lawyer_name TEXT,
   case_confirmed      TEXT NOT NULL DEFAULT 'pending'
-                      CHECK (case_confirmed IN ('pending', 'confirmed')),
+                      CONSTRAINT referrer_referrals_case_confirmed_check
+                      CHECK (case_confirmed IN ('pending', 'confirmed', 'drop')),
   admin_notes         TEXT NOT NULL DEFAULT '',
   created_at          TIMESTAMPTZ DEFAULT now(),
   updated_at          TIMESTAMPTZ DEFAULT now()

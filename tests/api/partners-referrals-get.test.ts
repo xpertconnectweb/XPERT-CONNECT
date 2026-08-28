@@ -36,7 +36,7 @@ function fakeReferrerReferral(overrides: Record<string, unknown> = {}) {
     serviceNeeded: 'clinic',
     caseType: 'Auto',
     notes: '',
-    status: 'pending',
+    status: 'received',
     caseConfirmed: 'pending',
     adminNotes: 'INTERNAL — should not leak',
     createdAt: '2026-01-01T00:00:00Z',
@@ -88,12 +88,12 @@ describe('GET /api/partners/referrals — filtering + sanitization', () => {
 
   it('filters by status query param', async () => {
     mockedData.getReferrerReferralsByReferrer.mockResolvedValue([
-      fakeReferrerReferral({ id: 'a', status: 'pending' }),
-      fakeReferrerReferral({ id: 'b', status: 'assigned' }),
-      fakeReferrerReferral({ id: 'c', status: 'completed' }),
+      fakeReferrerReferral({ id: 'a', status: 'received' }),
+      fakeReferrerReferral({ id: 'b', status: 'scheduled' }),
+      fakeReferrerReferral({ id: 'c', status: 'final_mmi' }),
     ] as never)
     const res = await GET(
-      nextReq('http://localhost/api/partners/referrals?status=assigned')
+      nextReq('http://localhost/api/partners/referrals?status=scheduled')
     )
     const body = await res.json()
     expect(body).toHaveLength(1)
@@ -115,12 +115,12 @@ describe('GET /api/partners/referrals — filtering + sanitization', () => {
 
   it('combines status + state filters', async () => {
     mockedData.getReferrerReferralsByReferrer.mockResolvedValue([
-      fakeReferrerReferral({ id: 'a', state: 'FL', status: 'pending' }),
-      fakeReferrerReferral({ id: 'b', state: 'MN', status: 'pending' }),
-      fakeReferrerReferral({ id: 'c', state: 'MN', status: 'assigned' }),
+      fakeReferrerReferral({ id: 'a', state: 'FL', status: 'received' }),
+      fakeReferrerReferral({ id: 'b', state: 'MN', status: 'received' }),
+      fakeReferrerReferral({ id: 'c', state: 'MN', status: 'scheduled' }),
     ] as never)
     const res = await GET(
-      nextReq('http://localhost/api/partners/referrals?state=MN&status=pending')
+      nextReq('http://localhost/api/partners/referrals?state=MN&status=received')
     )
     const body = await res.json()
     expect(body).toHaveLength(1)

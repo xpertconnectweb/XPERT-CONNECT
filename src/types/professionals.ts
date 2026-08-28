@@ -162,10 +162,16 @@ export type PublicLawyer = Omit<DecoratedLawyer, WithheldFromPublic>
 // and re-exported so the modules that already take the type from this file
 // keep working.
 import type { ReferralStatus } from '@/lib/referral-status'
+import type { CaseConfirmedValue } from '@/lib/case-confirmed'
 export type { ReferralStatus }
 
-export type ReferrerReferralStatus = 'pending' | 'assigned' | 'in_process' | 'completed'
-export type CaseConfirmedStatus = 'pending' | 'confirmed'
+// As of 2026-12 the partner table runs the SAME five-stage medical lifecycle as
+// `referrals`. The alias is kept rather than collapsed at the call sites because
+// it still says WHICH column a value came from, and the two tables can diverge
+// later without a repo-wide rename. Whether a partner referral has been ROUTED
+// to a provider is not a status — see `assignedClinicId` / `assignedLawyerId`.
+export type ReferrerReferralStatus = ReferralStatus
+export type CaseConfirmedStatus = CaseConfirmedValue
 export type ServiceNeeded = 'clinic' | 'lawyer' | 'both'
 
 export interface ReferrerReferral {
@@ -182,10 +188,12 @@ export interface ReferrerReferral {
   accidentDate?: string // ISO date (YYYY-MM-DD); plain DATE in DB
   notes: string
   status: ReferrerReferralStatus
-  assignedClinicId?: string
-  assignedClinicName?: string
-  assignedLawyerId?: string
-  assignedLawyerName?: string
+  // Nullable in the DB, and the admin PATCH route writes literal `null` to
+  // clear an assignment. These four are what "awaiting assignment" is read off.
+  assignedClinicId?: string | null
+  assignedClinicName?: string | null
+  assignedLawyerId?: string | null
+  assignedLawyerName?: string | null
   caseConfirmed: CaseConfirmedStatus
   adminNotes: string
   createdAt: string

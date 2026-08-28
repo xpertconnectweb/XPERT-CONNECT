@@ -9,10 +9,16 @@
  * because that map was typed `Record<string, ...>`. Add a status here and
  * TypeScript names every screen that has to account for it.
  *
- * NOT to be confused with `ReferrerReferralStatus`
- * (pending | assigned | in_process | completed) — the partner portal's separate
- * vocabulary for a different table. The two must stay disjoint;
- * `tests/unit/referral-status.test.ts` asserts it.
+ * As of 2026-12 this catalog backs BOTH tables: `referrals.status` and
+ * `referrer_referrals.status`, which used to run a routing vocabulary
+ * (pending | assigned | in_process | completed) under the same column heading.
+ * `ReferrerReferralStatus` is kept as an alias so a call site still says which
+ * column it means, but the two must resolve to ONE list — a second, drifting
+ * copy is the exact failure this file exists to prevent, and
+ * `tests/unit/referral-status.test.ts` asserts they stay identical.
+ *
+ * Whether a partner referral has been routed to a provider is NOT a status: it
+ * is read off `referrer_referrals.assigned_clinic_id` / `assigned_lawyer_id`.
  *
  * No React and no `lucide-react` in this file: it is reached from
  * `validation.ts`, which is reached from most API routes, and icon components
@@ -135,7 +141,8 @@ const LEGACY_STATUS_LABELS: Record<string, string> = {
   attended: 'Attended',
 }
 
-function humanize(raw: string): string {
+/** Shared with `case-confirmed.ts` so it does not copy the same three lines. */
+export function humanize(raw: string): string {
   return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 

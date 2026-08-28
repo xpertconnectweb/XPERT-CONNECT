@@ -61,7 +61,7 @@ describe('GET /api/admin/stats — aggregation', () => {
         referralsPeriod: expect.any(Number),
         referralsPrev: expect.any(Number),
         activePipeline: expect.any(Number),
-        partnerPending: expect.any(Number),
+        partnerUnassigned: expect.any(Number),
         clinicsAvailable: expect.any(Number),
         clinicsTotal: expect.any(Number),
         totalReferrals: expect.any(Number),
@@ -72,7 +72,15 @@ describe('GET /api/admin/stats — aggregation', () => {
       funnel: Object.fromEntries(REFERRAL_STATUSES.map((s) => [s, expect.any(Number)])),
       trend: expect.any(Array),
       mix: { byKind: expect.any(Object), byCreator: expect.any(Object), topCaseTypes: expect.any(Array) },
-      partner: expect.any(Object),
+      // Pinned rather than expect.any(Object): the whole partner block being
+      // unchecked is how `partnerUnassigned` aliasing `status === 'pending'`
+      // survived unnoticed.
+      partner: expect.objectContaining({
+        byStatus: Object.fromEntries(REFERRAL_STATUSES.map((s) => [s, expect.any(Number)])),
+        unassigned: expect.any(Number),
+        confirmed: expect.any(Number),
+        dropped: expect.any(Number),
+      }),
       network: expect.any(Object),
       topClinics: expect.any(Array),
       topLawyers: expect.any(Array),

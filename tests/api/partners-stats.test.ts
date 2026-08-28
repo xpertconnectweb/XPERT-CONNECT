@@ -29,7 +29,7 @@ function fakeRR(overrides: Record<string, unknown> = {}) {
     serviceNeeded: 'clinic',
     caseType: 'Auto',
     notes: '',
-    status: 'pending',
+    status: 'received',
     caseConfirmed: 'pending',
     adminNotes: '',
     createdAt: '2026-01-01T00:00:00Z',
@@ -62,26 +62,40 @@ describe('GET /api/partners/stats — auth', () => {
 describe('GET /api/partners/stats — aggregation', () => {
   it('computes status counts and statusBreakdown', async () => {
     mockedData.getReferrerReferralsByReferrer.mockResolvedValue([
-      fakeRR({ id: '1', status: 'pending' }),
-      fakeRR({ id: '2', status: 'assigned' }),
-      fakeRR({ id: '3', status: 'in_process' }),
-      fakeRR({ id: '4', status: 'completed', caseConfirmed: 'confirmed' }),
-      fakeRR({ id: '5', status: 'completed', caseConfirmed: 'confirmed' }),
+      fakeRR({ id: '1', status: 'received' }),
+      fakeRR({ id: '2', status: 'scheduled', assignedClinicId: 'c-1' }),
+      fakeRR({ id: '3', status: 'mri', caseConfirmed: 'drop' }),
+      fakeRR({ id: '4', status: 'final_mmi', caseConfirmed: 'confirmed', assignedLawyerId: 'l-1' }),
+      fakeRR({ id: '5', status: 'final_mmi', caseConfirmed: 'confirmed' }),
     ] as never)
     const res = await GET()
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.total).toBe(5)
-    expect(body.pending).toBe(1)
-    expect(body.active).toBe(2) // assigned + in_process
     expect(body.completed).toBe(2)
     expect(body.confirmed).toBe(2)
+    expect(body.dropped).toBe(1)
+    // Routing comes off the assignment columns, never off a status value.
+    expect(body.unassigned).toBe(3)
+    expect(body.byStatus).toEqual({
+      received: 1, scheduled: 1, mri: 1, specialist: 0, final_mmi: 2,
+    })
     expect(body.statusBreakdown).toEqual([
-      { name: 'Pending', value: 1 },
-      { name: 'Assigned', value: 1 },
-      { name: 'In Process', value: 1 },
-      { name: 'Completed', value: 2 },
+      { status: 'received', label: 'Received', value: 1 },
+      { status: 'scheduled', label: 'Scheduled', value: 1 },
+      { status: 'mri', label: 'MRI', value: 1 },
+      { status: 'specialist', label: 'Specialist', value: 0 },
+      { status: 'final_mmi', label: 'Final MMI', value: 2 },
     ])
+  })
+
+  it('ignores a retired status rather than miscounting it', async () => {
+    mockedData.getReferrerReferralsByReferrer.mockResolvedValue([
+      fakeRR({ id: '1', status: 'pending' }),
+    ] as never)
+    const body = await (await GET()).json()
+    expect(body.total).toBe(1)
+    expect(Object.values(body.byStatus).every((n) => n === 0)).toBe(true)
   })
 
   it('returns recentReferrals capped at 5', async () => {

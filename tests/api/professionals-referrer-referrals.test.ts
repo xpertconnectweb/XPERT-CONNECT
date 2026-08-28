@@ -167,7 +167,7 @@ describe('POST /api/professionals/referrer-referrals — happy path + email', ()
     expect(res.status).toBe(201)
     expect(mockedData.createReferrerReferral).toHaveBeenCalledOnce()
     const arg = mockedData.createReferrerReferral.mock.calls[0][0]
-    expect(arg.status).toBe('pending')
+    expect(arg.status).toBe('received')
     expect(arg.caseConfirmed).toBe('pending')
     expect(arg.referrerId).toBe('ref-1')
 

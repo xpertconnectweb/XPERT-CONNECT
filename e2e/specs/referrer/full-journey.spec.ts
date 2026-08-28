@@ -52,6 +52,7 @@ test('referrer picks a state, submits a referral and tracks it in my-referrals',
     .eq('client_name', patientName)
     .single()
   expect(data?.client_name).toBe(patientName)
+  expect(data?.status).toBe('received')
   if (data?.id) {
     await supabase.from('referrer_referrals').delete().eq('id', data.id)
   }

@@ -113,13 +113,11 @@ describe('referral status catalog', () => {
     expect(isReferralStatus('attended')).toBe(false)
   })
 
-  // The partner portal has its own vocabulary on referrer_referrals. The two
-  // used to share the literal 'in_process'; a find/replace across the repo
-  // would have corrupted the partner pipeline. They must stay disjoint.
-  it('stays disjoint from the partner vocabulary', () => {
-    const overlap = REFERRAL_STATUSES.filter((s) =>
-      (VALID_REFERRER_STATUSES as readonly string[]).includes(s)
-    )
-    expect(overlap).toEqual([])
+  // The partner table adopted this same lifecycle in 2026-12. The two names are
+  // kept distinct so a call site still says which column it means, but they
+  // must resolve to ONE list — a second, drifting copy is the exact failure
+  // this catalog exists to prevent.
+  it('is also the partner vocabulary', () => {
+    expect([...VALID_REFERRER_STATUSES]).toEqual([...REFERRAL_STATUSES])
   })
 })

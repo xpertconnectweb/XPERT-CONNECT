@@ -35,7 +35,7 @@ test.describe('partner referrals', () => {
   }) => {
     const referral = await createReferrerReferral({
       clientName: `${ns}client-visible`,
-      status: 'assigned',
+      status: 'scheduled',
     })
 
     await page.goto('/partners/referrals')
@@ -75,7 +75,7 @@ test.describe('partner referrals', () => {
   }) => {
     const referral = await createReferrerReferral({
       clientName: `${ns}client-detail`,
-      status: 'assigned',
+      status: 'scheduled',
       caseConfirmed: 'pending',
     })
 
