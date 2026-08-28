@@ -16,7 +16,16 @@ import { MedicalSpecialistReferralModal } from './MedicalSpecialistReferralModal
 const SPECIALIST_SORT = [
   { value: 'relevance', label: 'Best', 'aria-label': 'Best match' },
   { value: 'name', label: 'A–Z', 'aria-label': 'Alphabetical' },
-  { value: 'availability', label: 'Open', 'aria-label': 'Accepting referrals first' },
+  // NOT 'Open'. It used to say that, and Google Maps has spent fifteen years
+  // teaching everyone that Open means open right now -- which this cannot
+  // know, because there is no opening-hours column anywhere in the schema.
+  // It orders by whether a provider is ACCEPTING REFERRALS, which is what the
+  // aria-label and the panel heading have always called it.
+  //
+  // Not 'Available' either: that word already belongs to the filter chip
+  // beside it, and a filter and an ordering sharing one word ten pixels apart
+  // is a worse problem than a long label.
+  { value: 'availability', label: 'Accepting', 'aria-label': 'Accepting referrals first' },
 ] as const
 
 /**
