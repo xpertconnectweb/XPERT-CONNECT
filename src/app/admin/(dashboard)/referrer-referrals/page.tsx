@@ -171,11 +171,20 @@ export default function AdminReferrerReferralsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/admin/referrer-referrals/${id}`, { method: 'DELETE' })
-    if (res.ok) {
-      setDeleteConfirm(null)
-      await fetchReferrals()
-    } else {
+    // try/catch like the `referrals` page: without it a dropped connection
+    // rejects here unhandled, leaving the row stuck in its armed "Confirm"
+    // state with nothing told to the admin.
+    try {
+      const res = await fetch(`/api/admin/referrer-referrals/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setDeleteConfirm(null)
+        await fetchReferrals()
+      } else {
+        alert('Failed to delete referral')
+        setDeleteConfirm(null)
+      }
+    } catch (error) {
+      console.error('Failed to delete referral:', error)
       alert('Failed to delete referral')
       setDeleteConfirm(null)
     }

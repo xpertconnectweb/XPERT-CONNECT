@@ -101,13 +101,27 @@ export async function DELETE(
 
   try {
     const { id } = await params
+    // Resolve BEFORE deleting and 404 on a miss. Without this, deleting an id
+    // that was never there answered 200 and still wrote an audit entry — with
+    // `targetName: undefined` — for a deletion that never happened. Two admins
+    // on the same list, or a stale tab, hit exactly that.
     const existing = await getReferralById(id)
-    const { error } = await supabaseAdmin
+    if (!existing) {
+      return NextResponse.json({ error: 'Referral not found' }, { status: 404 })
+    }
+
+    // `count` because a delete matching no row is not a PostgREST error: the
+    // 404 above closes the ordinary race, this closes the one where the row
+    // disappears between the read and the delete.
+    const { error, count } = await supabaseAdmin
       .from('referrals')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('id', id)
 
     if (error) throw error
+    if ((count ?? 0) === 0) {
+      return NextResponse.json({ error: 'Referral not found' }, { status: 404 })
+    }
 
     await logActivity({
       userId: session.user.id,
@@ -115,7 +129,7 @@ export async function DELETE(
       action: 'referral_deleted',
       targetType: 'referral',
       targetId: id,
-      targetName: existing?.patientName,
+      targetName: existing.patientName,
     })
 
     return NextResponse.json({ success: true })

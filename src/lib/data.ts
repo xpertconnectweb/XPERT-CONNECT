@@ -84,7 +84,8 @@ export async function getUserByUsername(
  */
 const PAGE_SIZE = 1000
 
-async function readAll<Row>(
+/** Exported so `admin-stats.ts` reads through the same ceiling-free path. */
+export async function readAll<Row>(
   page: (from: number, to: number) => PromiseLike<{
     data: Row[] | null
     error: { message: string } | null
@@ -98,6 +99,18 @@ async function readAll<Row>(
     rows.push(...batch)
     if (batch.length < PAGE_SIZE) return { rows, error: null }
   }
+}
+
+/**
+ * Newest first — the order both referral tables are presented in.
+ *
+ * Paging needs a unique, stable sort key (`id`); `created_at DESC` is not
+ * unique and lets rows repeat or vanish across page boundaries. So the reads
+ * page by `id` and the presentation order is reapplied here once every page is
+ * in. ISO-8601 timestamps compare correctly as text, so no Date parsing.
+ */
+function byCreatedAtDesc<T extends { createdAt: string }>(rows: T[]): T[] {
+  return rows.sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''))
 }
 // Clinics
 //
@@ -349,16 +362,23 @@ export async function deleteLawyer(id: string): Promise<boolean> {
 }
 
 // Referrals
+/**
+ * Every referral, paged.
+ *
+ * Paged like `getClinics()`: an unpaged select silently stops at PostgREST's
+ * 1000-row ceiling, and this is the list the admin table renders — so past
+ * 1000 rows a referral becomes invisible AND unreachable by the delete button
+ * that lives in that table. Same failure the clinics list already hit.
+ */
 export async function getReferrals(): Promise<Referral[]> {
-  const { data, error } = await supabaseAdmin
-    .from('referrals')
-    .select(REFERRAL_COLUMNS)
-    .order('created_at', { ascending: false })
+  const { rows, error } = await readAll((from, to) =>
+    supabaseAdmin.from('referrals').select(REFERRAL_COLUMNS).order('id').range(from, to)
+  )
   if (error) {
     console.error('getReferrals error:', error)
     return []
   }
-  return rowsToModels<Referral>(data)
+  return byCreatedAtDesc(rowsToModels<Referral>(rows))
 }
 
 /**
@@ -553,16 +573,16 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]
 // Referrer Referrals
 const RREF_COLUMNS = 'id, referrer_id, referrer_name, state, client_name, client_phone, client_email, client_address, service_needed, case_type, accident_date, notes, status, assigned_clinic_id, assigned_clinic_name, assigned_lawyer_id, assigned_lawyer_name, case_confirmed, admin_notes, created_at, updated_at'
 
+/** Every referrer referral, paged for the same reason as `getReferrals()`. */
 export async function getReferrerReferrals(): Promise<ReferrerReferral[]> {
-  const { data, error } = await supabaseAdmin
-    .from('referrer_referrals')
-    .select(RREF_COLUMNS)
-    .order('created_at', { ascending: false })
+  const { rows, error } = await readAll((from, to) =>
+    supabaseAdmin.from('referrer_referrals').select(RREF_COLUMNS).order('id').range(from, to)
+  )
   if (error) {
     console.error('getReferrerReferrals error:', error)
     return []
   }
-  return rowsToModels<ReferrerReferral>(data)
+  return byCreatedAtDesc(rowsToModels<ReferrerReferral>(rows))
 }
 
 export async function getReferrerReferralsByReferrer(referrerId: string): Promise<ReferrerReferral[]> {
@@ -620,13 +640,23 @@ export async function updateReferrerReferral(
   return rowToModel<ReferrerReferral>(data)
 }
 
+/**
+ * Returns false when nothing was deleted, not just on a driver error.
+ *
+ * A delete that matches no row is not an error in PostgREST, so without
+ * `count` this reported success for an id that was never there — and the
+ * caller then wrote an audit entry for a deletion that never happened.
+ */
 export async function deleteReferrerReferral(id: string): Promise<boolean> {
-  const { error } = await supabaseAdmin.from('referrer_referrals').delete().eq('id', id)
+  const { error, count } = await supabaseAdmin
+    .from('referrer_referrals')
+    .delete({ count: 'exact' })
+    .eq('id', id)
   if (error) {
     console.error('deleteReferrerReferral error:', error)
     return false
   }
-  return true
+  return (count ?? 0) > 0
 }
 
 // Settings

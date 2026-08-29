@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase'
+import { readAll } from '@/lib/data'
 import { rowsToModels } from '@/lib/mappers'
 import {
   ACTIVE_REFERRAL_STATUSES,
@@ -177,13 +178,17 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
     recentReferralRows,
     activityRows,
   ] = await Promise.all([
-    supabaseAdmin.from('referrals').select('status, referral_kind, creator_role, case_type, clinic_name, lawyer_name, created_at, updated_at'),
-    supabaseAdmin.from('referrer_referrals').select('status, case_confirmed, service_needed, state, created_at, assigned_clinic_id, assigned_lawyer_id'),
-    supabaseAdmin.from('clinics').select('address, available'),
-    supabaseAdmin.from('lawyers').select('address, available'),
-    supabaseAdmin.from('contacts').select('service, created_at'),
-    supabaseAdmin.from('users').select('role'),
-    supabaseAdmin.from('newsletter_subscribers').select('subscribed_at'),
+    // Every one of these aggregates over the FULL table, so each has to page:
+    // an unpaged select stops at PostgREST's 1000-row ceiling and the figure
+    // comes out quietly wrong. `clinicsTotal` was already understating a
+    // 1113-row table by 113. `order('id')` is the stable key paging needs.
+    readAll((f, t) => supabaseAdmin.from('referrals').select('status, referral_kind, creator_role, case_type, clinic_name, lawyer_name, created_at, updated_at').order('id').range(f, t)),
+    readAll((f, t) => supabaseAdmin.from('referrer_referrals').select('status, case_confirmed, service_needed, state, created_at, assigned_clinic_id, assigned_lawyer_id').order('id').range(f, t)),
+    readAll((f, t) => supabaseAdmin.from('clinics').select('address, available').order('id').range(f, t)),
+    readAll((f, t) => supabaseAdmin.from('lawyers').select('address, available').order('id').range(f, t)),
+    readAll((f, t) => supabaseAdmin.from('contacts').select('service, created_at').order('id').range(f, t)),
+    readAll((f, t) => supabaseAdmin.from('users').select('role').order('id').range(f, t)),
+    readAll((f, t) => supabaseAdmin.from('newsletter_subscribers').select('subscribed_at').order('id').range(f, t)),
     supabaseAdmin
       .from('referrals')
       .select('id, lawyer_name, clinic_name, patient_name, status, created_at')
@@ -196,20 +201,20 @@ export async function getAdminStats(range: StatsRange): Promise<AdminStats> {
       .limit(6),
   ])
 
-  const refs = (referralRows.data ?? []) as {
+  const refs = (referralRows.rows ?? []) as {
     status: string; referral_kind: string | null; creator_role: string | null
     case_type: string | null; clinic_name: string | null; lawyer_name: string | null
     created_at: string; updated_at: string
   }[]
-  const partners = (partnerRows.data ?? []) as {
+  const partners = (partnerRows.rows ?? []) as {
     status: string; case_confirmed: string | null; service_needed: string | null; state: string | null; created_at: string
     assigned_clinic_id: string | null; assigned_lawyer_id: string | null
   }[]
-  const clinics = (clinicRows.data ?? []) as { address: string | null; available: boolean }[]
-  const lawyers = (lawyerRows.data ?? []) as { address: string | null; available: boolean }[]
-  const contacts = (contactRows.data ?? []) as { service: string | null; created_at: string }[]
-  const users = (userRows.data ?? []) as { role: string | null }[]
-  const subs = (newsletterRows.data ?? []) as { subscribed_at: string }[]
+  const clinics = (clinicRows.rows ?? []) as { address: string | null; available: boolean }[]
+  const lawyers = (lawyerRows.rows ?? []) as { address: string | null; available: boolean }[]
+  const contacts = (contactRows.rows ?? []) as { service: string | null; created_at: string }[]
+  const users = (userRows.rows ?? []) as { role: string | null }[]
+  const subs = (newsletterRows.rows ?? []) as { subscribed_at: string }[]
 
   // ── Referral status funnel ──
   const funnel = Object.fromEntries(

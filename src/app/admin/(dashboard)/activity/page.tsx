@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import { statusLabel } from '@/lib/referral-status'
 import { caseLabel } from '@/lib/case-confirmed'
 import type { ActivityLog } from '@/types/admin'
@@ -121,6 +121,7 @@ export default function ActivityLogPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
 
   // Filters
   const [actionFilter, setActionFilter] = useState('')
@@ -159,6 +160,27 @@ export default function ActivityLogPage() {
   useEffect(() => {
     setPage(1)
   }, [actionFilter, targetFilter, fromDate, toDate])
+
+  /**
+   * Removes one entry. The feed is the only place a deleted case's patient
+   * name still appears, so this is what makes an erasure request actionable.
+   */
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`/api/admin/activity-logs/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setDeleteConfirm(null)
+        await fetchLogs()
+      } else {
+        alert('Failed to delete entry. Please try again.')
+        setDeleteConfirm(null)
+      }
+    } catch (error) {
+      console.error('Failed to delete activity log entry:', error)
+      alert('Failed to delete entry. Please try again.')
+      setDeleteConfirm(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -222,12 +244,13 @@ export default function ActivityLogPage() {
                   <th className="px-4 py-3 font-medium">Action</th>
                   <th className="px-4 py-3 font-medium">Target</th>
                   <th className="px-4 py-3 font-medium">Details</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {logs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                       No activity logs found
                     </td>
                   </tr>
@@ -255,6 +278,32 @@ export default function ActivityLogPage() {
                         </td>
                         <td className="px-4 py-3 text-gray-500 text-xs max-w-[250px]">
                           {formatDetails(log.details, log.action)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {deleteConfirm === log.id ? (
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => handleDelete(log.id)}
+                                className="rounded-lg px-2 py-1 text-xs bg-red-600 text-white hover:bg-red-700 transition-colors"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirm(null)}
+                                className="rounded-lg px-2 py-1 text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirm(log.id)}
+                              className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                              aria-label="Delete entry"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     )

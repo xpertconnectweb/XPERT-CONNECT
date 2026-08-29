@@ -106,3 +106,8 @@ data/nppes/raw-byzip/
 # Before/after evidence from scripts/ux/shoot.ts. Regenerable, and a PNG per
 # state per viewport is not something history needs to carry.
 docs/ux-shots/
+
+# Row-level backups scripts/purge-test-referrals.ts writes before deleting.
+# They hold patient names and phone numbers copied out of production — the
+# whole point is that they stay on the machine that ran the purge.
+scripts/.purge-backup-*.json

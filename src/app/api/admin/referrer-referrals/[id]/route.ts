@@ -98,7 +98,15 @@ export async function DELETE(
   if (authError) return authError
 
   const { id } = await params
+  // Resolve BEFORE deleting and 404 on a miss. Without this, deleting an id
+  // that was never there answered 200 and still wrote an audit entry — with
+  // `targetName: undefined` — for a deletion that never happened. Two admins
+  // on the same list, or a stale tab, hit exactly that.
   const existing = await getReferrerReferralById(id)
+  if (!existing) {
+    return NextResponse.json({ error: 'Referral not found' }, { status: 404 })
+  }
+
   const success = await deleteReferrerReferral(id)
   if (!success) {
     return NextResponse.json({ error: 'Failed to delete referral' }, { status: 500 })
@@ -110,7 +118,7 @@ export async function DELETE(
     action: 'referrer_referral_deleted',
     targetType: 'referrer_referral',
     targetId: id,
-    targetName: existing?.clientName,
+    targetName: existing.clientName,
   })
 
   return NextResponse.json({ success: true })

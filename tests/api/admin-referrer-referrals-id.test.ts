@@ -10,7 +10,7 @@ vi.mock('@/lib/data', () => ({
 }))
 vi.mock('@/lib/activity-log', () => ({ logActivity: vi.fn() }))
 
-import { PATCH } from '@/app/api/admin/referrer-referrals/[id]/route'
+import { PATCH, DELETE } from '@/app/api/admin/referrer-referrals/[id]/route'
 import * as auth from '@/lib/api-auth'
 import * as data from '@/lib/data'
 import * as activity from '@/lib/activity-log'
@@ -151,5 +151,60 @@ describe('PATCH /api/admin/referrer-referrals/[id] — writes', () => {
     expect(mockedActivity.logActivity.mock.calls[0][0].action).toBe(
       'referrer_referral_updated'
     )
+  })
+})
+
+describe('DELETE /api/admin/referrer-referrals/[id]', () => {
+  beforeEach(() => {
+    mockedData.deleteReferrerReferral.mockResolvedValue(true)
+  })
+
+  it('returns 401 for unauthenticated', async () => {
+    mockedAuth.requireAdmin.mockImplementation(buildRequireAdmin(null))
+    const res = await DELETE(buildRequest(null), PARAMS)
+    expect(res.status).toBe(401)
+    expect(mockedData.deleteReferrerReferral).not.toHaveBeenCalled()
+  })
+
+  it('turns a non-admin away', async () => {
+    mockedAuth.requireAdmin.mockImplementation(
+      buildRequireAdmin(buildSession({ role: 'partner', id: 'u-p', name: 'P' }))
+    )
+    const res = await DELETE(buildRequest(null), PARAMS)
+    expect(res.status).toBe(401)
+    expect(mockedData.deleteReferrerReferral).not.toHaveBeenCalled()
+  })
+
+  it('deletes and logs the activity', async () => {
+    const res = await DELETE(buildRequest(null), PARAMS)
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ success: true })
+    expect(mockedData.deleteReferrerReferral).toHaveBeenCalledWith('rr-1')
+    expect(mockedActivity.logActivity.mock.calls[0][0]).toMatchObject({
+      action: 'referrer_referral_deleted',
+      targetType: 'referrer_referral',
+      targetId: 'rr-1',
+      targetName: 'Client A',
+    })
+  })
+
+  // The delete used to answer 200 for an id that was never there, and log an
+  // audit entry with `targetName: undefined` for a deletion that never
+  // happened. Two admins on the same list hit exactly this.
+  it('returns 404 for an unknown id, without deleting or logging', async () => {
+    mockedData.getReferrerReferralById.mockResolvedValue(undefined)
+    const res = await DELETE(buildRequest(null), PARAMS)
+    expect(res.status).toBe(404)
+    expect(mockedData.deleteReferrerReferral).not.toHaveBeenCalled()
+    expect(mockedActivity.logActivity).not.toHaveBeenCalled()
+  })
+
+  // The row vanished between the read and the delete: `deleteReferrerReferral`
+  // reports false, and no audit entry may be written.
+  it('does not log when the delete affected no row', async () => {
+    mockedData.deleteReferrerReferral.mockResolvedValue(false)
+    const res = await DELETE(buildRequest(null), PARAMS)
+    expect(res.status).toBe(500)
+    expect(mockedActivity.logActivity).not.toHaveBeenCalled()
   })
 })
