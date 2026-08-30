@@ -1,7 +1,7 @@
 import { COMPANY_NAME, COMPANY_DOMAIN, COMPANY_PHONE, COMPANY_PHONE_TEL, COMPANY_EMAIL } from '@/lib/constants'
 import {
   sendEmail, escapeHtml, INTERNAL_EMAIL,
-  wrapInLayout, logoBar, headerBanner, footer,
+  wrapInLayout, logoBar, headerBanner, headerBannerWithBadge, detailsCard, ctaButton, footer,
 } from '../base'
 
 /** Email sent when someone submits the contact form */
@@ -23,67 +23,36 @@ export function contactFormEmail(
   return sendEmail({
     to: INTERNAL_EMAIL,
     subject: `New Contact Message from ${safe.name}`,
-    html: `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f5f5;">
-  <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
-    <div style="background:linear-gradient(135deg,#059669 0%,#10b981 100%);padding:40px 30px;text-align:center;">
-      <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:bold;">New Contact Message</h1>
-      <p style="color:#d1fae5;margin:10px 0 0 0;font-size:16px;">Someone wants to connect with you!</p>
-    </div>
+    html: wrapInLayout(`
+      ${logoBar()}
+      ${headerBannerWithBadge('New Contact Message', 'Someone wants to connect with you', 'linear-gradient(135deg,#047857 0%,#059669 50%,#10b981 100%)', 'Internal')}
 
-    <div style="padding:40px 30px;">
-      <div style="background-color:#f0fdf4;border-left:4px solid #10b981;padding:25px;margin:0 0 30px 0;border-radius:8px;">
-        <h2 style="color:#065f46;margin:0 0 20px 0;font-size:18px;font-weight:bold;">Contact Information</h2>
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;width:120px;">Name:</td>
-            <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.name}</td>
-          </tr>
-          <tr>
-            <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Email:</td>
-            <td style="padding:10px 0;color:#1f2937;font-weight:500;"><a href="mailto:${safe.email}" style="color:#10b981;text-decoration:none;">${safe.email}</a></td>
-          </tr>
-          <tr>
-            <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Phone:</td>
-            <td style="padding:10px 0;color:#1f2937;font-weight:500;"><a href="tel:${safe.phone}" style="color:#10b981;text-decoration:none;">${safe.phone}</a></td>
-          </tr>
-          <tr>
-            <td style="padding:10px 0;color:#6b7280;font-weight:600;vertical-align:top;">Service:</td>
-            <td style="padding:10px 0;color:#1f2937;font-weight:500;">${safe.service}</td>
-          </tr>
-        </table>
-      </div>
+      <div style="padding:36px 32px;">
+        ${detailsCard('Contact Information', 'linear-gradient(135deg,#047857 0%,#059669 100%)', [
+          { label: 'Name', value: safe.name },
+          { label: 'Email', value: `<a href="mailto:${safe.email}" style="color:#059669;text-decoration:none;">${safe.email}</a>` },
+          { label: 'Phone', value: `<a href="tel:${safe.phone}" style="color:#059669;text-decoration:none;">${safe.phone}</a>` },
+          { label: 'Service', value: safe.service },
+        ])}
 
-      ${safe.message ? `
-        <div style="background-color:#f8fafc;border-radius:8px;padding:20px;margin:0 0 30px 0;">
-          <h3 style="color:#1f2937;margin:0 0 15px 0;font-size:16px;font-weight:600;">Message:</h3>
-          <p style="color:#4b5563;line-height:1.6;margin:0;white-space:pre-wrap;">${safe.message}</p>
+        ${safe.message ? `
+          <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px 24px;margin:0 0 28px 0;">
+            <h3 style="color:#6b7280;margin:0 0 12px 0;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Message</h3>
+            <p style="color:#1f2937;font-size:15px;line-height:1.7;margin:0;white-space:pre-wrap;">${safe.message}</p>
+          </div>
+        ` : ''}
+
+        <div style="background-color:#fffbeb;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:8px;">
+          <p style="color:#92400e;margin:0;font-size:14px;line-height:1.6;">
+            <strong>Quick Tip:</strong> Respond within 24 hours for the best customer experience.
+          </p>
         </div>
-      ` : ''}
 
-      <div style="background-color:#fef3c7;border-left:4px solid #f59e0b;padding:15px 20px;border-radius:8px;">
-        <p style="color:#92400e;margin:0;font-size:14px;line-height:1.5;">
-          <strong>Quick Tip:</strong> Respond within 24 hours for the best customer experience!
-        </p>
+        ${ctaButton('View in Admin Dashboard', `${COMPANY_DOMAIN}/admin/contacts`, 'linear-gradient(135deg,#047857 0%,#059669 100%)', 'rgba(5,150,105,0.35)')}
       </div>
-    </div>
 
-    <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
-      <p style="color:#6b7280;font-size:12px;margin:0 0 10px 0;">
-        &copy; ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.
-      </p>
-      <p style="color:#9ca3af;font-size:11px;margin:0;">
-        This is an automated notification from your website contact form.
-      </p>
-    </div>
-  </div>
-</body>
-</html>`,
+      ${footer('Internal automated notification from your website contact form.')}
+    `),
   })
 }
 
