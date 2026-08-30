@@ -9,7 +9,7 @@ export interface LogActivityParams {
 }
 
 export interface EmailOptions {
-  to: string
+  to: string | string[]
   subject: string
   html: string
 }

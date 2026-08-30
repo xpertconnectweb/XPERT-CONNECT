@@ -5,7 +5,12 @@ import type { EmailOptions } from '@/types/admin'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'Xpert Connect <onboarding@resend.dev>'
-export const INTERNAL_EMAIL = process.env.INTERNAL_EMAIL || 'xpertconnect.web@gmail.com'
+// INTERNAL_EMAIL accepts a comma-separated list so a demo inbox can be copied in
+// without taking the company inbox off the notifications.
+export const INTERNAL_EMAIL = (process.env.INTERNAL_EMAIL || 'xpertconnect.web@gmail.com')
+  .split(',')
+  .map((address) => address.trim())
+  .filter(Boolean)
 
 export function escapeHtml(str: string): string {
   return str
