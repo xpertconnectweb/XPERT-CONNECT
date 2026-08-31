@@ -97,10 +97,18 @@ export function AddressConfirmMap({
         zoom={17}
         zoomControl={false}
         scrollWheelZoom={false}
-        attributionControl={false}
         className="h-full w-full"
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {/* The tile credit is a licence term, not decoration: OSM's ODbL
+            requires it wherever the tiles are drawn, and this map had both the
+            control and the prop switched off since the component was written.
+            Same string as MapView because it is the same tile server, and the
+            address text below the field is credited separately -- the search
+            box renders ATTRIBUTION[providerId] for whoever actually answered. */}
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
         <Marker
           ref={markerRef}
           position={[address.lat, address.lng]}
