@@ -271,6 +271,26 @@ export async function getClinicById(
 // 2026-08-structured-addresses.sql — apply that migration before deploying.
 const LAWYER_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, email, website, region, county, zip_code, available, street, city, state, place_id, place_provider, geocode_precision, geocoded_at'
 
+/**
+ * Columns for the PUBLIC directory — deliberately its own literal, and
+ * deliberately NOT added to LAWYER_COLUMNS above. Same reasoning as
+ * USER_AUTH_COLUMNS.
+ *
+ * This is the only list that names `directory_public`, so a database
+ * missing 2027-01-public-lawyer-directory.sql fails THIS query and only
+ * this query. Widening LAWYER_COLUMNS instead would take down the
+ * attorney map, the gated directory, the admin lawyers table and the
+ * referral firm picker the moment the code deployed ahead of the
+ * migration — PostgREST rejects an entire select over one missing
+ * column. Here, the cost of that mistake is a public directory that
+ * renders its empty state.
+ *
+ * Narrower in the other direction too: the public path has no use for
+ * `email` or the geocode bookkeeping, and not selecting them is a
+ * cheaper guarantee than trusting a mapper to drop them.
+ */
+const DIRECTORY_COLUMNS = 'id, name, address, lat, lng, phone, practice_areas, website, region, county, zip_code, available, city, state, directory_public'
+
 export async function getLawyers(): Promise<DecoratedLawyer[]> {
   const { rows, error } = await readAll((from, to) =>
     supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).order('id').range(from, to)
@@ -308,6 +328,78 @@ export async function getLawyersByState(state: string): Promise<DecoratedLawyer[
   return rowsToModels<Lawyer>([...structured.rows, ...legacy.rows])
     .map(decorateLawyer)
     .filter((lawyer) => lawyer.state === state)
+}
+
+/**
+ * The firms the public site may show.
+ *
+ * `directory_public` is set by 2027-01-public-lawyer-directory.sql and
+ * means "seeded from a public source", not "a member of the network".
+ * The filter is the whole reason the public route can return `phone`
+ * and `address` at all: those belong to firms whose contact details
+ * were already public, never to an attorney who signed up here.
+ *
+ * Through `readAll` because PostgREST silently caps a select at 1000
+ * rows, and this list is meant to grow past that.
+ */
+export async function getPublicDirectoryLawyers(): Promise<DecoratedLawyer[]> {
+  const [listed, members] = await Promise.all([
+    readAll((from, to) =>
+      supabaseAdmin
+        .from('lawyers')
+        .select(DIRECTORY_COLUMNS)
+        .eq('directory_public', true)
+        .order('id')
+        .range(from, to)
+    ),
+    // Every firm that belongs to someone with a login here.
+    readAll((from, to) =>
+      supabaseAdmin
+        .from('users')
+        .select('lawyer_id')
+        .not('lawyer_id', 'is', null)
+        .order('lawyer_id')
+        .range(from, to)
+    ),
+  ])
+
+  if (listed.error) {
+    console.error('getPublicDirectoryLawyers error:', listed.error)
+    return []
+  }
+  // A failure to read the membership list must not fall through to
+  // publishing everything. Better an empty directory than a leaked one.
+  if (members.error) {
+    console.error('getPublicDirectoryLawyers membership error:', members.error)
+    return []
+  }
+
+  /**
+   * The flag is set once, by a migration and an importer. This check is
+   * evaluated on every read.
+   *
+   * They should always agree, and the point is what happens when they
+   * do not: an admin linking a user to a published firm in /admin/users
+   * makes that firm a member's, and nothing in that flow knows to clear
+   * `directory_public`. Recomputing membership here means the stale
+   * flag cannot leak a member's direct line onto the marketing site —
+   * it costs one small query, and it is unit-testable in a way a
+   * database trigger would not be.
+   */
+  const memberFirmIds = new Set(
+    members.rows
+      .map((row) => (row as { lawyer_id: string | null }).lawyer_id)
+      .filter((id): id is string => Boolean(id))
+  )
+
+  return rowsToModels<Lawyer>(listed.rows)
+    .map(decorateLawyer)
+    .filter((lawyer) => !memberFirmIds.has(lawyer.id))
+    // A listing nobody can call is not a listing, and a (0,0) row is the
+    // placeholder every map in the app already hides. Dropped here, once,
+    // so no client has to know about either rule.
+    .filter((lawyer) => lawyer.phone.trim() !== '')
+    .filter((lawyer) => lawyer.lat !== 0 || lawyer.lng !== 0)
 }
 
 export async function getLawyerById(id: string): Promise<DecoratedLawyer | undefined> {

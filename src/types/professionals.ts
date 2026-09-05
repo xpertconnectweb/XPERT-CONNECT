@@ -107,6 +107,16 @@ export interface Lawyer extends StoredAddress {
   county?: string
   zipCode?: string
   available: boolean
+  /**
+   * May this firm appear on the public site? Set by
+   * 2027-01-public-lawyer-directory.sql; see `DirectoryListing` below.
+   *
+   * Optional rather than required so the ~dozen call sites that build a
+   * Lawyer by hand (admin create, importers, test factories) keep
+   * compiling. Absent reads as false everywhere, which is the safe
+   * direction: nothing is published by omission.
+   */
+  directoryPublic?: boolean
 }
 
 /**
@@ -156,6 +166,41 @@ type WithheldFromPublic =
 
 export type PublicClinic = Omit<DecoratedClinic, WithheldFromPublic>
 export type PublicLawyer = Omit<DecoratedLawyer, WithheldFromPublic>
+
+/**
+ * One firm as the PUBLIC lawyers directory shows it.
+ *
+ * Contact details are present on purpose, and this is the one boundary
+ * in the app where that is true. A directory you cannot call is not a
+ * directory — the same argument the comment in
+ * `src/app/api/directory/lawyers/route.ts` already makes. What keeps it
+ * safe is upstream: only rows with `directory_public = true` ever reach
+ * `toDirectoryListing`, and those are firms whose phone and address
+ * were public before we ever wrote them down.
+ *
+ * Declared as an explicit PICK, not `Omit<..., Withheld>` like the two
+ * types above, and that difference is the point. `toPublicLawyer` works
+ * by destructuring the withheld fields out and spreading the rest, so a
+ * new column is public by default — which is exactly how `street`
+ * leaked when 2026-08-structured-addresses.sql added it. An allowlist
+ * inverts that: a column added tomorrow stays out of the public
+ * directory until someone names it here, on purpose.
+ */
+export interface DirectoryListing {
+  id: string
+  name: string
+  address: string
+  phone: string
+  website?: string
+  practiceAreas: string[]
+  /** Free-text city as stored on the row (`region`), or parsed from the address. */
+  city?: string | null
+  county?: string
+  zipCode?: string | null
+  state?: string | null
+  lat: number
+  lng: number
+}
 
 // The referral lifecycle is defined once, in `src/lib/referral-status.ts`,
 // alongside its labels and colours. Imported here for `Referral.status` below

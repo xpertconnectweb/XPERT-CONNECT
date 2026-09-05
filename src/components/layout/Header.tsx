@@ -7,11 +7,12 @@ import { Phone, Menu, X, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
-  { href: '#about', label: 'About Us' },
-  { href: '#services', label: 'Services' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#benefits', label: 'Benefits' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/directory', label: 'Lawyers Directory' },
+  { href: '/#about', label: 'About Us' },
+  { href: '/#services', label: 'Services' },
+  { href: '/#how-it-works', label: 'How It Works' },
+  { href: '/#benefits', label: 'Benefits' },
+  { href: '/#contact', label: 'Contact' },
 ]
 
 export function Header() {

@@ -6,18 +6,19 @@ import Image from 'next/image'
 import { Phone, Mail } from 'lucide-react'
 
 const quickLinks = [
-  { href: '#about', label: 'About Us' },
-  { href: '#services', label: 'Services' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#benefits', label: 'Benefits' },
-  { href: '#contact', label: 'Contact Us' },
+  { href: '/#about', label: 'About Us' },
+  { href: '/#services', label: 'Services' },
+  { href: '/#how-it-works', label: 'How It Works' },
+  { href: '/#benefits', label: 'Benefits' },
+  { href: '/#contact', label: 'Contact Us' },
 ]
 
 const serviceLinks = [
-  { href: '#services', label: 'Legal Services' },
-  { href: '#services', label: 'Medical Clinics' },
-  { href: '#services', label: 'Real Estate' },
-  { href: '#contact', label: 'Free Consultation' },
+  { href: '/directory', label: 'Lawyers Directory' },
+  { href: '/#services', label: 'Legal Services' },
+  { href: '/#services', label: 'Medical Clinics' },
+  { href: '/#services', label: 'Real Estate' },
+  { href: '/#contact', label: 'Free Consultation' },
 ]
 
 

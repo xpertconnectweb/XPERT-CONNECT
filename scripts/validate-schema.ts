@@ -79,8 +79,8 @@ const PROBES: Probe[] = [
   },
   {
     table: 'lawyers',
-    columns: ['id', 'name', 'email', 'practice_areas', 'city', 'state', 'place_id', 'geocoded_at'],
-    why: 'lawyers entity table — referenced by users.lawyer_id and referrals.lawyer_id.',
+    columns: ['id', 'name', 'email', 'practice_areas', 'city', 'state', 'place_id', 'geocoded_at', 'directory_public'],
+    why: 'lawyers entity table — referenced by users.lawyer_id and referrals.lawyer_id. directory_public gates the public directory; only DIRECTORY_COLUMNS names it, so a missing migration costs the public directory rather than every lawyer read.',
   },
   {
     table: 'clinics',

@@ -1,10 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Scale, MapPin, Phone, Copy, Check, FilterX,
-  HeartPulse, Gavel, Users, ScrollText, Plane, Briefcase, Home,
-} from 'lucide-react'
+import { Scale, FilterX } from 'lucide-react'
 import { buildSearchIndex, search, toSearchDocs } from '@/lib/search'
 import type { SearchFilters, SortMode } from '@/lib/search'
 import { SmartSearchBox } from '@/components/search/SmartSearchBox'
@@ -13,25 +10,8 @@ import { EmptyState, Segmented } from '@/components/ui'
 import { useSmartSearch } from '@/hooks/useSmartSearch'
 import { countyLabel } from '@/lib/counties'
 import type { DecoratedLawyer } from '@/types/professionals'
-import type { SidebarIcon } from '@/components/shared/BaseSidebar'
-
-/**
- * Presentation for the canonical areas in src/lib/practice-areas.ts.
- * Kept here rather than in the lib so that module stays free of React
- * and Tailwind — it is imported by API routes. Areas an admin adds via
- * /admin/settings fall back to the neutral default below.
- */
-const AREA_META: Record<string, { icon: SidebarIcon; accent: string }> = {
-  'Personal Injury': { icon: HeartPulse, accent: 'from-rose-500 to-red-600' },
-  'Criminal Defense': { icon: Gavel, accent: 'from-slate-600 to-slate-800' },
-  'Family Law': { icon: Users, accent: 'from-amber-500 to-orange-600' },
-  'Estate Planning': { icon: ScrollText, accent: 'from-emerald-500 to-teal-600' },
-  Immigration: { icon: Plane, accent: 'from-sky-500 to-blue-600' },
-  'Business Law': { icon: Briefcase, accent: 'from-indigo-500 to-violet-600' },
-  'Civil Litigation': { icon: Scale, accent: 'from-cyan-500 to-sky-600' },
-  'Real Estate Law': { icon: Home, accent: 'from-lime-500 to-green-600' },
-}
-const DEFAULT_META = { icon: Scale, accent: 'from-gray-500 to-gray-700' }
+import { PracticeAreaCards } from '@/components/directory/PracticeAreaCards'
+import { FirmRow } from '@/components/directory/FirmRow'
 
 /** No distance without a map, so that mode is left out. */
 const DIRECTORY_SORT = [
@@ -48,10 +28,6 @@ const DIRECTORY_SORT = [
   // is a worse problem than a long label.
   { value: 'availability', label: 'Accepting', 'aria-label': 'Accepting referrals first' },
 ] as const
-
-function metaFor(area: string) {
-  return AREA_META[area] ?? DEFAULT_META
-}
 
 export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
   const [lawyers, setLawyers] = useState<DecoratedLawyer[]>([])
@@ -188,38 +164,13 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
       </div>
 
       {/* Practice-area cards — the "types of lawyer" view */}
-      {!loading && !error && visibleAreas.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {visibleAreas.map((a) => {
-            const { icon: Icon, accent } = metaFor(a)
-            const count = areaCounts.get(a) ?? 0
-            const selected = area === a
-            return (
-              <button
-                key={a}
-                type="button"
-                data-testid="practice-area-card"
-                aria-pressed={selected}
-                onClick={() => setArea(selected ? '' : a)}
-                className={`group flex flex-col items-start gap-2.5 rounded-2xl border p-4 text-left transition-all duration-200 ${
-                  selected
-                    ? 'border-gold bg-gold/5 shadow-md shadow-gold/10 -translate-y-px'
-                    : 'border-gray-200/80 bg-white shadow-sm hover:border-gray-300 hover:shadow-md hover:-translate-y-px'
-                }`}
-              >
-                <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${accent} text-white shadow-sm`}
-                >
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <span className="font-semibold text-sm text-gray-900 leading-tight">{a}</span>
-                <span className="text-[11px] font-medium text-gray-400">
-                  {count} {count === 1 ? 'firm' : 'firms'}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+      {!loading && !error && (
+        <PracticeAreaCards
+          areas={visibleAreas}
+          counts={areaCounts}
+          selected={area}
+          onSelect={setArea}
+        />
       )}
 
       {/* Secondary filters + result count */}
@@ -314,96 +265,15 @@ export function AttorneyDirectory({ catalog }: { catalog: string[] }) {
           />
         ) : (
           <ul className="divide-y divide-gray-100">
-            {filtered.map((lawyer) => {
-              // `region` on a lawyer row is really a city name; `city` is the
-              // value parsed from the address on the read path.
-              const city = lawyer.region || lawyer.city || ''
-              return (
-                <li
-                  key={lawyer.id}
-                  data-testid="attorney-row"
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-gray-50/50 transition-colors"
-                >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-navy-light text-gold">
-                    <Scale className="h-5 w-5" aria-hidden="true" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{lawyer.name}</p>
-                      <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                          lawyer.available ? 'bg-emerald-500' : 'bg-gray-300'
-                        }`}
-                        title={lawyer.available ? 'Accepting referrals' : 'Not accepting referrals'}
-                      />
-                    </div>
-
-                    <p className="text-[11px] text-gray-500 mt-0.5 truncate">{lawyer.address}</p>
-
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                      {city && (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
-                          <MapPin className="h-3 w-3" />
-                          {city}
-                        </span>
-                      )}
-                      {lawyer.county && (
-                        <span className="text-[11px] text-gray-400">{countyLabel(lawyer.county)}</span>
-                      )}
-                    </div>
-
-                    {lawyer.practiceAreas.length > 0 && (
-                      <div className="mt-1.5 flex flex-wrap gap-1">
-                        {lawyer.practiceAreas.slice(0, 4).map((a) => (
-                          <span
-                            key={a}
-                            className="inline-flex items-center rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-medium text-gold-dark"
-                          >
-                            {a}
-                          </span>
-                        ))}
-                        {lawyer.practiceAreas.length > 4 && (
-                          <span className="text-[10px] text-gray-400">
-                            +{lawyer.practiceAreas.length - 4}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-2 self-start sm:self-center">
-                    {lawyer.phone && (
-                      <a
-                        href={`tel:${lawyer.phone.replace(/[^\d+]/g, '')}`}
-                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-navy to-navy-light px-4 py-2 text-xs font-bold text-white shadow-md shadow-navy/20 hover:shadow-lg hover:shadow-navy/30 hover:-translate-y-px transition-all duration-200"
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        {lawyer.phone}
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => copyContact(lawyer)}
-                      aria-label={`Copy contact details for ${lawyer.name}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-                    >
-                      {copiedId === lawyer.id ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 text-emerald-600" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3.5 w-3.5" />
-                          Copy
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </li>
-              )
-            })}
+            {filtered.map((lawyer) => (
+              <FirmRow
+                key={lawyer.id}
+                firm={lawyer}
+                showAvailability
+                copied={copiedId === lawyer.id}
+                onCopy={() => copyContact(lawyer)}
+              />
+            ))}
           </ul>
         )}
       </div>

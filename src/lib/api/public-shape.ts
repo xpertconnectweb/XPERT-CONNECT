@@ -2,6 +2,7 @@ import type {
   AdminSafeUser,
   DecoratedClinic,
   DecoratedLawyer,
+  DirectoryListing,
   PublicClinic,
   PublicLawyer,
   User,
@@ -111,4 +112,45 @@ export function toPublicClinics(clinics: readonly DecoratedClinic[]): PublicClin
 
 export function toPublicLawyers(lawyers: readonly DecoratedLawyer[]): PublicLawyer[] {
   return lawyers.map(toPublicLawyer)
+}
+
+/**
+ * The PUBLIC lawyers directory shape.
+ *
+ * The inverse of the three helpers above: they hide contact details so
+ * a professional cannot route around the platform, and this one keeps
+ * them because a public directory of firms nobody can call is useless.
+ * The safety is not in this function, it is in the caller -- only rows
+ * with directory_public = true are ever passed here, and those are
+ * firms seeded from public sources, never an attorney who signed up.
+ *
+ * Built field by field instead of spreading the rest. `toPublicLawyer`
+ * spreads, which is why adding the `street` column silently published
+ * it on three routes. Naming every field means the next column added
+ * to `lawyers` is private until someone edits this list on purpose.
+ */
+export function toDirectoryListing(lawyer: DecoratedLawyer): DirectoryListing {
+  return {
+    id: lawyer.id,
+    name: lawyer.name,
+    address: lawyer.address,
+    phone: lawyer.phone,
+    website: lawyer.website,
+    practiceAreas: lawyer.practiceAreas,
+    // `region` on a lawyer row holds a city name; `city` is parsed from
+    // the address on the read path. Same precedence the directory list
+    // already uses when it renders a row.
+    city: lawyer.region || lawyer.city || null,
+    county: lawyer.county,
+    zipCode: lawyer.zipCode ?? null,
+    state: lawyer.state ?? null,
+    lat: lawyer.lat,
+    lng: lawyer.lng,
+  }
+}
+
+export function toDirectoryListings(
+  lawyers: readonly DecoratedLawyer[]
+): DirectoryListing[] {
+  return lawyers.map(toDirectoryListing)
 }
