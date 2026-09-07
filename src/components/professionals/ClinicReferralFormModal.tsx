@@ -1,6 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { buildSearchIndex, search, toSearchDocs } from '@/lib/search'
+import { SmartSearchBox } from '@/components/search/SmartSearchBox'
+import { useSmartSearch } from '@/hooks/useSmartSearch'
+import type { Suggestion } from '@/components/search/types'
 import {
   X, Send, Loader2, CheckCircle, User, Phone, Briefcase, Shield,
   FileCheck, StickyNote, Building2, Hash, Contact, Mail, Scale, Calendar,
@@ -56,6 +60,7 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
   const [selectedLawyerId, setSelectedLawyerId] = useState(lawyer?.id ?? '')
   const [lawyerOptions, setLawyerOptions] = useState<LawyerOption[]>([])
   const [loadingLawyers, setLoadingLawyers] = useState(!lawyer)
+  const [lawyerQuery, setLawyerQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -143,6 +148,60 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
   const selectBase =
     'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm text-gray-900 focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all duration-200 appearance-none cursor-pointer'
 
+  /**
+   * The lawyer picker is a combobox, not a dropdown.
+   *
+   * It was a native `<select>` listing every firm in the network. That was
+   * workable at 176; the public directory takes the table past 800, and a
+   * thousand `<option>` nodes is neither scrollable by a human nor cheap in
+   * the DOM. `SmartSearchBox` is the same accessible combobox the map, the
+   * attorney directory and the specialists list already use, so this is one
+   * fewer pattern rather than one more.
+   *
+   * `requireCoordinates: false` because this list is not a map: a firm whose
+   * address never geocoded must still be referable. The lat/lng passed in are
+   * placeholders — `/api/professionals/lawyers` withholds contact details, and
+   * nothing here plots anything.
+   */
+  const lawyerIndex = useMemo(
+    () =>
+      buildSearchIndex(
+        toSearchDocs(
+          [],
+          lawyerOptions.map((l) => ({ ...l, lat: 0, lng: 0, available: true })),
+          { requireCoordinates: false }
+        )
+      ),
+    [lawyerOptions]
+  )
+
+  const lawyerOutcome = useMemo(
+    () => search(lawyerIndex, lawyerQuery, {}),
+    [lawyerIndex, lawyerQuery]
+  )
+
+  const { groups: lawyerGroups, remember: rememberLawyer } = useSmartSearch({
+    index: lawyerIndex,
+    facets: lawyerOutcome.facets,
+    query: lawyerQuery,
+    entityHeading: 'Firms',
+    categoryHeading: 'Practice areas',
+    places: false,
+  })
+
+  const chosenLawyer = lawyerOptions.find((l) => l.id === selectedLawyerId)
+
+  const handleLawyerSelect = (sug: Suggestion) => {
+    if (sug.payload.kind === 'entity') {
+      setSelectedLawyerId(sug.payload.id)
+      setLawyerQuery('')
+      return
+    }
+    if (sug.payload.kind === 'recent') setLawyerQuery(sug.payload.query)
+    else setLawyerQuery(sug.label)
+    rememberLawyer(sug.label)
+  }
+
   const sectionLabel = (icon: React.ReactNode, text: string) => (
     <div className="flex items-center gap-2 pt-2">
       <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gold/10 text-gold">{icon}</div>
@@ -213,26 +272,41 @@ export function ClinicReferralFormModal({ lawyer, onClose, onCreated }: ClinicRe
                     <Scale className="h-3.5 w-3.5" />
                     Lawyer <span className="text-red-400">*</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      id="lawyer"
-                      required
-                      disabled={loadingLawyers}
-                      value={selectedLawyerId}
-                      onChange={(e) => setSelectedLawyerId(e.target.value)}
-                      className={selectBase}
+                  {chosenLawyer ? (
+                    <div
+                      data-testid="clinic-lawyer-chosen"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3"
                     >
-                      <option value="">{loadingLawyers ? 'Loading lawyers...' : 'Select a lawyer'}</option>
-                      {lawyerOptions.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.name}{l.region ? ` — ${l.region}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      <span className="min-w-0 truncate text-sm text-gray-900">
+                        {chosenLawyer.name}
+                        {chosenLawyer.region ? ` — ${chosenLawyer.region}` : ''}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedLawyerId('')
+                          setLawyerQuery('')
+                        }}
+                        className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-navy transition-colors hover:bg-navy/5"
+                      >
+                        Change
+                      </button>
                     </div>
-                  </div>
+                  ) : (
+                    <SmartSearchBox
+                      value={lawyerQuery}
+                      onChange={setLawyerQuery}
+                      onSubmit={setLawyerQuery}
+                      onSelect={handleLawyerSelect}
+                      groups={lawyerGroups}
+                      resultCount={lawyerOutcome.hits.length}
+                      loading={loadingLawyers}
+                      inputId="lawyer"
+                      aria-label="Search lawyers by firm, city or county"
+                      placeholder={loadingLawyers ? 'Loading lawyers...' : 'Search by firm, city, county...'}
+                      data-testid="clinic-lawyer-search"
+                    />
+                  )}
                 </div>
               )}
 

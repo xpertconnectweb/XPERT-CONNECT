@@ -14,12 +14,24 @@ test('clinic "Refer to Lawyer" CTA submits a lawyer referral via the modal', asy
   // ClinicDashboard renders two CTAs. Click the lawyer one specifically.
   await page.getByRole('button', { name: /refer to lawyer/i }).click()
 
-  // Modal opens with a lawyer picker (no preset). The lawyer list is fetched
-  // from /api/professionals/lawyers asynchronously — wait for our e2e firm to
-  // appear as an option before selecting.
-  const lawyerPicker = page.locator('select').filter({ hasText: firm.name as string }).first()
-  await expect(lawyerPicker).toBeVisible({ timeout: 45_000 })
-  await lawyerPicker.selectOption(firm.id)
+  // Modal opens with a lawyer picker (no preset). The picker is a combobox
+  // rather than a <select>: the public directory takes the lawyers table past
+  // 800 rows, and a thousand <option> nodes is neither scrollable nor cheap.
+  // The list is still fetched from /api/professionals/lawyers asynchronously,
+  // so type and wait for our e2e firm to appear among the suggestions.
+  const lawyerSearch = page.getByTestId('clinic-lawyer-search-input')
+  await expect(lawyerSearch).toBeVisible({ timeout: 45_000 })
+  await lawyerSearch.fill(firm.name as string)
+
+  const suggestion = page
+    .getByRole('option')
+    .filter({ hasText: firm.name as string })
+    .first()
+  await expect(suggestion).toBeVisible({ timeout: 45_000 })
+  await suggestion.click()
+
+  // Once chosen, the firm is shown as a chip rather than a text field.
+  await expect(page.getByTestId('clinic-lawyer-chosen')).toContainText(firm.name as string)
 
   const patientName = `${ns}patient`
   await page.locator('#patientName').fill(patientName)
