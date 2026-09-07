@@ -13,32 +13,32 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       font-heading font-bold uppercase tracking-wide
       rounded-xl transition-all duration-300
       disabled:opacity-50 disabled:cursor-not-allowed
-      focus:outline-none focus:ring-2 focus:ring-offset-2
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
     `
 
     const variants = {
       primary: `
-        bg-gold text-white
+        bg-gold text-navy-dark
         hover:bg-gold-dark hover:-translate-y-0.5
         shadow-lg shadow-gold/25 hover:shadow-xl hover:shadow-gold/30
-        focus:ring-gold
+        focus-visible:ring-gold
       `,
       secondary: `
         bg-navy text-white
         hover:bg-navy-dark hover:-translate-y-0.5
         shadow-lg shadow-navy/25 hover:shadow-xl hover:shadow-navy/30
-        focus:ring-navy
+        focus-visible:ring-navy
       `,
       outline: `
         bg-transparent text-white
         border-2 border-white/80
         hover:bg-white hover:text-navy
-        focus:ring-white
+        focus-visible:ring-white
       `,
       ghost: `
         bg-transparent text-navy
         hover:bg-gray-100
-        focus:ring-gray-200
+        focus-visible:ring-gray-200
       `,
     }
 

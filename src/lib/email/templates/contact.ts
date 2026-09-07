@@ -70,6 +70,10 @@ export function contactConfirmationEmail(
   const serviceLabels: Record<string, string> = {
     legal: 'Legal Services',
     medical: 'Medical Clinics',
+    // The landing form has offered this value since it shipped; without the
+    // key every Real Estate enquiry was confirmed back to the sender as the
+    // literal string "realestate".
+    realestate: 'Real Estate',
     insurance: 'Insurance Services',
     consultation: 'Free Consultation',
     other: 'General Inquiry',

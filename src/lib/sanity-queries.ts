@@ -87,6 +87,10 @@ export async function getBenefitsData(): Promise<BenefitsData | null> {
       titleLine1,
       titleAccent,
       description,
+      individualsTitle,
+      individualsSubtitle,
+      professionalsTitle,
+      professionalsSubtitle,
       individualBenefits[]{ title, description, iconName },
       professionalBenefits[]{ title, description, iconName }
     }`

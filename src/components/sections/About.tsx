@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { CheckCircle } from 'lucide-react'
 import { CountUp } from '@/components/ui/CountUp'
+import { urlFor } from '@/lib/sanity'
 import type { AboutData } from '@/lib/sanity-types'
 
 const defaultStats = [
@@ -31,6 +32,17 @@ export function About({ data }: AboutProps) {
   const disclaimer = data?.disclaimer ?? 'We are not attorneys and do not provide legal advice. We connect you with licensed professionals in our network.'
   const stats = data?.stats ?? defaultStats
 
+  /**
+   * Wired to the CMS, and served from our own origin.
+   *
+   * The photograph was hard-coded to images.unsplash.com, which meant a
+   * third-party dependency on the critical path and a CSP entry kept open
+   * for one image. Same aspect ratio as before, so the column is unchanged.
+   */
+  const imageUrl = data?.image
+    ? urlFor(data.image).width(1200).height(900).fit('crop').url()
+    : '/images/about-people.jpg'
+
   return (
     <section id="about" className="section bg-white pattern-bg">
       <div className="container mx-auto px-4">
@@ -40,8 +52,8 @@ export function About({ data }: AboutProps) {
             {/* Main Image */}
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=450&fit=crop"
-                alt="Professional team meeting"
+                src={imageUrl}
+                alt="A professional from the Xpert Connect network"
                 width={600}
                 height={450}
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -53,22 +65,14 @@ export function About({ data }: AboutProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-navy/20 to-transparent" />
             </div>
 
-            {/* Floating Stats Card */}
-            <div className="absolute -bottom-8 -right-8 bg-white rounded-2xl shadow-xl p-6 hidden lg:block">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold/10">
-                  <span className="text-2xl font-bold text-gold">20+</span>
-                </div>
-                <div>
-                  <p className="font-heading font-bold text-navy">Years</p>
-                  <p className="text-sm text-gray-500">Industry Experience</p>
-                </div>
-              </div>
-            </div>
+            {/* The floating "20+ Years" card that used to hang off this
+                image is gone. It repeated the first stat rendered 200px
+                below it, but as hard-coded JSX — so editing that stat in
+                the Studio made the page disagree with itself.
 
-            {/* Accent Element */}
-            <div className="absolute -top-4 -left-4 w-24 h-24 bg-gold/10 rounded-2xl -z-10" />
-            <div className="absolute -bottom-4 -left-4 w-32 h-32 border-2 border-gold/30 rounded-2xl -z-10" />
+                The two accent squares went with it: both were `-z-10`
+                inside a parent that paints a background, so they have
+                never been visible on any browser. */}
           </div>
 
           {/* Content Column */}

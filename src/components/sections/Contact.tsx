@@ -146,7 +146,7 @@ export function Contact({ data }: ContactProps) {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label htmlFor="contact-name" className="sr-only">
+                    <label htmlFor="contact-name" className="mb-2 block text-xs font-medium uppercase tracking-wide text-white/70">
                       Full Name
                     </label>
                     <input
@@ -158,13 +158,13 @@ export function Contact({ data }: ContactProps) {
                       autoComplete="name"
                       placeholder="Full Name"
                       required
-                      className="w-full rounded-xl border-0 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      className="w-full rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                     />
                   </div>
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="contact-email" className="sr-only">
+                      <label htmlFor="contact-email" className="mb-2 block text-xs font-medium uppercase tracking-wide text-white/70">
                         Email Address
                       </label>
                       <input
@@ -176,11 +176,11 @@ export function Contact({ data }: ContactProps) {
                         autoComplete="email"
                         placeholder="Email Address"
                         required
-                        className="w-full rounded-xl border-0 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                        className="w-full rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                       />
                     </div>
                     <div>
-                      <label htmlFor="contact-phone" className="sr-only">
+                      <label htmlFor="contact-phone" className="mb-2 block text-xs font-medium uppercase tracking-wide text-white/70">
                         Phone Number
                       </label>
                       <input
@@ -194,13 +194,13 @@ export function Contact({ data }: ContactProps) {
                         pattern="[\d\s\-\+\(\)]{7,20}"
                         title="Please enter a valid phone number (7-15 digits)"
                         required
-                        className="w-full rounded-xl border-0 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                        className="w-full rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="contact-service" className="sr-only">
+                    <label htmlFor="contact-service" className="mb-2 block text-xs font-medium uppercase tracking-wide text-white/70">
                       Service Type
                     </label>
                     <select
@@ -209,7 +209,7 @@ export function Contact({ data }: ContactProps) {
                       value={formData.service}
                       onChange={handleChange}
                       required
-                      className="w-full cursor-pointer rounded-xl border-0 bg-white/10 backdrop-blur-sm px-5 py-4 text-white transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 appearance-none"
+                      className="w-full cursor-pointer rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm px-5 py-4 text-white transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 appearance-none"
                       style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`,
                         backgroundRepeat: 'no-repeat',
@@ -235,7 +235,7 @@ export function Contact({ data }: ContactProps) {
                   </div>
 
                   <div>
-                    <label htmlFor="contact-message" className="sr-only">
+                    <label htmlFor="contact-message" className="mb-2 block text-xs font-medium uppercase tracking-wide text-white/70">
                       Message
                     </label>
                     <textarea
@@ -246,14 +246,14 @@ export function Contact({ data }: ContactProps) {
                       autoComplete="off"
                       placeholder="Tell us about your situation..."
                       rows={4}
-                      className="w-full resize-none rounded-xl border-0 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      className="w-full resize-none rounded-xl border border-white/25 bg-white/10 backdrop-blur-sm px-5 py-4 text-white placeholder-white/60 transition-all focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-navy-dark transition-all hover:bg-gold-dark hover:text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                   >
                     {isSubmitting ? (
                       <>

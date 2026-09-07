@@ -102,7 +102,7 @@ export function Services({ data }: ServicesProps) {
                 'hover:-translate-y-2 hover:shadow-2xl',
                 service.featured
                   ? 'shadow-xl ring-2 ring-gold/25'
-                  : 'shadow-lg hover:shadow-xl'
+                  : 'shadow-lg'
               )}
             >
               {/* Featured Badge */}
@@ -126,7 +126,7 @@ export function Services({ data }: ServicesProps) {
                   className={cn(
                     'h-8 w-8 transition-colors duration-300 group-hover:text-white',
                     service.color === 'navy' && 'text-navy',
-                    service.color === 'gold' && 'text-gold'
+                    service.color === 'gold' && 'text-gold-dark'
                   )}
                 />
               </div>
@@ -169,7 +169,7 @@ export function Services({ data }: ServicesProps) {
                   'inline-flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wide transition-all',
                   'group-hover:gap-3',
                   service.color === 'navy' && 'text-navy',
-                  service.color === 'gold' && 'text-gold'
+                  service.color === 'gold' && 'text-navy'
                 )}
               >
                 {service.cta}

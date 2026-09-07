@@ -69,6 +69,14 @@ export function Benefits({ data }: BenefitsProps) {
   const titleAccent = data?.titleAccent ?? 'Everyone'
   const description = data?.description ?? 'Xpert Connect creates value for both individuals seeking help and professionals looking to grow their practice.'
 
+  // These four were hard-coded JSX: the two most prominent labels in the
+  // section, and the only ones the client had no way to change. The fields
+  // are optional in the schema, so an existing document keeps rendering.
+  const individualsTitle = data?.individualsTitle ?? 'For Individuals'
+  const individualsSubtitle = data?.individualsSubtitle ?? 'Seeking professional help'
+  const professionalsTitle = data?.professionalsTitle ?? 'For Professionals'
+  const professionalsSubtitle = data?.professionalsSubtitle ?? 'Looking to grow your practice'
+
   const individualBenefits = data?.individualBenefits
     ? data.individualBenefits.map((b) => ({
         icon: iconMap[b.iconName] ?? Shield,
@@ -101,7 +109,6 @@ export function Benefits({ data }: BenefitsProps) {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* For Individuals */}
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent rounded-3xl" />
             <div className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl border border-gray-100">
               {/* Header */}
               <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100">
@@ -109,8 +116,8 @@ export function Benefits({ data }: BenefitsProps) {
                   <User className="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-2xl font-bold text-navy">For Individuals</h3>
-                  <p className="text-sm text-gray-500">Seeking professional help</p>
+                  <h3 className="font-heading text-2xl font-bold text-navy">{individualsTitle}</h3>
+                  <p className="text-sm text-gray-500">{individualsSubtitle}</p>
                 </div>
               </div>
 
@@ -139,7 +146,6 @@ export function Benefits({ data }: BenefitsProps) {
 
           {/* For Professionals */}
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent rounded-3xl" />
             <div className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl border border-gray-100">
               {/* Header */}
               <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100">
@@ -147,8 +153,8 @@ export function Benefits({ data }: BenefitsProps) {
                   <Briefcase className="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-2xl font-bold text-navy">For Professionals</h3>
-                  <p className="text-sm text-gray-500">Looking to grow your practice</p>
+                  <h3 className="font-heading text-2xl font-bold text-navy">{professionalsTitle}</h3>
+                  <p className="text-sm text-gray-500">{professionalsSubtitle}</p>
                 </div>
               </div>
 

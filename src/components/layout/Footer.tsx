@@ -57,12 +57,12 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-12">
           {/* Brand Column */}
           <div className="lg:col-span-4">
-            <Link href="/" className="inline-block mb-6">
+            <Link href="/" className="inline-block mb-6" aria-label="Xpert Connect — home">
               <Image
                 src="/images/logo.png"
                 alt="Xpert Connect"
-                width={160}
-                height={45}
+                width={512}
+                height={512}
                 className="h-12 w-auto brightness-0 invert"
               />
             </Link>
@@ -145,7 +145,7 @@ export function Footer() {
               <button
                 type="submit"
                 disabled={newsletterStatus === 'loading'}
-                className="w-full rounded-xl bg-gold px-5 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark"
+                className="w-full rounded-xl bg-gold px-5 py-4 font-heading text-sm font-bold uppercase tracking-wide text-navy-dark transition-all hover:bg-gold-dark hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 {newsletterStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
               </button>

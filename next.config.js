@@ -7,10 +7,6 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'cdn.sanity.io',
       },
     ],
@@ -52,7 +48,7 @@ const nextConfig = {
                 : "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' https://images.unsplash.com https://cdn.sanity.io https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
+              "img-src 'self' https://cdn.sanity.io https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
               // Nominatim is deliberately absent: address lookup now goes
               // through /api/geocode, so the browser has no reason to reach it
               // and clients' home addresses never leave our origin.

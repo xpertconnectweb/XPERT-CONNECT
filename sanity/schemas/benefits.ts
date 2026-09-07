@@ -20,6 +20,10 @@ export default defineType({
     defineField({ name: 'titleLine1', title: 'Title Line 1', type: 'string' }),
     defineField({ name: 'titleAccent', title: 'Title Accent (colored)', type: 'string' }),
     defineField({ name: 'description', title: 'Description', type: 'text', rows: 3 }),
+    defineField({ name: 'individualsTitle', title: 'Individuals — Heading', type: 'string' }),
+    defineField({ name: 'individualsSubtitle', title: 'Individuals — Standfirst', type: 'string' }),
+    defineField({ name: 'professionalsTitle', title: 'Professionals — Heading', type: 'string' }),
+    defineField({ name: 'professionalsSubtitle', title: 'Professionals — Standfirst', type: 'string' }),
     defineField({
       name: 'individualBenefits',
       title: 'Individual Benefits',

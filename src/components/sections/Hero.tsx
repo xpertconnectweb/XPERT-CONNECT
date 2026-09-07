@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Phone, Shield, Clock, Users } from 'lucide-react'
+import { urlFor } from '@/lib/sanity'
 import type { HeroData } from '@/lib/sanity-types'
 
 const defaultTrustBadges = [
@@ -27,8 +28,18 @@ export function Hero({ data }: HeroProps) {
   const ctaSecondaryHref = data?.ctaSecondaryHref ?? '#contact'
 
   const trustBadges = data?.trustBadges
-    ? data.trustBadges.map((tb) => ({ icon: Shield, text: tb.text }))
+    ? data.trustBadges.map((tb, i) => ({
+        // Keep the icon that belongs to this slot. Hard-coding `Shield`
+        // here meant editing any single badge in the Studio silently
+        // turned all three into shields.
+        icon: defaultTrustBadges[i]?.icon ?? Shield,
+        text: tb.text,
+      }))
     : defaultTrustBadges
+
+  const backgroundUrl = data?.backgroundImage
+    ? urlFor(data.backgroundImage).width(2400).height(1400).fit('crop').url()
+    : '/images/Office.png'
 
   return (
     <section
@@ -38,7 +49,7 @@ export function Hero({ data }: HeroProps) {
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/Office.png"
+          src={backgroundUrl}
           alt=""
           fill
           sizes="100vw"

@@ -43,21 +43,6 @@
     @apply text-lg text-gray-500 leading-relaxed;
   }
 
-  /* Glass morphism effect */
-  .glass {
-    @apply bg-white/80 backdrop-blur-lg border border-white/20;
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-gradient-to-r from-gold to-navy bg-clip-text text-transparent;
-  }
-
-  /* Card hover effect */
-  .card-hover {
-    @apply transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl;
-  }
-
   /* Subtle pattern background */
   .pattern-bg {
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a84b' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -65,60 +50,6 @@
 }
 
 @layer utilities {
-  .animate-fade-up {
-    animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 1s ease forwards;
-  }
-
-  .animate-slide-in-left {
-    animation: slideInLeft 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(40px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-40px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(40px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
   /* Modal entrance animation */
   .animate-modal-in {
     animation: modalIn 0.2s ease-out forwards;
@@ -135,12 +66,6 @@
     }
   }
 
-  /* Stagger animation delays */
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
 }
 
 /* ── Leaflet MarkerCluster overrides ── */
@@ -311,7 +236,7 @@
   box-shadow: 0 4px 14px rgba(15, 26, 46, 0.28);
   color: #fff;
   padding: 7px 10px;
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-open-sans), system-ui, sans-serif;
   white-space: nowrap;
   /* Under the popup and the panel, over the tiles. Leaflet's own panes sit at
      400-700; a tooltip that outranked the results panel would hang over it. */

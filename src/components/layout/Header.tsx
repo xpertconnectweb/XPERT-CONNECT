@@ -68,12 +68,16 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="grid h-20 lg:h-24 items-center grid-cols-[auto_1fr_auto]">
           {/* Logo */}
-          <Link href="/" className="flex items-center relative z-10 justify-self-start">
+          <Link
+            href="/"
+            className="flex items-center relative z-10 justify-self-start"
+            aria-label="Xpert Connect — home"
+          >
             <Image
               src="/images/logo.png"
               alt="Xpert Connect"
-              width={180}
-              height={50}
+              width={512}
+              height={512}
               className={cn(
                 'h-10 lg:h-12 w-auto transition-all duration-300',
                 !isScrolled && 'brightness-0 invert'
@@ -124,7 +128,7 @@ export function Header() {
               className={cn(
                 'hidden md:flex items-center gap-2.5 rounded-full px-6 py-3 font-heading text-sm font-bold transition-all duration-300',
                 isScrolled
-                  ? 'bg-gold text-white hover:bg-gold-dark shadow-lg shadow-gold/25'
+                  ? 'bg-gold text-navy-dark hover:bg-gold-dark hover:text-white shadow-lg shadow-gold/25'
                   : 'bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20'
               )}
             >
@@ -190,7 +194,7 @@ export function Header() {
               <Link
                 href="tel:+18449737866"
                 onClick={closeMobileMenu}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gold px-4 py-4 font-heading text-sm font-bold text-white shadow-lg shadow-gold/25"
+                className="flex items-center justify-center gap-2 rounded-xl bg-gold px-4 py-4 font-heading text-sm font-bold text-navy-dark shadow-lg shadow-gold/25"
               >
                 <Phone className="h-4 w-4" />
                 <span>1-844-XPERT-NOW</span>

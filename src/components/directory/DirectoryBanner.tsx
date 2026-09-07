@@ -76,7 +76,7 @@ export function DirectoryBanner({
                 <span className="block font-heading text-2xl lg:text-3xl font-bold text-gold">
                   {stat.value}
                 </span>
-                <span className="mt-0.5 block text-[11px] font-medium uppercase tracking-wider text-white/50">
+                <span className="mt-0.5 block text-[11px] font-medium uppercase tracking-wider text-white/70">
                   {stat.label}
                 </span>
               </dd>

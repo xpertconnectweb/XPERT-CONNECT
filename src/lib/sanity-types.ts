@@ -94,6 +94,15 @@ export interface BenefitsData {
   titleLine1: string
   titleAccent: string
   description: string
+  /**
+   * The two column headers. They were hard-coded JSX — the most
+   * prominent labels in the section and the only ones the client could
+   * not edit. Optional so an existing document keeps rendering.
+   */
+  individualsTitle?: string
+  individualsSubtitle?: string
+  professionalsTitle?: string
+  professionalsSubtitle?: string
   individualBenefits: BenefitItem[]
   professionalBenefits: BenefitItem[]
 }

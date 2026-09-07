@@ -48,7 +48,7 @@ export function HowItWorks({ data }: HowItWorksProps) {
   const ctaText = data?.ctaText ?? 'Start Your Free Consultation'
 
   const steps = data?.steps
-    ? data.steps.map((s, i) => ({
+    ? data.steps.map((s) => ({
         number: s.number,
         icon: iconMap[s.iconName] ?? ShieldCheck,
         title: s.title,
@@ -100,8 +100,8 @@ export function HowItWorks({ data }: HowItWorksProps) {
                     <step.icon className="h-8 w-8 text-gold" />
                   </div>
                   {/* Number Badge */}
-                  <span className="absolute -top-2 -left-2 flex h-7 w-7 items-center justify-center rounded-full bg-gold font-heading text-xs font-bold text-white">
-                    {index + 1}
+                  <span className="absolute -top-2 -left-2 flex h-7 w-7 items-center justify-center rounded-full bg-gold font-heading text-xs font-bold text-navy-dark">
+                    {step.number.replace(/^0+(?=d)/, '')}
                   </span>
                 </div>
 
@@ -122,7 +122,7 @@ export function HowItWorks({ data }: HowItWorksProps) {
           <p className="text-white/75 mb-6">Ready to get connected with a professional?</p>
           <a
             href="#contact"
-            className="inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gold-dark hover:shadow-lg hover:shadow-gold/25"
+            className="inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold uppercase tracking-wide text-navy-dark transition-all hover:bg-gold-dark hover:text-white hover:shadow-lg hover:shadow-gold/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
           >
             {ctaText}
           </a>
