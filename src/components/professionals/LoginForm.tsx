@@ -1,10 +1,39 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { signIn } from 'next-auth/react'
+import { getCsrfToken, signIn } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Lock, User, AlertCircle, Loader2, ArrowLeft, Shield, ChevronRight } from 'lucide-react'
+
+type SignInResult = Awaited<ReturnType<typeof signIn>>
+
+/**
+ * NextAuth rejected the POST because the CSRF token did not match the
+ * cookie — it answers with a redirect to `signin?csrf=true` rather than
+ * an error, so it is indistinguishable from a bad password unless you
+ * look at the URL.
+ *
+ * It happens when two requests mint a token before either cookie has
+ * been stored. Measured on a fresh browser: two concurrent
+ * `GET /api/auth/session` calls set two different tokens 23 ms apart,
+ * `GET /api/auth/csrf` returned the first, and the POST carried a token
+ * the cookie no longer held. Both `/session` calls come from
+ * `SessionProvider`, which React StrictMode mounts twice in dev — but
+ * the same window exists wherever a visitor arrives with no NextAuth
+ * cookie and submits before the handshake settles, which a password
+ * manager can do comfortably.
+ *
+ * Telling that person their password is wrong is the worst available
+ * answer: it is not, and retyping it cannot help.
+ */
+function isCsrfMismatch(result: SignInResult): boolean {
+  return (
+    typeof result?.url === 'string' &&
+    /\/api\/auth\/signin\b/.test(result.url) &&
+    /[?&]csrf=true\b/.test(result.url)
+  )
+}
 
 export function LoginForm() {
   const [username, setUsername] = useState('')
@@ -22,13 +51,32 @@ export function LoginForm() {
     setError('')
     setLoading(true)
 
-    let result
-    try {
-      result = await signIn('credentials', {
+    const attempt = () =>
+      signIn('credentials', {
         username,
         password,
         redirect: false,
       })
+
+    let result
+    try {
+      result = await attempt()
+
+      /**
+       * A CSRF mismatch is a handshake problem, not a credentials
+       * problem, and it is fixed by asking again rather than by the
+       * user doing anything differently. `getCsrfToken()` settles the
+       * cookie — by now the requests that were racing at mount have
+       * finished — and the second attempt carries the token that
+       * matches it.
+       *
+       * Once. If it fails twice it is not this race, and pretending
+       * otherwise would spin on a genuinely broken deployment.
+       */
+      if (isCsrfMismatch(result)) {
+        await getCsrfToken()
+        result = await attempt()
+      }
     } catch {
       setError('Sign-in failed. Please try again.')
       setPassword('')
@@ -47,7 +95,13 @@ export function LoginForm() {
       (typeof result.url === 'string' &&
         /\/api\/auth\/(error|signin)\b/.test(result.url))
     if (looksLikeError) {
-      setError('Invalid username or password')
+      // Still distinguish the two, so a retry that did not help says
+      // something a person can act on instead of blaming their password.
+      setError(
+        isCsrfMismatch(result)
+          ? 'Your session expired before sign-in completed. Please try again.'
+          : 'Invalid username or password'
+      )
       setPassword('')
       setLoading(false)
       return
