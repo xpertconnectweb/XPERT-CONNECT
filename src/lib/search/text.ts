@@ -4,7 +4,13 @@
  * Everything here is pure and synchronous. The whole `src/lib/search` tree is
  * free of React, Leaflet and Supabase so it can be imported from API routes,
  * migration scripts and three different client surfaces alike.
+ *
+ * Domain vocabulary is allowed in: `documents.ts` already reads
+ * `@/lib/counties` and `@/lib/address`, and the rule this tree keeps is
+ * "no React, Leaflet or Supabase", not "no knowledge of the subject".
  */
+import { US_STATE_NAMES } from '@/lib/address'
+import { LEGAL_PHRASE_EXPANSIONS, LEGAL_TOKEN_EXPANSIONS } from './domain-expansions'
 
 /**
  * Case-folds, strips diacritics and flattens punctuation to spaces.
@@ -49,6 +55,33 @@ export const ENTITY_SUFFIXES: ReadonlySet<string> = new Set([
 
 export const SUFFIX_TOKEN_WEIGHT = 0.35
 
+/**
+ * Words that qualify a place rather than name one.
+ *
+ * Same mechanism as `ENTITY_SUFFIXES`, same reason: kept as tokens so
+ * they can still add precision, but at reduced weight so the AND gate
+ * exempts them and they can never carry a match alone.
+ *
+ * This existed as a bug with a UI in front of it. `lawyers.county`
+ * stores the bare form ("Manatee") because that is the storage
+ * convention, while `countyLabel()` renders "Manatee County" — which is
+ * what the county dropdown on /directory shows a visitor. Copy what is
+ * on screen into the box next to it and you got nothing at all: the
+ * token "county" matched no field, and the AND gate then dropped all
+ * seventeen Manatee firms.
+ *
+ * `fl` and `florida` are here and the other forty-nine states are not,
+ * deliberately. Every row in this corpus is Florida, so the state is
+ * always a qualifier and never the thing being looked for. Elsewhere
+ * that would not hold.
+ */
+export const GEO_SUFFIXES: ReadonlySet<string> = new Set([
+  'county', 'parish', 'borough', 'fl', 'florida',
+])
+
+/** Same value as the corporate suffixes, named separately so they can diverge. */
+export const GEO_TOKEN_WEIGHT = 0.35
+
 /** Folds, splits, and drops stopwords and meaningless single characters. */
 export function tokenize(raw: string): string[] {
   const folded = fold(raw)
@@ -73,8 +106,31 @@ export const PHRASE_EXPANSIONS: Readonly<Record<string, string>> = {
   'st paul': 'saint paul',
   'pain mgmt': 'pain management',
   'workers comp': 'workers compensation',
-  'auto accident': 'auto injuries',
-  'car accident': 'auto injuries',
+  /**
+   * Collapsed to one token on purpose.
+   *
+   * These used to rewrite to "auto injuries", which is a CLINIC
+   * specialty — on the mixed index that meant "car accident Orlando"
+   * found chiropractors and not one personal-injury attorney, and on
+   * the lawyer-only public directory it found nothing at all.
+   *
+   * The honest semantics are "Auto Injuries OR Personal Injury", and a
+   * phrase rewrite cannot express an OR: adding both inflates the token
+   * count, and every extra token dilutes coverage in every field. So
+   * the phrase becomes the single token `accident`, whose merged
+   * variants (auto, injuries, personal, injury) carry the OR through
+   * the scorer, which already takes the best-matching variant.
+   *
+   * Cost to the clinic map, stated plainly: an Auto Injuries clinic now
+   * matches through a variant rather than literally, so its specialty
+   * field scores 2.2 x 0.9 instead of 2.2. Every such clinic moves by
+   * the same factor, so their order relative to each other is
+   * unchanged — and attorneys now appear alongside them.
+   */
+  'auto accident': 'accident',
+  'car accident': 'accident',
+  'car crash': 'accident',
+  'car wreck': 'accident',
   'spine surgeon': 'spine neurosurgery orthopedics',
   'back surgeon': 'spine neurosurgery',
   'brain surgeon': 'neurosurgery',
@@ -117,6 +173,10 @@ export const TOKEN_EXPANSIONS: Readonly<Record<string, readonly string[]>> = {
   pip: ['personal', 'injury', 'protection'],
   mri: ['imaging', 'radiology'],
   mva: ['auto', 'injuries', 'motor', 'vehicle'],
+  // Half of the OR that the 'car accident' phrase now routes through.
+  // The other half — personal, injury — is derived from the practice-area
+  // aliases and unioned in by `mergeTokenExpansions`.
+  accident: ['auto', 'injuries'],
   ent: ['otolaryngology'],
   ob: ['obstetrics'],
   gyn: ['gynecology'],
@@ -163,6 +223,39 @@ export const TOKEN_EXPANSIONS: Readonly<Record<string, readonly string[]>> = {
   sw: ['southwest'],
 }
 
+/**
+ * State names and codes, both directions.
+ *
+ * Documents store the code — every `state` field in this corpus folds
+ * to "fl" — and people type the word, so "Bradenton Florida" scored
+ * zero on a query where "Bradenton" alone scored 0.67. Generated rather
+ * than written out, so the two directions cannot drift apart.
+ *
+ * Two exclusions, both load-bearing:
+ *
+ *  - Codes that are also corporate suffixes: PA and CO. Expanding
+ *    "pennsylvania" to "pa" would match the name of every "Smith &
+ *    Jones, P.A." in Florida, at `name` weight 3.0. A Florida directory
+ *    returning nothing for "pennsylvania" is the correct answer;
+ *    returning half the state's law firms is not.
+ *  - Multi-word names ("new york", "north carolina"). This table is
+ *    consulted per token, so they cannot round-trip through it. They
+ *    would need phrase entries, and nothing in this corpus needs them.
+ */
+function buildStateExpansions(): Record<string, string[]> {
+  const out: Record<string, string[]> = {}
+  for (const [code, name] of Object.entries(US_STATE_NAMES)) {
+    const lower = code.toLowerCase()
+    if (ENTITY_SUFFIXES.has(lower)) continue
+    if (name.includes(' ')) continue
+    out[lower] = [name]
+    out[name] = [lower]
+  }
+  return out
+}
+
+const STATE_EXPANSIONS = buildStateExpansions()
+
 /** Expanded variants match at a discount, so a literal hit always wins. */
 export const EXPANSION_PENALTY = 0.9
 
@@ -175,10 +268,54 @@ export interface ExpandedToken {
   weight: number
 }
 
+/**
+ * Every token table, unioned.
+ *
+ * Union rather than overwrite, because the same key legitimately
+ * appears in more than one: `accident` gets `auto`/`injuries` from the
+ * hand-written medical table and `personal`/`injury` from the derived
+ * legal one, and a query for it should reach both. Spreading the
+ * objects would have silently kept only the last.
+ *
+ * Order is fixed — hand table, states, legal — so the variant list is
+ * deterministic and `EXPANSION_PENALTY` applies to the same entries on
+ * every run.
+ */
+function mergeTokenExpansions(): Record<string, string[]> {
+  const out: Record<string, string[]> = {}
+  const tables: Readonly<Record<string, readonly string[]>>[] = [
+    TOKEN_EXPANSIONS,
+    STATE_EXPANSIONS,
+    LEGAL_TOKEN_EXPANSIONS,
+  ]
+
+  for (const table of tables) {
+    for (const [key, values] of Object.entries(table)) {
+      const bucket = out[key] ?? (out[key] = [])
+      for (const value of values) {
+        // The key itself is already variant zero; a table that repeats
+        // it would otherwise make it count twice at a discount.
+        if (value !== key && !bucket.includes(value)) bucket.push(value)
+      }
+    }
+  }
+
+  return out
+}
+
+const ALL_TOKEN_EXPANSIONS = mergeTokenExpansions()
+
+const ALL_PHRASE_EXPANSIONS: Record<string, string> = {
+  ...LEGAL_PHRASE_EXPANSIONS,
+  // The hand-written table wins on a collision: its entries were chosen
+  // against this corpus, the derived ones are mechanical.
+  ...PHRASE_EXPANSIONS,
+}
+
 /** Rewrites known multi-word phrases before tokenization. */
 export function applyPhraseExpansions(folded: string): string {
   let out = folded
-  for (const [phrase, replacement] of Object.entries(PHRASE_EXPANSIONS)) {
+  for (const [phrase, replacement] of Object.entries(ALL_PHRASE_EXPANSIONS)) {
     if (out.includes(phrase)) {
       out = out.split(phrase).join(replacement)
     }
@@ -189,11 +326,15 @@ export function applyPhraseExpansions(folded: string): string {
 /** Attaches expansion variants and per-token weights. */
 export function expandQueryTokens(tokens: readonly string[]): ExpandedToken[] {
   return tokens.map((raw) => {
-    const expansions = TOKEN_EXPANSIONS[raw]
+    const expansions = ALL_TOKEN_EXPANSIONS[raw]
     return {
       raw,
       variants: expansions ? [raw, ...expansions] : [raw],
-      weight: ENTITY_SUFFIXES.has(raw) ? SUFFIX_TOKEN_WEIGHT : 1,
+      weight: ENTITY_SUFFIXES.has(raw)
+        ? SUFFIX_TOKEN_WEIGHT
+        : GEO_SUFFIXES.has(raw)
+          ? GEO_TOKEN_WEIGHT
+          : 1,
     }
   })
 }

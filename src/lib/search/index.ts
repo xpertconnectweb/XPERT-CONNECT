@@ -23,6 +23,9 @@ export {
   normalizeZip,
   STOPWORDS,
   ENTITY_SUFFIXES,
+  GEO_SUFFIXES,
+  GEO_TOKEN_WEIGHT,
+  SUFFIX_TOKEN_WEIGHT,
   TOKEN_EXPANSIONS,
   PHRASE_EXPANSIONS,
   EXPANSION_PENALTY,
@@ -50,6 +53,14 @@ export {
   FIELD_WEIGHTS,
   type SearchIndex,
 } from './engine'
+
+export {
+  searchWithFallback,
+  type FallbackResult,
+  type LadderKind,
+  type LadderOptions,
+  type SearchLadderStep,
+} from './fallback'
 
 export {
   clinicToDoc,

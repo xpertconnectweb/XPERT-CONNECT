@@ -192,3 +192,109 @@ describe('prepareQuery — orthopedics and neurosurgery', () => {
     expect(prepareQuery('ortho')[0].variants).toContain('orthopaedics')
   })
 })
+
+describe('geographic qualifiers', () => {
+  const weightOf = (query: string, raw: string) =>
+    prepareQuery(query).find((t) => t.raw === raw)?.weight
+
+  it('gives place qualifiers reduced weight, like corporate suffixes', () => {
+    // Below 1 is what exempts a token from the AND gate. "Manatee
+    // County" returned nothing because "county" was a full-weight token
+    // that no document could ever match.
+    expect(weightOf('manatee county', 'county')).toBeLessThan(1)
+    expect(weightOf('bradenton fl', 'fl')).toBeLessThan(1)
+    expect(weightOf('bradenton florida', 'florida')).toBeLessThan(1)
+  })
+
+  it('leaves the place name itself at full weight', () => {
+    expect(weightOf('manatee county', 'manatee')).toBe(1)
+  })
+
+  it('still gives corporate suffixes their own reduced weight', () => {
+    expect(weightOf('smith llc', 'llc')).toBeLessThan(1)
+  })
+})
+
+describe('state names', () => {
+  const variants = (query: string) => prepareQuery(query)[0]?.variants ?? []
+
+  it('expands the name to the code, and back', () => {
+    expect(variants('florida')).toContain('fl')
+    expect(variants('fl')).toContain('florida')
+    expect(variants('texas')).toContain('tx')
+  })
+
+  /**
+   * PA and CO are corporate suffixes before they are states. Expanding
+   * "pennsylvania" to "pa" would match the NAME of every "Smith &
+   * Jones, P.A." in Florida, at the highest field weight there is.
+   */
+  it('refuses the codes that are also corporate suffixes', () => {
+    expect(variants('pennsylvania')).not.toContain('pa')
+    expect(variants('colorado')).not.toContain('co')
+  })
+})
+
+describe('practice-area intent', () => {
+  const variants = (query: string) => prepareQuery(query)[0]?.variants ?? []
+
+  it('derives expansions from the alias table the admin form already uses', () => {
+    expect(variants('divorce')).toContain('family')
+    expect(variants('probate')).toContain('estate')
+    expect(variants('probate')).toContain('planning')
+    expect(variants('property')).toContain('real')
+  })
+
+  /**
+   * `business → Business Law` reduces to `business → business, law`,
+   * and `law` is a kind word every lawyer document carries — so on the
+   * portal's mixed index, typing "business" would have matched all 627
+   * firms through the `kind` field.
+   */
+  it('drops an expansion that reduces to the word itself plus "law"', () => {
+    expect(variants('business')).toEqual(['business'])
+    expect(variants('family')).toEqual(['family'])
+  })
+
+  it('keeps one that adds a real word, even when the key survives it', () => {
+    // `civil → Civil Litigation` still carries information: "litigation".
+    // Only the entries that reduce to nothing but the key are dropped.
+    expect(variants('civil')).toEqual(['civil', 'litigation'])
+  })
+
+  it('unions the hand-written and derived tables rather than overwriting', () => {
+    // `accident` is in both: auto/injuries for clinics, personal/injury
+    // for attorneys. A spread would have silently kept only one.
+    const accident = variants('accident')
+    expect(accident).toContain('injuries')
+    expect(accident).toContain('personal')
+    expect(new Set(accident).size).toBe(accident.length)
+  })
+
+  it('collapses the car-accident phrases to that one token', () => {
+    expect(prepareQuery('car accident')).toHaveLength(1)
+    expect(prepareQuery('car accident')[0].raw).toBe('accident')
+    expect(prepareQuery('car wreck')[0].raw).toBe('accident')
+  })
+})
+
+describe('near me', () => {
+  it('lifts the words out and records the intent', () => {
+    const q = interpretQuery('personal injury near me')
+    expect(q.nearMe).toBe(true)
+    expect(q.tokens.map((t) => t.raw)).toEqual(['personal', 'injury'])
+    expect(q.phrase).toBe('personal injury')
+  })
+
+  it('recognises the common variants', () => {
+    expect(interpretQuery('lawyers nearby').nearMe).toBe(true)
+    expect(interpretQuery('attorney close to me').nearMe).toBe(true)
+    expect(interpretQuery('clinics around me').nearMe).toBe(true)
+  })
+
+  it('leaves an ordinary query alone', () => {
+    const q = interpretQuery('near north street')
+    expect(q.nearMe).toBe(false)
+    expect(q.tokens.map((t) => t.raw)).toContain('near')
+  })
+})

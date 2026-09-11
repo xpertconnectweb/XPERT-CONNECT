@@ -55,6 +55,37 @@ export const US_STATE_CODES: ReadonlySet<string> = new Set([
 ])
 
 /**
+ * Code to spoken name.
+ *
+ * Addresses are stored with the code — every row's `state` is "FL" — but
+ * people type the word. "Bradenton Florida" returned nothing at all,
+ * because "florida" matched no token on any document and the search's
+ * AND gate then dropped all eleven Bradenton firms. Search expansion
+ * reads this in both directions; parsing still only ever looks at
+ * `US_STATE_CODES`, since a written address ends in the code.
+ *
+ * Two-word names are matched token-wise by the caller, so "new york"
+ * and "north carolina" work without anything special here.
+ */
+export const US_STATE_NAMES: Readonly<Record<string, string>> = {
+  AL: 'alabama', AK: 'alaska', AZ: 'arizona', AR: 'arkansas',
+  CA: 'california', CO: 'colorado', CT: 'connecticut', DE: 'delaware',
+  FL: 'florida', GA: 'georgia', HI: 'hawaii', ID: 'idaho',
+  IL: 'illinois', IN: 'indiana', IA: 'iowa', KS: 'kansas',
+  KY: 'kentucky', LA: 'louisiana', ME: 'maine', MD: 'maryland',
+  MA: 'massachusetts', MI: 'michigan', MN: 'minnesota', MS: 'mississippi',
+  MO: 'missouri', MT: 'montana', NE: 'nebraska', NV: 'nevada',
+  NH: 'new hampshire', NJ: 'new jersey', NM: 'new mexico', NY: 'new york',
+  NC: 'north carolina', ND: 'north dakota', OH: 'ohio', OK: 'oklahoma',
+  OR: 'oregon', PA: 'pennsylvania', RI: 'rhode island', SC: 'south carolina',
+  SD: 'south dakota', TN: 'tennessee', TX: 'texas', UT: 'utah',
+  VT: 'vermont', VA: 'virginia', WA: 'washington', WV: 'west virginia',
+  WI: 'wisconsin', WY: 'wyoming', DC: 'district of columbia',
+  PR: 'puerto rico', VI: 'virgin islands', GU: 'guam',
+  AS: 'american samoa', MP: 'northern mariana islands',
+}
+
+/**
  * "FL 32501" / "FL 32501-1234" at the very end.
  *
  * The trailing `(?:[\s,]+\d{5}(?:-\d{4})?)*` tolerates a repeated ZIP — l-002

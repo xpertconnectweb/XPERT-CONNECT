@@ -351,3 +351,39 @@ describe('the box never goes away', () => {
     expect(screen.getByRole('combobox', { name: 'Search providers' })).toBeVisible()
   })
 })
+
+/**
+ * A local group with nothing in it is normally dropped — "Practice areas
+ * (none)" is noise, and the box is right to hide it. But the public
+ * directory fetches its corpus after mount, and until that lands its
+ * local groups are empty for a reason that has nothing to do with the
+ * query. Dropping them then produced an empty dropdown under a
+ * warm-looking box: indistinguishable from "we have never heard of
+ * Bradenton", which is exactly how the client read it.
+ */
+describe('a local source that has not loaded yet', () => {
+  const pending: SuggestionGroup[] = [
+    { key: 'category', heading: 'Practice areas', items: [], status: 'loading' },
+    { key: 'entity', heading: 'Firms', items: [], status: 'loading' },
+  ]
+
+  it('keeps the group visible and shows placeholders instead of hiding it', async () => {
+    const { user } = setup({ groups: pending, value: 'bradenton' })
+    await user.click(combobox())
+
+    expect(screen.getByText('Practice areas')).toBeVisible()
+    expect(screen.getByText('Firms')).toBeVisible()
+    // Nothing claims to be a result.
+    expect(screen.queryAllByTestId('map-search-option')).toHaveLength(0)
+    expect(screen.queryByTestId('map-search-group-empty')).toBeNull()
+  })
+
+  it('still drops a loaded local group that genuinely has nothing to say', async () => {
+    const { user } = setup({
+      groups: [{ key: 'category', heading: 'Practice areas', items: [] }],
+      value: 'bradenton',
+    })
+    await user.click(combobox())
+    expect(screen.queryByText('Practice areas')).toBeNull()
+  })
+})

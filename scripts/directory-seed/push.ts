@@ -23,6 +23,7 @@ import { readFileSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+import { revalidateDirectory } from '../revalidate-directory'
 
 config({ path: '.env.local' })
 config()
@@ -213,6 +214,29 @@ async function main() {
     .select('*', { count: 'exact', head: true })
     .eq('directory_public', true)
   console.log(`\n  Done. ${count} firms are now public.\n`)
+
+  /**
+   * Writing the rows is only half the job.
+   *
+   * This is a database-only change — no deploy, no request to the app —
+   * so neither Next's data cache nor the CDN has any way to learn about
+   * it. Without this call the previous payload keeps being served: when
+   * these 451 rows landed, that meant visitors searching "Bradenton"
+   * got nothing for a day, because the cached 176-firm payload had no
+   * Bradenton in it.
+   *
+   * A failure here never fails the run. The rows are already written;
+   * what is left is a stale cache, which a human can fix in one
+   * command — so say so, loudly, rather than exiting non-zero and
+   * implying the import did not work.
+   */
+  const purge = await revalidateDirectory()
+  if (purge.ok) {
+    console.log(`  Site cache purged (${purge.detail}).\n`)
+  } else {
+    console.warn(`\n  ⚠  the CDN was NOT purged — run: npm run directory:revalidate`)
+    console.warn(`     reason: ${purge.detail}\n`)
+  }
 }
 
 main().catch((err) => {

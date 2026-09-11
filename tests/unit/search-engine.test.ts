@@ -489,3 +489,148 @@ describe('admin document options', () => {
     expect(adminIds('orthopedic')).toContain('c-2')
   })
 })
+
+/**
+ * The queries a client actually typed, and the ones that broke on the
+ * way to diagnosing them.
+ *
+ * Reported as "I search Bradenton in the feed and nothing comes up".
+ * The rows were there and the cache was stale — but running the real
+ * engine over the live 627-firm corpus turned up eleven more queries
+ * that genuinely returned nothing, several of them things any visitor
+ * would type. Each one is a case below.
+ */
+const BRADENTON: LawyerLike[] = [
+  {
+    id: 'b-1',
+    name: 'Wyckoff Law Firm, P.A.',
+    address: '4909 Manatee Ave W, Bradenton, FL 34209',
+    lat: 27.4959,
+    lng: -82.6103,
+    practiceAreas: ['Real Estate Law', 'Business Law'],
+    region: 'Bradenton',
+    county: 'Manatee',
+    available: true,
+  },
+  {
+    // Same county, different city, and the only Personal Injury firm
+    // anywhere near Bradenton — which is what makes "Personal Injury
+    // Bradenton" a question with a useful answer and no exact match.
+    id: 'b-2',
+    name: 'Palmetto Injury Law',
+    address: '600 10th St, Palmetto, FL 34221',
+    lat: 27.5214,
+    lng: -82.5723,
+    practiceAreas: ['Personal Injury'],
+    region: 'Palmetto',
+    county: 'Manatee',
+    available: true,
+  },
+  {
+    // "Miami" must outrank this on the query "Miami".
+    id: 'b-3',
+    name: 'Yolanda Mendoza Law',
+    address: '1674 Meridian Ave, Miami Beach, FL 33139',
+    lat: 25.7907,
+    lng: -80.13,
+    practiceAreas: ['Immigration'],
+    region: 'Miami Beach',
+    county: 'Miami-Dade',
+    available: true,
+  },
+  {
+    id: 'b-4',
+    name: 'All Family Law Group, P.A.',
+    address: '1234 Kennedy Blvd, Tampa, FL 33602',
+    lat: 27.9506,
+    lng: -82.4572,
+    practiceAreas: ['Family Law'],
+    region: 'Tampa',
+    county: 'Hillsborough',
+    available: true,
+  },
+]
+
+const wide = buildSearchIndex(toSearchDocs(CLINICS, [...LAWYERS, ...BRADENTON]))
+const wideIds = (query: string, opts = {}) =>
+  search(wide, query, opts).hits.map((h) => h.doc.id)
+
+describe('the Bradenton regressions', () => {
+  it('spells out the state, because people type the word not the code', () => {
+    // `state` indexes as "fl", so "florida" matched nothing and the AND
+    // gate dropped every Bradenton firm. 0 results against 11.
+    expect(wideIds('Bradenton Florida')).toEqual(wideIds('Bradenton FL'))
+    expect(wideIds('Bradenton Florida')).toContain('b-1')
+  })
+
+  it('accepts the county name the UI itself renders', () => {
+    // countyLabel() prints "Manatee County" in the dropdown two inches
+    // away, and typing it returned nothing: the county is stored bare,
+    // so the token "county" matched no field and gated every row out.
+    expect(wideIds('Manatee County')).toEqual(expect.arrayContaining(['b-1', 'b-2']))
+    expect(wideIds('Manatee')).toEqual(expect.arrayContaining(['b-1', 'b-2']))
+  })
+
+  it('knows divorce is Family Law, from the alias table that already said so', () => {
+    expect(wideIds('divorce lawyer Tampa')).toContain('b-4')
+  })
+
+  it('reads "car accident" as both a clinic specialty and a practice area', () => {
+    // It used to rewrite to "auto injuries" — a clinic specialty — so on
+    // a lawyer-only index it found nothing at all.
+    const hits = wideIds('car accident')
+    expect(hits).toContain('c-1') // Auto Injuries clinic
+    expect(hits).toContain('l-1') // Personal Injury attorney
+  })
+
+  it('treats "near me" as intent rather than two unmatchable words', () => {
+    const outcome = search(wide, 'personal injury near me')
+    expect(outcome.interpretation.nearMe).toBe(true)
+    expect(outcome.total).toBeGreaterThan(0)
+    // It used to propose "personal injury real me".
+    expect(outcome.didYouMean).toBeNull()
+  })
+
+  it('leaves nearMe false for an ordinary query', () => {
+    expect(search(wide, 'Bradenton').interpretation.nearMe).toBe(false)
+  })
+
+  it('prefers the city that IS the query over one that merely contains it', () => {
+    const hits = wideIds('Miami')
+    // l-2 is in Miami, b-3 in Miami Beach. Both match identically on
+    // token similarity; only exactness separates them.
+    expect(hits.indexOf('l-2')).toBeLessThan(hits.indexOf('b-3'))
+  })
+
+  it('narrows to a ZIP instead of ranking by it', () => {
+    // "injury attorney 34205" returned 99 firms statewide, correctly
+    // ordered. Leading with the right answer is not giving it.
+    const zip = search(wide, 'Personal Injury 34209')
+    expect(zip.hits.every((h) => h.doc.zip === '34209')).toBe(true)
+  })
+
+  it('still widens when the ZIP itself has nothing to offer', () => {
+    // The fallback is what makes narrowing safe: a ZIP with no match
+    // must not turn a good query into an empty page.
+    const outcome = search(wide, 'Personal Injury 99999')
+    expect(outcome.total).toBeGreaterThan(0)
+  })
+
+  it('keeps the ZIP rescue, so a ZIP finds firms whose words do not match', () => {
+    // "32501 chiropractic" must still reach a clinic in that ZIP.
+    expect(wideIds('32501 chiropractic')).toContain('c-1')
+  })
+
+  it('does not let a bare qualifier return the whole corpus', () => {
+    // Reduced-weight tokens are exempt from the AND gate, which leaves
+    // a query made only of them with nothing to close on.
+    expect(search(wide, 'zzzcounty').total).toBe(0)
+  })
+
+  it('requires every token by default, on every surface', () => {
+    // The guarantee the portal's map depends on. If this ever passes
+    // with requireAll defaulted off, two-word queries stop narrowing.
+    expect(wideIds('orthopedic Bradenton')).toEqual([])
+    expect(wideIds('orthopedic Bradenton', { requireAll: false }).length).toBeGreaterThan(0)
+  })
+})

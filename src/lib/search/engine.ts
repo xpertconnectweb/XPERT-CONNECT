@@ -42,6 +42,21 @@ const MAX_WEIGHT = 3.0
 /** Non-dominant fields still contribute, so a query spanning two fields wins. */
 const CROSS_FIELD_FACTOR = 0.15
 const PHRASE_BONUS = 0.15
+/**
+ * Reward for a field that IS the query rather than merely containing it.
+ *
+ * "Miami" and "Miami Beach" are different places, and the scorer could
+ * not tell them apart: `tokenSimilarity('miami', 'miami')` is 1.0 on
+ * both, so both cities scored identical coverage and the tie fell to
+ * the id. `PHRASE_BONUS` does not help — it rewards containment, which
+ * is exactly what the two have in common.
+ *
+ * Applied to the field's contribution rather than to its coverage,
+ * because coverage is capped at 1 and would swallow it. Ordering only:
+ * a document that already matched cannot be gated out by this, and one
+ * that did not cannot be let in.
+ */
+const EXACT_FIELD_BOOST = 1.25
 /** Miles at which proximity value halves. */
 const TAU_MILES = 12
 /** How much proximity is allowed to move the ranking. */
@@ -108,6 +123,8 @@ function bestTokenMatch(
 interface ScoreResult {
   textScore: number
   matchedFields: SearchFieldKey[]
+  /** The document is in the ZIP the query named. */
+  inZip: boolean
 }
 
 /**
@@ -128,14 +145,16 @@ function scoreDoc(
    * boolean "matched at all" is too coarse, because the fuzzy matcher already
    * absorbs most typos and would leave nothing to suggest.
    */
-  tokenReach: Map<string, number>
+  tokenReach: Map<string, number>,
+  /** False only on the fallback ladder's partial-match rung. */
+  requireAll = true
 ): ScoreResult | null {
   const { tokens, phrase, zip } = interpretation
 
   // Empty query: every document is equally relevant, and the formula below
   // degrades into pure proximity ordering. Same code path as a real search.
   if (tokens.length === 0 && !zip) {
-    return { textScore: 1, matchedFields: [] }
+    return { textScore: 1, matchedFields: [], inZip: false }
   }
 
   const zipMatches = zip !== null && doc.zip !== null && doc.zip === zip
@@ -144,6 +163,8 @@ function scoreDoc(
   const tokenBest = new Array<number>(tokens.length).fill(0)
   const fieldScores: Partial<Record<SearchFieldKey, number>> = {}
   const matchedFields: SearchFieldKey[] = []
+  /** Fields whose whole text is the query, not merely a superset of it. */
+  const exactFields = new Set<SearchFieldKey>()
 
   let weightSum = 0
   for (const token of tokens) weightSum += token.weight
@@ -171,26 +192,51 @@ function scoreDoc(
     }
     const capped = Math.min(1, coverage)
     fieldScores[field] = capped
+    if (phrase && fieldText === phrase) exactFields.add(field)
     matchedFields.push(field)
   }
 
-  // AND gate. Entity suffixes ("PA", "LLC") are exempt — they carry reduced
-  // weight precisely because they should never decide a match on their own.
+  // AND gate. Entity suffixes ("PA", "LLC") and geographic qualifiers
+  // ("county", "FL") are exempt — they carry reduced weight precisely because
+  // they should never decide a match on their own.
+  let hasFullWeightToken = false
+  let anyTokenMatched = false
   for (let i = 0; i < tokens.length; i++) {
     const raw = tokens[i].raw
     const previous = tokenReach.get(raw) ?? 0
     if (tokenBest[i] > previous) tokenReach.set(raw, tokenBest[i])
+    if (tokenBest[i] > 0) anyTokenMatched = true
     if (tokens[i].weight < 1) continue
+    hasFullWeightToken = true
     if (tokenBest[i] > 0) continue
     // A ZIP hit rescues the document: "32801 chiropractic" should still find a
     // clinic in that ZIP whose name has nothing to do with the word.
-    if (!zipMatches) return null
+    if (!zipMatches && requireAll) return null
   }
+
+  /**
+   * The gate above has nothing to close on when every token is reduced
+   * weight — "florida", "pa", "manatee county" with the place name
+   * misspelt past recognition — so the loop exits having required
+   * nothing, and every document in the corpus passes at a low score.
+   *
+   * That hole was reachable before this only by typing a bare corporate
+   * suffix. Making `fl`, `florida` and `county` reduced-weight put a
+   * plausible query on the same path, so it needs a floor: match
+   * something, or you are not a result.
+   */
+  if (!hasFullWeightToken && !anyTokenMatched && !zipMatches) return null
+
+  // With the AND gate off, matching nothing at all is still not a match.
+  if (!requireAll && !anyTokenMatched && !zipMatches) return null
 
   let best = 0
   let sum = 0
   for (const field of matchedFields) {
-    const value = FIELD_WEIGHTS[field] * (fieldScores[field] ?? 0)
+    const value =
+      FIELD_WEIGHTS[field] *
+      (fieldScores[field] ?? 0) *
+      (exactFields.has(field) ? EXACT_FIELD_BOOST : 1)
     sum += value
     if (value > best) best = value
   }
@@ -203,7 +249,7 @@ function scoreDoc(
   }
 
   if (textScore <= 0) return null
-  return { textScore, matchedFields }
+  return { textScore, matchedFields, inZip: zipMatches }
 }
 
 function passesFilters(doc: SearchDoc, filters: SearchFilters | undefined): boolean {
@@ -301,6 +347,8 @@ export function search<T>(
     filters,
     limit,
     minScore = DEFAULT_MIN_SCORE,
+    zipNarrows = true,
+    requireAll = true,
   } = options
 
   const cache: SimilarityCache = new Map()
@@ -313,7 +361,7 @@ export function search<T>(
   const textMatched: SearchHit<T>[] = []
 
   for (const doc of index.docs) {
-    const scored = scoreDoc(doc, interpretation, cache, tokenReach)
+    const scored = scoreDoc(doc, interpretation, cache, tokenReach, requireAll)
     if (!scored) continue
     if (hasQuery && scored.textScore < minScore) continue
 
@@ -337,14 +385,36 @@ export function search<T>(
       (1 + ALPHA * proximity(distance)) *
       (doc.available ? AVAILABILITY_BOOST : 1)
 
+    hit.inZip = scored.inZip
     textMatched.push(hit)
     if (passesFilters(doc, filters)) hits.push(hit)
   }
 
-  hits.sort((a, b) => compare(a, b, sort))
+  /**
+   * A ZIP in a query is a constraint on WHERE, not a bonus.
+   *
+   * On a mixed query — "injury attorney 34205" — the word tokens pass
+   * the AND gate wherever the firm happens to be, and the ZIP only
+   * raised the score of the ones that also matched it. So a query that
+   * names a five-digit postcode returned 99 firms from all over
+   * Florida, led by the right ones. Leading with the right answer is
+   * not the same as giving it.
+   *
+   * Narrow to the ZIP whenever anything survives there. When nothing
+   * does, fall back to the wider set rather than to an empty page — the
+   * ladder in `searchWithFallback` is what labels that honestly.
+   */
+  let narrowed = hits
+  if (zipNarrows && interpretation.kind === 'mixed') {
+    const inZip = hits.filter((hit) => hit.inZip)
+    if (inZip.length > 0) narrowed = inZip
+  }
 
-  const total = hits.length
-  const limited = typeof limit === 'number' && limit >= 0 ? hits.slice(0, limit) : hits
+  narrowed.sort((a, b) => compare(a, b, sort))
+
+  const total = narrowed.length
+  const limited =
+    typeof limit === 'number' && limit >= 0 ? narrowed.slice(0, limit) : narrowed
 
   return {
     hits: limited,

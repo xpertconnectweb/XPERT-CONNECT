@@ -73,6 +73,17 @@ export interface QueryInterpretation {
   tokens: ExpandedToken[]
   /** The folded whole-query string, used for the phrase-containment bonus. */
   phrase: string
+  /**
+   * The query asked for "near me" — the words have been removed from
+   * `phrase` and `tokens`, and what is left is the real search.
+   *
+   * Reported, never acted on. `search()` has no way to geolocate anyone
+   * and must not: resolving someone's position because they typed a
+   * word is not a thing to do without being asked. The surface decides
+   * what to offer, which on the public directory is a one-tap "Use my
+   * location" above the results.
+   */
+  nearMe: boolean
 }
 
 export type SortMode = 'relevance' | 'distance' | 'name' | 'availability'
@@ -108,6 +119,27 @@ export interface SearchOptions {
   limit?: number
   /** Relevance floor for non-empty queries. Below this a hit is noise. */
   minScore?: number
+  /**
+   * A ZIP alongside other words narrows the results to that ZIP.
+   *
+   * On by default, because a postcode is a statement about where. The
+   * escape hatch exists for one reason: this changes the map's
+   * behaviour for queries like "32801 chiropractic", which used to
+   * return every chiropractor in the state ranked with the local ones
+   * on top. If that turns out to be load-bearing for someone, it is one
+   * line to put back rather than a revert.
+   */
+  zipNarrows?: boolean
+  /**
+   * Drop the AND requirement: score documents that match only some of
+   * the query's tokens.
+   *
+   * Off by default, and it must stay that way — the AND gate is what
+   * makes a two-word query narrow at all. This exists for the "Closest
+   * matches" rung of `searchWithFallback`, which runs only after an
+   * exact search has already come back empty.
+   */
+  requireAll?: boolean
 }
 
 export interface SearchHit<T = unknown> {
@@ -119,6 +151,8 @@ export interface SearchHit<T = unknown> {
   /** Miles from the anchor; Infinity when there is no anchor. */
   distance: number
   matchedFields: SearchFieldKey[]
+  /** The document is in the ZIP the query named, if it named one. */
+  inZip?: boolean
 }
 
 export interface FacetValue {

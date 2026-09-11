@@ -1,7 +1,8 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { COMPANY_NAME } from '@/lib/constants'
 import { getDirectorySummary } from '@/lib/directory-summary'
-import { PublicDirectory } from '@/components/directory/PublicDirectory'
+import { DirectoryClient } from '@/components/directory/DirectoryClient'
 import {
   DirectoryBanner,
   DirectoryDisclaimer,
@@ -90,14 +91,26 @@ export default async function DirectoryPage() {
 
         {summary.total > 0 ? (
           <div className="mt-8 lg:mt-10">
-            <PublicDirectory
-              mode="full"
-              initialFirms={summary.showcase}
-              initialCounts={summary.counts}
-              initialCounties={summary.counties}
-              total={summary.total}
-              catalog={summary.catalog}
-            />
+            {/**
+             * `DirectoryClient` reads the query string, which makes its
+             * subtree dynamic. The boundary keeps that contained: the
+             * banner, the sample and the JSON-LD above and below still
+             * prerender under this page's `revalidate`.
+             */}
+            <Suspense
+              fallback={
+                <div className="h-96 animate-pulse rounded-2xl border border-gray-200/80 bg-white" />
+              }
+            >
+              <DirectoryClient
+                mode="full"
+                initialFirms={summary.showcase}
+                initialCounts={summary.counts}
+                initialCounties={summary.counties}
+                total={summary.total}
+                catalog={summary.catalog}
+              />
+            </Suspense>
           </div>
         ) : (
           <p className="mt-8 text-sm text-gray-500">

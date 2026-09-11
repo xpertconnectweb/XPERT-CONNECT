@@ -8,7 +8,13 @@ import type { GeocodeSuggestion } from '@/types/geocode'
  * specialists list without any of them pulling in the map chunk.
  */
 
-export type SuggestionKind = 'recent' | 'place' | 'entity' | 'category' | 'manual'
+export type SuggestionKind =
+  | 'recent'
+  | 'place'
+  | 'entity'
+  | 'category'
+  | 'manual'
+  | 'locality'
 
 export type SuggestionPayload =
   | {
@@ -43,6 +49,27 @@ export type SuggestionPayload =
    */
   | { kind: 'entity'; id: string; lat: number; lng: number; name: string }
   | { kind: 'category'; tag: string }
+  /**
+   * A Florida city or county, from the offline gazetteer.
+   *
+   * Distinct from `place`, which is a geocoder result and requires a
+   * network round trip and a provider attribution. This one is local
+   * data, so the public directory can offer places without opening a
+   * geocoding endpoint to the world.
+   *
+   * `firmCount` is what makes the row honest BEFORE it is clicked: a
+   * city with nothing in it says so here rather than after the click,
+   * which is the whole complaint that started this.
+   */
+  | {
+      kind: 'locality'
+      name: string
+      county: string
+      lat: number
+      lng: number
+      isCounty: boolean
+      firmCount?: number
+    }
   /**
    * A search the user ran before.
    *

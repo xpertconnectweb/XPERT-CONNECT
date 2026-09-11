@@ -37,10 +37,20 @@ test('the landing page shows a populated Lawyers Directory to a stranger', async
   await expect(page.getByTestId('public-directory-view-all')).toBeVisible()
 })
 
-test('the corpus is not downloaded until the visitor shows interest', async ({ page }) => {
-  // The landing page is the site's front door; a thousand firms must not
-  // be on its critical path. Deferring the fetch is the whole reason the
-  // section is server-rendered.
+test('the corpus stays off the critical path, and is fetched exactly once', async ({ page }) => {
+  /**
+   * The landing page is the site's front door; a thousand firms must
+   * not be on its critical path. What that rule protects is FIRST
+   * PAINT — it never required the corpus to arrive late.
+   *
+   * It used to be enforced as "no request until the visitor scrolls to
+   * the section or touches a control", and the cost showed up in the
+   * one path that matters most: going straight for the search box.
+   * Until the payload landed the index was empty, so typing a city
+   * produced nothing, which reads as a directory that does not contain
+   * it. An idle callback now fires after paint as well, so the
+   * guarantee asserted here is the real one.
+   */
   let calls = 0
   await page.route('**/api/public/lawyers', async (route) => {
     calls += 1
@@ -50,14 +60,55 @@ test('the corpus is not downloaded until the visitor shows interest', async ({ p
   await page.goto('/')
   await page.getByRole('heading', { name: 'Lawyers Directory', exact: true }).waitFor()
 
-  // Focusing the search box is the visitor showing interest.
-  await page.getByTestId('public-directory-search-input').click()
-  await expect.poll(() => calls).toBe(1)
+  // The section renders from server-supplied rows, with no corpus.
+  await expect(page.getByTestId('attorney-row').first()).toBeVisible()
+  await expect(page.getByTestId('public-directory-sample-note')).toBeVisible()
 
-  // The ref guard means a second trigger does not refetch.
+  // And the fetch does land on its own, without any interaction.
+  await expect.poll(() => calls, { timeout: 10_000 }).toBe(1)
+  await expect(page.getByTestId('public-directory-sample-note')).toBeHidden()
+
+  // The ref guard means later triggers do not refetch.
+  await page.getByTestId('public-directory-search-input').click()
   await page.getByTestId('practice-area-card').first().click()
   await page.waitForTimeout(500)
   expect(calls).toBe(1)
+})
+
+test('a search typed before the corpus lands is never answered with the sample', async ({
+  page,
+}) => {
+  /**
+   * The failure the client reported, reproduced: "I search Bradenton
+   * and nothing comes up."
+   *
+   * The rows underneath are a deliberate sample — one firm per practice
+   * area, then one per city. Rendering them while a query is pending
+   * presented nine firms from other cities as the answer to that query,
+   * under a counter reading "627 of 627". There was nothing on screen
+   * to suggest the search had not run yet.
+   */
+  await page.route('**/api/public/lawyers', async (route) => {
+    await new Promise((r) => setTimeout(r, 2500))
+    await route.continue()
+  })
+
+  await page.goto('/directory')
+  const input = page.getByTestId('public-directory-search-input')
+  await input.fill('Bradenton')
+
+  // Mid-flight: placeholders, no sample rows, and a count that declines
+  // to claim a number it does not have.
+  await expect(page.getByTestId('public-directory-skeleton')).toBeVisible()
+  await expect(page.getByTestId('attorney-row')).toHaveCount(0)
+  const count = page.getByTestId('public-directory-count')
+  await expect(count).toHaveAttribute('data-state', 'loading')
+  await expect(count).not.toHaveText(/\d/)
+
+  // Then the real answer.
+  await expect(page.getByTestId('public-directory-skeleton')).toBeHidden({ timeout: 15_000 })
+  await expect(count).toHaveAttribute('data-state', 'results')
+  await expect(page.getByTestId('attorney-row').first()).toBeVisible()
 })
 
 test('a stranger can search the directory and filter by practice area', async ({ page }) => {
@@ -66,8 +117,20 @@ test('a stranger can search the directory and filter by practice area', async ({
   await expect(page.getByRole('heading', { level: 1, name: 'Lawyers Directory' })).toBeVisible()
 
   const count = page.getByTestId('public-directory-count')
+
+  /**
+   * Wait for the corpus before reading the baseline.
+   *
+   * This used to read it immediately, and it worked by accident: the
+   * count rendered the whole-corpus total while the list below it was
+   * still nine server-rendered sample rows, so the number described a
+   * result set that did not exist yet. Now it reports the sample until
+   * the search can actually run, so the baseline has to be taken once
+   * there is something to be a baseline OF.
+   */
+  await expect(count).toHaveAttribute('data-state', 'results')
   const before = Number((await count.textContent())?.replace(/\D/g, '') || 0)
-  expect(before).toBeGreaterThan(0)
+  expect(before).toBeGreaterThan(100)
 
   // Narrowing by category must actually narrow.
   const card = page.getByTestId('practice-area-card').first()

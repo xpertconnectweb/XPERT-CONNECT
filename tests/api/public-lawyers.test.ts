@@ -1,7 +1,24 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
+/**
+ * The route's corpus now comes from a tagged `unstable_cache` entry, so
+ * that a database-only import can purge it. `unstable_cache` needs
+ * Next's incremental cache context, which does not exist here — record
+ * the registration and hand back the function.
+ */
+const { cacheRegistrations } = vi.hoisted(() => ({
+  cacheRegistrations: [] as { keys: unknown; options: unknown }[],
+}))
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: unknown, keys: unknown, options: unknown) => {
+    cacheRegistrations.push({ keys, options })
+    return fn
+  },
+}))
+
 vi.mock('@/lib/data', () => ({
   getPublicDirectoryLawyers: vi.fn(),
+  getPracticeAreaCatalog: vi.fn(),
 }))
 
 import { GET } from '@/app/api/public/lawyers/route'
@@ -91,8 +108,35 @@ describe('GET /api/public/lawyers', () => {
 
   it('is cacheable by the CDN — one document for the whole world', async () => {
     const res = await GET()
-    expect(res.headers.get('Cache-Control')).toContain('s-maxage=3600')
     expect(res.headers.get('Cache-Control')).toContain('public')
+    expect(res.headers.get('Cache-Control')).toContain('s-maxage=300')
+  })
+
+  /**
+   * The directory grows by running an importer against Supabase: a
+   * database-only write, with no deploy and no request to this app.
+   * The tag is the only thing that lets that write reach visitors — it
+   * is what `/api/revalidate/directory` purges. Without it the previous
+   * payload keeps being served, which is exactly how 451 new firms
+   * (Bradenton among them) stayed invisible for a day.
+   */
+  it('caches the corpus under the tag the importer purges', () => {
+    const listings = cacheRegistrations.find((r) =>
+      (r.keys as string[])?.includes('public-lawyer-directory-listings')
+    )
+    expect(listings).toBeDefined()
+    expect((listings!.options as { tags?: string[] }).tags).toContain('lawyer-directory')
+  })
+
+  it('does not hold the corpus long enough to outlive a missed purge', async () => {
+    // The old header was s-maxage=3600 + stale-while-revalidate=86400.
+    // A write that forgets to purge — a row edited by hand in Supabase,
+    // an admin flipping directory_public — stayed invisible for 25
+    // hours. This bounds the same mistake at fifteen minutes.
+    const control = (await GET()).headers.get('Cache-Control') ?? ''
+    const maxAge = Number(/s-maxage=(\d+)/.exec(control)?.[1])
+    const stale = Number(/stale-while-revalidate=(\d+)/.exec(control)?.[1])
+    expect(maxAge + stale).toBeLessThanOrEqual(900)
   })
 
   it('degrades to an empty list, uncached, rather than a cached 500', async () => {
@@ -101,7 +145,9 @@ describe('GET /api/public/lawyers', () => {
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual([])
     // Caching the failure would keep the directory broken for an hour
-    // after the database came back.
+    // after the database came back. This is also why the route stays
+    // dynamic instead of carrying `export const revalidate`: that would
+    // put THIS response in Next's cache too.
     expect(res.headers.get('Cache-Control')).toBe('no-store')
   })
 })

@@ -37,8 +37,13 @@ export type PracticeArea = typeof PRACTICE_AREAS[number]
 /**
  * Case-folded synonyms → canonical area. Keys must be lowercase and
  * whitespace-collapsed; `fold` does that before any lookup.
+ *
+ * Exported because the search reads it too — `src/lib/search/
+ * domain-expansions.ts` derives its query expansions from these pairs,
+ * so "divorce lawyer Tampa" reaches the Family Law firms. Keep the
+ * keys typed the way a person types them; both readers fold first.
  */
-const ALIASES: Record<string, PracticeArea> = {
+export const PRACTICE_AREA_ALIASES: Readonly<Record<string, PracticeArea>> = {
   // The vocabulary the client actually uses
   injury: 'Personal Injury',
   'injury law': 'Personal Injury',
@@ -105,7 +110,7 @@ export function normalizePracticeArea(raw: unknown): PracticeArea | null {
   if (typeof raw !== 'string') return null
   const folded = fold(raw)
   if (!folded || REJECTED.has(folded)) return null
-  return CANONICAL_BY_FOLDED.get(folded) ?? ALIASES[folded] ?? null
+  return CANONICAL_BY_FOLDED.get(folded) ?? PRACTICE_AREA_ALIASES[folded] ?? null
 }
 
 /** Strict list variant — drops anything outside the catalog. */
@@ -131,7 +136,7 @@ export function sanitizePracticeArea(raw: unknown): string | null {
   if (typeof raw !== 'string') return null
   const folded = fold(raw)
   if (!folded || REJECTED.has(folded)) return null
-  const canonical = CANONICAL_BY_FOLDED.get(folded) ?? ALIASES[folded]
+  const canonical = CANONICAL_BY_FOLDED.get(folded) ?? PRACTICE_AREA_ALIASES[folded]
   if (canonical) return canonical
   return raw.trim().replace(/\s+/g, ' ')
 }

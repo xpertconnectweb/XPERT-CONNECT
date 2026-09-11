@@ -101,6 +101,7 @@ const ICON_FOR: Record<Suggestion['kind'], typeof Search> = {
   entity: Building2,
   category: Tag,
   manual: Crosshair,
+  locality: Building,
 }
 
 /**
@@ -120,6 +121,8 @@ const ICON_FOR_PLACE: Record<GeocodeKind, typeof Search> = {
 function iconFor(suggestion: Suggestion) {
   if (suggestion.kind === 'entity' && suggestion.sublabel === 'Attorney') return Scale
   if (suggestion.payload.kind === 'place') return ICON_FOR_PLACE[suggestion.payload.suggestion.kind]
+  // A county is a region, a city is a place in one.
+  if (suggestion.payload.kind === 'locality' && suggestion.payload.isCounty) return Map
   return ICON_FOR[suggestion.kind]
 }
 

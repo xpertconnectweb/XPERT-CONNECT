@@ -27,6 +27,8 @@ interface Lawyer {
   available: boolean
 }
 
+const FORCE = process.argv.includes('--force')
+
 async function main() {
   console.log('⚖️  Restoring all lawyers from lawyers.json...\n')
 
@@ -36,6 +38,30 @@ async function main() {
     const lawyers: Lawyer[] = JSON.parse(lawyersData)
 
     console.log(`📋 Found ${lawyers.length} lawyers to restore\n`)
+
+    /**
+     * `data/lawyers.json` is a snapshot of 176 firms taken before the
+     * directory grew to 627 (commit ff25b9e). It is a restore point,
+     * not the source of truth, and it has drifted: it predates the
+     * structured-address backfill and every correction made since.
+     *
+     * The upsert below cannot delete the newer firms — their ids are
+     * not in the file — but it will happily overwrite the name, phone,
+     * coordinates and practice areas of every row that IS, rolling
+     * those back to their state at the time of the snapshot. Nothing
+     * about running it says that out loud, so say it here.
+     */
+    const { count: live } = await supabase
+      .from('lawyers')
+      .select('*', { count: 'exact', head: true })
+
+    if (live !== null && live > lawyers.length && !FORCE) {
+      console.error(`⛔ The live table has ${live} lawyers; this file has ${lawyers.length}.`)
+      console.error('   The snapshot is older than the database. Restoring it would roll back')
+      console.error(`   the ${lawyers.length} rows it contains to their state at snapshot time.`)
+      console.error('   If that is genuinely what you want, re-run with --force.\n')
+      process.exit(1)
+    }
 
     const BATCH_SIZE = 200
     const rows = lawyers.map((lawyer) => ({

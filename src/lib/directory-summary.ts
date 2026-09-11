@@ -84,16 +84,33 @@ export function pickShowcase(
   return chosen.slice(0, n)
 }
 
-async function buildSummary(showcaseSize: number): Promise<DirectorySummary> {
-  const [lawyers, configured] = await Promise.all([
-    getPublicDirectoryLawyers(),
-    getPracticeAreaCatalog(),
-  ])
-
-  const firms = toDirectoryListings(lawyers).map((listing) => ({
+/**
+ * The published corpus, shaped for the public directory.
+ *
+ * One chain, two callers: the summary below and /api/public/lawyers.
+ * They used to be independent reads of the same table that happened to
+ * apply the same canonicalization — `sanitizePracticeAreas` is not
+ * cosmetic here, the practice-area cards key off these exact strings
+ * and a stray 'criminal defence' renders as its own category.
+ *
+ * Deliberately NOT wrapped in a try/catch. Both callers decide what a
+ * failure means for them, and for the route the answer is "retry on the
+ * next request", which is only possible if the failure propagates out
+ * of the cache rather than being stored in it.
+ */
+async function loadDirectoryListings(): Promise<DirectoryListing[]> {
+  const lawyers = await getPublicDirectoryLawyers()
+  return toDirectoryListings(lawyers).map((listing) => ({
     ...listing,
     practiceAreas: sanitizePracticeAreas(listing.practiceAreas),
   }))
+}
+
+async function buildSummary(showcaseSize: number): Promise<DirectorySummary> {
+  const [firms, configured] = await Promise.all([
+    loadDirectoryListings(),
+    getPracticeAreaCatalog(),
+  ])
 
   const counts = new Map<string, number>()
   const counties = new Set<string>()
@@ -162,5 +179,31 @@ export const getDirectorySummary = unstable_cache(
     }
   },
   ['public-lawyer-directory-summary'],
+  { revalidate: 3600, tags: ['lawyer-directory'] }
+)
+
+/**
+ * The same corpus, cached under the same tag, for /api/public/lawyers.
+ *
+ * The tag is the point. The directory changes when someone runs the
+ * seed importer against Supabase — a pure database write, with no
+ * deploy and no request to this app. Before this existed the feed route
+ * was `force-dynamic` with a hand-written `s-maxage`, which is an
+ * untaggable combination: a plain HTTP entry in the CDN that
+ * `revalidateTag` cannot reach. So the 451 firms added in ff25b9e were
+ * invisible to visitors for up to 25 hours (1h fresh + 24h stale),
+ * while the old 176-firm payload — which contained no Bradenton at all
+ * — kept being served. That is the bug this is here to prevent.
+ *
+ * Unlike `getDirectorySummary` this does NOT swallow its errors. That
+ * one returns EMPTY_SUMMARY so `npm run build` survives with no
+ * .env.local and so a transient database error drops one section
+ * instead of the whole marketing page. Here the caller is an API route
+ * whose contract is an uncached empty array, and caching a failure for
+ * an hour would be a worse version of the bug above.
+ */
+export const getPublicDirectoryListings = unstable_cache(
+  loadDirectoryListings,
+  ['public-lawyer-directory-listings'],
   { revalidate: 3600, tags: ['lawyer-directory'] }
 )

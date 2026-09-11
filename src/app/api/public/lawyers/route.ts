@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPublicDirectoryLawyers } from '@/lib/data'
-import { toDirectoryListings } from '@/lib/api/public-shape'
-import { sanitizePracticeAreas } from '@/lib/practice-areas'
+import { getPublicDirectoryListings } from '@/lib/directory-summary'
 
 /**
  * The lawyers feed for the PUBLIC directory.
@@ -25,31 +23,42 @@ import { sanitizePracticeAreas } from '@/lib/practice-areas'
  *   this route                  contact details, but only for firms
  *                               whose contact details were already
  *                               public — and one document for the whole
- *                               world, hence the long shared cache.
+ *                               world, hence the shared cache.
  *
  * tests/api/public-lawyers.test.ts pins the shape both ways: phone and
  * address present, geocode bookkeeping and email absent.
+ *
+ * ── On caching, which is what broke here ──
+ *
+ * The handler stays dynamic and the DATA is cached, by
+ * `getPublicDirectoryListings` under the `lawyer-directory` tag. The
+ * obvious-looking alternative — `export const revalidate` on the route
+ * — is a trap: Next would then cache whatever this returns, including
+ * the empty array below, so one transient Supabase error during a
+ * revalidation would pin an empty directory for an hour. That is a
+ * worse version of the bug this is here to fix.
+ *
+ * So the two layers have two different jobs. `revalidateTag` makes the
+ * ORIGIN correct the instant an importer finishes, and the short
+ * `s-maxage` below bounds how long an edge copy can disagree with it.
  */
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const lawyers = await getPublicDirectoryLawyers()
-
-    // Same canonicalization the gated route applies, for the same
-    // reason: the practice-area cards key off these strings, and a
-    // stray 'criminal defence' would render as its own category.
-    const listings = toDirectoryListings(lawyers).map((listing) => ({
-      ...listing,
-      practiceAreas: sanitizePracticeAreas(listing.practiceAreas),
-    }))
+    const listings = await getPublicDirectoryListings()
 
     return NextResponse.json(listings, {
       headers: {
-        // Identical for every visitor and changes only when someone
-        // re-runs the importer, so it belongs on the CDN. The stale
-        // window means a cold revalidate never blocks a search.
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        // Identical for every visitor, so it belongs on the CDN — but a
+        // far shorter window than the day this used to hold
+        // (s-maxage=3600 + stale-while-revalidate=86400). The number
+        // that matters is not "how often does the directory change", it
+        // is "how long can an edge copy outlive a purge it never heard
+        // about" — a manual row edit in Supabase, an admin flipping
+        // directory_public, an importer run where the purge call
+        // failed. Five minutes caps that at fifteen instead of at a day.
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
     })
   } catch (err) {

@@ -18,6 +18,7 @@
     "e2e:sweep": "tsx e2e/scripts/sweep.ts",
     "seed:directory:prepare": "tsx scripts/directory-seed/prepare.ts",
     "seed:directory:push": "tsx scripts/directory-seed/push.ts",
+    "directory:revalidate": "tsx scripts/revalidate-directory.ts",
     "validate:schema": "tsx scripts/validate-schema.ts",
     "backfill:addresses": "tsx scripts/backfill-structured-addresses.ts",
     "backfill:geocode": "tsx scripts/backfill-geocode.ts",

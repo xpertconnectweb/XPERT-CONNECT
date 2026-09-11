@@ -36,6 +36,16 @@ const MAX_RECENTS = 4
 const MAX_CATEGORIES = 3
 const MAX_ENTITIES = 5
 const MAX_PLACES = 4
+const MAX_LOCALITIES = 4
+
+/** The shape `placeMatcher` returns; structural, so nothing is imported. */
+export interface LocalPlace {
+  name: string
+  county: string
+  lat: number
+  lng: number
+  isCounty?: boolean
+}
 /** How close a query token must be to a tag before we offer it as a filter. */
 const CATEGORY_MATCH_FLOOR = 0.6
 
@@ -69,6 +79,38 @@ export interface UseSmartSearchOptions<T> {
   categoryHeading?: string
   /** Disable geocoding where a map is not involved (directory, specialists). */
   places?: boolean
+  /**
+   * Whether the local index is usable yet.
+   *
+   * Every surface but one hands this hook an index that is already
+   * populated, so the default says so and nothing changes for them. The
+   * public directory is the exception: it fetches its corpus after
+   * mount, and until that lands `index` is genuinely empty. The
+   * categories and firms groups then produced zero rows with no status,
+   * which `SmartSearchBox` correctly drops as "a local source with
+   * nothing to say" — so typing into a warm-looking box opened an empty
+   * dropdown, indistinguishable from "we have never heard of
+   * Bradenton". Passing `'loading'` renders skeleton rows instead.
+   */
+  indexStatus?: SuggestionGroupStatus
+  /**
+   * Offline place lookup, INJECTED rather than imported.
+   *
+   * The public directory passes `matchFloridaPlaces`; the map passes
+   * nothing and keeps the gazetteer out of its bundle entirely. It also
+   * keeps this hook free of domain data, which is how it was written.
+   *
+   * Separate from `places`, which is the geocoder: that needs a session,
+   * a network round trip and a provider attribution, and it is not
+   * available to an unauthenticated visitor. This is a 32 KB file.
+   */
+  placeMatcher?: (query: string) => LocalPlace[]
+  /**
+   * How many documents each city has, so a suggestion can say "no firms"
+   * before it is chosen rather than after.
+   */
+  placeCounts?: ReadonlyMap<string, number>
+  localityHeading?: string
   /**
    * True once a location is already anchored. Only changes the group heading:
    * with an anchor set, picking a place REPLACES where you are searching rather
@@ -129,6 +171,10 @@ export function useSmartSearch<T>({
   entityHeading = 'Providers',
   categoryHeading = 'Specialties',
   places = true,
+  indexStatus = 'ok',
+  placeMatcher,
+  placeCounts,
+  localityHeading = 'Cities & counties',
   hasAnchor = false,
   proximity = null,
   allowManualPin = false,
@@ -218,6 +264,56 @@ export function useSmartSearch<T>({
       }
     })
   }, [active, index, trimmed, anchor])
+
+  const localityItems = useMemo<Suggestion[]>(() => {
+    if (!active || !placeMatcher) return []
+    return placeMatcher(trimmed)
+      .slice(0, MAX_LOCALITIES)
+      .map((place) => {
+        const isCounty = place.isCounty === true
+        /**
+         * A city absent from the map has no firms — it is not unknown.
+         * The caller passes `placeCounts` only once the corpus has
+         * landed, so `undefined` here means zero, and saying zero is
+         * the entire point of the row: a place with nothing in it must
+         * admit that before it is clicked, not after.
+         *
+         * A county is different. The caller counts cities, so summing
+         * them is its job, not this one's — leave it unstated rather
+         * than say something wrong.
+         */
+        const count = isCounty
+          ? undefined
+          : placeCounts
+            ? (placeCounts.get(place.name) ?? 0)
+            : undefined
+        return {
+          id: `loc-${place.name}-${place.county}-${isCounty ? 'c' : 'p'}`,
+          kind: 'locality' as const,
+          label: isCounty ? `${place.name} County` : place.name,
+          sublabel: isCounty ? 'County' : `${place.county} County`,
+          // Said before the click, not after. "No firms" next to a city
+          // is the difference between a directory admitting a gap and a
+          // search box that looks broken.
+          meta:
+            count === undefined
+              ? undefined
+              : count === 0
+                ? 'No firms'
+                : `${count} firm${count === 1 ? '' : 's'}`,
+          metaTone: count === 0 ? ('warning' as const) : ('muted' as const),
+          payload: {
+            kind: 'locality' as const,
+            name: place.name,
+            county: place.county,
+            lat: place.lat,
+            lng: place.lng,
+            isCounty,
+            firmCount: count,
+          },
+        }
+      })
+  }, [active, placeMatcher, placeCounts, trimmed])
 
   const placeItems = useMemo<Suggestion[]>(() => {
     const rows: Suggestion[] = geocode.results.map((result) => ({
@@ -316,9 +412,44 @@ export function useSmartSearch<T>({
       ]
     }
 
+    /**
+     * While the corpus is still arriving, both local groups are empty
+     * for a reason that has nothing to do with the query — so say
+     * "loading" rather than letting them be dropped as uninteresting.
+     * Once it has landed they go back to declaring no status at all,
+     * which is what keeps "Specialties (none)" out of the list.
+     */
+    const localStatus = indexStatus === 'ok' ? undefined : indexStatus
+
     return [
-      { key: 'category', heading: categoryHeading, items: categoryItems },
-      { key: 'entity', heading: entityHeading, items: entityItems },
+      {
+        key: 'category',
+        heading: categoryHeading,
+        items: categoryItems,
+        status: localStatus,
+        // Derived, like the places group's — it is what drives the
+        // spinner in the input itself.
+        loading: localStatus === 'loading',
+      },
+      /**
+       * Places sit between the categories and the firms.
+       *
+       * On a public directory, someone who types a proper noun means a
+       * city far more often than a specific firm — "Bradenton" is a
+       * place, and there is no firm called that. Below the categories
+       * because a practice area is the narrower, more deliberate
+       * choice, and both are local, so neither reflows under the cursor.
+       */
+      ...(localityItems.length > 0
+        ? [{ key: 'locality', heading: localityHeading, items: localityItems }]
+        : []),
+      {
+        key: 'entity',
+        heading: entityHeading,
+        items: entityItems,
+        status: localStatus,
+        loading: localStatus === 'loading',
+      },
       ...(places
         ? [
             {
@@ -356,6 +487,9 @@ export function useSmartSearch<T>({
     entityHeading,
     entityItems,
     hasAnchor,
+    indexStatus,
+    localityHeading,
+    localityItems,
     places,
     placeItems,
     placesStatus,
