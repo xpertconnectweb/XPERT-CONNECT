@@ -1,6 +1,6 @@
 'use client'
 
-import { Scale, MapPin, Phone, Copy, Check, Globe } from 'lucide-react'
+import { Scale, MapPin, Phone, Copy, Check, Globe, Star } from 'lucide-react'
 import { countyLabel } from '@/lib/counties'
 
 /**
@@ -43,18 +43,30 @@ export function FirmRow({
   showAvailability = false,
   copied = false,
   onCopy,
+  featured = false,
 }: {
   firm: FirmRowData
   showAvailability?: boolean
   copied?: boolean
   onCopy?: (firm: FirmRowData) => void
+  /**
+   * Pinned to the top by editorial choice rather than by relevance.
+   *
+   * It renders a label because it has to: a firm in Bradenton sitting
+   * above the results for "Miami" is either explained or it looks like
+   * the search is broken.
+   */
+  featured?: boolean
 }) {
   const city = firm.region || firm.city || ''
 
   return (
     <li
       data-testid="attorney-row"
-      className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-gray-50/50 transition-colors"
+      data-featured={featured ? 'true' : undefined}
+      className={`flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 transition-colors ${
+        featured ? 'bg-gold/[0.06] hover:bg-gold/10' : 'hover:bg-gray-50/50'
+      }`}
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-navy-light text-gold">
         <Scale className="h-5 w-5" aria-hidden="true" />
@@ -63,6 +75,15 @@ export function FirmRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="font-semibold text-gray-900 text-sm truncate">{firm.name}</p>
+          {featured && (
+            <span
+              data-testid="firm-featured-badge"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-dark"
+            >
+              <Star className="h-2.5 w-2.5 fill-current" aria-hidden="true" />
+              Featured
+            </span>
+          )}
           {showAvailability && (
             <span
               className={`h-1.5 w-1.5 shrink-0 rounded-full ${

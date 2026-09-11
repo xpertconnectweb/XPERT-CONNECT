@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache'
 import { getPublicDirectoryLawyers, getPracticeAreaCatalog } from '@/lib/data'
 import { toDirectoryListings } from '@/lib/api/public-shape'
 import { sanitizePracticeAreas } from '@/lib/practice-areas'
+import { isFeaturedFirm } from '@/lib/directory-featured'
 import type { DirectoryListing } from '@/types/professionals'
 
 /**
@@ -53,6 +54,23 @@ export function pickShowcase(
   const chosen: DirectoryListing[] = []
   const taken = new Set<string>()
   const seenCity = new Set<string>()
+
+  /**
+   * The featured firm leads, before the spread starts.
+   *
+   * Seeded rather than special-cased below, so it also claims its city
+   * and the passes that follow spread around it exactly as they would
+   * around any other first pick. Doing it here rather than reordering
+   * afterwards is what keeps the sample varied instead of putting two
+   * Bradenton firms at the top.
+   */
+  for (const firm of byId) {
+    if (!isFeaturedFirm(firm.id)) continue
+    chosen.push(firm)
+    taken.add(firm.id)
+    seenCity.add((firm.city ?? '').toLowerCase())
+    if (chosen.length >= n) return chosen.slice(0, n)
+  }
 
   // Pass 1 — spread across practice areas, and within that across cities.
   for (const area of catalog) {

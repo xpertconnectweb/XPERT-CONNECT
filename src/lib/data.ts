@@ -333,68 +333,47 @@ export async function getLawyersByState(state: string): Promise<DecoratedLawyer[
 /**
  * The firms the public site may show.
  *
- * `directory_public` is set by 2027-01-public-lawyer-directory.sql and
- * means "seeded from a public source", not "a member of the network".
- * The filter is the whole reason the public route can return `phone`
- * and `address` at all: those belong to firms whose contact details
- * were already public, never to an attorney who signed up here.
+ * `directory_public` is the single gate, and it is now the WHOLE
+ * contract. Set it and a firm is published; clear it and it is not.
+ *
+ * It used to be two gates. Membership — whether any user row pointed at
+ * the firm — was recomputed on every read and excluded those firms
+ * unconditionally, on the rule that an attorney who signed up here must
+ * not have their direct line published on the marketing site. That rule
+ * was written to protect a member from exposure they never asked for,
+ * and it turned out to also block the case it was never aimed at: a
+ * member who WANTS to be listed. Czaia Law asked to lead this
+ * directory and could not be published at all, because the second gate
+ * ignored the flag by design.
+ *
+ * The owner's call was to drop the membership gate rather than carve an
+ * exception into it. What that costs is worth stating plainly: the
+ * `lawyers` table still holds demo rows with fictional `555-01xx`
+ * numbers, and `directory_public` is now the only thing keeping them
+ * off the marketing site. Before, a mistaken flag on one of those was
+ * caught here; now it ships. Anything that sets the flag — the
+ * importer, /admin — is the place to be careful.
  *
  * Through `readAll` because PostgREST silently caps a select at 1000
  * rows, and this list is meant to grow past that.
  */
 export async function getPublicDirectoryLawyers(): Promise<DecoratedLawyer[]> {
-  const [listed, members] = await Promise.all([
-    readAll((from, to) =>
-      supabaseAdmin
-        .from('lawyers')
-        .select(DIRECTORY_COLUMNS)
-        .eq('directory_public', true)
-        .order('id')
-        .range(from, to)
-    ),
-    // Every firm that belongs to someone with a login here.
-    readAll((from, to) =>
-      supabaseAdmin
-        .from('users')
-        .select('lawyer_id')
-        .not('lawyer_id', 'is', null)
-        .order('lawyer_id')
-        .range(from, to)
-    ),
-  ])
+  const listed = await readAll((from, to) =>
+    supabaseAdmin
+      .from('lawyers')
+      .select(DIRECTORY_COLUMNS)
+      .eq('directory_public', true)
+      .order('id')
+      .range(from, to)
+  )
 
   if (listed.error) {
     console.error('getPublicDirectoryLawyers error:', listed.error)
     return []
   }
-  // A failure to read the membership list must not fall through to
-  // publishing everything. Better an empty directory than a leaked one.
-  if (members.error) {
-    console.error('getPublicDirectoryLawyers membership error:', members.error)
-    return []
-  }
-
-  /**
-   * The flag is set once, by a migration and an importer. This check is
-   * evaluated on every read.
-   *
-   * They should always agree, and the point is what happens when they
-   * do not: an admin linking a user to a published firm in /admin/users
-   * makes that firm a member's, and nothing in that flow knows to clear
-   * `directory_public`. Recomputing membership here means the stale
-   * flag cannot leak a member's direct line onto the marketing site —
-   * it costs one small query, and it is unit-testable in a way a
-   * database trigger would not be.
-   */
-  const memberFirmIds = new Set(
-    members.rows
-      .map((row) => (row as { lawyer_id: string | null }).lawyer_id)
-      .filter((id): id is string => Boolean(id))
-  )
 
   return rowsToModels<Lawyer>(listed.rows)
     .map(decorateLawyer)
-    .filter((lawyer) => !memberFirmIds.has(lawyer.id))
     // A listing nobody can call is not a listing, and a (0,0) row is the
     // placeholder every map in the app already hides. Dropped here, once,
     // so no client has to know about either rule.

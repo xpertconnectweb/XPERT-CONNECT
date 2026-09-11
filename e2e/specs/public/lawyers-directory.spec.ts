@@ -146,11 +146,20 @@ test('a stranger can search the directory and filter by practice area', async ({
   await expect(page.getByTestId('public-directory-empty')).toBeVisible()
 })
 
-test('the public directory never exposes a member firm', async ({ page }) => {
-  // The business rule the whole feature rests on: an attorney who signed
-  // up here must not have their direct line published on the marketing
-  // site. Asserted against the live API rather than a mock, because the
-  // rule is only worth anything end to end.
+test('the public feed ships the allowlisted fields and nothing else', async ({ page }) => {
+  /**
+   * This was called "the public directory never exposes a member firm",
+   * and it never checked that — the body has only ever asserted the
+   * shape of the payload. The membership gate it was named after has
+   * since been removed deliberately (see getPublicDirectoryLawyers), so
+   * the name now matches what the test does.
+   *
+   * What it checks is still the thing that matters most on an
+   * unauthenticated route: `email` and the geocoding bookkeeping must
+   * not travel, and a listing must carry a number you can call.
+   * Asserted against the live API rather than a mock, because an
+   * allowlist is only worth anything on the wire.
+   */
   const res = await page.request.get('/api/public/lawyers')
   expect(res.status()).toBe(200)
 

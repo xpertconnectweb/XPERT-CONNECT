@@ -151,3 +151,49 @@ describe('GET /api/public/lawyers', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store')
   })
 })
+
+/**
+ * `region` on a lawyer row usually holds the RECOGNISABLE city — four
+ * published firms sit in Brent, Wright, Mango and Belleair, and their
+ * regions say Pensacola, Fort Walton Beach, Tampa and Clearwater, which
+ * is what anyone would search for. So region-first is right, until the
+ * region is not a city at all.
+ */
+describe('the city a listing reports', () => {
+  const listingFor = async (over: Record<string, unknown>) => {
+    mockedData.getPublicDirectoryLawyers.mockResolvedValue([{ ...FIRM, ...over }] as never)
+    const [firm] = await (await GET()).json()
+    return firm
+  }
+
+  it('prefers the region when it names a real place', async () => {
+    const firm = await listingFor({ city: 'Brent', region: 'Pensacola' })
+    expect(firm.city).toBe('Pensacola')
+  })
+
+  /**
+   * Rows created through /admin carry a genuine region. Czaia Law's is
+   * "Southwest Florida", and region-first published the firm as being
+   * in a city by that name — so it never appeared under Bradenton and
+   * could not be found by the name of the town it is in.
+   */
+  it('falls back to the postal city when the region is a region', async () => {
+    const firm = await listingFor({ city: 'Bradenton', region: 'Southwest Florida' })
+    expect(firm.city).toBe('Bradenton')
+  })
+
+  it('falls back when the region is not a place at all', async () => {
+    const firm = await listingFor({ city: 'Pensacola', region: 'Pensacola Area' })
+    expect(firm.city).toBe('Pensacola')
+  })
+
+  it('still uses the region when there is no city', async () => {
+    const firm = await listingFor({ city: null, region: 'Orlando' })
+    expect(firm.city).toBe('Orlando')
+  })
+
+  it('reports nothing rather than guessing', async () => {
+    const firm = await listingFor({ city: null, region: null })
+    expect(firm.city).toBeNull()
+  })
+})

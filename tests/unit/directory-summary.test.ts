@@ -176,3 +176,60 @@ describe('getDirectorySummary — practice-area catalog', () => {
     expect(summary.showcase).toEqual([])
   })
 })
+
+/**
+ * Czaia Law leads the directory by editorial choice, not by relevance —
+ * the client asked for it to be first on every list. The sample the
+ * server renders is the first place that has to honour it, because it
+ * is what a visitor (and a crawler, and a screenshot) sees before any
+ * corpus has loaded.
+ */
+describe('the featured firm', () => {
+  const FEATURED_ID = '7a4d696c-945e-4188-b3fd-0e4e83023fc0'
+
+  const firm = (id: string, area: string, city: string): DirectoryListing =>
+    ({
+      id,
+      name: `Firm ${id}`,
+      address: `1 Main St, ${city}, FL 33101`,
+      phone: '(305) 555-0100',
+      practiceAreas: [area],
+      city,
+      county: 'Test',
+      zipCode: '33101',
+      state: 'FL',
+      lat: 25.7,
+      lng: -80.1,
+      website: '',
+    }) as unknown as DirectoryListing
+
+  const corpus = [
+    firm('a-1', 'Personal Injury', 'Miami'),
+    firm('a-2', 'Criminal Defense', 'Orlando'),
+    firm('a-3', 'Family Law', 'Tampa'),
+    firm(FEATURED_ID, 'Personal Injury', 'Bradenton'),
+  ]
+
+  it('leads the sample, ahead of firms that sort before it', () => {
+    // 'a-1' sorts first by id, which is what used to decide this.
+    const shown = pickShowcase(corpus, CATALOG, 4)
+    expect(shown[0].id).toBe(FEATURED_ID)
+  })
+
+  it('leads even when the sample is a single row', () => {
+    expect(pickShowcase(corpus, CATALOG, 1).map((f) => f.id)).toEqual([FEATURED_ID])
+  })
+
+  it('does not appear twice, and does not crowd out the spread', () => {
+    const shown = pickShowcase(corpus, CATALOG, 4)
+    expect(new Set(shown.map((f) => f.id)).size).toBe(shown.length)
+    // Its city is claimed by the seeding pass, so the passes that follow
+    // still spread across the others rather than stacking Bradenton.
+    expect(shown.map((f) => f.city)).toContain('Orlando')
+  })
+
+  it('changes nothing when the featured firm is not in the corpus', () => {
+    const without = corpus.filter((f) => f.id !== FEATURED_ID)
+    expect(pickShowcase(without, CATALOG, 3).map((f) => f.id)).toEqual(['a-1', 'a-2', 'a-3'])
+  })
+})

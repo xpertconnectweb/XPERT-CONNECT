@@ -8,6 +8,8 @@ import type {
   User,
 } from '@/types/professionals'
 import { phoneLast4 } from '@/lib/phone'
+import { lookupPlace } from '@/lib/places/florida'
+import { fold } from '@/lib/search/text'
 
 /**
  * The single definition of what a non-admin professional may see about another
@@ -129,6 +131,34 @@ export function toPublicLawyers(lawyers: readonly DecoratedLawyer[]): PublicLawy
  * it on three routes. Naming every field means the next column added
  * to `lawyers` is private until someone edits this list on purpose.
  */
+/**
+ * Which of the two city-ish columns a visitor should see — and search.
+ *
+ * `region` used to win outright, and that was right for the corpus it
+ * was written against: it holds the RECOGNISABLE city. Four firms are
+ * in Brent, Wright, Mango and Belleair; nobody searches for those, they
+ * search Pensacola, Fort Walton Beach, Tampa and Clearwater, which is
+ * what `region` says. Preferring the postal `city` everywhere would
+ * make those four harder to find, not easier.
+ *
+ * But `region` is only trustworthy when it names a real place, and on
+ * rows created through /admin it does not: Czaia Law's is "Southwest
+ * Florida". Region-first meant the public listing claimed the firm was
+ * in a city called Southwest Florida — so it did not appear under
+ * Bradenton, was unfindable by the name of the town it is actually in,
+ * and rendered a region where every other row rendered a city.
+ *
+ * So `region` wins only when the gazetteer recognises it. Across the
+ * 628 published firms that changes exactly two: this one, and a row
+ * whose region was the non-place "Pensacola Area", which now correctly
+ * reads Pensacola.
+ */
+function displayCity(lawyer: DecoratedLawyer): string | null {
+  const region = lawyer.region?.trim()
+  if (region && lookupPlace(fold(region))) return region
+  return lawyer.city || region || null
+}
+
 export function toDirectoryListing(lawyer: DecoratedLawyer): DirectoryListing {
   return {
     id: lawyer.id,
@@ -137,10 +167,7 @@ export function toDirectoryListing(lawyer: DecoratedLawyer): DirectoryListing {
     phone: lawyer.phone,
     website: lawyer.website,
     practiceAreas: lawyer.practiceAreas,
-    // `region` on a lawyer row holds a city name; `city` is parsed from
-    // the address on the read path. Same precedence the directory list
-    // already uses when it renders a row.
-    city: lawyer.region || lawyer.city || null,
+    city: displayCity(lawyer),
     county: lawyer.county,
     zipCode: lawyer.zipCode ?? null,
     state: lawyer.state ?? null,

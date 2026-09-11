@@ -13,6 +13,7 @@ import type { Suggestion } from '@/components/search/types'
 import { EmptyState, Segmented } from '@/components/ui'
 import { useSmartSearch } from '@/hooks/useSmartSearch'
 import { countyLabel } from '@/lib/counties'
+import { hoistFeatured, isFeaturedFirm } from '@/lib/directory-featured'
 import {
   toDirectoryUrlQuery,
   type DirectoryUrlState,
@@ -336,7 +337,31 @@ export function PublicDirectory({
   const outcome = result.primary
   const fallback = result.fallback
 
-  const matched = useMemo(() => outcome.hits.map((hit) => hit.doc.source), [outcome])
+  const rawMatched = useMemo(() => outcome.hits.map((hit) => hit.doc.source), [outcome])
+
+  /**
+   * The featured firm leads every list, whatever was searched.
+   *
+   * Two cases, and they are different. When it is among the matches it
+   * is simply hoisted. When it is NOT — a search for "Miami", a county
+   * filter it falls outside of — it is injected anyway, because the
+   * brief was "first, no matter what". That is an editorial decision
+   * rather than a relevance one, so the row carries a "Featured" label
+   * and is NOT counted: `matched.length` keeps reporting what actually
+   * matched, or the count would start disagreeing with the filters
+   * right next to it.
+   */
+  const featuredFirm = useMemo(
+    () => (firms ?? []).find((f) => isFeaturedFirm(f.id)) ?? null,
+    [firms]
+  )
+
+  const featuredInMatches = useMemo(
+    () => (featuredFirm ? rawMatched.some((f) => f.id === featuredFirm.id) : false),
+    [featuredFirm, rawMatched]
+  )
+
+  const matched = useMemo(() => hoistFeatured(rawMatched), [rawMatched])
   const fallbackRows = useMemo(
     () => fallback?.outcome.hits.slice(0, FALLBACK_LIMIT).map((hit) => hit.doc.source) ?? [],
     [fallback]
@@ -601,6 +626,20 @@ export function PublicDirectory({
 
       {/* List */}
       <div className="rounded-2xl bg-white shadow-sm border border-gray-200/80 overflow-hidden">
+        {/**
+         * The featured firm, when the current search does not contain it.
+         *
+         * Rendered above the list rather than spliced into it, and kept
+         * out of `matched`, so the count beside the filters still
+         * describes the filters. Pinned "no matter what" was the brief;
+         * quietly inflating the result count was not part of it.
+         */}
+        {view === 'results' && featuredFirm && !featuredInMatches && (
+          <ul className="divide-y divide-gray-100 border-b border-gray-100">
+            <FirmRow firm={featuredFirm} featured />
+          </ul>
+        )}
+
         {view === 'showcase' && (
           // Says what the nine rows are. They are a deliberate sample —
           // one per practice area, then one per city — not the top of a
@@ -699,7 +738,7 @@ export function PublicDirectory({
         ) : (
           <ul className="divide-y divide-gray-100">
             {shown.map((firm) => (
-              <FirmRow key={firm.id} firm={firm} />
+              <FirmRow key={firm.id} firm={firm} featured={isFeaturedFirm(firm.id)} />
             ))}
           </ul>
         )}
