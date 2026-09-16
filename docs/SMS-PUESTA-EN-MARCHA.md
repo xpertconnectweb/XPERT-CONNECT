@@ -75,7 +75,7 @@ que cambiarlos aquí también.
 | Palabra clave | Texto |
 |---|---|
 | STOP | `Xpert Connect: you are unsubscribed and will get no more messages. Reply START to resume.` |
-| HELP | `Xpert Connect referral alerts. Msg&data rates may apply. Reply STOP to end. Help: 844xpert.com or (844) 973-7868` |
+| HELP | `Xpert Connect referral alerts. Msg&data rates may apply. Reply STOP to end. Help: 844xpert.com or (844) 973-7866` |
 | Confirmación de alta | `Xpert Connect: SMS alerts are on. We text you when a referral arrives. Msg&data rates may apply. Reply STOP to end.` |
 
 ## 5. Webhook de entrada
