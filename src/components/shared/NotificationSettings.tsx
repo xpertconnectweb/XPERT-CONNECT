@@ -280,6 +280,33 @@ export function NotificationSettings() {
               </span>
             </label>
 
+            {/* Outside the <label> on purpose: inside it, tapping a link
+                would also toggle the checkbox. A screenshot of this
+                screen is what Twilio is sent as proof of the opt-in
+                flow, and the reviewer expects the policy to be one
+                click away from the point of consent. */}
+            <p className="text-xs text-gray-500">
+              See our{' '}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-navy underline"
+              >
+                Privacy Policy
+              </a>{' '}
+              and{' '}
+              <a
+                href="/sms-terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-navy underline"
+              >
+                SMS Terms
+              </a>
+              .
+            </p>
+
             <button
               type="button"
               onClick={sendCode}

@@ -1,6 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { COMPANY_NAME, COMPANY_PHONE, COMPANY_EMAIL, COMPANY_DOMAIN } from '@/lib/constants'
+import {
+  COMPANY_NAME,
+  COMPANY_LEGAL_NAME,
+  COMPANY_PHONE,
+  COMPANY_EMAIL,
+  COMPANY_DOMAIN,
+  SMS_HELP_EMAIL,
+} from '@/lib/constants'
 
 /**
  * Privacy policy.
@@ -15,6 +22,23 @@ import { COMPANY_NAME, COMPANY_PHONE, COMPANY_EMAIL, COMPANY_DOMAIN } from '@/li
  * specifically for the mobile-opt-in sentence in the SMS section
  * below. Until this page shipped, the footer linked to `href="#"`.
  *
+ * Two blocks are the exception to "written from what the code does":
+ * `Data sharing` and the numbered `Messaging Terms and Conditions` at
+ * the foot of the page are the client's own wording, supplied for
+ * carrier verification and reproduced verbatim at their instruction.
+ * Do not paraphrase or tidy them — a reviewer matches those sentences
+ * literally, and this page is the Privacy policy URL submitted on the
+ * toll-free form (docs/SMS-PUESTA-EN-MARCHA.md).
+ *
+ * Known disagreement, deliberate: point 1 of those terms describes a
+ * promotional messaging program. The software sends no such thing. It
+ * sends one transactional referral alert, and both /sms-terms and the
+ * consent text stored per user by lib/sms/consent.ts say so. Keeping
+ * the client's wording was their call. If a carrier rejects the
+ * application over it, the fix is to rewrite point 1 to describe
+ * referral alerts — NOT to edit /sms-terms, which is the page every
+ * stored consent record is bound to.
+ *
  * This is a factual description of data handling, not legal advice.
  * The client's attorney should review it before publication.
  */
@@ -23,14 +47,64 @@ export const metadata: Metadata = {
   description: `How ${COMPANY_NAME} collects, uses and protects your information.`,
 }
 
-function Section({ heading, children }: { heading: string; children: React.ReactNode }) {
+function Section({
+  heading,
+  id,
+  children,
+}: {
+  heading: string
+  id?: string
+  children: React.ReactNode
+}) {
   return (
-    <section>
+    <section id={id} className={id ? 'scroll-mt-28' : undefined}>
       <h2 className="font-heading text-lg font-bold text-navy">{heading}</h2>
       <div className="mt-2 space-y-2 text-sm leading-relaxed text-gray-600">{children}</div>
     </section>
   )
 }
+
+/**
+ * The client's messaging terms, verbatim.
+ *
+ * An array rather than hand-numbered markup so the numbering belongs
+ * to the browser: a clause inserted later cannot leave two items
+ * sharing a number, and the number a carrier reviewer quotes back at
+ * us always matches what is on screen.
+ */
+const MESSAGING_TERMS: React.ReactNode[] = [
+  <>
+    The messaging program consists of promotional offers or discounts, any
+    promotion of your products/services.
+  </>,
+  <>
+    You can cancel the SMS service at any time. Just text &apos;STOP&apos; to the
+    phone number from which you received messages. After you send the SMS message
+    &apos;STOP&apos; to us, we will send you an SMS message to confirm that you
+    have been unsubscribed. After this, you will no longer receive SMS messages
+    from us. If you want to join again, just sign up as you did the first time and
+    we will start sending SMS messages to you again.
+  </>,
+  <>
+    If you are experiencing issues with the messaging program you can reply with
+    the keyword HELP for more assistance, or you can get help directly at{' '}
+    <a href={`mailto:${SMS_HELP_EMAIL}`} className="text-navy underline">
+      {SMS_HELP_EMAIL}
+    </a>
+    .
+  </>,
+  <>Carriers are not liable for delayed or undelivered messages.</>,
+  <>
+    As always, message and data rates may apply for any messages sent to you from
+    us and to us from you. Message frequency will vary based on communication
+    needs. If you have any questions about your text plan or data plan, it is best
+    to contact your wireless provider.
+  </>,
+  <>
+    If you have any questions regarding privacy, please read our privacy policy
+    contained in the rest of this document/page.
+  </>,
+]
 
 export default function PrivacyPage() {
   return (
@@ -96,7 +170,11 @@ export default function PrivacyPage() {
             <Link href="/sms-terms" className="text-navy underline">
               SMS terms
             </Link>{' '}
-            page.
+            page, and the complete{' '}
+            <a href="#messaging-terms" className="text-navy underline">
+              messaging terms and conditions
+            </a>{' '}
+            appear at the foot of this page.
           </p>
         </Section>
 
@@ -111,6 +189,20 @@ export default function PrivacyPage() {
             We may also disclose information where required by law or to protect the
             rights and safety of our users.
           </p>
+        </Section>
+
+        <Section heading="Data sharing">
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              Customer data is not shared with 3rd parties for promotional or
+              marketing purposes.
+            </li>
+            <li>
+              Mobile opt-in and consent are never shared with anyone for any purpose.
+              Any information sharing that may be mentioned elsewhere in this policy
+              excludes mobile opt-in data.
+            </li>
+          </ul>
         </Section>
 
         <Section heading="How long we keep it">
@@ -155,6 +247,21 @@ export default function PrivacyPage() {
             </a>
           </p>
         </Section>
+
+        {/* Its own block, with an id, because this is the part a carrier
+            reviewer gets sent to directly: /privacy#messaging-terms. */}
+        <section id="messaging-terms" className="scroll-mt-28 border-t border-gray-200 pt-8">
+          <h2 className="font-heading text-lg font-bold text-navy">
+            {COMPANY_LEGAL_NAME} Messaging Terms and Conditions
+          </h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-gray-600 marker:font-semibold marker:text-navy">
+            {MESSAGING_TERMS.map((term, index) => (
+              <li key={index} className="pl-1">
+                {term}
+              </li>
+            ))}
+          </ol>
+        </section>
       </div>
     </div>
   )

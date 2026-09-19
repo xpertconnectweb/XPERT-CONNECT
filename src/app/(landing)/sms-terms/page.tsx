@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { currentConsentText } from '@/lib/sms/consent'
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_EMAIL } from '@/lib/constants'
 
@@ -73,7 +74,15 @@ const SECTIONS: Array<{ heading: string; body: React.ReactNode }> = [
       <>
         Your mobile number is used only to deliver these alerts. No mobile
         information will be sold or shared with third parties or affiliates for
-        marketing or promotional purposes.
+        marketing or promotional purposes. Our{' '}
+        <Link href="/privacy" className="text-navy underline">
+          privacy policy
+        </Link>{' '}
+        covers how we handle it, and carries the full{' '}
+        <Link href="/privacy#messaging-terms" className="text-navy underline">
+          messaging terms and conditions
+        </Link>
+        .
       </>
     ),
   },

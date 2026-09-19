@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
 import type { ContactData } from '@/lib/sanity-types'
 
@@ -274,8 +275,20 @@ export function Contact({ data }: ContactProps) {
                     {status === 'success' && 'Thanks! Our team will reach out shortly.'}
                     {status === 'error' && 'We could not submit your request. Please try again.'}
                   </p>
+                  {/* This is the only public form that asks for a phone
+                      number, and it asks for it as a required field. The
+                      policy has to be reachable from here, not just from
+                      the footer. */}
                   <p className="text-xs text-white/60">
-                    By submitting this form, you consent to be contacted about your request. We never sell your information.
+                    By submitting this form, you consent to be contacted about your request. We never sell your information. See our{' '}
+                    <Link href="/privacy" className="underline hover:text-gold">
+                      Privacy Policy
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/sms-terms" className="underline hover:text-gold">
+                      SMS Terms
+                    </Link>
+                    .
                   </p>
                 </form>
               </div>

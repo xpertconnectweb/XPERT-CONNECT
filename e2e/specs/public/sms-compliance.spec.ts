@@ -37,6 +37,36 @@ test('the privacy policy is public and repeats the mobile opt-in clause', async 
   await expect(
     page.getByText(/no mobile information will be sold or shared/i)
   ).toBeVisible()
+
+  // The client's own Data sharing wording. The second sentence is the
+  // one that does work the rest of the policy cannot: it carves mobile
+  // opt-in data out of every other sharing clause on the page.
+  await expect(
+    page.getByText(/mobile opt-in and consent are never shared with anyone for any purpose/i)
+  ).toBeVisible()
+})
+
+test('the privacy policy carries the messaging terms at a linkable anchor', async ({ page }) => {
+  // /privacy#messaging-terms is the URL handed to a carrier reviewer,
+  // so the id matters as much as the text. Losing either turns the
+  // link in the verification form into a scroll to nowhere.
+  await page.goto('/privacy#messaging-terms')
+
+  const terms = page.locator('#messaging-terms')
+  await expect(terms).toBeVisible()
+  await expect(
+    terms.getByRole('heading', { name: /844 Xpert LLC Messaging Terms and Conditions/i })
+  ).toBeVisible()
+
+  // Six clauses, numbered by the browser rather than by hand.
+  await expect(terms.locator('ol > li')).toHaveCount(6)
+
+  // Deliberately the literal address, not the constant: a test that
+  // imports SMS_HELP_EMAIL and finds SMS_HELP_EMAIL proves nothing.
+  // This address is what was filed with the carrier.
+  await expect(terms.locator('a[href="mailto:4xpertconnect@gmail.com"]')).toBeVisible()
+
+  await expect(terms.getByText(/carriers are not liable for delayed or undelivered messages/i)).toBeVisible()
 })
 
 test('the footer links to both, rather than to href="#"', async ({ page }) => {
