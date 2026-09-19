@@ -61,6 +61,13 @@ test('the privacy policy carries the messaging terms at a linkable anchor', asyn
   // Six clauses, numbered by the browser rather than by hand.
   await expect(terms.locator('ol > li')).toHaveCount(6)
 
+  // The heading has to survive in the page SOURCE as one unbroken
+  // string. `{COMPANY_LEGAL_NAME} Messaging Terms...` renders as
+  // `844 Xpert LLC<!-- --> Messaging Terms...`, which getByRole above
+  // still matches - accessible names ignore comments - but a reviewer
+  // grepping the source does not.
+  expect(await page.content()).toContain('844 Xpert LLC Messaging Terms and Conditions')
+
   // Deliberately the literal address, not the constant: a test that
   // imports SMS_HELP_EMAIL and finds SMS_HELP_EMAIL proves nothing.
   // This address is what was filed with the carrier.

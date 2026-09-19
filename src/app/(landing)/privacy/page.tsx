@@ -251,8 +251,12 @@ export default function PrivacyPage() {
         {/* Its own block, with an id, because this is the part a carrier
             reviewer gets sent to directly: /privacy#messaging-terms. */}
         <section id="messaging-terms" className="scroll-mt-28 border-t border-gray-200 pt-8">
+          {/* One interpolation, not `{NAME} Messaging Terms...`: React
+              separates an expression from adjacent static text with a
+              `<!-- -->` comment, and this heading is a legal string a
+              reviewer may well grep for in the page source. */}
           <h2 className="font-heading text-lg font-bold text-navy">
-            {COMPANY_LEGAL_NAME} Messaging Terms and Conditions
+            {`${COMPANY_LEGAL_NAME} Messaging Terms and Conditions`}
           </h2>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-gray-600 marker:font-semibold marker:text-navy">
             {MESSAGING_TERMS.map((term, index) => (
