@@ -50,8 +50,11 @@ export function Footer() {
     }
   }
 
+  // data-cta-boundary is what FloatingButton watches: the floating
+  // "Call Now" pill fades out once the footer is on screen, so it stops
+  // sitting on top of the Privacy Policy and SMS Terms links below.
   return (
-    <footer className="bg-navy text-white">
+    <footer data-cta-boundary className="bg-navy text-white">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16 lg:py-20">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-12">
