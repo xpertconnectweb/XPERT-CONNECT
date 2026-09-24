@@ -110,7 +110,7 @@ export function newsletterSubscriptionEmail(email: string) {
 
     <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
       <p style="color:#6b7280;font-size:12px;margin:0 0 10px 0;">
-        &copy; ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.
+        &copy; ${new Date().getFullYear()} ${COMPANY_NAME}. All Rights Reserved 844 Xpert DBA ${COMPANY_NAME}
       </p>
       <p style="color:#9ca3af;font-size:11px;margin:0;">
         Automated notification from your newsletter signup form.

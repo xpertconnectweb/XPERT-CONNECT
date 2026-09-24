@@ -81,7 +81,7 @@ export function footer(note: string): string {
       ${COMPANY_NAME}
     </p>
     <p style="color:rgba(255,255,255,0.4);font-size:12px;margin:0 0 6px 0;">
-      &copy; ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.
+      &copy; ${new Date().getFullYear()} ${COMPANY_NAME}. All Rights Reserved 844 Xpert DBA ${COMPANY_NAME}
     </p>
     <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:0 0 14px 0;">
       ${note}

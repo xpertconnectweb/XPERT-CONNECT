@@ -175,7 +175,7 @@ export function LoginForm() {
 
         {/* Bottom attribution */}
         <div className="absolute bottom-8 left-16">
-          <p className="text-[11px] text-white/20">&copy; {new Date().getFullYear()} Xpert Connect. All rights reserved.</p>
+          <p className="text-[11px] text-white/20">&copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved 844 Xpert DBA Xpert Connect</p>
         </div>
       </div>
 

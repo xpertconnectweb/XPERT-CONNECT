@@ -179,7 +179,7 @@ export function Footer() {
         <div className="container mx-auto px-4 py-5">
           <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
             <p className="text-sm text-white/70">
-              &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved.
+              &copy; {new Date().getFullYear()} Xpert Connect. All Rights Reserved 844 Xpert DBA Xpert Connect
             </p>
             {/* These three linked to href="#" until Aug 2026. A live
                 privacy policy is a hard requirement for toll-free SMS
