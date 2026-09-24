@@ -29,7 +29,7 @@ import { createClient } from '@supabase/supabase-js'
 import { normalizeSpecialty } from '../../src/lib/clinic-specialties'
 import type { Provider } from './fetch'
 import type { ResolvedName } from './resolve-names'
-import { titleCaseOrg, titleCaseStreet } from './text'
+import { formatPhone, titleCaseOrg, titleCaseStreet } from './text'
 
 config({ path: '.env.local' })
 config()
@@ -171,14 +171,6 @@ const fold = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
-
-/** "(239) 555-1212", the way the rest of the corpus writes it. */
-function formatPhone(raw: string): string {
-  const digits = (raw || '').replace(/\D/g, '')
-  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits
-  if (national.length !== 10) return ''
-  return `(${national.slice(0, 3)}) ${national.slice(3, 6)}-${national.slice(6)}`
-}
 
 /** The value that occurs most often, which is how a campus votes on its own phone number. */
 function modal(values: string[]): string {

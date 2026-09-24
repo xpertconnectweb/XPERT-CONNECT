@@ -102,6 +102,11 @@ data/nppes/org-names.json
 data/nppes/_index.json
 data/nppes/rejected.json
 data/nppes/raw-byzip/
+# Same for the Minnesota specialist list (scripts/nppes/mn-specialists/), plus
+# the Census files it downloads and its geocoding cache.
+data/nppes/mn-specialists/raw.json
+data/nppes/mn-specialists/_index.json
+data/nppes/mn-specialists/census/
 
 # Before/after evidence from scripts/ux/shoot.ts. Regenerable, and a PNG per
 # state per viewport is not something history needs to carry.

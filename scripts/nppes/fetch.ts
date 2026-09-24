@@ -38,17 +38,24 @@
  */
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
+import {
+  MAX_SKIP,
+  PACE_MS,
+  PAGE,
+  apiUrl,
+  fetchPage,
+  sleep,
+  type Enumeration,
+  type RawRecord,
+  type Taxonomy,
+} from './api'
 
 type State = 'FL' | 'MN'
-type Enumeration = 'NPI-1' | 'NPI-2'
 
 const TAXONOMIES = ['Orthopaedic Surgery', 'Neurological Surgery'] as const
 const STATES: State[] = ['FL', 'MN']
 const ENUMERATIONS: Enumeration[] = ['NPI-1', 'NPI-2']
 
-const PAGE = 200
-const MAX_SKIP = 1200
-const PACE_MS = 120
 const OUT_DIR = join(process.cwd(), 'data', 'nppes')
 const PROVIDERS = join(OUT_DIR, 'providers.json')
 const INDEX = join(OUT_DIR, '_index.json')
@@ -86,30 +93,6 @@ const SEED_CITIES: Record<State, string[]> = {
   ],
 }
 
-interface Taxonomy {
-  code: string
-  desc: string
-  primary: boolean
-}
-
-interface Address {
-  address_purpose: string
-  address_1?: string
-  address_2?: string
-  city?: string
-  state?: string
-  postal_code?: string
-  telephone_number?: string
-}
-
-interface RawRecord {
-  number: string
-  enumeration_type: Enumeration
-  basic: Record<string, string | undefined>
-  addresses: Address[]
-  taxonomies: Taxonomy[]
-}
-
 /** What we keep. The rest of the NPPES payload is not used downstream. */
 export interface Provider {
   npi: string
@@ -129,51 +112,6 @@ export interface Provider {
   taxonomies: Taxonomy[]
   /** Which query surfaced it first, so a thin partition stays traceable. */
   via: string
-}
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-function apiUrl(
-  taxonomy: string,
-  state: State,
-  enumeration: Enumeration,
-  skip: number,
-  city?: string
-): string {
-  const params = new URLSearchParams({
-    version: '2.1',
-    taxonomy_description: taxonomy,
-    state,
-    address_purpose: 'LOCATION',
-    enumeration_type: enumeration,
-    limit: String(PAGE),
-    skip: String(skip),
-  })
-  if (city) params.set('city', city)
-  return `https://npiregistry.cms.hhs.gov/api/?${params.toString()}`
-}
-
-async function fetchPage(url: string, attempt = 0): Promise<RawRecord[]> {
-  try {
-    const res = await fetch(url)
-    const json = (await res.json()) as {
-      results?: RawRecord[]
-      Errors?: { description: string }[]
-    }
-    if (json.Errors?.length) {
-      // A rejected taxonomy string comes back as zero results plus an error
-      // block. Treating that as "none found" is how a typo becomes a hole
-      // nobody notices until the report is short.
-      throw new Error(
-        `NPPES rejected the query: ${json.Errors.map((e) => e.description).join('; ')}`
-      )
-    }
-    return json.results ?? []
-  } catch (err) {
-    if (attempt >= 3) throw err
-    await sleep(800 * (attempt + 1))
-    return fetchPage(url, attempt + 1)
-  }
 }
 
 function toProvider(record: RawRecord, via: string): Provider {
@@ -227,7 +165,7 @@ async function harvest(
   let exhausted = false
 
   for (; skip <= MAX_SKIP; skip += PAGE) {
-    const rows = await fetchPage(apiUrl(taxonomy, state, enumeration, skip, city))
+    const rows = await fetchPage(apiUrl({ taxonomy, state, enumeration, city }, skip))
     lastPageSize = rows.length
     if (rows.length === 0) break
 

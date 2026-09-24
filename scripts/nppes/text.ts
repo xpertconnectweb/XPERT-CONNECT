@@ -83,3 +83,11 @@ export function titleCaseStreet(raw: string): string {
     .join(' ')
     .trim()
 }
+
+/** "(239) 555-1212", the way the rest of the corpus writes it. */
+export function formatPhone(raw: string): string {
+  const digits = (raw || '').replace(/\D/g, '')
+  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits
+  if (national.length !== 10) return ''
+  return `(${national.slice(0, 3)}) ${national.slice(3, 6)}-${national.slice(6)}`
+}

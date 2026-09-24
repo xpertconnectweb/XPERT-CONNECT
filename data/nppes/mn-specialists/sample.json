@@ -1,0 +1,1295 @@
+[
+ {
+  "i": 0,
+  "group": "Injury Physicians",
+  "name": "Twin Cities Medical Group PLLC",
+  "legalName": "Twin Cities Medical Group PLLC",
+  "specialties": [
+   "Physical Medicine & Rehabilitation"
+  ],
+  "street": "2785 White Bear Ave N",
+  "suite": "Ste 108-D",
+  "city": "St. Paul",
+  "zip": "55109",
+  "county": "Ramsey",
+  "phone": "(651) 289-0352",
+  "npi": "1972912277"
+ },
+ {
+  "i": 1,
+  "group": "Injury Physicians",
+  "name": "Institute For Low Back & Neck Care",
+  "legalName": "Ilbnc, PA.",
+  "specialties": [
+   "Orthopedics",
+   "Spine"
+  ],
+  "street": "3001 Metro Dr",
+  "suite": "Ste 330",
+  "city": "Bloomington",
+  "zip": "55425",
+  "county": "Hennepin",
+  "phone": "(952) 814-6600",
+  "npi": "1023001815"
+ },
+ {
+  "i": 2,
+  "group": "Injury Physicians",
+  "name": "Gigante Acquisitions LLC",
+  "legalName": "Gigante Acquisitions LLC",
+  "specialties": [
+   "Neurosurgery"
+  ],
+  "street": "2215 Pillsbury Ave S",
+  "suite": "",
+  "city": "Minneapolis",
+  "zip": "55404",
+  "county": "Hennepin",
+  "phone": "(617) 970-0308",
+  "npi": "1770999716"
+ },
+ {
+  "i": 3,
+  "group": "Injury Physicians",
+  "name": "Umd Sports Medicine",
+  "legalName": "Univeristy of Minnesota Duluth",
+  "specialties": [
+   "Sports Medicine"
+  ],
+  "street": "1216 Ordean Ct",
+  "suite": "",
+  "city": "Duluth",
+  "zip": "55812",
+  "county": "St. Louis",
+  "phone": "(218) 726-8709",
+  "npi": "1497157168"
+ },
+ {
+  "i": 4,
+  "group": "Injury Physicians",
+  "name": "Interventional Spine and Pain Physicians, PA",
+  "legalName": "Interventional Spine and Pain Physicians, PA",
+  "specialties": [
+   "Pain Management",
+   "Physical Medicine & Rehabilitation",
+   "Physical Therapy"
+  ],
+  "street": "9645 Grove Cir N",
+  "suite": "Ste 200",
+  "city": "Maple Grove",
+  "zip": "55369",
+  "county": "Hennepin",
+  "phone": "(763) 201-8191",
+  "npi": "1326398561"
+ },
+ {
+  "i": 5,
+  "group": "Injury Physicians",
+  "name": "Odom Health & Wellness",
+  "legalName": "Odom Sports Medicine, PA.",
+  "specialties": [
+   "Sports Medicine"
+  ],
+  "street": "6545 Flying Cloud Dr",
+  "suite": "Ste 201",
+  "city": "Eden Prairie",
+  "zip": "55344",
+  "county": "Hennepin",
+  "phone": "(952) 224-1919",
+  "npi": "1275557886"
+ },
+ {
+  "i": 6,
+  "group": "Injury Physicians",
+  "name": "Sage Spine Pain and Nerve Center",
+  "legalName": "Sage Spine Pain and Nerve Center",
+  "specialties": [
+   "Pain Management"
+  ],
+  "street": "38500 Tanger Dr",
+  "suite": "Ste 110",
+  "city": "North Branch",
+  "zip": "55056",
+  "county": "Chisago",
+  "phone": "(651) 337-8201",
+  "npi": "1588536197"
+ },
+ {
+  "i": 7,
+  "group": "Injury Physicians",
+  "name": "Aspirus St Lukes Clinic Duluth Orthopedic & Sports Medicine",
+  "legalName": "St. Luke's Hospital of Duluth",
+  "specialties": [
+   "Orthopedics",
+   "Sports Medicine"
+  ],
+  "street": "1015 E 1st St",
+  "suite": "",
+  "city": "Duluth",
+  "zip": "55805",
+  "county": "St. Louis",
+  "phone": "(218) 249-6360",
+  "npi": "1497904064"
+ },
+ {
+  "i": 8,
+  "group": "Injury Physicians",
+  "name": "Institute For Low Back & Neck Care",
+  "legalName": "Ilbnc, PA.",
+  "specialties": [
+   "Orthopedics",
+   "Spine"
+  ],
+  "street": "15700 37th Avenue North",
+  "suite": "Ste 210",
+  "city": "Plymouth",
+  "zip": "55446",
+  "county": "Hennepin",
+  "phone": "(952) 814-6600",
+  "npi": "1235529272"
+ },
+ {
+  "i": 9,
+  "group": "Injury Physicians",
+  "name": "Entira Family Clinics-Shoreview",
+  "legalName": "Family Healthservices Minnesota, PA.",
+  "specialties": [
+   "Sports Medicine",
+   "Physical Medicine & Rehabilitation"
+  ],
+  "street": "404 Highway 96 W",
+  "suite": "",
+  "city": "Shoreview",
+  "zip": "55126",
+  "county": "Ramsey",
+  "phone": "(651) 788-4444",
+  "npi": "1619157344"
+ },
+ {
+  "i": 10,
+  "group": "Injury Physicians",
+  "name": "Summit Orthopedics, LTD",
+  "legalName": "Summit Orthopedics, LTD",
+  "specialties": [
+   "Orthopedics"
+  ],
+  "street": "1400 Corporate Center Curv",
+  "suite": "",
+  "city": "Eagan",
+  "zip": "55121",
+  "county": "Dakota",
+  "phone": "(651) 968-5201",
+  "npi": "1568843621"
+ },
+ {
+  "i": 11,
+  "group": "Injury Physicians",
+  "name": "Sanford Clinic",
+  "legalName": "Sanford Clinic",
+  "specialties": [
+   "Orthopedics",
+   "Sports Medicine"
+  ],
+  "street": "920 Bell Ave",
+  "suite": "",
+  "city": "Westbrook",
+  "zip": "56183",
+  "county": "Cottonwood",
+  "phone": "(507) 274-6121",
+  "npi": "1699968057"
+ },
+ {
+  "i": 12,
+  "group": "Injury Physicians",
+  "name": "Metropolitan Neurosurgery, PA",
+  "legalName": "Metropolitan Neurosurgery, PA",
+  "specialties": [
+   "Neurosurgery"
+  ],
+  "street": "11850 Blackfoot St NW",
+  "suite": "Ste 490",
+  "city": "Coon Rapids",
+  "zip": "55433",
+  "county": "Anoka",
+  "phone": "(763) 427-1137",
+  "npi": "1386690543"
+ },
+ {
+  "i": 13,
+  "group": "Injury Physicians",
+  "name": "Neurology Specialists, LLC",
+  "legalName": "Neurology Specialists, LLC",
+  "specialties": [
+   "Neurology"
+  ],
+  "street": "3433 Broadway St NE",
+  "suite": "160",
+  "city": "Minneapolis",
+  "zip": "55413",
+  "county": "Hennepin",
+  "phone": "(763) 377-9222",
+  "npi": "1699849042"
+ },
+ {
+  "i": 14,
+  "group": "Injury Physicians",
+  "name": "Allina Health Orthopedic, Podiatry and Spine Clinic-Faribault",
+  "legalName": "Allina Health System",
+  "specialties": [
+   "Orthopedics",
+   "Spine"
+  ],
+  "street": "35 State Ave",
+  "suite": "Ste 1",
+  "city": "Faribault",
+  "zip": "55021",
+  "county": "Rice",
+  "phone": "(507) 497-3528",
+  "npi": "1972006807"
+ },
+ {
+  "i": 15,
+  "group": "Injury Physicians",
+  "name": "Twin Cities Pain Clinic",
+  "legalName": "Andrew J Will MD PA",
+  "specialties": [
+   "Physical Medicine & Rehabilitation"
+  ],
+  "street": "7235 Ohms Ln",
+  "suite": "",
+  "city": "Edina",
+  "zip": "55439",
+  "county": "Hennepin",
+  "phone": "(952) 841-2345",
+  "npi": "1215003066"
+ },
+ {
+  "i": 16,
+  "group": "Injury Physicians",
+  "name": "Sunny S. Kim, MD PA",
+  "legalName": "Sunny S. Kim, MD PA",
+  "specialties": [
+   "Orthopedics",
+   "Spine",
+   "Neurosurgery"
+  ],
+  "street": "6600 State Highway 29 South",
+  "suite": "",
+  "city": "Alexandria",
+  "zip": "56308",
+  "county": "Douglas",
+  "phone": "(320) 763-8888",
+  "npi": "1659301992"
+ },
+ {
+  "i": 17,
+  "group": "Injury Physicians",
+  "name": "Fyzical Therapy and Balance Centers",
+  "legalName": "Soleck Ventures INC",
+  "specialties": [
+   "Physical Medicine & Rehabilitation"
+  ],
+  "street": "2680 County Road E E",
+  "suite": "",
+  "city": "White Bear Lake",
+  "zip": "55110",
+  "county": "Ramsey",
+  "phone": "(651) 504-2212",
+  "npi": "1821979642"
+ },
+ {
+  "i": 18,
+  "group": "Injury Physicians",
+  "name": "Sanford Clinic",
+  "legalName": "Sanford Clinic",
+  "specialties": [
+   "Orthopedics",
+   "Sports Medicine"
+  ],
+  "street": "112 Saint Olaf Ave S",
+  "suite": "",
+  "city": "Canby",
+  "zip": "56220",
+  "county": "Yellow Medicine",
+  "phone": "(507) 223-7277",
+  "npi": "1699968057"
+ },
+ {
+  "i": 19,
+  "group": "Injury Physicians",
+  "name": "Wayzata Orthopedic's PA.",
+  "legalName": "Wayzata Orthopedic's PA.",
+  "specialties": [
+   "Orthopedics"
+  ],
+  "street": "2805 Campus Dr",
+  "suite": "Ste 425",
+  "city": "Plymouth",
+  "zip": "55441",
+  "county": "Hennepin",
+  "phone": "(763) 383-0770",
+  "npi": "1164428223"
+ },
+ {
+  "i": 20,
+  "group": "Chiropractic",
+  "name": "Lighthouse Chiropractic Health Center, INC",
+  "legalName": "Lighthouse Chiropractic Health Center, INC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "710 Dodge Ave NW",
+  "suite": "Ste C",
+  "city": "Elk River",
+  "zip": "55330",
+  "county": "Sherburne",
+  "phone": "(763) 441-1701",
+  "npi": "1487721684"
+ },
+ {
+  "i": 21,
+  "group": "Chiropractic",
+  "name": "Body Harmony Chiropractic, PA",
+  "legalName": "Body Harmony Chiropractic, PA",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "12201 Minnetonka Blvd",
+  "suite": "Ste 3C",
+  "city": "Minnetonka",
+  "zip": "55305",
+  "county": "Hennepin",
+  "phone": "(952) 564-0768",
+  "npi": "1144559840"
+ },
+ {
+  "i": 22,
+  "group": "Chiropractic",
+  "name": "Tlc Chiropractic, PLC",
+  "legalName": "Tlc Chiropractic, PLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "310 S 2nd Ave",
+  "suite": "",
+  "city": "Virginia",
+  "zip": "55792",
+  "county": "St. Louis",
+  "phone": "(218) 741-3402",
+  "npi": "1295122760"
+ },
+ {
+  "i": 23,
+  "group": "Chiropractic",
+  "name": "Lexington Square Chiropractic",
+  "legalName": "Lexington Square Chiropractic",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "4137 Woodland Rd",
+  "suite": "",
+  "city": "Circle Pines",
+  "zip": "55014",
+  "county": "Anoka",
+  "phone": "(763) 784-5304",
+  "npi": "1912242264"
+ },
+ {
+  "i": 24,
+  "group": "Chiropractic",
+  "name": "Mai Chiropractic Center, PA",
+  "legalName": "Mai Chiropractic Center, PA",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "4400 Oliver Ave N",
+  "suite": "",
+  "city": "Minneapolis",
+  "zip": "55412",
+  "county": "Hennepin",
+  "phone": "(612) 520-4040",
+  "npi": "1598838740"
+ },
+ {
+  "i": 25,
+  "group": "Chiropractic",
+  "name": "Natural Chiropractic Center",
+  "legalName": "Bruce Pearson PA",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "12805 Highway 55",
+  "suite": "Ste 310",
+  "city": "Plymouth",
+  "zip": "55441",
+  "county": "Hennepin",
+  "phone": "(763) 476-4770",
+  "npi": "1508032376"
+ },
+ {
+  "i": 26,
+  "group": "Chiropractic",
+  "name": "Perham Health",
+  "legalName": "Perham Hospital District",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "1000 Coney St W",
+  "suite": "",
+  "city": "Perham",
+  "zip": "56573",
+  "county": "Otter Tail",
+  "phone": "(218) 347-4500",
+  "npi": "1932113768"
+ },
+ {
+  "i": 27,
+  "group": "Chiropractic",
+  "name": "Brainerd Lakes Wellness, PC",
+  "legalName": "Brainerd Lakes Wellness, PC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "7656 Design Rd",
+  "suite": "Ste 100",
+  "city": "Baxter",
+  "zip": "56425",
+  "county": "Crow Wing",
+  "phone": "(218) 838-3335",
+  "npi": "1316260417"
+ },
+ {
+  "i": 28,
+  "group": "Chiropractic",
+  "name": "Bammert Family Chiropractic, LLC",
+  "legalName": "Bammert Family Chiropractic, LLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "11583 Theatre Dr N",
+  "suite": "",
+  "city": "Champlin",
+  "zip": "55316",
+  "county": "Hennepin",
+  "phone": "(763) 427-4300",
+  "npi": "1326326661"
+ },
+ {
+  "i": 29,
+  "group": "Chiropractic",
+  "name": "Dr Feehan LTD",
+  "legalName": "Dr Feehan LTD",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "3343 Saint Croix Trl S",
+  "suite": "",
+  "city": "Afton",
+  "zip": "55001",
+  "county": "Washington",
+  "phone": "(651) 436-9995",
+  "npi": "1245562263"
+ },
+ {
+  "i": 30,
+  "group": "Chiropractic",
+  "name": "The Calla Lily",
+  "legalName": "The Calla Lily Limited",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "3343 Saint Croix Trl S",
+  "suite": "",
+  "city": "Afton",
+  "zip": "55001",
+  "county": "Washington",
+  "phone": "(651) 436-4636",
+  "npi": "1508018482"
+ },
+ {
+  "i": 31,
+  "group": "Chiropractic",
+  "name": "The Haven Chiropractic Health Center PLLC",
+  "legalName": "The Haven Chiropractic Health Center PLLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "643 N 5th St",
+  "suite": "",
+  "city": "Minneapolis",
+  "zip": "55401",
+  "county": "Hennepin",
+  "phone": "(920) 253-9244",
+  "npi": "1477388726"
+ },
+ {
+  "i": 32,
+  "group": "Chiropractic",
+  "name": "Comprehensive Rehab Centers of MN",
+  "legalName": "East Bound and Down Rehab PLLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "2703 E Lake St.",
+  "suite": "",
+  "city": "Mpls",
+  "zip": "55406",
+  "county": "Hennepin",
+  "phone": "(612) 597-1371",
+  "npi": "1770887424"
+ },
+ {
+  "i": 33,
+  "group": "Chiropractic",
+  "name": "Wellness Way Eden Prairie LLC",
+  "legalName": "Wellness Way Eden Prairie LLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "6805 Flying Cloud Dr",
+  "suite": "",
+  "city": "Eden Prairie",
+  "zip": "55344",
+  "county": "Hennepin",
+  "phone": "(952) 255-6980",
+  "npi": "1336650043"
+ },
+ {
+  "i": 34,
+  "group": "Chiropractic",
+  "name": "Heartlight Chiropractic, PA.",
+  "legalName": "Heartlight Chiropractic, PA.",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "13955 W Preserve Blvd",
+  "suite": "Ste 200",
+  "city": "Burnsville",
+  "zip": "55337",
+  "county": "Dakota",
+  "phone": "(952) 890-5694",
+  "npi": "1912184573"
+ },
+ {
+  "i": 35,
+  "group": "Chiropractic",
+  "name": "Resonance Chiropractic and Hoistic Health PLLC",
+  "legalName": "Resonance Chiropractic and Hoistic Health PLLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "215 E 78th St",
+  "suite": "Ste 300",
+  "city": "Bloomington",
+  "zip": "55420",
+  "county": "Hennepin",
+  "phone": "(763) 614-0953",
+  "npi": "1952120800"
+ },
+ {
+  "i": 36,
+  "group": "Chiropractic",
+  "name": "Chirome Health and Wellness LLC",
+  "legalName": "Chirome Health and Wellness LLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "2885 Country Dr",
+  "suite": "Ste 120",
+  "city": "Little Canada",
+  "zip": "55117",
+  "county": "Ramsey",
+  "phone": "(651) 440-9905",
+  "npi": "1679026504"
+ },
+ {
+  "i": 37,
+  "group": "Chiropractic",
+  "name": "Shakopee Dakota Clinic",
+  "legalName": "Shakopee Mdewakanton Sioux Community",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "2330 Sioux Trl NW",
+  "suite": "",
+  "city": "Prior Lake",
+  "zip": "55372",
+  "county": "Scott",
+  "phone": "(952) 496-6150",
+  "npi": "1013933381"
+ },
+ {
+  "i": 38,
+  "group": "Chiropractic",
+  "name": "Franklin Chiropractic, PA.",
+  "legalName": "Franklin Chiropractic, PA.",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "1433 E Franklin Ave",
+  "suite": "#13A",
+  "city": "Minneapolis",
+  "zip": "55404",
+  "county": "Hennepin",
+  "phone": "(612) 871-1387",
+  "npi": "1528324639"
+ },
+ {
+  "i": 39,
+  "group": "Chiropractic",
+  "name": "Mcsharry Chiro LLC",
+  "legalName": "Mcsharry Chiro LLC",
+  "specialties": [
+   "Chiropractic"
+  ],
+  "street": "373 George St",
+  "suite": "",
+  "city": "Excelsior",
+  "zip": "55331",
+  "county": "Hennepin",
+  "phone": "(630) 673-4294",
+  "npi": "1487505426"
+ },
+ {
+  "i": 40,
+  "group": "Physical Therapy",
+  "name": "Desita Care",
+  "legalName": "Desita Care",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "333 Grand Ave",
+  "suite": "Ste 103",
+  "city": "St. Paul",
+  "zip": "55102",
+  "county": "Ramsey",
+  "phone": "(651) 294-2316",
+  "npi": "1053885822"
+ },
+ {
+  "i": 41,
+  "group": "Physical Therapy",
+  "name": "Proactive Rehab and Wellness, LLC",
+  "legalName": "Proactive Rehab and Wellness, LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "29161 Lake Ave",
+  "suite": "",
+  "city": "Paynesville",
+  "zip": "56362",
+  "county": "Stearns",
+  "phone": "(701) 318-2402",
+  "npi": "1013686138"
+ },
+ {
+  "i": 42,
+  "group": "Physical Therapy",
+  "name": "Max Well Physical Therapy",
+  "legalName": "Max Well Therapy LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "14033 Commerce Ave NE",
+  "suite": "",
+  "city": "Prior Lake",
+  "zip": "55372",
+  "county": "Scott",
+  "phone": "(952) 440-5906",
+  "npi": "1881647337"
+ },
+ {
+  "i": 43,
+  "group": "Physical Therapy",
+  "name": "In Motion Therapy, LLC",
+  "legalName": "In Motion Therapy, LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "2711 W Superior St",
+  "suite": "Ste 209",
+  "city": "Duluth",
+  "zip": "55806",
+  "county": "St. Louis",
+  "phone": "(218) 727-1180",
+  "npi": "1578776936"
+ },
+ {
+  "i": 44,
+  "group": "Physical Therapy",
+  "name": "Rhivive Physical Therapy",
+  "legalName": "Rhivive Physical Therapy",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "1011 Meadowlands Dr",
+  "suite": "Ste 10",
+  "city": "White Bear Lake",
+  "zip": "55127",
+  "county": "Ramsey",
+  "phone": "(651) 894-4585",
+  "npi": "1558099747"
+ },
+ {
+  "i": 45,
+  "group": "Physical Therapy",
+  "name": "Joy Physical Therapy INC.",
+  "legalName": "Joy Physical Therapy INC.",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "1648 River Bluff Ct",
+  "suite": "",
+  "city": "Eagan",
+  "zip": "55121",
+  "county": "Dakota",
+  "phone": "(651) 800-6978",
+  "npi": "1447898358"
+ },
+ {
+  "i": 46,
+  "group": "Physical Therapy",
+  "name": "Excel Physical Therapy INC",
+  "legalName": "Excel Physical Therapy INC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "300 Catlin St",
+  "suite": "Ste 100",
+  "city": "Buffalo",
+  "zip": "55313",
+  "county": "Wright",
+  "phone": "(763) 682-2202",
+  "npi": "1104822717"
+ },
+ {
+  "i": 47,
+  "group": "Physical Therapy",
+  "name": "St Cloud Hospital Outpatient Rehabilitation - South",
+  "legalName": "St. Cloud Hospital",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "1301 33rd St S",
+  "suite": "Ste 210",
+  "city": "St. Cloud",
+  "zip": "56301",
+  "county": "Stearns",
+  "phone": "(320) 251-2700",
+  "npi": "1679088157"
+ },
+ {
+  "i": 48,
+  "group": "Physical Therapy",
+  "name": "Northfield Physical Therapy LLC",
+  "legalName": "Northfield Physical Therapy LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "2500 320th St W",
+  "suite": "",
+  "city": "Northfield",
+  "zip": "55057",
+  "county": "Dakota",
+  "phone": "(507) 581-2452",
+  "npi": "1235310913"
+ },
+ {
+  "i": 49,
+  "group": "Physical Therapy",
+  "name": "Inmotion Physical Therapy LLC",
+  "legalName": "Inmotion Physical Therapy LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "1927 S 6th St",
+  "suite": "",
+  "city": "Brainerd",
+  "zip": "56401",
+  "county": "Crow Wing",
+  "phone": "(218) 855-0806",
+  "npi": "1912091166"
+ },
+ {
+  "i": 50,
+  "group": "Physical Therapy",
+  "name": "White Earth Therapy Services",
+  "legalName": "White Earth Band of Chippewa",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "25519 State Highway 224",
+  "suite": "",
+  "city": "Ogema",
+  "zip": "56569",
+  "county": "Becker",
+  "phone": "(218) 983-4300",
+  "npi": "1396848560"
+ },
+ {
+  "i": 51,
+  "group": "Physical Therapy",
+  "name": "Nokomis Therapy Center",
+  "legalName": "Integrated Therapy Services",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "5348 15th Ave S",
+  "suite": "",
+  "city": "Minneapolis",
+  "zip": "55417",
+  "county": "Hennepin",
+  "phone": "(612) 825-8324",
+  "npi": "1346464211"
+ },
+ {
+  "i": 52,
+  "group": "Physical Therapy",
+  "name": "Novacare Rehabilitation",
+  "legalName": "Novacare Outpatient Rehabilitation East, INC.",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "600 County Road 75",
+  "suite": "",
+  "city": "Clearwater",
+  "zip": "55320",
+  "county": "Stearns",
+  "phone": "(320) 558-6661",
+  "npi": "1295557692"
+ },
+ {
+  "i": 53,
+  "group": "Physical Therapy",
+  "name": "Viverant PT LLC",
+  "legalName": "Viverant PT LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "5107 W 98th St",
+  "suite": "",
+  "city": "Bloomington",
+  "zip": "55437",
+  "county": "Hennepin",
+  "phone": "(952) 835-4512",
+  "npi": "1346553179"
+ },
+ {
+  "i": 54,
+  "group": "Physical Therapy",
+  "name": "Elevate Physical Therapy LLC",
+  "legalName": "Elevate Physical Therapy LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "6589 Laketowne Pl",
+  "suite": "",
+  "city": "Albertville",
+  "zip": "55301",
+  "county": "Wright",
+  "phone": "(763) 220-1962",
+  "npi": "1497564181"
+ },
+ {
+  "i": 55,
+  "group": "Physical Therapy",
+  "name": "Novacare Rehabilitation",
+  "legalName": "Novacare Outpatient Rehabilitation East, INC.",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "2000 Plymouth Rd",
+  "suite": "Ste 200",
+  "city": "Minnetonka",
+  "zip": "55305",
+  "county": "Hennepin",
+  "phone": "(952) 545-0663",
+  "npi": "1457172140"
+ },
+ {
+  "i": 56,
+  "group": "Physical Therapy",
+  "name": "Movement Lab Physical Therapy LLC",
+  "legalName": "Movement Lab Physical Therapy LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "6274 Fountain Ln N",
+  "suite": "",
+  "city": "Maple Grove",
+  "zip": "55311",
+  "county": "Hennepin",
+  "phone": "(612) 703-4888",
+  "npi": "1184543001"
+ },
+ {
+  "i": 57,
+  "group": "Physical Therapy",
+  "name": "Seo, LLC",
+  "legalName": "Seo, LLC",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "2113 Cliff Dr",
+  "suite": "",
+  "city": "Eagan",
+  "zip": "55122",
+  "county": "Dakota",
+  "phone": "(218) 341-3198",
+  "npi": "1700311321"
+ },
+ {
+  "i": 58,
+  "group": "Physical Therapy",
+  "name": "Summit Orthopedics, LTD",
+  "legalName": "Summit Orthopedics, LTD",
+  "specialties": [
+   "Physical Therapy",
+   "MRI"
+  ],
+  "street": "1661 Saint Anthony Ave",
+  "suite": "",
+  "city": "St. Paul",
+  "zip": "55104",
+  "county": "Ramsey",
+  "phone": "(651) 968-5335",
+  "npi": "1477604320"
+ },
+ {
+  "i": 59,
+  "group": "Physical Therapy",
+  "name": "Valley Rehabilitation Services",
+  "legalName": "Valley Rehabilitation Services",
+  "specialties": [
+   "Physical Therapy"
+  ],
+  "street": "1515 Saint Francis Ave",
+  "suite": "",
+  "city": "Shakopee",
+  "zip": "55379",
+  "county": "Scott",
+  "phone": "(952) 403-2001",
+  "npi": "1700079365"
+ },
+ {
+  "i": 60,
+  "group": "Imaging",
+  "name": "Virtual Radiologic Professionals of New Jersey, PA.",
+  "legalName": "Virtual Radiologic Professionals of New Jersey, PA.",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "11995 Singletree Ln",
+  "suite": "Ste 500",
+  "city": "Eden Prairie",
+  "zip": "55344",
+  "county": "Hennepin",
+  "phone": "(952) 595-1301",
+  "npi": "1477839215"
+ },
+ {
+  "i": 61,
+  "group": "Imaging",
+  "name": "Minnesota Radiology",
+  "legalName": "Proactive Imaging LLC",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "4000 W 76th St",
+  "suite": "Ste 100",
+  "city": "Edina",
+  "zip": "55435",
+  "county": "Hennepin",
+  "phone": "(952) 853-7226",
+  "npi": "1619970910"
+ },
+ {
+  "i": 62,
+  "group": "Imaging",
+  "name": "Ridgeview Medical Center",
+  "legalName": "Ridgeview Medical Center",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "500 S Maple St",
+  "suite": "",
+  "city": "Waconia",
+  "zip": "55387",
+  "county": "Carver",
+  "phone": "(952) 442-2191",
+  "npi": "1811174923"
+ },
+ {
+  "i": 63,
+  "group": "Imaging",
+  "name": "Rayus Radiology",
+  "legalName": "Medical Scanning Consultants PA",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "166 19th Street South",
+  "suite": "Ste 100",
+  "city": "Sartell",
+  "zip": "56377",
+  "county": "Stearns",
+  "phone": "(320) 251-0609",
+  "npi": "1235167065"
+ },
+ {
+  "i": 64,
+  "group": "Imaging",
+  "name": "Maplewood Imaging Center LLC",
+  "legalName": "Maplewood Imaging Center LLC",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "2945 Hazelwood St",
+  "suite": "Ste 110",
+  "city": "Maplewood",
+  "zip": "55109",
+  "county": "Ramsey",
+  "phone": "(651) 292-2000",
+  "npi": "1164604146"
+ },
+ {
+  "i": 65,
+  "group": "Imaging",
+  "name": "Minneapolis Radiology-Robbinsdale",
+  "legalName": "West Imaging, LLC",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "3366 Oakdale Ave N",
+  "suite": "Ste 401",
+  "city": "Robbinsdale",
+  "zip": "55422",
+  "county": "Hennepin",
+  "phone": "(763) 559-2171",
+  "npi": "1053311399"
+ },
+ {
+  "i": 66,
+  "group": "Imaging",
+  "name": "Imaging Associates, PA",
+  "legalName": "Imaging Associates, PA",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "903 S Oak Ave",
+  "suite": "",
+  "city": "Owatonna",
+  "zip": "55060",
+  "county": "Steele",
+  "phone": "(507) 451-3850",
+  "npi": "1144235714"
+ },
+ {
+  "i": 67,
+  "group": "Imaging",
+  "name": "Icare Diagnostic Imaging",
+  "legalName": "Icare Diagnostic Imaging",
+  "specialties": [
+   "MRI"
+  ],
+  "street": "2781 Freeway Blvd",
+  "suite": "Ste 160",
+  "city": "Brooklyn Center",
+  "zip": "55430",
+  "county": "Hennepin",
+  "phone": "(763) 244-8020",
+  "npi": "1336580018"
+ },
+ {
+  "i": 68,
+  "group": "Imaging",
+  "name": "Summit Orthopedics LTD",
+  "legalName": "Summit Orthopedics LTD",
+  "specialties": [
+   "MRI"
+  ],
+  "street": "6050 Sycamore Lane N.",
+  "suite": "",
+  "city": "Plymouth",
+  "zip": "55442",
+  "county": "Hennepin",
+  "phone": "(651) 968-5200",
+  "npi": "1952103905"
+ },
+ {
+  "i": 69,
+  "group": "Imaging",
+  "name": "Rayus Radiology",
+  "legalName": "Medical Scanning Consultants PA",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "5775 Wayzata Blvd",
+  "suite": "Ste 190",
+  "city": "St. Louis Park",
+  "zip": "55416",
+  "county": "Hennepin",
+  "phone": "(952) 541-1840",
+  "npi": "1659348092"
+ },
+ {
+  "i": 70,
+  "group": "Imaging",
+  "name": "Lifescan Minnesota Stand Up Mri LLC",
+  "legalName": "Lifescan Minnesota Stand Up Mri LLC",
+  "specialties": [
+   "MRI"
+  ],
+  "street": "5023 Excelsior Blvd",
+  "suite": "Ste 9B",
+  "city": "St. Louis Park",
+  "zip": "55416",
+  "county": "Hennepin",
+  "phone": "(952) 920-8860",
+  "npi": "1134122054"
+ },
+ {
+  "i": 71,
+  "group": "Imaging",
+  "name": "Nrs Arizona, PA",
+  "legalName": "Nrs Arizona, PA",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "258 Pine Tree Drive",
+  "suite": "",
+  "city": "Bigfork",
+  "zip": "56628",
+  "county": "Itasca",
+  "phone": "(218) 743-4444",
+  "npi": "1447569942"
+ },
+ {
+  "i": 72,
+  "group": "Imaging",
+  "name": "Elite Radiology PA.",
+  "legalName": "Elite Radiology PA.",
+  "specialties": [
+   "Radiology",
+   "MRI"
+  ],
+  "street": "441 University Ave W",
+  "suite": "Ste 102",
+  "city": "St. Paul",
+  "zip": "55103",
+  "county": "Ramsey",
+  "phone": "(651) 330-9270",
+  "npi": "1316852908"
+ },
+ {
+  "i": 73,
+  "group": "Imaging",
+  "name": "Medical X-Ray Consultants, LTD",
+  "legalName": "Medical X-Ray Consultants, LTD",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "111 17th Ave E",
+  "suite": "",
+  "city": "Alexandria",
+  "zip": "56308",
+  "county": "Douglas",
+  "phone": "(715) 295-9431",
+  "npi": "1386601383"
+ },
+ {
+  "i": 74,
+  "group": "Imaging",
+  "name": "Minnetonka Imaging Mri, INC.",
+  "legalName": "Minnetonka Imaging Mri, INC.",
+  "specialties": [
+   "MRI"
+  ],
+  "street": "6053 Hudson Rd",
+  "suite": "Ste 357",
+  "city": "Woodbury",
+  "zip": "55125",
+  "county": "Washington",
+  "phone": "(612) 803-0811",
+  "npi": "1073819918"
+ },
+ {
+  "i": 75,
+  "group": "Imaging",
+  "name": "Vascular & Interventional Physicians",
+  "legalName": "Vascular & Interventional Physicians",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "4254 Queen Ave S",
+  "suite": "",
+  "city": "Minneapolis",
+  "zip": "55410",
+  "county": "Hennepin",
+  "phone": "(612) 743-9691",
+  "npi": "1205632643"
+ },
+ {
+  "i": 76,
+  "group": "Imaging",
+  "name": "Knd Development 59 LLC",
+  "legalName": "Knd Development 59 LLC",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "3736 Riviera Rd",
+  "suite": "",
+  "city": "Sartell",
+  "zip": "56377",
+  "county": "Stearns",
+  "phone": "(502) 596-7358",
+  "npi": "1952216525"
+ },
+ {
+  "i": 77,
+  "group": "Imaging",
+  "name": "William Schwartau LLC",
+  "legalName": "William Schwartau LLC",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "1200 E 25th St",
+  "suite": "",
+  "city": "Hibbing",
+  "zip": "55746",
+  "county": "St. Louis",
+  "phone": "(218) 312-3005",
+  "npi": "1700117595"
+ },
+ {
+  "i": 78,
+  "group": "Imaging",
+  "name": "Minnesota Radiology Institute",
+  "legalName": "Minnesota Radiology Institute",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "320 E Main St",
+  "suite": "",
+  "city": "Crosby",
+  "zip": "56441",
+  "county": "Crow Wing",
+  "phone": "(218) 546-7000",
+  "npi": "1982783148"
+ },
+ {
+  "i": 79,
+  "group": "Imaging",
+  "name": "National Radiology PLLC",
+  "legalName": "National Radiology PLLC",
+  "specialties": [
+   "Radiology"
+  ],
+  "street": "4000 W 76th St",
+  "suite": "Ste 160",
+  "city": "Edina",
+  "zip": "55435",
+  "county": "Hennepin",
+  "phone": "(952) 853-7226",
+  "npi": "1821091125"
+ }
+]
