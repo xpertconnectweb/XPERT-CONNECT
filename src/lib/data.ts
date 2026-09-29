@@ -42,14 +42,16 @@ const REFERRAL_COLUMNS = 'id, referral_kind, lawyer_id, lawyer_name, lawyer_firm
 
 // Users
 export async function getUsers(): Promise<User[]> {
-  const { data, error } = await supabaseAdmin
-    .from('users')
-    .select(USER_COLUMNS)
+  // Paged: every clinic has a login now, so this is past PostgREST's
+  // 1000-row cap, and an unpaged read silently dropped the rest.
+  const { rows, error } = await readAll((from, to) =>
+    supabaseAdmin.from('users').select(USER_COLUMNS).order('id').range(from, to)
+  )
   if (error) {
     console.error('getUsers error:', error)
     return []
   }
-  return rowsToModels<User>(data)
+  return rowsToModels<User>(rows)
 }
 
 export async function getUserByUsername(

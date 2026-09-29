@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Plus, Pencil, Trash2, X, Loader2, Search, AlertTriangle, RefreshCw } from 'lucide-react'
+import { useEffect, useState, useCallback, useMemo, useDeferredValue, useRef } from 'react'
+import { Plus, Pencil, Trash2, X, Loader2, Search, AlertTriangle, RefreshCw, FilterX, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import type { UserRole } from '@/types/professionals'
@@ -87,6 +87,23 @@ const emptyForm: UserForm = {
   state: '',
 }
 
+// One entry per role, in the order the table groups them: the handful
+// of staff and attorney accounts first, the 1,100+ clinic logins last.
+const ROLE_META: Record<UserRole, { label: string; plural: string; badge: string; chip: string }> = {
+  admin: { label: 'Admin', plural: 'Admins', badge: 'bg-purple-100 text-purple-700', chip: 'bg-purple-100 text-purple-700 border-purple-300' },
+  lawyer: { label: 'Attorney', plural: 'Attorneys', badge: 'bg-blue-100 text-blue-700', chip: 'bg-blue-100 text-blue-700 border-blue-300' },
+  referrer: { label: 'Referrer', plural: 'Referrers', badge: 'bg-orange-100 text-orange-700', chip: 'bg-orange-100 text-orange-700 border-orange-300' },
+  partner: { label: 'Partner', plural: 'Partners', badge: 'bg-teal-100 text-teal-700', chip: 'bg-teal-100 text-teal-700 border-teal-300' },
+  directory: { label: 'Legal Directory', plural: 'Legal Directory', badge: 'bg-slate-100 text-slate-700', chip: 'bg-slate-100 text-slate-700 border-slate-300' },
+  clinic: { label: 'Clinic', plural: 'Clinics', badge: 'bg-emerald-100 text-emerald-700', chip: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+}
+const ROLE_ORDER = Object.keys(ROLE_META) as UserRole[]
+
+const USERS_PER_PAGE = 50
+
+// Case- and accent-insensitive, so "clinica" finds "Clínica".
+const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [clinics, setClinics] = useState<ClinicOption[]>([])
@@ -106,6 +123,14 @@ export default function AdminUsersPage() {
   const [bulkLoading, setBulkLoading] = useState(false)
   const [phoneConfirm, setPhoneConfirm] = useState<string | null>(null)
   const [phoneClearing, setPhoneClearing] = useState(false)
+  const [search, setSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState<UserRole | ''>('')
+  const [stateFilter, setStateFilter] = useState('')
+  const [emailFilter, setEmailFilter] = useState<'' | 'with' | 'without'>('')
+  const [page, setPage] = useState(0)
+  // Typing stays responsive while 1,100+ rows re-filter behind it.
+  const deferredSearch = useDeferredValue(search)
+  const tableRef = useRef<HTMLDivElement>(null)
 
   // Defensive fetcher: never throws to a render boundary, surfaces a
   // human-readable error string that we can display inline.
@@ -170,8 +195,75 @@ export default function AdminUsersPage() {
   }, [fetchAll])
 
   // Build a map of clinicId -> clinicName for the table
-  const clinicNameMap = new Map(clinics.map((c) => [c.id, c.name]))
-  const lawyerNameMap = new Map(lawyerFirms.map((l) => [l.id, l.name]))
+  const clinicNameMap = useMemo(() => new Map(clinics.map((c) => [c.id, c.name])), [clinics])
+  const lawyerNameMap = useMemo(() => new Map(lawyerFirms.map((l) => [l.id, l.name])), [lawyerFirms])
+  const clinicStateMap = useMemo(() => new Map(clinics.map((c) => [c.id, c.state || ''])), [clinics])
+
+  // Clinic users carry no state of their own; theirs is the clinic's.
+  const userState = useCallback(
+    (u: UserRow) => u.state || (u.clinicId ? clinicStateMap.get(u.clinicId) : '') || '',
+    [clinicStateMap]
+  )
+
+  const userOrg = useCallback(
+    (u: UserRow) =>
+      u.role === 'clinic'
+        ? clinicNameMap.get(u.clinicId || '') || ''
+        : u.role === 'lawyer'
+        ? (u.lawyerId && lawyerNameMap.get(u.lawyerId)) || u.firmName || ''
+        : '',
+    [clinicNameMap, lawyerNameMap]
+  )
+
+  const roleCounts = useMemo(() => {
+    const counts = Object.fromEntries(ROLE_ORDER.map((r) => [r, 0])) as Record<UserRole, number>
+    users.forEach((u) => { if (u.role in counts) counts[u.role]++ })
+    return counts
+  }, [users])
+
+  const stateOptions = useMemo(
+    () => Array.from(new Set(users.map(userState).filter(Boolean))).sort(),
+    [users, userState]
+  )
+
+  const filtered = useMemo(() => {
+    const q = fold(deferredSearch.trim())
+    return users
+      .filter((u) => {
+        if (roleFilter && u.role !== roleFilter) return false
+        if (stateFilter === 'none' ? userState(u) !== '' : stateFilter && userState(u) !== stateFilter) return false
+        if (emailFilter === 'with' && !u.email) return false
+        if (emailFilter === 'without' && u.email) return false
+        if (q && !fold(`${u.name} ${u.username} ${u.email} ${userOrg(u)}`).includes(q)) return false
+        return true
+      })
+      .sort((a, b) =>
+        ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) ||
+        a.name.localeCompare(b.name)
+      )
+  }, [users, deferredSearch, roleFilter, stateFilter, emailFilter, userState, userOrg])
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / USERS_PER_PAGE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pageRows = filtered.slice(currentPage * USERS_PER_PAGE, (currentPage + 1) * USERS_PER_PAGE)
+
+  // The pager sits under the table; moving pages from there should land
+  // on the first new row, not on the bottom of the next fifty.
+  const goToPage = (p: number) => {
+    setPage(p)
+    tableRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }
+
+  // Any filter change starts over at page one.
+  useEffect(() => { setPage(0) }, [deferredSearch, roleFilter, stateFilter, emailFilter])
+
+  const hasActiveFilters = Boolean(search || roleFilter || stateFilter || emailFilter)
+  const clearAllFilters = () => {
+    setSearch('')
+    setRoleFilter('')
+    setStateFilter('')
+    setEmailFilter('')
+  }
 
   const openCreate = () => {
     setEditingId(null)
@@ -289,14 +381,17 @@ export default function AdminUsersPage() {
     })
   }
 
+  // The header checkbox covers the rows on screen, not every user: with
+  // 1,100+ accounts behind the filters, "select all" feeding the bulk
+  // delete must never reach rows nobody is looking at.
+  const pageIds = pageRows.map((u) => u.id)
+  const pageAllSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id))
   const toggleSelectAll = () => {
-    const allIds = users.map((u) => u.id)
-    const allSelected = allIds.every((id) => selectedIds.has(id))
-    if (allSelected) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(allIds))
-    }
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      pageIds.forEach((id) => (pageAllSelected ? next.delete(id) : next.add(id)))
+      return next
+    })
   }
 
   /**
@@ -398,8 +493,98 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {/* Role chips: a count per role that doubles as a one-click filter */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={clearAllFilters}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+            !hasActiveFilters
+              ? 'bg-gold/10 text-gold border-gold/30'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
+          }`}
+        >
+          All users: {users.length.toLocaleString()}
+        </button>
+        {ROLE_ORDER.filter((r) => roleCounts[r] > 0).map((r) => (
+          <button
+            key={r}
+            onClick={() => { clearAllFilters(); setRoleFilter(r) }}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+              roleFilter === r && !search && !stateFilter && !emailFilter
+                ? ROLE_META[r].chip
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
+            }`}
+          >
+            {ROLE_META[r].plural}: {roleCounts[r].toLocaleString()}
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, username, email, firm or clinic..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+            />
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <FilterX className="h-4 w-4" />
+              Clear Filters
+            </button>
+          )}
+          <span className="ml-auto text-sm font-medium text-gray-500">
+            {filtered.length.toLocaleString()} of {users.length.toLocaleString()} user{users.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as UserRole | '')}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All Roles</option>
+            {ROLE_ORDER.map((r) => (
+              <option key={r} value={r}>{ROLE_META[r].label} ({roleCounts[r]})</option>
+            ))}
+          </select>
+
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">All States</option>
+            {stateOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+            <option value="none">No state</option>
+          </select>
+
+          <select
+            value={emailFilter}
+            onChange={(e) => setEmailFilter(e.target.value as '' | 'with' | 'without')}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">Any Email</option>
+            <option value="with">With email</option>
+            <option value="without">Without email (no notifications)</option>
+          </select>
+        </div>
+      </div>
+
       {/* Users table */}
-      <div className="rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+      <div ref={tableRef} className="scroll-mt-4 rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -407,8 +592,9 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 w-10">
                   <input
                     type="checkbox"
-                    checked={Array.isArray(users) && users.length > 0 && users.every((u) => selectedIds.has(u.id))}
+                    checked={pageAllSelected}
                     onChange={toggleSelectAll}
+                    title="Select the users on this page"
                     className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
                   />
                 </th>
@@ -421,7 +607,14 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {(Array.isArray(users) ? users : []).map((user) => (
+              {pageRows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-500">
+                    No users match these filters.
+                  </td>
+                </tr>
+              )}
+              {pageRows.map((user) => (
                 <tr key={user.id} className={`hover:bg-gray-50/50 ${selectedIds.has(user.id) ? 'bg-gold/5' : ''}`}>
                   <td className="px-4 py-3">
                     <input
@@ -434,23 +627,13 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 text-gray-900 font-medium">{user.name}</td>
                   <td className="px-4 py-3 text-gray-600">{user.username}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      user.role === 'admin'
-                        ? 'bg-purple-100 text-purple-700'
-                        : user.role === 'lawyer'
-                        ? 'bg-blue-100 text-blue-700'
-                        : user.role === 'referrer'
-                        ? 'bg-orange-100 text-orange-700'
-                        : user.role === 'partner'
-                        ? 'bg-teal-100 text-teal-700'
-                        : user.role === 'directory'
-                        ? 'bg-slate-100 text-slate-700'
-                        : 'bg-emerald-100 text-emerald-700'
-                    }`}>
-                      {user.role === 'lawyer' ? 'Attorney' : user.role === 'clinic' ? 'Clinic' : user.role === 'referrer' ? 'Referrer' : user.role === 'partner' ? 'Partner' : user.role === 'directory' ? 'Legal Directory' : 'Admin'}
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${(ROLE_META[user.role] ?? ROLE_META.admin).badge}`}>
+                      {(ROLE_META[user.role] ?? ROLE_META.admin).label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{user.email}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {user.email || <span className="text-xs text-gray-400">No email</span>}
+                  </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
                     {user.role === 'lawyer' && (
                       <span>
@@ -468,7 +651,16 @@ export default function AdminUsersPage() {
                         )}
                       </span>
                     )}
-                    {user.role === 'clinic' && (clinicNameMap.get(user.clinicId || '') || user.clinicId || '—')}
+                    {user.role === 'clinic' && (
+                      <span>
+                        {clinicNameMap.get(user.clinicId || '') || user.clinicId || '—'}
+                        {userState(user) && (
+                          <span className="ml-2 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            {userState(user)}
+                          </span>
+                        )}
+                      </span>
+                    )}
                     {user.role === 'directory' && (
                       user.state
                         ? (
@@ -522,6 +714,36 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         </div>
+        {filtered.length > USERS_PER_PAGE && (
+          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 text-sm text-gray-500">
+            <span>
+              Showing {(currentPage * USERS_PER_PAGE + 1).toLocaleString()}–
+              {Math.min((currentPage + 1) * USERS_PER_PAGE, filtered.length).toLocaleString()} of{' '}
+              {filtered.length.toLocaleString()}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 0}
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Previous
+              </button>
+              <span className="text-xs">
+                Page {currentPage + 1} of {pageCount}
+              </span>
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= pageCount - 1}
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bulk Action Bar */}

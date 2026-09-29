@@ -31,8 +31,11 @@ test('changing a user role from lawyer to clinic clears lawyer_id', async ({
   })
 
   await page.goto('/admin/users')
-  // /admin/users has no top-level search input — the modal's "Search firm..."
-  // / "Search clinic..." inputs only render once the edit modal is open.
+  // The table is paginated and grouped by role, so once this user becomes a
+  // clinic it sorts among 1,100+ clinic logins and off the first page. Narrow
+  // the table to it with the top-level search first; the filter survives the
+  // refetch after save.
+  await page.getByPlaceholder(/search by name, username/i).fill(user.username as string)
   // The Edit button aria-label is "Edit <name>" (not <username>).
   await page
     .getByRole('button', { name: new RegExp(`edit ${user.name}`, 'i') })
