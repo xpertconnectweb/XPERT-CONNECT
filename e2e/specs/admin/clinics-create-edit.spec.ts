@@ -40,6 +40,8 @@ test('admin can create a clinic and see it in the table', async ({ page, ns }) =
   // "View emails for <name>" / "Edit <name>" action buttons' accessible names,
   // so a non-exact cell match resolves to multiple cells. Match the row
   // instead — its accessible name uniquely contains the namespaced clinic.
+  // The table is paginated, so narrow it to the new clinic first.
+  await page.getByPlaceholder('Search by name, address').fill(name)
   await expectAdminRow(page, name)
 
   const supabase = createServiceClient()

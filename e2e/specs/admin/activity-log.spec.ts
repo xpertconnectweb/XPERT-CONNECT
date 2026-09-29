@@ -31,6 +31,8 @@ test('admin sees a fresh activity log entry after creating a clinic', async ({
   await page.getByPlaceholder('info@clinic.com').fill(`${ns}log@e2e.test`)
   await page.getByPlaceholder('Chiropractic, Physical Therapy').fill('Chiropractic')
   await page.getByRole('button', { name: /^save$|create|submit/i }).click()
+  // The clinics table is paginated, so narrow it to the new clinic first.
+  await page.getByPlaceholder('Search by name, address').fill(name)
   // Row match instead of cell — the name appears in the action buttons too.
   await expectAdminRow(page, name)
 

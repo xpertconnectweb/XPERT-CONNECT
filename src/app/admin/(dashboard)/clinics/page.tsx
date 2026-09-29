@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail, FilterX } from 'lucide-react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { Plus, Pencil, Trash2, X, Loader2, Search, ToggleLeft, ToggleRight, Mail, FilterX, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BulkActionBar } from '@/components/admin/BulkActionBar'
 import { ConfirmModal } from '@/components/admin/ConfirmModal'
 import { useProviderSearchIds } from '@/hooks/useProviderSearchIds'
@@ -20,6 +20,7 @@ interface Clinic {
   website?: string
   region?: string
   county?: string
+  state?: string | null
   available: boolean
 }
 
@@ -58,6 +59,8 @@ const emptyForm: ClinicForm = {
   available: true,
 }
 
+const CLINICS_PER_PAGE = 50
+
 export default function AdminClinicsPage() {
   const [clinics, setClinics] = useState<Clinic[]>([])
   const [loading, setLoading] = useState(true)
@@ -88,6 +91,33 @@ export default function AdminClinicsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkConfirm, setBulkConfirm] = useState<{ action: string; message: string } | null>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [loginFilter, setLoginFilter] = useState<'' | 'with' | 'without'>('')
+  // clinicId -> usernames of the clinic logins linked to it. Null until
+  // loaded (or if loading failed), so no clinic is ever shown as missing
+  // a login just because the users have not arrived.
+  const [logins, setLogins] = useState<Map<string, string[]> | null>(null)
+  const [page, setPage] = useState(0)
+  const tableRef = useRef<HTMLDivElement>(null)
+
+  // Every clinic is meant to have a login; this is what shows which do.
+  // Best-effort: if it fails, the column reads "—" and the table still works.
+  const fetchLogins = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/users', { cache: 'no-store' })
+      if (!res.ok) return
+      const users: { role: string; clinicId?: string; username: string }[] = await res.json()
+      const map = new Map<string, string[]>()
+      users.forEach((u) => {
+        if (u.role !== 'clinic' || !u.clinicId) return
+        map.set(u.clinicId, [...(map.get(u.clinicId) ?? []), u.username])
+      })
+      setLogins(map)
+    } catch { /* column degrades to "—" */ }
+  }, [])
+
+  useEffect(() => {
+    fetchLogins()
+  }, [fetchLogins])
 
   const fetchClinics = useCallback(async () => {
     const res = await fetch('/api/admin/clinics', {
@@ -295,14 +325,17 @@ export default function AdminClinicsPage() {
     })
   }
 
-  const toggleSelectAll = (filteredItems: Clinic[]) => {
-    const allFilteredIds = filteredItems.map((c) => c.id)
-    const allSelected = allFilteredIds.every((id) => selectedIds.has(id))
-    if (allSelected) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(allFilteredIds))
-    }
+  // The header checkbox covers the rows on screen only. It feeds the bulk
+  // delete and the bulk availability toggle, and with 1,100+ clinics behind
+  // the filters those must never reach rows nobody is looking at.
+  const toggleSelectAll = (pageItems: Clinic[]) => {
+    const ids = pageItems.map((c) => c.id)
+    const allSelected = ids.length > 0 && ids.every((id) => selectedIds.has(id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      ids.forEach((id) => (allSelected ? next.delete(id) : next.add(id)))
+      return next
+    })
   }
 
   const handleBulkToggle = async (available: boolean) => {
@@ -371,6 +404,10 @@ export default function AdminClinicsPage() {
   }
 
   const getClinicState = useCallback((clinic: Clinic): string => {
+    // The stored state first: the address test below misses addresses that
+    // do not read "…, FL 12345" and left ten Florida clinics out of the filter.
+    if (clinic.state === 'FL') return 'Florida'
+    if (clinic.state === 'MN') return 'Minnesota'
     if (clinic.address.includes(', FL ')) return 'Florida'
     if (clinic.address.includes(', MN ')) return 'Minnesota'
     return ''
@@ -417,7 +454,7 @@ export default function AdminClinicsPage() {
     }
   }, [countyOptions, countyFilter])
 
-  const hasActiveFilters = search || stateFilter || regionFilter || countyFilter || specialtyFilter || availFilter
+  const hasActiveFilters = search || stateFilter || regionFilter || countyFilter || specialtyFilter || availFilter || loginFilter
 
   const clearAllFilters = () => {
     setSearch('')
@@ -426,6 +463,7 @@ export default function AdminClinicsPage() {
     setCountyFilter('')
     setSpecialtyFilter('')
     setAvailFilter('')
+    setLoginFilter('')
   }
 
   // Stats
@@ -433,8 +471,9 @@ export default function AdminClinicsPage() {
     const fl = clinics.filter((c) => getClinicState(c) === 'Florida').length
     const mn = clinics.filter((c) => getClinicState(c) === 'Minnesota').length
     const avail = clinics.filter((c) => c.available).length
-    return { total: clinics.length, fl, mn, avail, unavail: clinics.length - avail }
-  }, [clinics, getClinicState])
+    const noLogin = logins ? clinics.filter((c) => !logins.has(c.id)).length : 0
+    return { total: clinics.length, fl, mn, avail, unavail: clinics.length - avail, noLogin }
+  }, [clinics, getClinicState, logins])
 
   // Same matching the professionals and partners maps use, so an admin looking
   // for a clinic types what they would type anywhere else in the product and
@@ -449,8 +488,24 @@ export default function AdminClinicsPage() {
     if (availFilter === 'available' && !c.available) return false
     if (availFilter === 'unavailable' && c.available) return false
     if (searchIds && !searchIds.has(c.id)) return false
+    if (logins && loginFilter === 'with' && !logins.has(c.id)) return false
+    if (logins && loginFilter === 'without' && logins.has(c.id)) return false
     return true
   })
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / CLINICS_PER_PAGE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pageRows = filtered.slice(currentPage * CLINICS_PER_PAGE, (currentPage + 1) * CLINICS_PER_PAGE)
+
+  // Any filter change starts over at page one.
+  useEffect(() => { setPage(0) }, [search, stateFilter, regionFilter, countyFilter, specialtyFilter, availFilter, loginFilter])
+
+  // The pager sits under the table; moving pages from there should land
+  // on the first new row, not on the bottom of the next fifty.
+  const goToPage = (p: number) => {
+    setPage(p)
+    tableRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }
 
   if (loading) {
     return (
@@ -525,6 +580,18 @@ export default function AdminClinicsPage() {
         >
           Unavailable: {stats.unavail}
         </button>
+        {logins && (
+          <button
+            onClick={() => { clearAllFilters(); setLoginFilter('without') }}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              loginFilter === 'without' && !stateFilter && !regionFilter && !countyFilter && !specialtyFilter && !availFilter && !search
+                ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                : 'bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-600 border border-gray-200'
+            }`}
+          >
+            Without login: {stats.noLogin}
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -556,7 +623,7 @@ export default function AdminClinicsPage() {
         </div>
 
         {/* Row 2: Dropdowns */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <select
             value={stateFilter}
             onChange={(e) => setStateFilter(e.target.value)}
@@ -609,11 +676,22 @@ export default function AdminClinicsPage() {
             <option value="available">Available Only</option>
             <option value="unavailable">Unavailable Only</option>
           </select>
+
+          <select
+            value={loginFilter}
+            onChange={(e) => setLoginFilter(e.target.value as '' | 'with' | 'without')}
+            disabled={!logins}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 disabled:opacity-50"
+          >
+            <option value="">Any Login</option>
+            <option value="with">With login</option>
+            <option value="without">Without login</option>
+          </select>
         </div>
       </div>
 
       {/* Clinics table */}
-      <div className="rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+      <div ref={tableRef} className="scroll-mt-4 rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -621,12 +699,14 @@ export default function AdminClinicsPage() {
                 <th className="px-4 py-3 w-10">
                   <input
                     type="checkbox"
-                    checked={filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id))}
-                    onChange={() => toggleSelectAll(filtered)}
+                    checked={pageRows.length > 0 && pageRows.every((c) => selectedIds.has(c.id))}
+                    onChange={() => toggleSelectAll(pageRows)}
+                    title="Select the clinics on this page"
                     className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
                   />
                 </th>
                 <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Login</th>
                 <th className="px-4 py-3 font-medium">Address</th>
                 <th className="px-4 py-3 font-medium">Region</th>
                 <th className="px-4 py-3 font-medium">Contact</th>
@@ -635,7 +715,14 @@ export default function AdminClinicsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((clinic) => (
+              {pageRows.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center text-sm text-gray-500">
+                    No clinics match these filters.
+                  </td>
+                </tr>
+              )}
+              {pageRows.map((clinic) => (
                 <tr key={clinic.id} className={`hover:bg-gray-50/50 ${selectedIds.has(clinic.id) ? 'bg-gold/5' : ''}`}>
                   <td className="px-4 py-3">
                     <input
@@ -651,6 +738,19 @@ export default function AdminClinicsPage() {
                       {clinic.specialties.slice(0, 2).join(', ')}
                       {clinic.specialties.length > 2 && ` +${clinic.specialties.length - 2}`}
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {!logins ? (
+                      <span className="text-xs text-gray-400">—</span>
+                    ) : logins.has(clinic.id) ? (
+                      logins.get(clinic.id)!.map((u) => (
+                        <div key={u} className="font-mono text-xs text-gray-700">{u}</div>
+                      ))
+                    ) : (
+                      <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 border border-amber-200">
+                        No login
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-gray-600">{clinic.address}</td>
                   <td className="px-4 py-3 text-gray-600">
@@ -734,6 +834,36 @@ export default function AdminClinicsPage() {
             </tbody>
           </table>
         </div>
+        {filtered.length > CLINICS_PER_PAGE && (
+          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 text-sm text-gray-500">
+            <span>
+              Showing {(currentPage * CLINICS_PER_PAGE + 1).toLocaleString()}–
+              {Math.min((currentPage + 1) * CLINICS_PER_PAGE, filtered.length).toLocaleString()} of{' '}
+              {filtered.length.toLocaleString()}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 0}
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Previous
+              </button>
+              <span className="text-xs">
+                Page {currentPage + 1} of {pageCount}
+              </span>
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= pageCount - 1}
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
