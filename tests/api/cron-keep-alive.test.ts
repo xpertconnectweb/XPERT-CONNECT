@@ -36,6 +36,18 @@ afterEach(() => {
 })
 
 describe('GET /api/cron/keep-alive — auth header', () => {
+  /**
+   * The old check compared against the template string
+   * `Bearer ${process.env.CRON_SECRET}`, which with the variable unset
+   * is "Bearer undefined" — a header anyone can send.
+   */
+  it('fails closed when CRON_SECRET is unset, even for "Bearer undefined"', async () => {
+    delete process.env.CRON_SECRET
+    expect((await GET(req('Bearer undefined'))).status).toBe(401)
+    expect((await GET(req('Bearer '))).status).toBe(401)
+    expect((await GET(req(null))).status).toBe(401)
+  })
+
   it('rejects requests missing the authorization header', async () => {
     const res = await GET(req(null))
     expect(res.status).toBe(401)

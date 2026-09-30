@@ -1,5 +1,5 @@
 import { ShieldCheck, ClipboardList, UserCheck, Handshake } from 'lucide-react'
-import type { HowItWorksData } from '@/lib/sanity-types'
+import type { HowItWorksData } from '@/lib/landing-content'
 
 const iconMap: Record<string, typeof ShieldCheck> = {
   ShieldCheck, ClipboardList, UserCheck, Handshake,

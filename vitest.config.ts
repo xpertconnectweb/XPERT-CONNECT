@@ -7,6 +7,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // `server-only` throws outside React Server Components; tests are not
+      // one, so resolve it to the package's own no-op build.
+      'server-only': path.resolve(__dirname, './node_modules/server-only/empty.js'),
     },
   },
   test: {

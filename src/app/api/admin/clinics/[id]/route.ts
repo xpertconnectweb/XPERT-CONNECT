@@ -3,7 +3,9 @@ import { requireAdmin } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
 import { sanitize } from '@/lib/sanitize'
-import { EMAIL_RE, validateCoordinates } from '@/lib/validation'
+import { EMAIL_RE, checkProviderFields, validateCoordinates } from '@/lib/validation'
+import { readJsonBody } from '@/lib/security/http'
+import { normalizeWebsite } from '@/lib/security/url'
 
 const ALLOWED_FIELDS = [
   'name', 'address', 'lat', 'lng', 'phone', 'specialties',
@@ -35,7 +37,19 @@ export async function PATCH(
 
   try {
     const { id } = await params
-    const body = await request.json() as Record<string, unknown>
+    const parsed = await readJsonBody(request)
+    if (!parsed.ok) return parsed.response
+    const body = parsed.body
+
+    const invalid = checkProviderFields(body)
+    if (invalid) return NextResponse.json({ error: invalid }, { status: 400 })
+    if (body.website !== undefined && body.website !== null) {
+      const website = normalizeWebsite(body.website)
+      if (website === null) {
+        return NextResponse.json({ error: 'Website must be an http(s) address' }, { status: 400 })
+      }
+      body.website = website || null
+    }
 
     // Validated as a PAIR, before the field loop. A latitude on its own cannot
     // be range-checked against anything meaningful, and every caller that moves

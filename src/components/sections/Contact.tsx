@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react'
-import type { ContactData } from '@/lib/sanity-types'
+import type { ContactData } from '@/lib/landing-content'
 
 const iconMap: Record<string, typeof Phone> = { Phone, Mail, MapPin, Clock }
 

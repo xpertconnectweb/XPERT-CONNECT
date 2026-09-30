@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Scale, Hospital, Home, ArrowRight, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { ServicesData } from '@/lib/sanity-types'
+import type { ServicesData } from '@/lib/landing-content'
 
 const iconMap: Record<string, typeof Scale> = { Scale, Hospital, Home }
 

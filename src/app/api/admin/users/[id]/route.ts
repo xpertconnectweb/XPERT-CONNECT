@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/security/http'
 import { getUserById, updateUser, deleteUser, getLawyerById, getClinicById } from '@/lib/data'
 import { toAdminSafeUser } from '@/lib/api/public-shape'
 import { sanitize } from '@/lib/sanitize'
@@ -20,7 +21,9 @@ export async function PATCH(
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
-  const body = await request.json()
+  const parsed = await readJsonBody(request)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.body as Record<string, any> // fields are checked one by one below
   const fields: Record<string, unknown> = {}
 
   if (body.name) {

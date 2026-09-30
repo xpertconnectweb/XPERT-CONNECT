@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
+import { readJsonBody } from '@/lib/security/http'
 
 export async function GET() {
   const { error: authError } = await requireAdmin()
@@ -12,7 +13,8 @@ export async function GET() {
     .select('key, value')
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('settings query failed:', error.code, error.message)
+    return NextResponse.json({ error: 'Failed to load settings' }, { status: 500 })
   }
 
   // Convert array of {key, value} to object
@@ -29,9 +31,11 @@ export async function PATCH(request: Request) {
   if (authError) return authError
 
   try {
-    const { key, value } = await request.json()
+    const parsed = await readJsonBody(request)
+    if (!parsed.ok) return parsed.response
+    const { key, value } = parsed.body
 
-    if (!key || value === undefined) {
+    if (typeof key !== 'string' || !key || key.length > 100 || value === undefined) {
       return NextResponse.json({ error: 'key and value are required' }, { status: 400 })
     }
 

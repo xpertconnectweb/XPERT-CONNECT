@@ -6,6 +6,19 @@ import { CASE_CONFIRMED_VALUES } from './case-confirmed'
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
+
+/**
+ * The stricter address check for anything a stranger submits.
+ *
+ * `EMAIL_RE` accepts `a@b.c?cc=someone@else.com`, and that string lands in
+ * the `mailto:` links of the internal notification emails, where `?cc=`
+ * is a parameter, not part of an address. No `?`, `&`, `=` or whitespace,
+ * and no longer than RFC 5321 allows.
+ */
+export const PUBLIC_EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/
+export function isPublicEmail(value: string): boolean {
+  return value.length <= 254 && PUBLIC_EMAIL_RE.test(value)
+}
 // Matches YYYY-MM-DD (HTML date input format)
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -96,3 +109,77 @@ export const REFERRAL_MUTABLE_FIELDS = [
   'adjusterEmail',
 ] as const
 export type ReferralMutableField = typeof REFERRAL_MUTABLE_FIELDS[number]
+
+/** Longest value each free-text field on a clinic or lawyer may hold. */
+const PROVIDER_FIELD_MAX: Record<string, number> = {
+  name: 200,
+  address: 300,
+  phone: 40,
+  email: 254,
+  region: 120,
+  county: 120,
+  street: 200,
+  city: 120,
+  state: 40,
+  zipCode: 10,
+  placeId: 300,
+  placeProvider: 40,
+  geocodePrecision: 40,
+}
+
+/**
+ * Type and length checks for an admin clinic/lawyer payload.
+ *
+ * Returns the first problem as a message, or null. Only checks fields that
+ * are present, so it serves a PATCH as well as a create; `requireName`
+ * adds the one field a create cannot do without. `null` is allowed — it
+ * is how the form clears an optional column.
+ */
+export function checkProviderFields(
+  body: Record<string, unknown>,
+  { requireName = false }: { requireName?: boolean } = {}
+): string | null {
+  if (requireName && (typeof body.name !== 'string' || !body.name.trim())) {
+    return 'name is required'
+  }
+  for (const [field, max] of Object.entries(PROVIDER_FIELD_MAX)) {
+    const value = body[field]
+    if (value === undefined || value === null) continue
+    if (typeof value !== 'string') return `${field} must be a string`
+    if (value.length > max) return `${field} is too long (max ${max})`
+  }
+  if (body.email && typeof body.email === 'string' && body.email.trim() && !EMAIL_RE.test(body.email.trim())) {
+    return 'email is not valid'
+  }
+  return null
+}
+
+const REFERRAL_TEXT_MAX: Record<string, number> = {
+  clientName: 100,
+  clientPhone: 40,
+  clientEmail: 254,
+  clientAddress: 300,
+  caseType: 100,
+  notes: 2000,
+}
+
+/**
+ * Types and caps for the client fields of a partner/referrer referral.
+ *
+ * Both create routes had no ceiling on any of these, and `notes` went
+ * straight into the internal notification email. Returns the first
+ * problem, or null.
+ */
+export function checkReferralTextFields(body: Record<string, unknown>): string | null {
+  for (const [field, max] of Object.entries(REFERRAL_TEXT_MAX)) {
+    const value = body[field]
+    if (value === undefined || value === null || value === '') continue
+    if (typeof value !== 'string') return `${field} must be a string`
+    if (value.length > max) return `${field} is too long (max ${max})`
+  }
+  const email = body.clientEmail
+  if (typeof email === 'string' && email.trim() && !EMAIL_RE.test(email.trim())) {
+    return 'Invalid email format'
+  }
+  return null
+}

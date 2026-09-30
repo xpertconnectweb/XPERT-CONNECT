@@ -2,8 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Phone, Shield, Clock, Users } from 'lucide-react'
-import { urlFor } from '@/lib/sanity'
-import type { HeroData } from '@/lib/sanity-types'
+import type { HeroData } from '@/lib/landing-content'
 
 const defaultTrustBadges = [
   { icon: Shield, text: 'Verified Professionals' },
@@ -37,9 +36,7 @@ export function Hero({ data }: HeroProps) {
       }))
     : defaultTrustBadges
 
-  const backgroundUrl = data?.backgroundImage
-    ? urlFor(data.backgroundImage).width(2400).height(1400).fit('crop').url()
-    : '/images/Office.png'
+  const backgroundUrl = '/images/Office.png'
 
   return (
     <section

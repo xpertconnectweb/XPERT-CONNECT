@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth, requireAdmin } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/security/http'
 import {
   getReferralById,
   updateReferralFields,
@@ -40,7 +41,9 @@ export async function PATCH(
     return NextResponse.json({ error: 'Not authorized for this referral' }, { status: 403 })
   }
 
-  const body = await request.json() as Record<string, unknown>
+  const parsed = await readJsonBody(request)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.body as Record<string, unknown>
   const patch: ReferralPatch = {}
   const MAX_OPTIONAL_FIELD = 200
 

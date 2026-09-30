@@ -1,19 +1,17 @@
-// TypeScript interfaces for Sanity CMS content
-
-export interface SanityImage {
-  _type: 'image'
-  asset: {
-    _ref: string
-    _type: 'reference'
-  }
-  alt?: string
-}
+/**
+ * Content shapes for the landing sections.
+ *
+ * These used to describe documents fetched from Sanity. Sanity was never
+ * configured in production (its project id was the placeholder "xxx"), so
+ * every section always rendered its built-in defaults; the CMS and its
+ * Studio were removed on 2026-09-30. The optional `data` props remain as
+ * a seam for overriding copy, typed by these interfaces.
+ */
 
 export interface SiteSettings {
   title: string
   description: string
   keywords: string[]
-  ogImage?: SanityImage
 }
 
 export interface HeroData {
@@ -27,7 +25,6 @@ export interface HeroData {
   ctaPrimaryHref: string
   ctaSecondaryText: string
   ctaSecondaryHref: string
-  backgroundImage?: SanityImage
   trustBadges: { text: string }[]
 }
 
@@ -39,7 +36,6 @@ export interface AboutData {
   paragraph2: string
   highlights: string[]
   disclaimer: string
-  image?: SanityImage
   stats: {
     value: number
     suffix: string

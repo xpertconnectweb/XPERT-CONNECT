@@ -1,3 +1,4 @@
+import 'server-only'
 import { Resend } from 'resend'
 import { COMPANY_NAME, COMPANY_DOMAIN, COMPANY_LOGO_URL, COMPANY_EMAIL } from '@/lib/constants'
 import type { EmailOptions } from '@/types/admin'
@@ -41,7 +42,9 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     throw new Error(`Failed to send email: ${error.message}`)
   }
 
-  console.log(`Email sent to ${options.to} (id: ${data?.id})`)
+  // The Resend id is enough to find a message in their dashboard; the
+  // recipient address does not belong in our logs.
+  console.log(`Email sent (id: ${data?.id})`)
 }
 
 export function logoBar(): string {

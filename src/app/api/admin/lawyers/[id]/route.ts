@@ -4,6 +4,23 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
 import { sanitizePracticeAreas } from '@/lib/practice-areas'
 import { validateCoordinates } from '@/lib/validation'
+import { readJsonBody } from '@/lib/security/http'
+import { normalizeWebsite } from '@/lib/security/url'
+
+/**
+ * The fields this route may write — exactly what the admin form sends.
+ *
+ * It used to copy every key of the body into the update, so a request could
+ * set any column on the row: `id`, `directory_public`, `geocoded_at`... Admin
+ * only, but an allowlist costs nothing and makes the next column added to
+ * `lawyers` read-only here until someone lists it on purpose. Same shape as
+ * admin/clinics/[id].
+ */
+const ALLOWED_FIELDS = new Set([
+  'name', 'address', 'lat', 'lng', 'phone', 'email', 'practiceAreas',
+  'website', 'region', 'county', 'zipCode', 'available',
+  'street', 'city', 'state', 'placeId', 'placeProvider', 'geocodePrecision',
+])
 
 /**
  * Payload key to database column, for the ones that differ.
@@ -29,7 +46,22 @@ export async function PATCH(
 
   try {
     const { id } = await params
-    const body = await request.json()
+    const parsed = await readJsonBody(request)
+    if (!parsed.ok) return parsed.response
+    const body = parsed.body
+
+    const unknown = Object.keys(body).filter((key) => !ALLOWED_FIELDS.has(key))
+    if (unknown.length > 0) {
+      return NextResponse.json({ error: `Unknown field(s): ${unknown.join(', ')}` }, { status: 400 })
+    }
+
+    if (body.website !== undefined) {
+      const website = normalizeWebsite(body.website)
+      if (website === null) {
+        return NextResponse.json({ error: 'Website must be an http(s) address' }, { status: 400 })
+      }
+      body.website = website || null
+    }
 
     // Validated as a PAIR, before anything is written. A latitude on its own
     // cannot be range-checked, and every caller that moves a firm sends both.

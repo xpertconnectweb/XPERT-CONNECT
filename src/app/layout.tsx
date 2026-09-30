@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Montserrat, Open_Sans } from 'next/font/google'
 import './globals.css'
-import { getSiteSettings } from '@/lib/sanity-queries'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -25,12 +24,10 @@ const defaultTitle = 'Xpert Connect | Been in an Accident? We Can Help'
 const defaultDescription = 'Connect with experienced attorneys and medical clinics after an accident. Free consultation. We are not attorneys - we connect you with trusted professionals who can help.'
 const defaultKeywords = ['accident attorney', 'personal injury', 'medical clinics', 'car accident', 'legal referral', 'injury treatment']
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings().catch(() => null)
-
-  const title = settings?.title ?? defaultTitle
-  const description = settings?.description ?? defaultDescription
-  const keywords = settings?.keywords ?? defaultKeywords
+export function generateMetadata(): Metadata {
+  const title = defaultTitle
+  const description = defaultDescription
+  const keywords = defaultKeywords
 
   return {
     metadataBase: new URL('https://www.xpertconnect.com'),

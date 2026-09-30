@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Send, Loader2, CheckCircle, User, Phone, Mail, Globe, MapPin } from 'lucide-react'
 import type { DirectoryContact } from '@/types/professionals'
+import { safeHttpUrl } from '@/lib/security/url'
 
 interface InfoRequestModalProps {
   firm: { id: string; name: string }
@@ -122,9 +123,9 @@ export function InfoRequestModal({ firm, onClose }: InfoRequestModalProps) {
                   <Phone className="h-4 w-4" />
                   {contact.phone}
                 </a>
-                {contact.website && (
+                {safeHttpUrl(contact.website) && (
                   <a
-                    href={contact.website}
+                    href={safeHttpUrl(contact.website)}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
                     className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"

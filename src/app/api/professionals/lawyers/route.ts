@@ -6,12 +6,14 @@ import { toPublicLawyers } from '@/lib/api/public-shape'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const { session, error } = await requireAuth()
+  /**
+   * An allowlist, not "everyone but referrer". The deny-list let every role
+   * added since — partner, directory — read the whole network, though each
+   * has its own scoped endpoint (/api/partners/clinics, /api/directory/lawyers).
+   * These are the roles whose screens call this route.
+   */
+  const { session, error } = await requireAuth(['lawyer', 'clinic', 'admin'])
   if (error) return error
-
-  if (session.user.role === 'referrer') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
 
   try {
     // Always read the user's current state from DB (JWT may be stale)

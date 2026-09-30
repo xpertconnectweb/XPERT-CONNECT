@@ -40,6 +40,18 @@ const USER_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, 
 const USER_AUTH_COLUMNS = 'id, username, password, name, role, clinic_id, lawyer_id, firm_name, email, state'
 const REFERRAL_COLUMNS = 'id, referral_kind, lawyer_id, lawyer_name, lawyer_firm, clinic_id, clinic_name, target_clinic_id, target_clinic_name, specialist_type, created_by_user_id, creator_role, patient_name, patient_phone, case_type, accident_date, coverage, pip, insurance_company, claim_number, adjuster_name, adjuster_phone, adjuster_email, notes, status, created_at, updated_at'
 
+/**
+ * What to log from a failed Supabase call: the code and message only.
+ *
+ * Never the whole object. A constraint violation's `details` repeats the
+ * failing row — patient names, phone numbers — and Vercel keeps logs.
+ */
+function dbError(error: unknown): { code?: string; message?: string } {
+  if (!error || typeof error !== 'object') return { message: String(error) }
+  const e = error as { code?: string; message?: string }
+  return { code: e.code, message: e.message }
+}
+
 // Users
 export async function getUsers(): Promise<User[]> {
   // Paged: every clinic has a login now, so this is past PostgREST's
@@ -48,7 +60,7 @@ export async function getUsers(): Promise<User[]> {
     supabaseAdmin.from('users').select(USER_COLUMNS).order('id').range(from, to)
   )
   if (error) {
-    console.error('getUsers error:', error)
+    console.error('getUsers error:', dbError(error))
     return []
   }
   return rowsToModels<User>(rows)
@@ -178,7 +190,7 @@ export async function getClinics(): Promise<DecoratedClinic[]> {
     supabaseAdmin.from('clinics').select(CLINIC_COLUMNS).order('id').range(from, to)
   )
   if (error) {
-    console.error('getClinics error:', error)
+    console.error('getClinics error:', dbError(error))
     return []
   }
   return rowsToModels<Clinic>(rows).map(decorateClinic)
@@ -219,7 +231,7 @@ export async function getClinicsByState(state: string): Promise<DecoratedClinic[
   ])
 
   if (structured.error || legacy.error) {
-    console.error('getClinicsByState error:', structured.error ?? legacy.error)
+    console.error('getClinicsByState error:', dbError(structured.error ?? legacy.error))
     return []
   }
 
@@ -250,7 +262,7 @@ export async function getClinicsByIds(
     .select(CLINIC_COLUMNS)
     .in('id', ids as string[])
   if (error) {
-    console.error('getClinicsByIds error:', error)
+    console.error('getClinicsByIds error:', dbError(error))
     throw new Error(`getClinicsByIds failed: ${error.message}`)
   }
   return rowsToModels<Clinic>(data).map(decorateClinic)
@@ -298,7 +310,7 @@ export async function getLawyers(): Promise<DecoratedLawyer[]> {
     supabaseAdmin.from('lawyers').select(LAWYER_COLUMNS).order('id').range(from, to)
   )
   if (error) {
-    console.error('getLawyers error:', error)
+    console.error('getLawyers error:', dbError(error))
     return []
   }
   return rowsToModels<Lawyer>(rows).map(decorateLawyer)
@@ -323,7 +335,7 @@ export async function getLawyersByState(state: string): Promise<DecoratedLawyer[
   ])
 
   if (structured.error || legacy.error) {
-    console.error('getLawyersByState error:', structured.error ?? legacy.error)
+    console.error('getLawyersByState error:', dbError(structured.error ?? legacy.error))
     return []
   }
 
@@ -370,7 +382,7 @@ export async function getPublicDirectoryLawyers(): Promise<DecoratedLawyer[]> {
   )
 
   if (listed.error) {
-    console.error('getPublicDirectoryLawyers error:', listed.error)
+    console.error('getPublicDirectoryLawyers error:', dbError(listed.error))
     return []
   }
 
@@ -399,7 +411,7 @@ export async function getPublicDirectoryLawyerById(
     .eq('directory_public', true)
     .maybeSingle()
   if (error) {
-    console.error('getPublicDirectoryLawyerById error:', error)
+    console.error('getPublicDirectoryLawyerById error:', dbError(error))
     return undefined
   }
   if (!data) return undefined
@@ -426,7 +438,7 @@ export async function createLawyer(lawyer: Lawyer): Promise<Lawyer> {
     .select()
     .single()
   if (error) {
-    console.error('createLawyer error:', error)
+    console.error('createLawyer error:', dbError(error))
     throw new Error('Failed to create lawyer')
   }
   return rowToModel<Lawyer>(data)
@@ -444,7 +456,7 @@ export async function updateLawyer(
     .select()
     .single()
   if (error || !data) {
-    console.error('updateLawyer error:', error)
+    console.error('updateLawyer error:', dbError(error))
     return null
   }
   return rowToModel<Lawyer>(data)
@@ -453,7 +465,7 @@ export async function updateLawyer(
 export async function deleteLawyer(id: string): Promise<boolean> {
   const { error } = await supabaseAdmin.from('lawyers').delete().eq('id', id)
   if (error) {
-    console.error('deleteLawyer error:', error)
+    console.error('deleteLawyer error:', dbError(error))
     return false
   }
   return true
@@ -473,7 +485,7 @@ export async function getReferrals(): Promise<Referral[]> {
     supabaseAdmin.from('referrals').select(REFERRAL_COLUMNS).order('id').range(from, to)
   )
   if (error) {
-    console.error('getReferrals error:', error)
+    console.error('getReferrals error:', dbError(error))
     return []
   }
   return byCreatedAtDesc(rowsToModels<Referral>(rows))
@@ -495,7 +507,7 @@ export async function getReferralsByLawyerEntity(
     .eq('lawyer_id', lawyerEntityId)
     .order('created_at', { ascending: false })
   if (error) {
-    console.error('getReferralsByLawyerEntity error:', error)
+    console.error('getReferralsByLawyerEntity error:', dbError(error))
     return []
   }
   return rowsToModels<Referral>(data)
@@ -512,7 +524,7 @@ export async function getReferralsByClinic(
     .or(`clinic_id.eq.${clinicId},target_clinic_id.eq.${clinicId}`)
     .order('created_at', { ascending: false })
   if (error) {
-    console.error('getReferralsByClinic error:', error)
+    console.error('getReferralsByClinic error:', dbError(error))
     return []
   }
   return rowsToModels<Referral>(data)
@@ -538,7 +550,7 @@ export async function createReferral(referral: Referral): Promise<Referral> {
     .select()
     .single()
   if (error) {
-    console.error('createReferral error:', error)
+    console.error('createReferral error:', dbError(error))
     throw new Error('Failed to create referral')
   }
   return rowToModel<Referral>(data)
@@ -562,7 +574,7 @@ export async function updateReferralFields(
     .select()
     .single()
   if (error || !data) {
-    console.error('updateReferralFields error:', error)
+    console.error('updateReferralFields error:', dbError(error))
     return null
   }
   return rowToModel<Referral>(data)
@@ -601,6 +613,30 @@ export async function getUserById(id: string): Promise<User | undefined> {
   return rowToModel<User>(data)
 }
 
+/**
+ * The session refresh's view of a user: present, gone, or unknown.
+ *
+ * `getUserById` answers `undefined` for both "no such row" and "the query
+ * failed". Revoking a session on the first would be right and on the second
+ * would log everybody out during a database blip, so this one keeps them
+ * apart. Narrow columns, like the login.
+ */
+export type UserSessionLookup =
+  | { status: 'found'; user: User }
+  | { status: 'missing' }
+  | { status: 'error' }
+
+export async function lookupUserForSession(id: string): Promise<UserSessionLookup> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select(USER_AUTH_COLUMNS)
+    .eq('id', id)
+    .maybeSingle()
+  if (error) return { status: 'error' }
+  if (!data) return { status: 'missing' }
+  return { status: 'found', user: rowToModel<User>(data) }
+}
+
 export async function createUser(user: User): Promise<User> {
   const row = modelToRow(user)
   const { data, error } = await supabaseAdmin
@@ -609,7 +645,7 @@ export async function createUser(user: User): Promise<User> {
     .select()
     .single()
   if (error) {
-    console.error('createUser error:', error)
+    console.error('createUser error:', dbError(error))
     throw new Error('Failed to create user')
   }
   return rowToModel<User>(data)
@@ -627,7 +663,7 @@ export async function updateUser(
     .select()
     .single()
   if (error || !data) {
-    console.error('updateUser error:', error)
+    console.error('updateUser error:', dbError(error))
     return null
   }
   return rowToModel<User>(data)
@@ -636,7 +672,7 @@ export async function updateUser(
 export async function deleteUser(id: string): Promise<boolean> {
   const { error } = await supabaseAdmin.from('users').delete().eq('id', id)
   if (error) {
-    console.error('deleteUser error:', error)
+    console.error('deleteUser error:', dbError(error))
     return false
   }
   return true
@@ -649,7 +685,7 @@ export async function getContacts(): Promise<Contact[]> {
     .select('id, name, email, phone, service, message, created_at')
     .order('created_at', { ascending: false })
   if (error) {
-    console.error('getContacts error:', error)
+    console.error('getContacts error:', dbError(error))
     return []
   }
   return rowsToModels<Contact>(data)
@@ -662,7 +698,7 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]
     .select('id, email, subscribed_at')
     .order('subscribed_at', { ascending: false })
   if (error) {
-    console.error('getNewsletterSubscribers error:', error)
+    console.error('getNewsletterSubscribers error:', dbError(error))
     return []
   }
   return rowsToModels<NewsletterSubscriber>(data)
@@ -677,7 +713,7 @@ export async function getReferrerReferrals(): Promise<ReferrerReferral[]> {
     supabaseAdmin.from('referrer_referrals').select(RREF_COLUMNS).order('id').range(from, to)
   )
   if (error) {
-    console.error('getReferrerReferrals error:', error)
+    console.error('getReferrerReferrals error:', dbError(error))
     return []
   }
   return byCreatedAtDesc(rowsToModels<ReferrerReferral>(rows))
@@ -690,7 +726,7 @@ export async function getReferrerReferralsByReferrer(referrerId: string): Promis
     .eq('referrer_id', referrerId)
     .order('created_at', { ascending: false })
   if (error) {
-    console.error('getReferrerReferralsByReferrer error:', error)
+    console.error('getReferrerReferralsByReferrer error:', dbError(error))
     return []
   }
   return rowsToModels<ReferrerReferral>(data)
@@ -714,7 +750,7 @@ export async function createReferrerReferral(referral: ReferrerReferral): Promis
     .select()
     .single()
   if (error) {
-    console.error('createReferrerReferral error:', error)
+    console.error('createReferrerReferral error:', dbError(error))
     throw new Error('Failed to create referrer referral')
   }
   return rowToModel<ReferrerReferral>(data)
@@ -732,7 +768,7 @@ export async function updateReferrerReferral(
     .select()
     .single()
   if (error || !data) {
-    console.error('updateReferrerReferral error:', error)
+    console.error('updateReferrerReferral error:', dbError(error))
     return null
   }
   return rowToModel<ReferrerReferral>(data)
@@ -751,7 +787,7 @@ export async function deleteReferrerReferral(id: string): Promise<boolean> {
     .delete({ count: 'exact' })
     .eq('id', id)
   if (error) {
-    console.error('deleteReferrerReferral error:', error)
+    console.error('deleteReferrerReferral error:', dbError(error))
     return false
   }
   return (count ?? 0) > 0
@@ -769,7 +805,7 @@ export async function getSetting<T>(key: string): Promise<T | undefined> {
     .eq('key', key)
     .maybeSingle()
   if (error) {
-    console.error('getSetting error:', error)
+    console.error('getSetting error:', dbError(error))
     return undefined
   }
   return (data?.value as T) ?? undefined
@@ -828,7 +864,7 @@ export async function getActiveOptOuts(phones: string[]): Promise<Set<string>> {
     // Fail CLOSED: if we cannot tell who opted out, send to nobody.
     // Texting someone who said STOP is a statutory penalty per
     // message; a missed alert is an email they still received.
-    console.error('getActiveOptOuts error:', error)
+    console.error('getActiveOptOuts error:', dbError(error))
     return new Set(phones)
   }
 
@@ -858,7 +894,7 @@ export async function recordOptOut(
     },
     { onConflict: 'phone_e164' }
   )
-  if (error) console.error('recordOptOut error:', error)
+  if (error) console.error('recordOptOut error:', dbError(error))
 }
 
 /**
@@ -874,7 +910,7 @@ export async function recordOptIn(phone: string): Promise<void> {
     .from('sms_opt_outs')
     .update({ resumed_at: new Date().toISOString() })
     .eq('phone_e164', phone)
-  if (error) console.error('recordOptIn error:', error)
+  if (error) console.error('recordOptIn error:', dbError(error))
 }
 
 /** Mirror a carrier-side opt-out onto every account using that number. */
@@ -883,7 +919,7 @@ export async function disableAlertsForPhone(phone: string): Promise<void> {
     .from('users')
     .update({ sms_referral_alerts: false })
     .eq('phone_e164', phone)
-  if (error) console.error('disableAlertsForPhone error:', error)
+  if (error) console.error('disableAlertsForPhone error:', dbError(error))
 }
 
 export async function recordSmsMessage(entry: {
@@ -903,7 +939,7 @@ export async function recordSmsMessage(entry: {
     error_code: entry.errorCode ?? null,
   })
   // Never throw: logging a send must not break the send.
-  if (error) console.error('recordSmsMessage error:', error)
+  if (error) console.error('recordSmsMessage error:', dbError(error))
 }
 
 /**
@@ -934,7 +970,7 @@ export async function setPendingPhone(
     })
     .eq('id', userId)
   if (error) {
-    console.error('setPendingPhone error:', error)
+    console.error('setPendingPhone error:', dbError(error))
     throw new Error('Failed to save phone')
   }
 }
@@ -945,7 +981,7 @@ export async function markPhoneVerified(userId: string): Promise<void> {
     .update({ phone_verified_at: new Date().toISOString() })
     .eq('id', userId)
   if (error) {
-    console.error('markPhoneVerified error:', error)
+    console.error('markPhoneVerified error:', dbError(error))
     throw new Error('Failed to mark verified')
   }
 }
@@ -956,7 +992,7 @@ export async function setSmsAlerts(userId: string, enabled: boolean): Promise<vo
     .update({ sms_referral_alerts: enabled })
     .eq('id', userId)
   if (error) {
-    console.error('setSmsAlerts error:', error)
+    console.error('setSmsAlerts error:', dbError(error))
     throw new Error('Failed to update alerts')
   }
 }
@@ -978,7 +1014,7 @@ export async function clearUserPhone(userId: string): Promise<void> {
     })
     .eq('id', userId)
   if (error) {
-    console.error('clearUserPhone error:', error)
+    console.error('clearUserPhone error:', dbError(error))
     throw new Error('Failed to clear phone')
   }
 
@@ -990,5 +1026,5 @@ export async function markSmsSent(userId: string): Promise<void> {
     .from('users')
     .update({ sms_last_sent_at: new Date().toISOString() })
     .eq('id', userId)
-  if (error) console.error('markSmsSent error:', error)
+  if (error) console.error('markSmsSent error:', dbError(error))
 }

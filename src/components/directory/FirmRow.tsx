@@ -2,6 +2,7 @@
 
 import { Scale, MapPin, Phone, Copy, Check, Globe, Star, Info } from 'lucide-react'
 import { countyLabel } from '@/lib/counties'
+import { safeHttpUrl } from '@/lib/security/url'
 
 /**
  * The shape a row needs, structurally — satisfied by both
@@ -69,6 +70,19 @@ export function FirmRow({
   featured?: boolean
 }) {
   const city = firm.region || firm.city || ''
+  /**
+   * The public row (the one with "Get information") never shows contact
+   * details, whatever the data carries. The listing shape already omits
+   * them, but on 2026-09-30 a stale cache fed this row the OLD shape for
+   * an hour and every phone number was back on the landing page. The
+   * form is the only way to a firm's contact details; this makes that a
+   * property of the row, not of whichever payload reached it.
+   */
+  const showContact = !onRequestInfo
+  // Only http(s): a stored `javascript:` URL would otherwise run on click.
+  const website = showContact ? safeHttpUrl(firm.website) : undefined
+  const phone = showContact ? firm.phone : undefined
+  const address = showContact ? firm.address : undefined
 
   return (
     <li
@@ -104,8 +118,8 @@ export function FirmRow({
           )}
         </div>
 
-        {firm.address && (
-          <p className="text-[11px] text-gray-500 mt-0.5 truncate">{firm.address}</p>
+        {address && (
+          <p className="text-[11px] text-gray-500 mt-0.5 truncate">{address}</p>
         )}
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
@@ -153,19 +167,19 @@ export function FirmRow({
           </button>
         )}
 
-        {firm.phone && (
+        {phone && (
           <a
-            href={`tel:${firm.phone.replace(/[^\d+]/g, '')}`}
+            href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-navy to-navy-light px-4 py-2 text-xs font-bold text-white shadow-md shadow-navy/20 hover:shadow-lg hover:shadow-navy/30 hover:-translate-y-px transition-all duration-200"
           >
             <Phone className="h-3.5 w-3.5" />
-            {firm.phone}
+            {phone}
           </a>
         )}
 
-        {firm.website && (
+        {website && (
           <a
-            href={firm.website}
+            href={website}
             target="_blank"
             rel="noopener noreferrer nofollow"
             aria-label={`Visit the website of ${firm.name}`}

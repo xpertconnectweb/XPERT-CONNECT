@@ -4,7 +4,9 @@ import { getLawyers } from '@/lib/data'
 import { supabaseAdmin } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity-log'
 import { sanitizePracticeAreas } from '@/lib/practice-areas'
-import { validateCoordinates } from '@/lib/validation'
+import { checkProviderFields, validateCoordinates } from '@/lib/validation'
+import { readJsonBody } from '@/lib/security/http'
+import { normalizeWebsite } from '@/lib/security/url'
 import { randomUUID } from 'crypto'
 
 export async function GET() {
@@ -20,7 +22,16 @@ export async function POST(request: Request) {
   if (authError) return authError
 
   try {
-    const body = await request.json()
+    const parsed = await readJsonBody(request)
+    if (!parsed.ok) return parsed.response
+    const body = parsed.body
+
+    const invalid = checkProviderFields(body, { requireName: true })
+    if (invalid) return NextResponse.json({ error: invalid }, { status: 400 })
+    const website = normalizeWebsite(body.website)
+    if (website === null) {
+      return NextResponse.json({ error: 'Website must be an http(s) address' }, { status: 400 })
+    }
     const {
       name,
       address,
@@ -29,7 +40,6 @@ export async function POST(request: Request) {
       phone,
       email,
       practiceAreas,
-      website,
       region,
       county,
       zipCode,
@@ -85,7 +95,7 @@ export async function POST(request: Request) {
       action: 'lawyer_created',
       targetType: 'lawyer',
       targetId: newId,
-      targetName: name,
+      targetName: String(name), // checked by checkProviderFields
     })
 
     return NextResponse.json({ success: true })

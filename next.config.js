@@ -3,14 +3,8 @@
 const isDev = process.env.NODE_ENV === 'development'
 
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'cdn.sanity.io',
-      },
-    ],
-  },
+  // No "X-Powered-By: Next.js": it tells a scanner which advisories to try.
+  poweredByHeader: false,
   async redirects() {
     return [
       {
@@ -34,6 +28,10 @@ const nextConfig = {
       {
         source: '/(.*)',
         headers: [
+          // Two years, every subdomain. Not `preload`: getting off the
+          // browsers' preload list takes months if a subdomain ever needs
+          // plain http.
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -42,17 +40,30 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // unsafe-eval only in dev (Next.js HMR requires it)
+              // unsafe-eval only in dev (Next.js HMR requires it).
+              //
+              // 'unsafe-inline' stays in production on purpose: Next injects
+              // inline bootstrap scripts, and the alternative — a per-request
+              // nonce — makes every page dynamic, which would cost the
+              // directory and the landing page their ISR. The one inline
+              // script built from stored data (the directory's JSON-LD) is
+              // escaped by jsonForScript instead.
               isDev
                 ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
                 : "script-src 'self' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' https://cdn.sanity.io https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
-              // Nominatim is deliberately absent: address lookup now goes
-              // through /api/geocode, so the browser has no reason to reach it
-              // and clients' home addresses never leave our origin.
-              "connect-src 'self' https://*.supabase.co https://cdn.sanity.io https://*.tile.openstreetmap.org",
+              // next/font self-hosts the fonts, so no Google origins.
+              "style-src 'self' 'unsafe-inline'",
+              "font-src 'self'",
+              "img-src 'self' https://*.tile.openstreetmap.org data: blob:",
+              // The browser talks to this origin and the map tiles, nothing
+              // else. Supabase, Nominatim and every geocoder are reached
+              // server-side only, so clients' addresses never leave our origin.
+              "connect-src 'self' https://*.tile.openstreetmap.org",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              ...(isDev ? [] : ['upgrade-insecure-requests']),
             ].join('; '),
           },
         ],

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/security/http'
+import { RATE_LIMITS, enforceRateLimits } from '@/lib/security/rate-limit'
 import { getReferrerReferralsByReferrer, createReferrerReferral } from '@/lib/data'
 import { logActivity } from '@/lib/activity-log'
 import { sanitize, isValidPhone } from '@/lib/sanitize'
-import { EMAIL_RE, VALID_SERVICES, VALID_STATES, isValidIsoDate } from '@/lib/validation'
+import { EMAIL_RE, VALID_SERVICES, VALID_STATES, checkReferralTextFields, isValidIsoDate } from '@/lib/validation'
 import { DEFAULT_REFERRAL_STATUS, isReferralStatus } from '@/lib/referral-status'
 import { DEFAULT_CASE_CONFIRMED } from '@/lib/case-confirmed'
 import type { ReferrerReferral } from '@/types/professionals'
@@ -42,8 +44,13 @@ export async function POST(request: NextRequest) {
   const { session, error: authError } = await requireAuth(['partner', 'admin'])
   if (authError) return authError
 
-  const body = await request.json()
+  const parsed = await readJsonBody(request)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.body as Record<string, any> // fields are checked one by one below
   const { clientName, clientPhone, clientEmail, clientAddress, state, serviceNeeded, caseType, accidentDate, notes } = body
+
+  const invalidText = checkReferralTextFields(body)
+  if (invalidText) return NextResponse.json({ error: invalidText }, { status: 400 })
 
   if (!clientName?.trim()) {
     return NextResponse.json({ error: 'Client name is required' }, { status: 400 })
@@ -67,6 +74,10 @@ export async function POST(request: NextRequest) {
   if (cleanAccidentDate && !isValidIsoDate(cleanAccidentDate)) {
     return NextResponse.json({ error: 'Invalid accident date format (expected YYYY-MM-DD)' }, { status: 400 })
   }
+
+  // Each referral fans out emails and SMS; bound what one account can send.
+  const limited = await enforceRateLimits([[RATE_LIMITS.referralPerUser, session.user.id]])
+  if (limited) return limited
 
   const now = new Date().toISOString()
   const referral: ReferrerReferral = {

@@ -24,6 +24,11 @@ export default withAuth(
     return NextResponse.next()
   },
   {
+    callbacks: {
+      // A revoked token (account deleted or password changed) is still a
+      // validly signed JWT; without this it would keep opening pages.
+      authorized: ({ token }) => Boolean(token && !token.revoked),
+    },
     pages: {
       signIn: '/professionals/login',
     },

@@ -132,6 +132,37 @@ describe('PATCH /api/admin/lawyers/[id]', () => {
     const payload = update?.args[0] as Record<string, unknown>
     expect(payload.zip_code).toBe('33101')
   })
+
+  /**
+   * The route used to copy every body key into the update, so any column
+   * — `directory_public`, `id`, `geocoded_at` — could be set through it.
+   */
+  it.each([['directoryPublic'], ['directory_public'], ['id'], ['geocoded_at']])(
+    'refuses a field the admin form never sends: %s',
+    async (field) => {
+      const res = await PATCH(buildRequest({ [field]: true }) as Request, params('l-1'))
+      expect(res.status).toBe(400)
+      expect(sb.calls.some((c) => c.method === 'update')).toBe(false)
+    }
+  )
+
+  it('rejects a javascript: website and normalises a bare domain', async () => {
+    const bad = await PATCH(buildRequest({ website: 'javascript:alert(1)' }) as Request, params('l-1'))
+    expect(bad.status).toBe(400)
+
+    const ok = await PATCH(buildRequest({ website: 'czaialaw.com' }) as Request, params('l-1'))
+    expect(ok.status).toBe(200)
+    const update = sb.calls.find((c) => c.method === 'update')
+    expect((update?.args[0] as Record<string, unknown>).website).toBe('https://czaialaw.com/')
+  })
+
+  it('answers a malformed body with 400, not 500', async () => {
+    const res = await PATCH(
+      { headers: new Headers(), json: async () => { throw new SyntaxError('bad') } } as unknown as Request,
+      params('l-1')
+    )
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('DELETE /api/admin/lawyers/[id]', () => {

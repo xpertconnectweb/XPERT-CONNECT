@@ -1,5 +1,5 @@
 import { User, Briefcase, Star, Shield, Zap, TrendingUp, Award } from 'lucide-react'
-import type { BenefitsData } from '@/lib/sanity-types'
+import type { BenefitsData } from '@/lib/landing-content'
 
 const iconMap: Record<string, typeof Shield> = {
   Shield, Zap, Star, User, TrendingUp, Briefcase, Award,

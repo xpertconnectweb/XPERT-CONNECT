@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { purgeExpired } from '@/lib/geocoding/shared-cache'
+import { hasBearerSecret } from '@/lib/security/secrets'
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Fails closed when CRON_SECRET is unset. The old template-string
+  // compare accepted the literal header "Bearer undefined" in that case.
+  if (!hasBearerSecret(request.headers, 'CRON_SECRET')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

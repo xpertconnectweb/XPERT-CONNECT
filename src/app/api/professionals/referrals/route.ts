@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/security/http'
+import { RATE_LIMITS, enforceRateLimits } from '@/lib/security/rate-limit'
 import { DEFAULT_REFERRAL_STATUS } from '@/lib/referral-status'
 import {
   getReferralsByLawyerEntity,
@@ -103,12 +105,18 @@ export async function POST(request: NextRequest) {
   const { session, error } = await requireAuth(['lawyer', 'clinic'])
   if (error) return error
 
-  const body = await request.json()
+  const parsed = await readJsonBody(request)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.body as Record<string, any> // fields are checked one by one below
   const { patientName, patientPhone, caseType, notes } = body
 
   if (!patientName || !patientPhone || !caseType) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
+
+  // Each referral fans out emails and SMS; bound what one account can send.
+  const limited = await enforceRateLimits([[RATE_LIMITS.referralPerUser, session.user.id]])
+  if (limited) return limited
 
   const cleanName = sanitize(patientName)
   const cleanPhone = sanitize(patientPhone)
@@ -283,7 +291,7 @@ async function handleLawyerToClinic(args: CreateArgs) {
               await new Promise(resolve => setTimeout(resolve, 600))
             }
           } catch (err) {
-            console.error(`Clinic email to ${email} failed:`, err)
+            console.error('Clinic email failed:', err)
           }
         }
 
@@ -406,7 +414,7 @@ async function handleClinicToLawyer(args: CreateArgs) {
               await new Promise(resolve => setTimeout(resolve, 600))
             }
           } catch (err) {
-            console.error(`Specialist email to ${email} failed:`, err)
+            console.error('Specialist email failed:', err)
           }
         }
 
@@ -562,7 +570,7 @@ async function handleClinicToMedicalSpecialist(args: CreateArgs) {
               await new Promise((resolve) => setTimeout(resolve, 600))
             }
           } catch (err) {
-            console.error(`Specialist clinic email to ${email} failed:`, err)
+            console.error('Specialist clinic email failed:', err)
           }
         }
         if (targetEmails.length > 0) {

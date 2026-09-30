@@ -11,8 +11,9 @@ export async function GET(request: NextRequest) {
   const targetType = searchParams.get('targetType')
   const from = searchParams.get('from')
   const to = searchParams.get('to')
-  const page = parseInt(searchParams.get('page') || '1', 10)
-  const limit = parseInt(searchParams.get('limit') || '50', 10)
+  // Clamped: an unbounded `limit` let one request pull the whole table.
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1)
+  const limit = Math.min(200, Math.max(1, parseInt(searchParams.get('limit') || '50', 10) || 50))
 
   let query = supabaseAdmin
     .from('activity_logs')
@@ -30,7 +31,8 @@ export async function GET(request: NextRequest) {
   const { data, error, count } = await query
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('activity-logs query failed:', error.code, error.message)
+    return NextResponse.json({ error: 'Failed to load activity logs' }, { status: 500 })
   }
 
   return NextResponse.json({

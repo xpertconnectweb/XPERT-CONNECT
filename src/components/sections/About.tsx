@@ -1,8 +1,7 @@
 import Image from 'next/image'
 import { CheckCircle } from 'lucide-react'
 import { CountUp } from '@/components/ui/CountUp'
-import { urlFor } from '@/lib/sanity'
-import type { AboutData } from '@/lib/sanity-types'
+import type { AboutData } from '@/lib/landing-content'
 
 const defaultStats = [
   { value: 20, suffix: '+', label: 'Years of Experience' },
@@ -39,9 +38,7 @@ export function About({ data }: AboutProps) {
    * third-party dependency on the critical path and a CSP entry kept open
    * for one image. Same aspect ratio as before, so the column is unchanged.
    */
-  const imageUrl = data?.image
-    ? urlFor(data.image).width(1200).height(900).fit('crop').url()
-    : '/images/about-people.jpg'
+  const imageUrl = '/images/about-people.jpg'
 
   return (
     <section id="about" className="section bg-white pattern-bg">

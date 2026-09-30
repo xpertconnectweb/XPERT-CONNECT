@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { COMPANY_NAME } from '@/lib/constants'
 import { getDirectorySummary } from '@/lib/directory-summary'
 import { DirectoryClient } from '@/components/directory/DirectoryClient'
+import { jsonForScript } from '@/lib/security/url'
 import {
   DirectoryBanner,
   DirectoryDisclaimer,
@@ -125,7 +126,9 @@ export default async function DirectoryPage() {
       {summary.showcase.length > 0 && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          // Firm names come from the database; jsonForScript keeps one
+          // containing `</script>` from closing this tag.
+          dangerouslySetInnerHTML={{ __html: jsonForScript(jsonLd) }}
         />
       )}
     </div>

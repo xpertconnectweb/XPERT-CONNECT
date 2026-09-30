@@ -18,6 +18,28 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+function revoked(role: 'lawyer' | 'admin') {
+  const session = buildSession({ role })
+  ;(session.user as { revoked?: boolean }).revoked = true
+  return session
+}
+
+describe('revoked sessions', () => {
+  // Account deleted or password changed: the JWT is still validly signed
+  // until it expires, so both guards must look at the flag.
+  it('requireAuth refuses a revoked session with 401', async () => {
+    mockedNextAuth.getServerSession.mockResolvedValue(revoked('lawyer') as never)
+    const { error } = await requireAuth()
+    expect(error?.status).toBe(401)
+  })
+
+  it('requireAdmin refuses a revoked admin session with 401', async () => {
+    mockedNextAuth.getServerSession.mockResolvedValue(revoked('admin') as never)
+    const { error } = await requireAdmin()
+    expect(error?.status).toBe(401)
+  })
+})
+
 describe('requireAdmin', () => {
   it('returns 401 when there is no session', async () => {
     mockedNextAuth.getServerSession.mockResolvedValue(null)

@@ -1,3 +1,4 @@
+import { safeEqual } from '@/lib/security/secrets'
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
   const header = request.headers.get('authorization') ?? ''
   const presented = header.startsWith('Bearer ') ? header.slice(7) : ''
-  if (presented !== secret) {
+  if (!safeEqual(presented, secret)) {
     return NextResponse.json({ message: 'Invalid secret' }, { status: 401 })
   }
 

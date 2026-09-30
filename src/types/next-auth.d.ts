@@ -11,6 +11,8 @@ declare module 'next-auth' {
       firmName?: string
       username: string
       state?: string
+      /** Set when the account was deleted or its password changed; see src/lib/auth.ts. */
+      revoked?: boolean
     } & DefaultSession['user']
   }
 
@@ -22,6 +24,8 @@ declare module 'next-auth' {
     firmName?: string
     username: string
     state?: string
+    /** Fingerprint of the stored password hash at sign-in. */
+    pwv?: string
   }
 }
 
@@ -34,5 +38,8 @@ declare module 'next-auth/jwt' {
     firmName?: string
     username: string
     state?: string
+    pwv?: string
+    revoked?: boolean
+    refreshedAt?: number
   }
 }

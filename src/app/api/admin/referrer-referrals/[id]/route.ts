@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/security/http'
 import { getReferrerReferralById, updateReferrerReferral, deleteReferrerReferral } from '@/lib/data'
 import { logActivity } from '@/lib/activity-log'
 import { sanitize } from '@/lib/sanitize'
@@ -19,7 +20,9 @@ export async function PATCH(
     return NextResponse.json({ error: 'Referral not found' }, { status: 404 })
   }
 
-  const body = await request.json()
+  const parsed = await readJsonBody(request)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.body as Record<string, any> // fields are checked one by one below
   const fields: Record<string, unknown> = {}
 
   // `!== undefined`, not truthiness: `status: ''` used to be dropped silently

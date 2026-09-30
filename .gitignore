@@ -116,3 +116,8 @@ docs/ux-shots/
 # They hold patient names and phone numbers copied out of production — the
 # whole point is that they stay on the machine that ran the purge.
 scripts/.purge-backup-*.json
+
+# Local-only: never publish (repo is public)
+.claude/settings.local.json
+cookies.txt
+data/users.json

@@ -187,6 +187,18 @@ async function buildSummary(showcaseSize: number): Promise<DirectorySummary> {
  * that build — and, worse, would take the whole marketing page down on
  * a transient database error rather than just dropping one section.
  */
+/**
+ * Version of the `DirectoryListing` SHAPE, part of every cache key below.
+ * Bump it whenever a field is added to or removed from a listing.
+ *
+ * Vercel's data cache outlives deploys. On 2026-09-30 the phone, website
+ * and address were removed from the listing, the deploy went out, and the
+ * landing page kept rendering them for another hour — from a summary
+ * cached by the previous build, under the same key. A new key per shape
+ * means a deploy can never read an entry written in the old shape.
+ */
+const LISTING_SHAPE = 'v2-no-contact'
+
 export const getDirectorySummary = unstable_cache(
   async (showcaseSize = 9): Promise<DirectorySummary> => {
     try {
@@ -196,7 +208,7 @@ export const getDirectorySummary = unstable_cache(
       return EMPTY_SUMMARY
     }
   },
-  ['public-lawyer-directory-summary'],
+  ['public-lawyer-directory-summary', LISTING_SHAPE],
   { revalidate: 3600, tags: ['lawyer-directory'] }
 )
 
@@ -222,6 +234,6 @@ export const getDirectorySummary = unstable_cache(
  */
 export const getPublicDirectoryListings = unstable_cache(
   loadDirectoryListings,
-  ['public-lawyer-directory-listings'],
+  ['public-lawyer-directory-listings', LISTING_SHAPE],
   { revalidate: 3600, tags: ['lawyer-directory'] }
 )

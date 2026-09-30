@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/security/http'
 import { getUsers, createUser, getLawyerById, getClinicById } from '@/lib/data'
 import { toAdminSafeUser } from '@/lib/api/public-shape'
 import { sanitize } from '@/lib/sanitize'
@@ -26,7 +27,9 @@ export async function POST(request: NextRequest) {
   const { session, error: authError } = await requireAdmin()
   if (authError) return authError
 
-  const body = await request.json()
+  const parsed = await readJsonBody(request)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.body as Record<string, any> // fields are checked one by one below
   const { name, username, password, role, email, firmName, clinicId, lawyerId, state } = body
 
   if (!name || !username || !password || !role || !email) {
