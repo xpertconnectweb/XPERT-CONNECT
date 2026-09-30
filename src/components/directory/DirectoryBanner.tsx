@@ -62,7 +62,7 @@ export function DirectoryBanner({
         <p className="mt-5 max-w-2xl text-base lg:text-lg text-white/70 leading-relaxed">
           Every kind of attorney in Florida, in one place — family, accident,
           criminal, immigration, estate, business and more. Search by firm, city
-          or county, then call them directly. No account needed.
+          or county, then request their contact information. No account needed.
         </p>
 
         <dl className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">

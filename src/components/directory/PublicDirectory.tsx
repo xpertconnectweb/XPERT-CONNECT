@@ -20,7 +20,8 @@ import {
 } from '@/lib/search/directory-url-state'
 import type { DirectoryListing } from '@/types/professionals'
 import { PracticeAreaCards } from './PracticeAreaCards'
-import { FirmRow } from './FirmRow'
+import { FirmRow, type FirmRowData } from './FirmRow'
+import { InfoRequestModal } from './InfoRequestModal'
 
 /**
  * No 'Accepting' here, unlike the gated directory.
@@ -115,6 +116,9 @@ export function PublicDirectory({
   const [county, setCounty] = useState(initialState?.county ?? '')
   const [sortMode, setSortMode] = useState<SortMode>(initialState?.sort ?? 'relevance')
   const [limit, setLimit] = useState(initialState?.show ?? PAGE_STEP)
+  /** The firm whose "Get information" form is open, if any. */
+  const [infoFirm, setInfoFirm] = useState<FirmRowData | null>(null)
+  const closeInfo = useCallback(() => setInfoFirm(null), [])
 
   const requested = useRef(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -523,7 +527,7 @@ export function PublicDirectory({
             </h3>
             <p className="text-sm text-gray-500 mt-1">
               Search {total.toLocaleString('en-US')} firms by name, city, county or
-              practice area — then call them directly.
+              practice area — then request their contact information.
             </p>
           </div>
           <SmartSearchBox
@@ -636,7 +640,7 @@ export function PublicDirectory({
          */}
         {view === 'results' && featuredFirm && !featuredInMatches && (
           <ul className="divide-y divide-gray-100 border-b border-gray-100">
-            <FirmRow firm={featuredFirm} featured />
+            <FirmRow firm={featuredFirm} featured onRequestInfo={setInfoFirm} />
           </ul>
         )}
 
@@ -738,7 +742,12 @@ export function PublicDirectory({
         ) : (
           <ul className="divide-y divide-gray-100">
             {shown.map((firm) => (
-              <FirmRow key={firm.id} firm={firm} featured={isFeaturedFirm(firm.id)} />
+              <FirmRow
+                key={firm.id}
+                firm={firm}
+                featured={isFeaturedFirm(firm.id)}
+                onRequestInfo={setInfoFirm}
+              />
             ))}
           </ul>
         )}
@@ -772,7 +781,7 @@ export function PublicDirectory({
             </div>
             <ul className="divide-y divide-gray-100">
               {fallbackRows.map((firm) => (
-                <FirmRow key={firm.id} firm={firm} />
+                <FirmRow key={firm.id} firm={firm} onRequestInfo={setInfoFirm} />
               ))}
             </ul>
           </div>
@@ -823,6 +832,8 @@ export function PublicDirectory({
           </div>
         )
       )}
+
+      {infoFirm && <InfoRequestModal firm={infoFirm} onClose={closeInfo} />}
     </div>
   )
 }

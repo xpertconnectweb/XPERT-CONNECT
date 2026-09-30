@@ -383,6 +383,31 @@ export async function getPublicDirectoryLawyers(): Promise<DecoratedLawyer[]> {
     .filter((lawyer) => lawyer.lat !== 0 || lawyer.lng !== 0)
 }
 
+/**
+ * One firm, only if the public directory would list it — the same gates
+ * as `getPublicDirectoryLawyers`. Used by the "Get information" form,
+ * which must not become a way to read the contact details of a firm
+ * that is not published.
+ */
+export async function getPublicDirectoryLawyerById(
+  id: string
+): Promise<DecoratedLawyer | undefined> {
+  const { data, error } = await supabaseAdmin
+    .from('lawyers')
+    .select(DIRECTORY_COLUMNS)
+    .eq('id', id)
+    .eq('directory_public', true)
+    .maybeSingle()
+  if (error) {
+    console.error('getPublicDirectoryLawyerById error:', error)
+    return undefined
+  }
+  if (!data) return undefined
+  const lawyer = decorateLawyer(rowToModel<Lawyer>(data))
+  if (lawyer.phone.trim() === '' || (lawyer.lat === 0 && lawyer.lng === 0)) return undefined
+  return lawyer
+}
+
 export async function getLawyerById(id: string): Promise<DecoratedLawyer | undefined> {
   const { data, error } = await supabaseAdmin
     .from('lawyers')

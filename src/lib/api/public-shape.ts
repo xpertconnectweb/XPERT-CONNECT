@@ -2,6 +2,7 @@ import type {
   AdminSafeUser,
   DecoratedClinic,
   DecoratedLawyer,
+  DirectoryContact,
   DirectoryListing,
   PublicClinic,
   PublicLawyer,
@@ -119,12 +120,11 @@ export function toPublicLawyers(lawyers: readonly DecoratedLawyer[]): PublicLawy
 /**
  * The PUBLIC lawyers directory shape.
  *
- * The inverse of the three helpers above: they hide contact details so
- * a professional cannot route around the platform, and this one keeps
- * them because a public directory of firms nobody can call is useless.
- * The safety is not in this function, it is in the caller -- only rows
- * with directory_public = true are ever passed here, and those are
- * firms seeded from public sources, never an attorney who signed up.
+ * Name, city, county and practice areas only. Phone, website and
+ * address used to travel here; since 2026-09-30 they are handed out by
+ * `toDirectoryContact`, one firm at a time, to a visitor who has filled
+ * in the "Get information" form. Only rows with directory_public = true
+ * are ever passed to either function.
  *
  * Built field by field instead of spreading the rest. `toPublicLawyer`
  * spreads, which is why adding the `street` column silently published
@@ -163,9 +163,6 @@ export function toDirectoryListing(lawyer: DecoratedLawyer): DirectoryListing {
   return {
     id: lawyer.id,
     name: lawyer.name,
-    address: lawyer.address,
-    phone: lawyer.phone,
-    website: lawyer.website,
     practiceAreas: lawyer.practiceAreas,
     city: displayCity(lawyer),
     county: lawyer.county,
@@ -173,6 +170,17 @@ export function toDirectoryListing(lawyer: DecoratedLawyer): DirectoryListing {
     state: lawyer.state ?? null,
     lat: lawyer.lat,
     lng: lawyer.lng,
+  }
+}
+
+/** The contact details the "Get information" form unlocks. Allowlisted, like the listing. */
+export function toDirectoryContact(lawyer: DecoratedLawyer): DirectoryContact {
+  return {
+    id: lawyer.id,
+    name: lawyer.name,
+    phone: lawyer.phone,
+    website: lawyer.website || undefined,
+    address: lawyer.address,
   }
 }
 

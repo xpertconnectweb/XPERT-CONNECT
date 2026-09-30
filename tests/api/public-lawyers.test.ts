@@ -67,11 +67,21 @@ describe('GET /api/public/lawyers', () => {
     expect(res.status).toBe(200)
   })
 
-  it('RETURNS phone and address — a directory you cannot call is useless', async () => {
+  /**
+   * Inverted on 2026-09-30, at the client's request: the listing shows
+   * name, city, county and practice areas, and contact details are
+   * handed out one firm at a time by /api/public/lawyers/[id]/inquiry.
+   * If they rode along here the form would be skippable from DevTools.
+   */
+  it('withholds phone, website and address — the inquiry form hands those out', async () => {
     const [firm] = await (await GET()).json()
-    expect(firm.phone).toBe('(407) 578-9696')
-    expect(firm.address).toBe('1000 Legion Pl #1000, Orlando, FL 32801')
-    expect(firm.website).toBe('https://example.com')
+    expect(firm).not.toHaveProperty('phone')
+    expect(firm).not.toHaveProperty('address')
+    expect(firm).not.toHaveProperty('website')
+    expect(firm.name).toBe('Bogin Munns & Munns PA')
+    expect(firm.city).toBe('Orlando')
+    expect(firm.county).toBe('Orange')
+    expect(firm.practiceAreas).toEqual(['Business Law'])
   })
 
   it('withholds internal bookkeeping and the firm email', async () => {

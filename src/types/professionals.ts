@@ -170,13 +170,13 @@ export type PublicLawyer = Omit<DecoratedLawyer, WithheldFromPublic>
 /**
  * One firm as the PUBLIC lawyers directory shows it.
  *
- * Contact details are present on purpose, and this is the one boundary
- * in the app where that is true. A directory you cannot call is not a
- * directory — the same argument the comment in
- * `src/app/api/directory/lawyers/route.ts` already makes. What keeps it
- * safe is upstream: only rows with `directory_public = true` ever reach
- * `toDirectoryListing`, and those are firms whose phone and address
- * were public before we ever wrote them down.
+ * Name, city, county and practice areas — and no contact details. The
+ * client asked for the phone, website and street address to come off
+ * the listing (2026-09-30): a visitor asks for them through the "Get
+ * information" form, which records the lead and only then hands back a
+ * `DirectoryContact`. Leaving them in this payload and merely not
+ * rendering them would make the form a formality anyone can skip by
+ * opening the network tab.
  *
  * Declared as an explicit PICK, not `Omit<..., Withheld>` like the two
  * types above, and that difference is the point. `toPublicLawyer` works
@@ -189,9 +189,6 @@ export type PublicLawyer = Omit<DecoratedLawyer, WithheldFromPublic>
 export interface DirectoryListing {
   id: string
   name: string
-  address: string
-  phone: string
-  website?: string
   practiceAreas: string[]
   /** Free-text city as stored on the row (`region`), or parsed from the address. */
   city?: string | null
@@ -200,6 +197,18 @@ export interface DirectoryListing {
   state?: string | null
   lat: number
   lng: number
+}
+
+/**
+ * What a visitor gets back from the directory's "Get information" form,
+ * and only from there — see `DirectoryListing`.
+ */
+export interface DirectoryContact {
+  id: string
+  name: string
+  phone: string
+  website?: string
+  address: string
 }
 
 // The referral lifecycle is defined once, in `src/lib/referral-status.ts`,

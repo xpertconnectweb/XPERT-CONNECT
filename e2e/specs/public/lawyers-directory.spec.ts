@@ -31,8 +31,10 @@ test('the landing page shows a populated Lawyers Directory to a stranger', async
   const rows = page.getByTestId('attorney-row')
   expect(await rows.count()).toBeGreaterThanOrEqual(5)
 
-  // A directory you cannot call is not a directory.
-  await expect(rows.first().locator('a[href^="tel:"]')).toBeVisible()
+  // No number on the row — the client wants visitors to ask for it
+  // through the form, so the row offers that instead.
+  await expect(rows.first().getByTestId('firm-request-info')).toBeVisible()
+  await expect(rows.first().locator('a[href^="tel:"]')).toHaveCount(0)
 
   await expect(page.getByTestId('public-directory-view-all')).toBeVisible()
 })
@@ -171,8 +173,57 @@ test('the public feed ships the allowlisted fields and nothing else', async ({ p
     expect(firm).not.toHaveProperty('email')
     expect(firm).not.toHaveProperty('placeId')
     expect(firm).not.toHaveProperty('geocodedAt')
-    expect(firm).toHaveProperty('phone')
+    // Contact details come from the inquiry form, not the feed.
+    expect(firm).not.toHaveProperty('phone')
+    expect(firm).not.toHaveProperty('website')
+    expect(firm).not.toHaveProperty('address')
   }
+})
+
+test('"Get information" asks for name, phone and email, then shows the firm contact', async ({
+  page,
+}) => {
+  /**
+   * The inquiry route is stubbed. A real POST would put a row in the
+   * production `contacts` table and email the client's inbox with a
+   * fake lead — this spec checks the page, and the route has its own
+   * unit test.
+   */
+  let posted: Record<string, string> | null = null
+  await page.route('**/api/public/lawyers/*/inquiry', async (route) => {
+    posted = route.request().postDataJSON()
+    await route.fulfill({
+      json: {
+        ok: true,
+        contact: {
+          id: 'l-stub',
+          name: 'Stub Firm',
+          phone: '(941) 555-0142',
+          website: 'https://stub.example',
+          address: '1 Main St, Bradenton, FL 34209',
+        },
+      },
+    })
+  })
+
+  await page.goto('/directory')
+  await page.getByTestId('attorney-row').first().getByTestId('firm-request-info').click()
+
+  const modal = page.getByTestId('info-request-modal')
+  await expect(modal).toBeVisible()
+  await modal.getByLabel(/name/i).fill('E2E Visitor')
+  await modal.getByLabel(/phone/i).fill('(305) 555-0199')
+  await modal.getByLabel(/email/i).fill('e2e@example.com')
+  await modal.getByTestId('info-request-submit').click()
+
+  const contact = modal.getByTestId('info-request-contact')
+  await expect(contact.locator('a[href="tel:9415550142"]')).toBeVisible()
+  await expect(contact.getByRole('link', { name: /visit website/i })).toBeVisible()
+  expect(posted).toMatchObject({
+    name: 'E2E Visitor',
+    phone: '(305) 555-0199',
+    email: 'e2e@example.com',
+  })
 })
 
 test('the directory carries its disclaimer on both surfaces', async ({ page }) => {

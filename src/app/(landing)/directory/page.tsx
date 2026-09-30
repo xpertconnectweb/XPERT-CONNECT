@@ -64,11 +64,10 @@ export default async function DirectoryPage() {
         item: {
           '@type': 'LegalService',
           name: firm.name,
-          telephone: firm.phone || undefined,
-          url: firm.website || undefined,
+          // No telephone, url or streetAddress: the listing withholds
+          // them (see DirectoryListing), so the markup cannot carry them.
           address: {
             '@type': 'PostalAddress',
-            streetAddress: firm.address,
             addressLocality: firm.city || undefined,
             addressRegion: 'FL',
             postalCode: firm.zipCode || undefined,

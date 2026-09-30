@@ -1,6 +1,6 @@
 'use client'
 
-import { Scale, MapPin, Phone, Copy, Check, Globe, Star } from 'lucide-react'
+import { Scale, MapPin, Phone, Copy, Check, Globe, Star, Info } from 'lucide-react'
 import { countyLabel } from '@/lib/counties'
 
 /**
@@ -11,8 +11,9 @@ import { countyLabel } from '@/lib/counties'
 export interface FirmRowData {
   id: string
   name: string
-  address: string
-  phone: string
+  /** Absent on a public listing, which withholds contact details. */
+  address?: string
+  phone?: string
   practiceAreas: string[]
   /** On a lawyer row this holds a CITY name, not a region. */
   region?: string
@@ -36,19 +37,28 @@ export interface FirmRowData {
  *     True of a firm that signed up; a claim nobody made on behalf of a
  *     firm we found in a public listing. Off in public.
  *   `onCopy` — copying a contact block is a professional's workflow
- *     (paste it into a referral). A visitor just taps the number.
+ *     (paste it into a referral). Gated directory only.
+ *   `onRequestInfo` — the public listing has no phone to tap; the
+ *     visitor asks for it through a form instead. Public only.
  */
 export function FirmRow({
   firm,
   showAvailability = false,
   copied = false,
   onCopy,
+  onRequestInfo,
   featured = false,
 }: {
   firm: FirmRowData
   showAvailability?: boolean
   copied?: boolean
   onCopy?: (firm: FirmRowData) => void
+  /**
+   * The public directory's action: a "Get information" button that
+   * opens the lead form, in place of the phone and website the public
+   * listing no longer carries.
+   */
+  onRequestInfo?: (firm: FirmRowData) => void
   /**
    * Pinned to the top by editorial choice rather than by relevance.
    *
@@ -94,7 +104,9 @@ export function FirmRow({
           )}
         </div>
 
-        <p className="text-[11px] text-gray-500 mt-0.5 truncate">{firm.address}</p>
+        {firm.address && (
+          <p className="text-[11px] text-gray-500 mt-0.5 truncate">{firm.address}</p>
+        )}
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
           {city && (
@@ -128,6 +140,19 @@ export function FirmRow({
       </div>
 
       <div className="flex shrink-0 items-center gap-2 self-start sm:self-center">
+        {onRequestInfo && (
+          <button
+            type="button"
+            onClick={() => onRequestInfo(firm)}
+            data-testid="firm-request-info"
+            aria-label={`Get information about ${firm.name}`}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-navy to-navy-light px-4 py-2 text-xs font-bold text-white shadow-md shadow-navy/20 hover:shadow-lg hover:shadow-navy/30 hover:-translate-y-px transition-all duration-200"
+          >
+            <Info className="h-3.5 w-3.5" />
+            Get information
+          </button>
+        )}
+
         {firm.phone && (
           <a
             href={`tel:${firm.phone.replace(/[^\d+]/g, '')}`}

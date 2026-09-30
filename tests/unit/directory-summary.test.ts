@@ -33,8 +33,6 @@ function firm(
   return {
     id,
     name: `Firm ${id}`,
-    address: `1 Main St, ${city}, FL 33101`,
-    phone: '(305) 555-0100',
     practiceAreas: areas,
     city,
     county: 'Miami-Dade',
