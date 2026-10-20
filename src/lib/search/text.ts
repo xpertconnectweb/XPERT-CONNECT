@@ -180,6 +180,13 @@ export const TOKEN_EXPANSIONS: Readonly<Record<string, readonly string[]>> = {
   ent: ['otolaryngology'],
   ob: ['obstetrics'],
   gyn: ['gynecology'],
+  // The clinics carry the tag 'TMJ Treatment'; people type the condition.
+  tmd: ['tmj'],
+  temporomandibular: ['tmj'],
+  jaw: ['tmj'],
+  orofacial: ['tmj'],
+  maxillofacial: ['oral', 'surgery'],
+  oms: ['oral', 'surgery'],
 
   // Spanish. fold() in this module already strips accents, so 'traumatólogo'
   // and 'traumatologo' arrive at the same key.
@@ -190,6 +197,10 @@ export const TOKEN_EXPANSIONS: Readonly<Record<string, readonly string[]>> = {
   ortopedia: ['orthopedics', 'orthopedic'],
   traumatologo: ['orthopedics', 'orthopedic'],
   columna: ['spine', 'spinal'],
+  // ATM is Spanish for the TMJ itself (articulación temporomandibular).
+  atm: ['tmj'],
+  mandibula: ['tmj', 'jaw'],
+  maxilofacial: ['oral', 'surgery'],
 
   // Legal
   pi: ['personal', 'injury'],

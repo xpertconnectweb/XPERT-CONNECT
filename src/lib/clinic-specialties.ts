@@ -25,6 +25,11 @@
  * rest), which is what lets eight NPPES subspecialties land on three tags that
  * already existed instead of inflating this list to thirty-one.
  *
+ * `TMJ Treatment` and `Oral Surgery` came in October 2026 with the Minnesota
+ * TMJ clinics the client asked for. Nothing that existed covered either: a
+ * dentist treating jaw-joint pain is not `Pain Management`, and an oral
+ * surgeon is not any of the surgical tags above.
+ *
  * Mirrors the `practice-areas.ts` shape exactly — catalog, ALIASES, a strict
  * `normalize*` and a lenient `sanitize*`. Lenient is what the read and write
  * paths use, so a specialty an admin adds tomorrow survives.
@@ -65,6 +70,8 @@ export const CLINIC_SPECIALTIES = [
   'Work Injury Rehabilitation',
   'Manual Therapy',
   'Dry Needling',
+  'TMJ Treatment',
+  'Oral Surgery',
 ] as const
 
 export type ClinicSpecialty = typeof CLINIC_SPECIALTIES[number]
@@ -76,16 +83,16 @@ export type ClinicSpecialty = typeof CLINIC_SPECIALTIES[number]
  * The filter rail shows six chips ordered by count, and those counts are
  * computed over whatever is inside the current viewport and radius — so a
  * statewide total guarantees nothing about the chips someone in Orlando
- * actually sees. Orthopedics and Neurosurgery are the two the client asked
- * for by name, and Neurosurgery in particular will never out-count
- * 'Auto Injuries' honestly. Promotion is the only way it is reliably
+ * actually sees. Orthopedics, Neurosurgery and TMJ Treatment are the ones the
+ * client asked for by name, and the last two will never out-count
+ * 'Auto Injuries' honestly. Promotion is the only way they are reliably
  * reachable without typing.
  *
  * A constant rather than the `specialties_list` platform setting: that value
  * is a CATALOG and this is a RANKING, and reading it on the map would need a
  * new public route, since /api/admin/settings is admin-only.
  */
-export const FEATURED_SPECIALTIES: readonly string[] = ['Orthopedics', 'Neurosurgery']
+export const FEATURED_SPECIALTIES: readonly string[] = ['Orthopedics', 'Neurosurgery', 'TMJ Treatment']
 
 /** Collapses whitespace, case and the `&`/`and` spelling so lookups are forgiving. */
 function fold(raw: string): string {
@@ -217,6 +224,30 @@ const ALIASES: Record<string, ClinicSpecialty> = {
   neurocirujano: 'Neurosurgery',
   columna: 'Spine',
   'cirugia de columna': 'Spine',
+
+  // Jaw joint and oral surgery. 'Orofacial pain' is the dental specialty's
+  // own name for TMJ work, so it lands here and not on Pain Management.
+  tmj: 'TMJ Treatment',
+  tmd: 'TMJ Treatment',
+  'tmj tmd': 'TMJ Treatment',
+  'tmj/tmd': 'TMJ Treatment',
+  'tmj disorder': 'TMJ Treatment',
+  temporomandibular: 'TMJ Treatment',
+  'temporomandibular joint disorder': 'TMJ Treatment',
+  'orofacial pain': 'TMJ Treatment',
+  'facial pain': 'TMJ Treatment',
+  'jaw pain': 'TMJ Treatment',
+  'oral surgeon': 'Oral Surgery',
+  'oral and maxillofacial surgery': 'Oral Surgery',
+  'oral and maxillofacial surgeon': 'Oral Surgery',
+  'maxillofacial surgery': 'Oral Surgery',
+  oms: 'Oral Surgery',
+  atm: 'TMJ Treatment',
+  'dolor orofacial': 'TMJ Treatment',
+  'cirugia oral': 'Oral Surgery',
+  'cirujano oral': 'Oral Surgery',
+  'cirugia maxilofacial': 'Oral Surgery',
+  'cirujano maxilofacial': 'Oral Surgery',
 
   // Misc
   rehab: 'Rehabilitation',

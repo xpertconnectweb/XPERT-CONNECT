@@ -200,8 +200,22 @@ describe('FEATURED_SPECIALTIES', () => {
     }
   })
 
-  it('is the two the client asked for, in that order', () => {
-    expect(FEATURED_SPECIALTIES).toEqual(['Orthopedics', 'Neurosurgery'])
+  it('is the three the client asked for, in that order', () => {
+    expect(FEATURED_SPECIALTIES).toEqual(['Orthopedics', 'Neurosurgery', 'TMJ Treatment'])
+  })
+})
+
+describe('normalizeSpecialty — jaw joint and oral surgery', () => {
+  it('lands the TMJ vocabulary on one tag', () => {
+    for (const raw of ['TMJ', 'tmd', 'TMJ/TMD', 'Orofacial Pain', 'temporomandibular', 'ATM']) {
+      expect(normalizeSpecialty(raw)).toBe('TMJ Treatment')
+    }
+  })
+
+  it('lands oral surgeons on Oral Surgery, & or and', () => {
+    expect(normalizeSpecialty('Oral & Maxillofacial Surgery')).toBe('Oral Surgery')
+    expect(normalizeSpecialty('oral and maxillofacial surgeon')).toBe('Oral Surgery')
+    expect(normalizeSpecialty('Cirugía maxilofacial')).toBe('Oral Surgery')
   })
 })
 
