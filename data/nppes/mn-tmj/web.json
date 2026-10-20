@@ -1,0 +1,1474 @@
+{
+ "checks": {
+  "1295218303|55044": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://advancedoralsurgerymn.com/contact-lakeville-office/",
+   "practice": "Advanced Oral Surgery & Periodontics",
+   "note": "site (c)2026 lists Lakeville office 19925 Idealic Ave, ph (952) 683-9884; 2nd office Minnetonka; services list has no TMJ",
+   "phone": "(952) 683-9884"
+  },
+  "1457495491|55432": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://associatedoms.com/coon-rapids/",
+   "practice": "Associated OMS",
+   "note": "site lists 5 offices (Coon Rapids, Maple Grove, Buffalo, Elk River, Monticello), no Fridley; nearest is Coon Rapids. TMJ page /tmj-disorders",
+   "moved": {
+    "street": "3833 Coon Rapids Blvd NW",
+    "suite": "#220",
+    "city": "Coon Rapids",
+    "zip": "55433",
+    "phone": "(763) 421-6271"
+   }
+  },
+  "1104911056|55805": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.bluewateroral.surgery/",
+   "note": "site lists Duluth office 1000 E First St Ste 108, ph 218-722-1854 (+Virginia, Grand Rapids); 'diagnose and treat facial pain', TMJ treatment listed",
+   "phone": "218-722-1854"
+  },
+  "1467672709|55455": {
+   "status": "Closed",
+   "tmj": null,
+   "website": "",
+   "note": "UMN closed Boynton Dental Clinic Mar 2026 (MPR 2026-03-11); care moved to UMN School of Dentistry clinics, 612-626-3233"
+  },
+  "1366568206|55122": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.dakotavalley-oms.com/",
+   "note": "site lists Eagan office 2130 Cliff Rd Ste 100 (+Lakeville, Shakopee, Owatonna, Burnsville); services list has no TMJ, only TMJ imaging",
+   "phone": "(651) 452-6933"
+  },
+  "1275318628|55318": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "periodontics and sleep apnea practice, not oral surgery"
+  },
+  "1093261190|55042": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "practice": "HealthPartners Dental Specialty Center Woodbury - Lake Elmo",
+   "note": "correction: the agent gave the TMD clinic's page with the specialty center's phone; this row is the specialty center (oral surgery); the TMD clinic is its own row",
+   "only": [
+    "Oral Surgery"
+   ],
+   "phone": "(651) 523-9950"
+  },
+  "1225629017|55344": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.healthpartners.com/care/find/location/dental/healthpartners/eden-prairie/",
+   "practice": "HealthPartners Dental Clinic Eden Prairie",
+   "note": "HP page: 8455 Flying Cloud Dr, general + oral surgery, perio, prosth; no TMJ here (HP TMD clinics: Lake Elmo, St. Louis Park)",
+   "phone": "(952) 883-9040"
+  },
+  "1134574163|55112": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "general dentist, not an oral surgery practice"
+  },
+  "1194826917|55441": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Drs Curtis (NPI 2008) & Hoffmann at 2855 Campus Dr; Hoffmann's NPI moved to 15655 37th Ave N (2014) under MN OMS PA; no site/listing at either address"
+  },
+  "1063122976|55379": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://eosoralsurgery.com/locations/",
+   "practice": "EOS: Expert Oral Surgery",
+   "note": "same NPI owner (Dr Voegele); site lists Shakopee at 403 E First Ave, not 300; also Savage + Eden Prairie; TMJ page /services/tmj-disorder-treatment",
+   "phone": "(952) 452-9151",
+   "moved": {
+    "street": "403 East First Avenue",
+    "city": "Shakopee",
+    "zip": "55379",
+    "phone": "(952) 452-9151"
+   }
+  },
+  "1417034661|55446": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.mnmax.com/",
+   "note": "site (Dr Abdollah Rahimi) lists 15600 36th Ave N Ste 100 Plymouth, 763-559-7688; TMJ page /procedures/tmj-disorders/",
+   "phone": "(763) 559-7688"
+  },
+  "1649043662|55433": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://associatedoms.com/coon-rapids/",
+   "practice": "Associated Oral & Maxillofacial Surgeons (Associated OMS)",
+   "note": "site: 3833 Coon Rapids Blvd Ste 220, same phone as registry; TMJ page /tmj-disorders; same practice as Fridley row 1457495491",
+   "phone": "(763) 421-6271"
+  },
+  "1649043662|55362": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://associatedoms.com/monticello/",
+   "practice": "Associated Oral & Maxillofacial Surgeons (Associated OMS)",
+   "note": "site: 114 West Third St #400 Monticello, same phone as registry; TMJ page /tmj-disorders",
+   "phone": "(763) 271-6770"
+  },
+  "1588715163|55746": {
+   "status": "Moved",
+   "tmj": null,
+   "website": "",
+   "note": "Hibbing satellite of Northern OMS (Duluth HQ 3617 W Arrowhead Rd); Dr Mark Ash's NPI (Aug 2025) lists Hibbing at 3899 Hwy 73, same 293-0691 line; site lapsed",
+   "phone": "(218) 293-0691",
+   "moved": {
+    "street": "3899 Highway 73",
+    "suite": "Ste 5-6",
+    "city": "Hibbing",
+    "zip": "55746",
+    "phone": "(218) 293-0691"
+   }
+  },
+  "1770694812|55387": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omsspecialists.com/waconia",
+   "note": "site lists Waconia office 490 S Maple St #102 (+5 other MN offices); 'Temporomandibular Joint Surgery' section on /oral-and-maxillofacial-surgery",
+   "phone": "(952) 442-5448"
+  },
+  "1942382379|56401": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omsabrainerd.com/",
+   "note": "site lists 1903 South 6th St Ste 4 Brainerd (+Little Falls); TMJ weak: only 'diagnose and treat facial pain', no TMJ page",
+   "phone": "(218) 829-1728"
+  },
+  "1265650956|55391": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omscmn.com/contact-us/wayzata-office/",
+   "note": "site: Wayzata Medical Bldg, 250 N Central Ave Ste 126 (+Edina, Chanhassen, Savage); 'TMJ Disorders' section on /procedure/other-procedures/",
+   "phone": "(952) 475-2266"
+  },
+  "1669671152|55122": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Owner Dr Steven Selchow has no active individual NPI (no record in registry); no web trace of Rejuv Skin & Laser at 1625 Lena Ct. Likely defunct, unproven"
+  },
+  "1841991262|56537": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.soderholmoralsurgery.com/",
+   "note": "site lists Fergus Falls 215 N Tower Rd, (320) 298-1000 (+Perham, Alexandria); procedures are implants/extractions, no TMJ",
+   "phone": "(320) 298-1000"
+  },
+  "1659492312|55901": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.semoms.com/",
+   "note": "site lists Rochester 2519 Commerce Dr NW Ste 110 (+Mankato); 'diagnose and treat facial pain', TMJ Disorder Treatment in site schema; no TMJ page",
+   "phone": "(507) 281-5000"
+  },
+  "1548218910|55075": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://www.stpauloralsurgery.com/",
+   "practice": "St Paul Oral Surgery",
+   "note": "site lists a single office at 2550 University Ave W Ste 115-N, no South St Paul; no TMJ service listed",
+   "phone": "(651) 645-6429",
+   "moved": {
+    "street": "2550 University Avenue West",
+    "suite": "Suite 115-N",
+    "city": "St. Paul",
+    "zip": "55114",
+    "phone": "(651) 645-6429"
+   }
+  },
+  "1265097653|55082": {
+   "status": "Closed",
+   "tmj": false,
+   "website": "",
+   "note": "correction: Stillwater office is not among The Dental Specialists' 27 current offices (agent had guessed Hugo as successor)"
+  },
+  "1376619114|55435": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/edina/",
+   "note": "site lists Edina 6545 France Ave S Suite 366; oral surgery line 952-746-5231; no TMJ service on site",
+   "phone": "(952) 241-5863"
+  },
+  "1104864529|55125": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.theoralsurgerycenter.com/",
+   "note": "site: Woodbury 748 Bielenberg Dr Ste 160 (+Stillwater, Cottage Grove, WI); TMJ weak: only 'TMJ Disorder Treatment' in site schema, no page",
+   "phone": "(651) 233-2140"
+  },
+  "1356542575|55109": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.tcoralsurgery.com/contact-us/maplewood-mn-office/",
+   "note": "site: Maplewood 1655 Beam Ave Ste 205 (+6 offices); no TMJ service, only 'TMJ pain' as a jaw-surgery indication",
+   "phone": "(651) 770-7703"
+  },
+  "1407613375|55305": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.wisedecision.com/",
+   "practice": "Wise Decision Wisdom Teeth Specialists",
+   "note": "site (c)2026: 10653 Wayzata Blvd Ste 200 Minnetonka; wisdom teeth/extractions only, no TMJ; registry phone 612-578-8893 differs",
+   "phone": "(952) 952-1100"
+  },
+  "1043839574|55437": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.thefacialpaincenter.com/location/bloomington/",
+   "practice": "The Facial Pain Center",
+   "note": "site Bloomington page lists 4200 W Old Shakopee Rd Ste 100, Dr Kumar (checked 2026-10-19)",
+   "specialists": [
+    "Davina Kumar, DMD, MS"
+   ],
+   "phone": "(952) 926-3858"
+  },
+  "1821473927|55337": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.thefacialpaincenter.com/location/burnsville/",
+   "practice": "The Facial Pain Center",
+   "note": "site Burnsville page lists 40 Nicollet Blvd W Ste A, Dr Kumar (checked 2026-10-19)",
+   "specialists": [
+    "Davina Kumar, DMD, MS"
+   ],
+   "phone": "(952) 926-3858"
+  },
+  "1952042053|55107": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.healthpartners.com/institute/education/ohpe/dentistry-residency/",
+   "practice": "HealthPartners St. Paul (Wabasha) Dental Clinic",
+   "note": "HP residency page names St. Paul (Wabasha) Dental Clinic as main site, no street/phone shown; residents manage TMD/orofacial pain"
+  },
+  "1104850155|55114": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mhnpc.com/",
+   "note": "site lists St. Paul 2550 University Ave W Ste 189S (+Plymouth, Burnsville, St. Cloud, Woodbury); TMJ page /disorders-we-treat/tmj/",
+   "phone": "(651) 332-7474"
+  },
+  "1285757864|55114": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mncranio.com",
+   "practice": "Minnesota Craniofacial Center for TMJ & Sleep Treatment",
+   "note": "re-check: mncranio.com lists 2550 University Ave W Ste 143N, 651-642-1013, TMJ disorders; Drs Hakala and Ledermann (AAOP member, 55114) (2026-10-19)",
+   "specialists": [
+    "Roy Hakala, DDS",
+    "Kim Ledermann"
+   ],
+   "phone": "(651) 642-1013"
+  },
+  "1225201213|55426": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://www.twincitiestmj.com/",
+   "practice": "Twin Cities TMJ & Facial Pain Clinic",
+   "note": "site lists 4956 Lincoln Dr, Edina, 952-931-9961 (checked 2026-10-19); dentists from its team page per discovery agent",
+   "specialists": [
+    "Shanti Kaimal, BDS, MS",
+    "David Streif, DDS"
+   ],
+   "phone": "(952) 931-9961",
+   "moved": {
+    "street": "4956 Lincoln Dr",
+    "city": "Edina",
+    "zip": "55436",
+    "phone": "(952) 931-9961"
+   }
+  },
+  "1366676553|55331": {
+   "status": "Moved",
+   "tmj": null,
+   "website": "",
+   "note": "Practice active at its Minnetonka HQ (Google 4.9/116 reviews, Dr VanSurksum, NPI 2024); Excelsior satellite has no current trace. aomsmn.com dead",
+   "phone": "(952) 935-8420",
+   "moved": {
+    "street": "11601 Minnetonka Mills Rd",
+    "city": "Minnetonka",
+    "zip": "55305",
+    "phone": "(952) 935-8420"
+   }
+  },
+  "1578596177|56001": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "No site/listing; Dr Ryan Casper's NPI (Jan 2025) still lists 1990 Premier Dr/625-9330, but ex-partner Dr Kim now at SEMOMS 1410 Madison Ave. Unresolved"
+  },
+  "1417042367|55792": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.bluewateroral.surgery/contact-us/virginia-mn/",
+   "note": "Site Virginia page lists 505 S 12th Ave W, 218-741-0894; TMJ Disorder Treatment listed in services. Main office Duluth 1000 E 1st St",
+   "phone": "218-741-0894"
+  },
+  "1386723575|56377": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.mnofs.com/",
+   "practice": "Minnesota Oral & Facial Surgery",
+   "note": "mnofs.com lists Sartell office 2380 Troop Dr Ste 202, (320) 257-9555; has TMJ Disorders page. Also Willmar, Minneapolis, Plymouth",
+   "phone": "(320) 257-9555"
+  },
+  "1689722639|55113": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "agent: Ste 2210 is an admin/billing address; the clinic is 1835 County Road C W Ste 200",
+   "exclude": "billing address of The Dental Specialists; its Roseville clinic is its own row"
+  },
+  "1568071199|55391": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/deephaven/",
+   "practice": "The Dental Specialists - Deephaven",
+   "note": "Site Deephaven page: 18258 Minnetonka Blvd Ste 100, Wayzata; offers oral surgery, endo, prostho. Site never mentions TMJ",
+   "phone": "(952) 241-5815"
+  },
+  "1396095048|55448": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/coon-rapids-riverdale/",
+   "practice": "The Dental Specialists - Coon Rapids / Riverdale",
+   "note": "Site Coon Rapids/Riverdale page: 3360 Northdale Blvd NW; oral surgery offered. Site never mentions TMJ",
+   "phone": "(763) 233-3390"
+  },
+  "1912143843|55369": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/maple-grove/",
+   "practice": "The Dental Specialists - Maple Grove",
+   "note": "Site's only Maple Grove clinic is 15701 Grove Circle N (near Maple Grove Hospital), oral surgery offered; Upland Ln not listed. No TMJ",
+   "phone": "(763) 233-3321",
+   "moved": {
+    "street": "15701 Grove Circle N",
+    "city": "Maple Grove",
+    "zip": "55369",
+    "phone": "(763) 233-3321"
+   }
+  },
+  "1275318628|55364": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "West Lakes Dentistry, a general practice, not an oral surgery practice"
+  },
+  "1699272427|55416": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.healthpartners.com/care/find/location/dental/healthpartners/st-louis-park/",
+   "practice": "HealthPartners Dental Clinic St. Louis Park",
+   "note": "HP clinic page: 5500 Excelsior Blvd, 952-853-9120; group lists oral surgery and TMD services among specialties",
+   "phone": "(952) 853-9120"
+  },
+  "1225629017|55108": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.healthpartners.com/care/find/location/dental/healthpartners/st-paul/",
+   "practice": "HealthPartners Dental Specialty Center (Como)",
+   "note": "HP page: 2500 Como Ave, 651-647-2500; endo, oral surgery, perio, prostho. No TMD listed here (HP TMD care is at its TMD clinics)",
+   "phone": "(651) 647-2500"
+  },
+  "1003993304|55125": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.truenorthoralsurgery.com/contact-us/woodbury-office/",
+   "practice": "True North Oral Surgery & Implants",
+   "note": "Same entity as row True North (same suite+phone); site Woodbury page 9950 Valley Creek Rd Ste 100, 651-578-7000. No TMJ on site",
+   "phone": "(651) 578-7000"
+  },
+  "1285179945|55125": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.truenorthoralsurgery.com/contact-us/woodbury-office/",
+   "practice": "True North Oral Surgery & Implants",
+   "note": "Site Woodbury page: 9950 Valley Creek Rd Ste 100, 651-578-7000; also Maplewood, Forest Lake. Services list has no TMJ",
+   "phone": "(651) 578-7000"
+  },
+  "1427237551|55107": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Owner Dr James I Midtling has no active individual NPI anywhere (likely deactivated); no web trace since 2007. Likely closed, no explicit proof"
+  },
+  "1003983701|55378": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://eosoralsurgery.com/locations/",
+   "practice": "EOS: Expert Oral Surgery",
+   "note": "OMS at same suite now EOS (ADA lists EOS there, old phone carried over); site: 13875 Hwy 13 Frontage Rd Ste 50; /services/tmj-disorder-treatment",
+   "phone": "(952) 452-9151"
+  },
+  "1427367531|55435": {
+   "status": "Closed",
+   "tmj": null,
+   "website": "",
+   "note": "Owner Dr Paul Tompach (NPI official); his own NPI moved to UMN Moos Tower in 2018; no listing anywhere, 952-925-2525 not online"
+  },
+  "1649043662|55369": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://associatedoms.com/maple-grove/",
+   "practice": "Associated Oral & Maxillofacial Surgeons",
+   "note": "Same phone; site Maple Grove page: 12000 Elm Creek Blvd Ste 130; TMJ page /tmj-disorders/. Also Coon Rapids, Buffalo, Elk River, Monticello",
+   "phone": "(763) 416-9990"
+  },
+  "1497814032|55127": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.momentaoms.com/contact-us/north-oaks-office/",
+   "practice": "Momenta Oral & Maxillofacial Surgery",
+   "note": "Site: 700 Village Center Dr #170 North Oaks, 651-482-0065; TMJ page /procedures/tmj-disorders/. Second office Roseville 651-636-2420",
+   "phone": "(651) 482-0065"
+  },
+  "1699901140|55416": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://northernstaroms.com/",
+   "note": "Site lists 1660 Hwy 100 S Ste 145; existing pts 952-465-0105, new pts 952-225-5280. Procedures list has no TMJ",
+   "phone": "(952) 465-0105",
+   "moved": {
+    "street": "1660 Highway 100 S",
+    "suite": "Suite 145",
+    "city": "St. Louis Park",
+    "zip": "55416",
+    "phone": "(952) 465-0105"
+   }
+  },
+  "1902917057|55369": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://www.omsspecialists.com/maple-grove",
+   "note": "Site Maple Grove page: 13950 Grove Dr #100, same phone; TMJ surgery on /oral-and-maxillofacial-surgery. Also New Brighton, Blaine, Edina etc",
+   "phone": "(763) 494-8825",
+   "moved": {
+    "street": "13950 Grove Dr",
+    "suite": "#100",
+    "city": "Maple Grove",
+    "zip": "55311",
+    "phone": "(763) 494-8825"
+   }
+  },
+  "1942072871|56201": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "correction: its domain now redirects to Centrasota Oral Surgeons, whose site lists St Cloud, Alexandria, Hutchinson, Monticello and Sartell but no Willmar office (checked in Chrome 2026-10-19)"
+  },
+  "1710965991|56201": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "correction: same Willmar office as 1942072871; Centrasota, where its domain redirects, lists no Willmar office (2026-10-19)"
+  },
+  "1194791384|55104": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Dr Glineburg NPI still at 1630 University Ste 104; only an NPI-echo directory (2 Google reviews), no site, no obituary/retirement found"
+  },
+  "1841991262|56573": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.soderholmoralsurgery.com/contact-us/contact-our-perham-office/",
+   "note": "Site lists Perham office 940 Market St, (320) 298-1000; also Alexandria, Fergus Falls. Procedures list has no TMJ",
+   "phone": "(320) 298-1000"
+  },
+  "1427129717|55082": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "",
+   "practice": "Saint Croix Oral Surgery",
+   "note": "Dr Steven D Johnson's own NPI re-saved 2026-10-04 at 1701 Curve Crest Ste 108/439-8030 (Dr Tahara too); WebMD 'Saint Croix Oral Surgery' there. No site found"
+  },
+  "1154522373|55113": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.tcoralsurgery.com/contact-us/roseville-mn-office/",
+   "practice": "Twin Cities Oral & Maxillofacial Surgery",
+   "note": "Site lists Roseville office 1790 N Lexington Ave, 651-488-9884; 7 metro offices. Procedures list has no TMJ",
+   "phone": "(651) 488-9884"
+  },
+  "1457448615|55455": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://dentalclinics.umn.edu/specialty/tmd-orofacial-pain-dental-sleep-medicine",
+   "practice": "University of Minnesota TMD, Orofacial Pain & Dental Sleep Medicine Clinic",
+   "note": "correction: the row the web check found is the TMD clinic; the school's PT and oral surgery codes belong to other clinics",
+   "only": [
+    "TMJ Specialists"
+   ],
+   "phone": "(612) 626-0140"
+  },
+  "1003316852|56301": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mhnpc.com/about/contact/",
+   "note": "Site: St. Cloud Outreach 622 Roosevelt Rd Ste 120, 763-233-7252, open Mondays only; TMJ page /disorders-we-treat/tmj/. Main office Plymouth",
+   "phone": "(763) 233-7252"
+  },
+  "1710854369|55125": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mhnpc.com/about/contact/",
+   "note": "Site: Woodbury Outreach 9950 Valley Creek Rd Ste 100 (inside True North OMS suite), 651-332-7474, Fridays only; TMJ page",
+   "phone": "(651) 332-7474"
+  },
+  "1811288269|55042": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.healthpartners.com/care/find/location/clinics/dental/healthpartners/como-st-paul/tmd/",
+   "practice": "HealthPartners TMD Lake Elmo",
+   "note": "HP page 'TMD Lake Elmo': 8515 Eagle Point Blvd, 651-523-9951, TMD appointments only; dentists, PTs, psychologist",
+   "phone": "(651) 523-9951"
+  },
+  "1043839574|55416": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.thefacialpaincenter.com/location/st-louis-park/",
+   "practice": "The Facial Pain Center",
+   "note": "agent: Dr Kumar's page lists St. Louis Park 5000 W 36th St Ste 250",
+   "specialists": [
+    "Davina Kumar, DMD, MS"
+   ],
+   "phone": "(952) 926-3858"
+  },
+  "1083762041|55435": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://www.thefacialpaincenter.com/location/st-louis-park/",
+   "practice": "The Facial Pain Center",
+   "note": "Site lists 8 sites, none in Edina (Ste 366 is now Dental Specialists). Nearest: St. Louis Park; also Bloomington, Minnetonka, Roseville",
+   "phone": "(952) 926-3858",
+   "moved": {
+    "street": "5000 W 36th St",
+    "suite": "Suite 250",
+    "city": "St. Louis Park",
+    "zip": "55416",
+    "phone": "(952) 926-3858"
+   }
+  },
+  "1447699335|55435": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "AAOP bio: now does general dentistry + PhysiAroma startup + UMN MRI research, no clinic named. AAOP ZIP 55101 is not a practice address"
+  },
+  "1679620801|55305": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.facial-designs.com/",
+   "practice": "Facial Designs, P.A.",
+   "note": "site lists 11601 Minnetonka Mills Rd Ste F40, same phone/fax 952-935-8420/0147; Dr. VanSurksum; TMJ surgery on /services/oral-surgery/jaw-surgery/",
+   "phone": "952-935-8420"
+  },
+  "1275859159|55901": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "No site/listing; Dr Phillip Vickers' NPI (Jan 2024; also Mayo) lists 2717 Superior Dr NW Ste B, 281-5820 (org manager Margy Vickers). No web confirmation"
+  },
+  "1326290727|55720": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Cloquet satellite of Bluestone OMS (HQ 324 W Superior St Ste 720 Duluth, Dr Jennings); no site/listing for either office, NPIs stale; only NPI directory echoes"
+  },
+  "1598710477|56303": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.centrasotaoms.com/",
+   "practice": "Centrasota Oral Surgeons",
+   "note": "site lists 3950 Veterans Dr Ste 100 (+Alexandria, Hutchinson, Monticello, Sartell); TMJ only as indication on /procedures/jaw-surgery/ (weak)",
+   "phone": "(320) 252-3611"
+  },
+  "1275892218|55435": {
+   "status": "Closed",
+   "tmj": null,
+   "website": "",
+   "note": "Same Ste 690/phone as Tompach's MN OMS PA; Tompach's NPI now at UMN School of Dentistry (2018); no site/listing for either name; phone not online"
+  },
+  "1508058322|55082": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.theoralsurgerycenter.com/contact-us/stillwater-mn/",
+   "practice": "The Oral Surgery Center",
+   "note": "site lists Stillwater office at 2850 Curve Crest Blvd (old 351-1010 phone tied to it on WebMD); 'TMJ Disorder Treatment' listed service",
+   "phone": "(651) 233-2141"
+  },
+  "1780739417|55108": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "practice": "HealthPartners Dental Specialty Center (Como)",
+   "note": "correction: oral surgery at 2500 Como Ave is the HealthPartners specialty center in the same building",
+   "phone": "(651) 647-2500"
+  },
+  "1225629017|55042": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "practice": "HealthPartners Dental Specialty Center Woodbury - Lake Elmo",
+   "note": "agent: HP page lists 8515 Eagle Point Blvd, oral surgery; TMD clinic in the same building is a separate row",
+   "only": [
+    "Oral Surgery"
+   ],
+   "phone": "(651) 523-9950"
+  },
+  "1730838186|55434": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "",
+   "note": "Yelp (Sep 2026)/WebMD show Metro Dentalcare Blaine 10 operating at 261 County Rd 10 NE w/ oral surgery; Heartland-owned, own site not found",
+   "phone": "(763) 786-9644"
+  },
+  "1063122976|55344": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://eosoralsurgery.com/",
+   "practice": "EOS Expert Oral Surgery",
+   "note": "site lists 11800 Singletree Ln Eden Prairie (+Savage), same phone; TMJ page /services/tmj-disorder-treatment/",
+   "phone": "(952) 452-9151"
+  },
+  "1497890594|55402": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Dr Michael Sutley NPI untouched since 2007; no site, listing or any web mention of him or this office; likely closed, no explicit proof"
+  },
+  "1578872685|55446": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Hoffmann NPI here 2014; mnoral.com 301s to unrelated school; no listing, no closure/retirement notice found"
+  },
+  "1649043662|55330": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://associatedoms.com/elk-river/",
+   "practice": "Associated Oral & Maxillofacial Surgeons (Elk River)",
+   "note": "same phone on site; site text says 410 Main St NW but its map pin + ADA/WebMD say 501 Main NW Ste 103; /tmj-disorders/ page",
+   "phone": "(763) 274-1092"
+  },
+  "1770533531|55906": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://psimosoralsurgery.com/",
+   "practice": "Psimos Oral Surgery",
+   "note": "site (c)2016-2025 lists 1101 North Broadway Rochester 55906, same phone; also Decorah IA office; no TMJ service mentioned",
+   "phone": "(507) 288-0126"
+  },
+  "1245809458|55433": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "https://www.northsideoms.com/",
+   "note": "Birdeye/Google profile: 11441 Osage St NW Ste 3, site northsideoms.com, reviews ~11 mo old; WebMD same phone (Dr Eldeeb). Own site 403s, TMJ unreadable",
+   "phone": "(763) 862-6442"
+  },
+  "1508160060|55008": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omsspecialists.com/cambridge",
+   "note": "site lists Cambridge office 1595 2nd Ave NE #120 (registry phone 757-2220 is now their Blaine line); TMJ surgery on /oral-and-maxillofacial-surgery",
+   "phone": "(763) 691-8827"
+  },
+  "1720206428|55317": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omscmn.com/contact-us/chanhassen-office/",
+   "note": "site lists Chanhassen office 7770 Dell Rd Ste 100 (registry phone 435-4150 is their Savage office); TMJ Disorders on /procedure/other-procedures/",
+   "phone": "(952) 975-0605"
+  },
+  "1447429402|55455": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "",
+   "practice": "University of Minnesota Dental Clinics – Oral & Maxillofacial Surgery",
+   "note": "agent: UMN OMS clinic page live but bot-blocked; same clinic as 1164763629"
+  },
+  "1275271462|55125": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "children's hospital (pediatric craniofacial and cleft care)"
+  },
+  "1134103674|55337": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "",
+   "note": "MN Board of Dentistry bio: Dr Roszkowski CEO of this practice (4 south-metro clinics); MN Monthly Best Dentists 2025; WebMD at 625 E Nicollet Ste 205. Own site not found"
+  },
+  "1043870645|55114": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.stpauloralsurgery.com/",
+   "note": "site lists 2550 University Ave W Ste 115-N, same phone; TMJ only as indication on /procedures/jaw-surgery/ (weak)",
+   "phone": "(651) 645-6429"
+  },
+  "1073122321|55802": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "this office does root canals (endodontics) only; no oral surgeon"
+  },
+  "1518200286|55433": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/coon-rapids-riverdale/",
+   "practice": "The Dental Specialists - Coon Rapids Riverdale",
+   "note": "Springbrook Dr no longer listed; registry phone now rings oral surgery (Dr Karban) at Riverdale office; no TMJ content on site",
+   "phone": "(763) 201-6962",
+   "moved": {
+    "street": "3360 Northdale Blvd NW",
+    "city": "Coon Rapids",
+    "zip": "55448",
+    "phone": "(763) 201-6962"
+   }
+  },
+  "1780750539|55113": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/roseville/",
+   "practice": "The Dental Specialists - Roseville",
+   "note": "site lists 1835 County Road C W Ste 200; oral surgery line (Dr Rivers) 651-760-3610, registry phone stale; no TMJ content",
+   "phone": "(651) 760-3610"
+  },
+  "1821299041|55124": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "https://www.tcoralsurgery.com/contact-us/apple-valley-mn-office/",
+   "practice": "Twin Cities Oral & Maxillofacial Surgery",
+   "note": "tcoralsurgery.com (opened in Chrome 2026-10-19) lists Apple Valley Office, 14635 Pennock Ave Ste 250, 952-432-1514",
+   "phone": "(952) 432-1514"
+  },
+  "1164763629|55455": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "",
+   "practice": "University of Minnesota Dental Clinics – Oral & Maxillofacial Surgery",
+   "note": "agent: same clinic as 1447429402"
+  },
+  "1922947142|55420": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "NPI 2026-03-25, owner Brian Gray DDS (a HealthPartners Bloomington general dentist); no site, listing or web mention of the PLLC or 9820 Nicollet office yet"
+  },
+  "1396120473|55042": {
+   "status": "Closed",
+   "tmj": null,
+   "website": "",
+   "note": "correction: Lake Elmo is not among The Facial Pain Center's 8 locations on thefacialpaincenter.com (checked 2026-10-19)"
+  },
+  "1043839574|55379": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.thefacialpaincenter.com/location/shakopee/",
+   "practice": "The Facial Pain Center",
+   "note": "correction: thefacialpaincenter.com Shakopee page lists 4155 Dean Lakes Blvd, Dr Kumar (checked 2026-10-19)",
+   "specialists": [
+    "Davina Kumar, DMD, MS"
+   ],
+   "phone": "(952) 926-3858"
+  },
+  "1780066282|55905": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.mayoclinic.org/biographies/giri-subha-b-d-s-m-s/bio-20453018",
+   "practice": "Mayo Clinic – Orofacial Pain (Dental Specialties)",
+   "note": "Mayo bio: Dr Subha Giri, Assistant Professor of Dentistry, Mayo Clinic Rochester, ABOP-certified orofacial pain (checked 2026-10-19); registry's Dr Patel now in Tucson",
+   "specialists": [
+    "Subha Giri, BDS, MS"
+   ]
+  },
+  "1255715181|55337": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mhnpc.com/",
+   "note": "site lists 675 E Nicollet Blvd Ste 255 Burnsville, same phone (+St. Paul, Plymouth, St. Cloud); TMJ page /disorders-we-treat/tmj/",
+   "phone": "(952) 892-6222"
+  },
+  "1245973817|55449": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "family dentistry; its site offers no TMJ care despite the registry's orofacial pain code"
+  },
+  "1306513023|55422": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://zoyaorofacialpaindentalsleep.org/",
+   "note": "Own site lists 1405 Lilac Dr N Ste 150K Golden Valley + TMD/TMJ care; Instagram active Oct 2026. Siddiqui not on MHNPC team; AAOP 55447 = her mailing ZIP",
+   "phone": "(763) 762-6549"
+  },
+  "1962242719|55433": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://associatedoms.com/coon-rapids/",
+   "note": "site Coon Rapids page lists 3833 Coon Rapids Blvd Ste 220, (763) 421-6271; TMJ page at /tmj-disorders/",
+   "phone": "(763) 421-6271"
+  },
+  "1649043662|55313": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://associatedoms.com/buffalo/",
+   "practice": "Associated Oral & Maxillofacial Surgeons",
+   "note": "AOMS Buffalo office: site lists 215 Highway 55 East #301, (763) 682-3410; TMJ page /tmj-disorders/. Same group as Coon Rapids row",
+   "phone": "(763) 682-3410"
+  },
+  "1679668529|55744": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.bluewateroral.surgery/contact-us/grand-rapids-mn/",
+   "note": "site lists 303 SE First St, Grand Rapids, 218-326-0349; home says 'diagnose and treat facial pain', no dedicated TMJ page",
+   "phone": "218-326-0349"
+  },
+  "1578511572|55802": {
+   "status": "Closed",
+   "tmj": null,
+   "website": "",
+   "note": "bluestoneoms.com no longer resolves; MapQuest marks Ste 720 closed, BBB 'out of business'; Dr Keaveny now practices in Dickinson ND"
+  },
+  "1538963590|55112": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.clearchoice.com/locations/mn/arden-hills/3130-cleveland-ave-n/",
+   "practice": "ClearChoice Dental Implant Center - Roseville",
+   "note": "ClearChoice location page lists 3130 Cleveland Ave N, Arden Hills (branded Roseville); implant center, no TMJ service listed",
+   "phone": "(651) 605-6944"
+  },
+  "1982371456|55305": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.facial-designs.com/minnetonka-location/",
+   "note": "site lists 11601 Minnetonka Mills Rd #F40; TMJ surgery on /services/oral-surgery/jaw-surgery/; 2nd office 348 2nd St Excelsior",
+   "phone": "(952) 935-8420"
+  },
+  "1164959938|55344": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.healthpartners.com/care/find/location/dental/healthpartners/eden-prairie/",
+   "practice": "HealthPartners Dental Clinic Eden Prairie",
+   "note": "HP page: 8455 Flying Cloud Dr, offers oral & maxillofacial surgery; no TMD here (HP TMD clinic is in Lake Elmo)",
+   "phone": "(952) 883-9040"
+  },
+  "1225629017|55420": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "this HealthPartners clinic now offers only general dentistry and periodontics"
+  },
+  "1407505829|55306": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://mdscburnsvilleoralsurgery.com/",
+   "note": "site lists 14344 Burnhaven Dr, Burnsville, (612) 638-1238 (Dr Tudor Stiharu); services implants/extractions, no TMJ mentioned",
+   "phone": "(612) 638-1238"
+  },
+  "1689723686|55109": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Owner Dr Jerry Brunsoman (board cert 1974) has no active individual NPI; no site/listing; prior pass saw Ste 140 listed for a skin-laser center. Likely closed"
+  },
+  "1063122976|55378": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://eosoralsurgery.com/locations/",
+   "practice": "EOS Oral Surgery",
+   "note": "mworalsurgery.com now redirects to EOS; site lists Savage 13875 Hwy 13 Frontage Rd Ste 50; TMJ page /services/tmj-disorder-treatment/",
+   "phone": "(952) 452-9151"
+  },
+  "1982242061|56377": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.mnofs.com/sartell-oral-surgeons/",
+   "practice": "Minnesota Oral & Facial Surgery",
+   "note": "Same suite as MN Oral and Facial Surgery row: site lists 2380 Troop Dr Ste 202 Sartell; TMJ page /medical/tmj-disorders/",
+   "phone": "(320) 257-9555"
+  },
+  "1194363275|56377": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.mnofs.com/sartell-oral-surgeons/",
+   "practice": "Minnesota Oral & Facial Surgery",
+   "note": "site Sartell page lists 2380 Troop Drive Ste 202, (320) 257-9555; TMJ page /medical/tmj-disorders/",
+   "phone": "(320) 257-9555"
+  },
+  "1457401820|55811": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.northernoralsurgeons.com/contact-us/duluth-office/",
+   "practice": "Northern Oral Surgery & Implant Center",
+   "note": "site Duluth office page lists 3617 West Arrowhead Road; TMJ page /procedures/tmj-disorders/",
+   "phone": "(218) 722-8377"
+  },
+  "1467563510|55449": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://www.omsspecialists.com/blaine",
+   "note": "site Blaine page lists 11855 Ulysses St NE #130 (11800 Aberdeen now Highland Bank etc.); TMJ only as jaw-surgery indication",
+   "phone": "(763) 757-2220",
+   "moved": {
+    "street": "11855 Ulysses Street NE",
+    "suite": "130",
+    "city": "Blaine",
+    "zip": "55434",
+    "phone": "(763) 757-2220"
+   }
+  },
+  "1982634010|55421": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omsspecialists.com/new-brighton",
+   "note": "site lists 550 County Road D West Ste 12, New Brighton 55112; TMJ pain mentioned only on /corrective-jaw-surgery",
+   "phone": "(612) 788-9246"
+  },
+  "1619049921|55435": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.omscmn.com/contact-us/edina-office/",
+   "note": "site Edina office page lists 7373 France Ave S Ste 602; TMJ disorders on /procedure/other-procedures/, 'TMJ surgery' on /procedures/",
+   "phone": "(952) 835-5003"
+  },
+  "1104057975|55344": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "family dentistry with extractions, not an oral surgery practice"
+  },
+  "1841991262|56308": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.soderholmoralsurgery.com/contact-us/contact-our-alexandria-office/",
+   "note": "site lists 120 12th Ave E, Alexandria; satellites Fergus Falls & Perham; procedures implants/extractions, no TMJ",
+   "phone": "(320) 298-1000"
+  },
+  "1659492312|56001": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.semoms.com/contact-us/contact-information/",
+   "note": "site lists Mankato 1410 Madison Ave; home says 'diagnose and treat facial pain', no dedicated TMJ page; also Rochester office",
+   "phone": "(507) 344-8698"
+  },
+  "1124776687|55118": {
+   "status": "Closed",
+   "tmj": false,
+   "website": "",
+   "note": "correction: St. Paul Oral Surgery's site lists only its St. Paul office; listings mark 750 Main St closed"
+  },
+  "1003431263|55345": {
+   "status": "Closed",
+   "tmj": false,
+   "website": "",
+   "note": "correction: Hwy 7 Minnetonka office is not among The Dental Specialists' current offices (agent had guessed a move to Deephaven, which is its own row)"
+  },
+  "1508932344|55337": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/burnsville/",
+   "note": "site lists 40 Nicollet Blvd W Ste A, Burnsville; oral surgery (Dr Todd Gerlach, OS line 952-926-1053) + perio; no TMJ service",
+   "phone": "(952) 241-5901"
+  },
+  "1346316189|55042": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://www.thedentalspecialists.com/location/woodbury/",
+   "practice": "The Dental Specialists - Woodbury",
+   "note": "High Pointe not on group's list; its listed phone 651-760-3661 is now the Woodbury Radio Dr office (endo/OS/perio). No TMJ",
+   "phone": "(651) 760-3661",
+   "moved": {
+    "street": "241 Radio Drive",
+    "suite": "A",
+    "city": "Woodbury",
+    "zip": "55125",
+    "phone": "(651) 760-3661"
+   }
+  },
+  "1083792279|55033": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.tcoralsurgery.com/contact-us/hastings-mn-office/",
+   "note": "site Hastings page lists 925 Hwy 55 Ste 202; TMJ only as 'chronic jaw or TMJ pain' indication on /procedures/jaw-surgery/",
+   "phone": "(651) 437-3262"
+  },
+  "1497113674|55364": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "",
+   "note": "correction from agent note",
+   "exclude": "general and cosmetic dentistry, not an oral surgery practice"
+  },
+  "1962698340|55108": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://www.healthpartners.com/care/find/location/clinics/dental/healthpartners/como-st-paul/tmd/",
+   "practice": "HealthPartners TMD Lake Elmo",
+   "note": "HP provider page /find/doctor/103602 lists him at TMD Lake Elmo; HP's TMD clinic (ex-Como Ave) now at 8515 Eagle Point Blvd",
+   "phone": "(651) 523-9951",
+   "moved": {
+    "street": "8515 Eagle Point Blvd",
+    "city": "Lake Elmo",
+    "zip": "55042",
+    "phone": "(651) 523-9951"
+   }
+  },
+  "1902850738|55404": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://hennepinhealthcare.org/services/dental-and-oral-surgery",
+   "practice": "Hennepin Healthcare Dental & Oral Surgery",
+   "note": "agent: Hennepin dental pages list Dr Haley in the TMJ/orofacial pain group; clinic 715 S 8th St",
+   "phone": "(612) 873-6963"
+  },
+  "1730752254|55415": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "https://hennepinhealthcare.org/services/dental-and-oral-surgery",
+   "practice": "Hennepin Healthcare Dental & Oral Surgery",
+   "note": "correction: 701 Park Ave is the HCMC campus; Dr Taema sees patients in the dental clinic at 715 S 8th St (agent note)",
+   "phone": "(612) 873-6963",
+   "moved": {
+    "street": "715 S 8th St",
+    "city": "Minneapolis",
+    "zip": "55404",
+    "phone": "(612) 873-6963"
+   }
+  },
+  "1407325830|55113": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.thefacialpaincenter.com/location/roseville/",
+   "practice": "The Facial Pain Center",
+   "note": "site Roseville page lists 1835 County Road C-West Ste 200; TMD + sleep apnea practice with 8 metro locations",
+   "phone": "(651) 636-2016"
+  },
+  "1871975607|55447": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mhnpc.com/",
+   "note": "mhnpc.com lists Plymouth 3475 Plymouth Blvd #200; team page + AAOP place Herman, Fricton, Thakur at 55447; Dr Emperumal is now at Univ. of Oklahoma (checked 2026-10-19)",
+   "specialists": [
+    "Cory Herman, DDS, MS",
+    "James Fricton, DDS, MS",
+    "Pathamas Mittman, DDS, MS",
+    "Preetanjali Thakur, BDS, MS"
+   ],
+   "phone": "(763) 577-2484"
+  },
+  "1841469897|55455": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://dentalclinics.umn.edu/specialty/tmd-orofacial-pain-dental-sleep-medicine",
+   "practice": "University of Minnesota TMD, Orofacial Pain & Dental Sleep Medicine Clinic",
+   "note": "correction: same clinic as the School of Dentistry row; UMN clinic page gives Moos Tower 6-440 and 612-626-0140",
+   "only": [
+    "TMJ Specialists"
+   ],
+   "phone": "(612) 626-0140"
+  },
+  "1215673454|55016": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.lindgrendentalcare.com/",
+   "practice": "Lindgren Dental Care",
+   "note": "Owner Dr Cheryl Lindgren's practice live at 6936 Pine Arbor Dr Ste 210; site lists no TMJ/TMD (nor sleep) among services/conditions",
+   "phone": "(651) 769-1000"
+  },
+  "1720918840|55125": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://woodlanedentistry.com/",
+   "practice": "Woodlane Family & Cosmetic Dentistry",
+   "note": "Owner Dr Marc Roehrich's practice at 2185 Woodlane Dr; site has Sleep Apnea + night-guard pages but no TMJ/TMD service. stcroixsleep.com still placeholder",
+   "phone": "(651) 731-1560"
+  },
+  "1912498148|55129": {
+   "status": "Moved",
+   "tmj": null,
+   "website": "https://www.woodburydentalarts.com/",
+   "practice": "Woodbury Dental Arts",
+   "note": "Owner Dr Marko Kamel (AADSM) runs Woodbury Dental Arts, listed at 237 Radio Dr; sleep apnea offered; own site unreachable, TMJ unknown",
+   "phone": "(651) 436-7559",
+   "moved": {
+    "street": "237 Radio Dr",
+    "suite": "Ste 110",
+    "city": "Woodbury",
+    "zip": "55125",
+    "phone": "(651) 436-7559"
+   }
+  },
+  "1477992238|55342": {
+   "status": "Confirmed",
+   "tmj": null,
+   "website": "",
+   "practice": "Westfield Dental",
+   "note": "Owner Dr Jack Fiedler's Westfield Dental at 149 Main St S (Google 5.0/222 reviews); listed site westfielddentalmn.com doesn't resolve; directory services omit TMJ/sleep",
+   "phone": "(320) 848-2611"
+  },
+  "1982262721|55435": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Owner Dr Jill Dulac (NPI official); only a WebMD stub on W 66th St; no site (sleepwelltwincities.com doesn't resolve), no listing found"
+  },
+  "1952965949|55446": {
+   "status": "Unverified",
+   "tmj": null,
+   "website": "",
+   "note": "Owner Dr Jack Baldwin (own NPI stale 2008 in St Paul); no site or listing for the LLC or Ste 270A"
+  },
+  "1417447210|55108": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://hibernationsleepmn.com",
+   "note": "Site: 2233 Energy Park Dr Ste 500, St Paul 55108; services snoring/apnea/oral appliances/insomnia only, no TMJ"
+  },
+  "1629968995|55901": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.mnsleepdentistry.com/",
+   "note": "Dr Katie Post (Northwest Dental Group, Superior Dr clinic 2056 Superior Dr NW); MSD site is oral sleep appliances only, no TMJ"
+  },
+  "1316838063|55901": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.mnsleepdentistry.com/",
+   "note": "Northwest Dental Group lists 822 38th St NW clinic; MSD site (3 pages) is sleep appliance therapy only, no TMJ"
+  },
+  "1003636911|55060": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://southernmnsleepcenter.com/",
+   "note": "Site lists only Owatonna office at 605 Hillcrest Ave; services apnea/snoring/myofunctional/tongue-tie, no TMJ",
+   "moved": {
+    "street": "605 Hillcrest Ave",
+    "suite": "Suite 130",
+    "city": "Owatonna",
+    "zip": "55060",
+    "phone": "(507) 323-5959"
+   }
+  },
+  "1356161269|56007": {
+   "status": "Unverified",
+   "tmj": false,
+   "website": "https://southernmnsleepcenter.com/",
+   "note": "Practice site lists only Owatonna office (605 Hillcrest Ave); no Albert Lea location shown; no TMJ service"
+  },
+  "1750165171|56069": {
+   "status": "Unverified",
+   "tmj": false,
+   "website": "https://southernmnsleepcenter.com/",
+   "note": "Practice site lists only Owatonna office (605 Hillcrest Ave); no Montgomery location shown; no TMJ service"
+  },
+  "1811327190|56425": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://greenhavendental.com/",
+   "practice": "Greenhaven Family Dental",
+   "note": "Same address/phone: 13495 Elder Dr Ste 100, Baxter, 218-454-0523; Dr Clinton Roberts sleep medicine; no TMJ page in sitemap",
+   "phone": "218-454-0523"
+  },
+  "1669354999|55124": {
+   "status": "Confirmed",
+   "tmj": false,
+   "website": "https://www.snorelessmn.com/",
+   "note": "Site: 7600 147th St W #202, Apple Valley 55124, (952) 213-2324; oral appliances for snoring/apnea only, no TMJ page",
+   "phone": "(952) 213-2324"
+  },
+  "1063644888|55439": {
+   "status": "Moved",
+   "tmj": false,
+   "website": "https://www.snoringandsleepapneamn.com/",
+   "note": "Site lists Edina office at 7505 Metro Blvd Ste 450 (+ St Paul 106 Douglas St); snoring/apnea only, no TMJ on any page",
+   "moved": {
+    "street": "7505 Metro Blvd",
+    "suite": "Suite 450",
+    "city": "Edina",
+    "zip": "55439",
+    "phone": "952-345-0290"
+   }
+  },
+  "1588094171|55025": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://my.officite.com/0029582/",
+   "practice": "Ross Orthodontics (Dr. Gregory Ross)",
+   "note": "Site: Forest Lake 368 South Lake St Ste 101, (651) 464-6988; Services menu has Sleep Apnea + TMJ page (/0029582/tmj)",
+   "phone": "(651) 464-6988"
+  },
+  "1598243990|55082": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.stillwaterbeautifulsmiles.com/",
+   "practice": "Carlson Dental Group",
+   "phone": "(651) 439-8840",
+   "specialists": [
+    "Sarah Carlson, DDS"
+   ],
+   "note": "basis: focus; dentist: Sarah Carlson, DDS; TMJ Treatment is first nav item + home feature; K7/EMG/TENS bite therapy, TMJ & sleep. https://www.stillwaterbeautifulsmiles.com/tmj-and-bite-therapy/"
+  },
+  "1255928917|55902": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.respirawell.com/",
+   "practice": "Respira",
+   "phone": "(507) 701-1127",
+   "specialists": [
+    "Ryan Henrichsen, DDS, MAGD"
+   ],
+   "note": "basis: focus; dentist: Ryan Henrichsen, DDS, MAGD; Site title 'Sleep Apnea & TMJ Treatments'; home: 'Treatments for Sleep Apnea, Snoring, & TMJ'; TMJ page https://www.respirawell.com/tmj-tmd"
+  },
+  "1780108209|56001": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.hylanddental.net/",
+   "practice": "Hyland Dental",
+   "phone": "(507) 387-3249",
+   "specialists": [
+    "Amanda Hyland, DDS"
+   ],
+   "note": "basis: focus; dentist: Amanda Hyland, DDS; Home features 'Head/Neck/Jaw Pain' + bio 'top-tier TMJ/TMD therapy'; 'Dentist with Specialty TMJ Training'. https://www.hylanddental.net/tmj-tmd-therapy.html"
+  },
+  "1386312411|55330": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://mncenterfordentalcare.com/",
+   "practice": "MN Center for Dental Care",
+   "phone": "(763) 972-0440",
+   "specialists": [
+    "Paul Sheils, DDS"
+   ],
+   "note": "basis: focus; dentist: Paul Sheils, DDS; Metro edge. About: 'specializing in TMJ Rejuvenation dentistry'; TMJ card on home; alt ph 763-251-7783. https://mncenterfordentalcare.com/tmj/"
+  },
+  "1033723309|56537": {
+   "status": "Moved",
+   "tmj": true,
+   "website": "",
+   "practice": "Riverfront Dental",
+   "phone": "(218) 736-5627",
+   "specialists": [
+    "Grant Colling, DDS"
+   ],
+   "note": "basis: focus; dentist: Grant Colling, DDS; TMJ Therapy is 1 of 4 home-page services; Dawson/Pankey TMJ training; TMJ section at http://flowsnorthdevelopment.com/services/ (site's own domain) | website removed 2026-10-19: flowsnorthdevelopment.com fails in a browser (bad certificate)",
+   "moved": {
+    "street": "124 E Lincoln Ave",
+    "city": "Fergus Falls",
+    "zip": "56537",
+    "phone": "(218) 736-5627"
+   }
+  },
+  "1871663831|55313": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://hansondental.com/",
+   "practice": "Hanson Dental",
+   "phone": "(763) 682-9796",
+   "note": "basis: focus; dentist: Dr. Hanson (LVI-trained); Metro edge. Home: 'We specialize in ... neuromuscular dentistry' + TMJ Therapy card; LVI TMJ training. https://hansondental.com/tmj-therapy/"
+  },
+  "1003702408|55901": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.honordentalrochester.com/",
+   "practice": "Honor Dental",
+   "phone": "(507) 288-1101",
+   "specialists": [
+    "Andrew Greenslade, DMD"
+   ],
+   "note": "basis: focus; dentist: Andrew Greenslade, DMD (Dawson Academy); TMJ/TMD Care is 1st of 4 home-page services; page titled 'TMJ/TMD Specialist'. https://www.honordentalrochester.com/services/tmj-tmd-treatment"
+  },
+  "1841353992|55344": {
+   "status": "Confirmed",
+   "tmj": true,
+   "website": "https://www.gallaghercosmeticdentistry.com/",
+   "practice": "Gallagher Dentistry & Facial Pain Center",
+   "phone": "(952) 942-9600",
+   "specialists": [
+    "Michael Gallagher, DDS"
+   ],
+   "note": "basis: name; dentist: Michael Gallagher, DDS; 'Facial Pain Center' in name; home 'Get TMJ & Facial Pain Relief Today!', TMJ pages: https://www.gallaghercosmeticdentistry.com/dental-services/tmj-facial-pain/"
+  }
+ },
+ "finds": [
+  {
+   "name": "The Facial Pain Center",
+   "street": "4190 108th Ave NE",
+   "suite": "Suite 130",
+   "city": "Blaine",
+   "zip": "55449",
+   "phone": "(651) 636-2016",
+   "website": "https://www.thefacialpaincenter.com/",
+   "npi": "1407325830",
+   "dentist": "Patricia Fernandes Boettner, DDS, MS",
+   "note": "basis: name; dentist: Patricia Fernandes Boettner, DDS, MS; TMJ/facial pain practice (8 sites); Blaine branch not on list. https://www.thefacialpaincenter.com/location/blaine/"
+  },
+  {
+   "name": "The Facial Pain Center",
+   "street": "13059 Ridgedale Dr",
+   "city": "Minnetonka",
+   "zip": "55305",
+   "phone": "(952) 926-3858",
+   "website": "https://www.thefacialpaincenter.com/",
+   "npi": "1407325830",
+   "dentist": "Patricia Fernandes Boettner, DDS, MS",
+   "note": "basis: name; dentist: Patricia Fernandes Boettner, DDS, MS; TMJ/facial pain practice; Minnetonka branch near Ridgedale not on list. https://www.thefacialpaincenter.com/location/minnetonka/"
+  },
+  {
+   "name": "The Facial Pain Center",
+   "street": "241 Radio Dr",
+   "city": "Woodbury",
+   "zip": "55125",
+   "phone": "(651) 636-2016",
+   "website": "https://www.thefacialpaincenter.com/",
+   "npi": "1407325830",
+   "dentist": "Patricia Fernandes Boettner, DDS, MS",
+   "note": "basis: name; dentist: Patricia Fernandes Boettner, DDS, MS; TMJ/facial pain practice; Woodbury branch not on list. https://www.thefacialpaincenter.com/location/woodbury/"
+  },
+  {
+   "name": "Carlson Dental Group",
+   "street": "1701 Curve Crest Blvd",
+   "suite": "Suite 100",
+   "city": "Stillwater",
+   "zip": "55082",
+   "phone": "(651) 439-8840",
+   "website": "https://www.stillwaterbeautifulsmiles.com/",
+   "npi": "1598243990",
+   "dentist": "Sarah Carlson, DDS",
+   "note": "basis: focus; dentist: Sarah Carlson, DDS; TMJ Treatment is first nav item + home feature; K7/EMG/TENS bite therapy, TMJ & sleep. https://www.stillwaterbeautifulsmiles.com/tmj-and-bite-therapy/"
+  },
+  {
+   "name": "M Health Fairview Neurosurgery Clinic Minneapolis",
+   "street": "909 Fulton St SE",
+   "suite": "Floor 3",
+   "city": "Minneapolis",
+   "zip": "55455",
+   "phone": "(651) 232-3900",
+   "website": "https://providers.mhealthfairview.org/provider/donald-nixdorf/2241251",
+   "dentist": "Donald Nixdorf, DDS, MS",
+   "note": "basis: credential; dentist: Donald Nixdorf, DDS, MS; Orofacial pain dentist, ABOP diplomate (abop.net directory), sees TMD/facial pain pts at this clinic; listed site is Moos Tower only."
+  },
+  {
+   "name": "Respira",
+   "street": "1309 Salem Road SW",
+   "suite": "Suite 100",
+   "city": "Rochester",
+   "zip": "55902",
+   "phone": "(507) 701-1127",
+   "website": "https://www.respirawell.com/",
+   "npi": "1255928917",
+   "dentist": "Ryan Henrichsen, DDS, MAGD",
+   "note": "basis: focus; dentist: Ryan Henrichsen, DDS, MAGD; Site title 'Sleep Apnea & TMJ Treatments'; home: 'Treatments for Sleep Apnea, Snoring, & TMJ'; TMJ page https://www.respirawell.com/tmj-tmd"
+  },
+  {
+   "name": "Hyland Dental",
+   "street": "810 Independence Dr",
+   "city": "Mankato",
+   "zip": "56001",
+   "phone": "(507) 387-3249",
+   "website": "https://www.hylanddental.net/",
+   "npi": "1780108209",
+   "dentist": "Amanda Hyland, DDS",
+   "note": "basis: focus; dentist: Amanda Hyland, DDS; Home features 'Head/Neck/Jaw Pain' + bio 'top-tier TMJ/TMD therapy'; 'Dentist with Specialty TMJ Training'. https://www.hylanddental.net/tmj-tmd-therapy.html"
+  },
+  {
+   "name": "MN Center for Dental Care",
+   "street": "9075 Quaday Ave NE",
+   "suite": "#102",
+   "city": "Elk River",
+   "zip": "55330",
+   "phone": "(763) 972-0440",
+   "website": "https://mncenterfordentalcare.com/",
+   "npi": "1386312411",
+   "dentist": "Paul Sheils, DDS",
+   "note": "basis: focus; dentist: Paul Sheils, DDS; Metro edge. About: 'specializing in TMJ Rejuvenation dentistry'; TMJ card on home; alt ph 763-251-7783. https://mncenterfordentalcare.com/tmj/"
+  },
+  {
+   "name": "Riverfront Dental",
+   "street": "124 E Lincoln Ave",
+   "city": "Fergus Falls",
+   "zip": "56537",
+   "phone": "(218) 736-5627",
+   "website": "",
+   "npi": "1033723309",
+   "dentist": "Grant Colling, DDS",
+   "note": "basis: focus; dentist: Grant Colling, DDS; TMJ Therapy is 1 of 4 home-page services; Dawson/Pankey TMJ training; TMJ section at http://flowsnorthdevelopment.com/services/ (site's own domain) | website removed 2026-10-19: flowsnorthdevelopment.com fails in a browser (bad certificate)"
+  },
+  {
+   "name": "Hanson Dental",
+   "street": "1100 MN-25",
+   "suite": "#1",
+   "city": "Buffalo",
+   "zip": "55313",
+   "phone": "(763) 682-9796",
+   "website": "https://hansondental.com/",
+   "npi": "1871663831",
+   "note": "basis: focus; dentist: Dr. Hanson (LVI-trained); Metro edge. Home: 'We specialize in ... neuromuscular dentistry' + TMJ Therapy card; LVI TMJ training. https://hansondental.com/tmj-therapy/"
+  },
+  {
+   "name": "Honor Dental",
+   "street": "2112 Viking Dr NW",
+   "city": "Rochester",
+   "zip": "55901",
+   "phone": "(507) 288-1101",
+   "website": "https://www.honordentalrochester.com/",
+   "npi": "1003702408",
+   "dentist": "Andrew Greenslade, DMD",
+   "note": "basis: focus; dentist: Andrew Greenslade, DMD (Dawson Academy); TMJ/TMD Care is 1st of 4 home-page services; page titled 'TMJ/TMD Specialist'. https://www.honordentalrochester.com/services/tmj-tmd-treatment"
+  },
+  {
+   "name": "TMJ & Sleep Therapy Centre of St. Paul (at Smiles of Distinction Dentistry)",
+   "street": "4300 Egan Dr",
+   "city": "Savage",
+   "zip": "55378",
+   "phone": "(952) 894-2545",
+   "website": "https://www.tmjandsleeptherapycentreofminnesota.com/",
+   "dentist": "Bart Schultz, DDS",
+   "note": "basis: name; dentist: Bart Schultz, DDS; Named TMJ centre (Olmos network) in Smiles of Distinction; listed at https://tmjtherapycentre.com/for-doctors/find-a-tmj-centre-near-you/"
+  },
+  {
+   "name": "Gallagher Dentistry & Facial Pain Center",
+   "street": "11800 Singletree Ln",
+   "suite": "Suite 208",
+   "city": "Eden Prairie",
+   "zip": "55344",
+   "phone": "(952) 942-9600",
+   "website": "https://www.gallaghercosmeticdentistry.com/",
+   "npi": "1841353992",
+   "dentist": "Michael Gallagher, DDS",
+   "note": "basis: name; dentist: Michael Gallagher, DDS; 'Facial Pain Center' in name; home 'Get TMJ & Facial Pain Relief Today!', TMJ pages: https://www.gallaghercosmeticdentistry.com/dental-services/tmj-facial-pain/"
+  }
+ ],
+ "tmjNpis": [
+  "1003702408",
+  "1033723309",
+  "1255928917",
+  "1306513023",
+  "1386312411",
+  "1407325830",
+  "1588094171",
+  "1598243990",
+  "1780108209",
+  "1841353992",
+  "1871663831",
+  "1922947142"
+ ]
+}

@@ -3,7 +3,9 @@
  *
  *   npx tsx scripts/nppes/mn-specialists/build.ts [--offline]
  *
- * Reads `raw.json` (from `fetch.ts`) and writes `clinics.json` and `report.md`.
+ * Reads `raw.json` (from `fetch.ts`) and, when present, the TMJ harvest in
+ * `../mn-tmj/` (from `../mn-tmj/fetch.ts`, added 2026-10-19), and writes
+ * `clinics.json` and `report.md`.
  * Never writes to the database: the client asked for a spreadsheet, and the
  * only thing read from production is the clinic list, to mark which of these
  * are already on Xpert Connect. `--offline` skips both network steps (the
@@ -38,6 +40,15 @@ const RECENT_SINCE = '2022-01-01'
 const DIR = join(process.cwd(), 'data', 'nppes', 'mn-specialists')
 const CENSUS = join(DIR, 'census')
 const RAW = join(DIR, 'raw.json')
+const TMJ_DIR = join(process.cwd(), 'data', 'nppes', 'mn-tmj')
+/** The TMJ harvest. Fetched later, so it wins for an NPI the two share. */
+const TMJ_RAW = join(TMJ_DIR, 'raw.json')
+/**
+ * What the web check of every TMJ and oral-surgery row found, from
+ * `../mn-tmj/web.ts`. Optional: without it those rows are tiered by registry
+ * date like every other row.
+ */
+const TMJ_WEB = join(TMJ_DIR, 'web.json')
 const GEOCODE_CACHE = join(CENSUS, 'geocode-cache.json')
 const PLATFORM_CACHE = join(CENSUS, 'platform-clinics.json')
 const OUT = join(DIR, 'clinics.json')
@@ -45,8 +56,18 @@ const REPORT = join(DIR, 'report.md')
 
 // ---- specialties -----------------------------------------------------------
 
-export const GROUPS = ['Injury Physicians', 'Chiropractic', 'Physical Therapy', 'Imaging'] as const
+export const GROUPS = [
+  'Injury Physicians',
+  'Chiropractic',
+  'Physical Therapy',
+  'Imaging',
+  'TMJ Specialists',
+  'Oral Surgery',
+] as const
 export type Group = (typeof GROUPS)[number]
+
+/** The two groups the TMJ harvest adds. Their rows are the ones the web check covers. */
+export const DENTAL_GROUPS: Group[] = ['TMJ Specialists', 'Oral Surgery']
 
 /** The label shown in the sheet -> the group it files under. */
 const LABEL_GROUP: Record<string, Group> = {
@@ -61,8 +82,27 @@ const LABEL_GROUP: Record<string, Group> = {
   'Physical Therapy': 'Physical Therapy',
   Radiology: 'Imaging',
   MRI: 'Imaging',
+  // The dental specialty that is TMJ disorders.
+  'Orofacial Pain': 'TMJ Specialists',
+  // A clinic whose name says it treats TMJ, whatever it registered as.
+  'TMJ Clinic': 'TMJ Specialists',
+  // A dentist the web check found treating TMJ as a service of its own.
+  'TMJ Treatment': 'TMJ Specialists',
+  'Oral & Maxillofacial Surgery': 'Oral Surgery',
 }
 const LABEL_ORDER = Object.keys(LABEL_GROUP)
+
+/** Oral and maxillofacial surgery: the dentist and physician specializations, and the facility. */
+const OMS = new Set(['1223S0112X', '204E00000X', '261QS0112X'])
+/** A dental practice: any "Dentist, *" taxonomy, a dental clinic, or an oral-surgery one. */
+const isDental = (r: NppesRecord) =>
+  r.taxonomies.some((t) => t.code.startsWith('1223') || t.code === '261QD0000X' || OMS.has(t.code))
+/**
+ * A name that says TMJ. "Minnesota Head and Neck Pain Clinic" is the state's
+ * largest TMJ practice; "Craniofacial Imaging" (radiology) and "Minnesota Head
+ * and Neck Surgery" (ENT) are not TMJ clinics, so the words are specific.
+ */
+const TMJ_NAME = /\b(tmj|tmd)\b|orofacial|craniofacial (pain|center)|facial pain|head (and|&) neck pain/i
 
 /** Neurology proper. `2084P*` is psychiatry and shares the classification. */
 const NEUROLOGY = new Set(['2084N0400X', '2084N0402X', '2084N0600X', '2084N0008X', '2084V0102X'])
@@ -83,7 +123,9 @@ function labelsFor(code: string, desc: string): string[] {
   if (code.startsWith('207T')) out.push('Neurosurgery')
   if (
     code.startsWith('208V') ||
-    code.startsWith('207LP') ||
+    // Anesthesiology, Pain Medicine. Not `207LP*`: that is also Pediatric
+    // Anesthesiology, which filed a children's dental sedation practice here.
+    code === '207LP2900X' ||
     code === '2081P2900X' ||
     code === '2084P2900X' ||
     code === '261QP3300X'
@@ -99,12 +141,21 @@ function labelsFor(code: string, desc: string): string[] {
     out.push('Radiology')
   }
   if (code === '261QM1200X') out.push('MRI')
+  if (code === '1223X2210X') out.push('Orofacial Pain')
+  if (OMS.has(code)) out.push('Oral & Maxillofacial Surgery')
   return out
 }
+
+/** NPIs the web check confirmed treat TMJ, from web.json. Filled in `main`. */
+const webTmj = new Set<string>()
+
+const namesOf = (r: NppesRecord) => [r.basic.organization_name ?? '', ...r.otherNames.map((o) => o.name)]
 
 function labelsOf(r: NppesRecord): string[] {
   const set = new Set<string>()
   for (const t of r.taxonomies) for (const l of labelsFor(t.code, t.desc ?? '')) set.add(l)
+  if (r.enumeration_type === 'NPI-2' && namesOf(r).some((n) => TMJ_NAME.test(n))) set.add('TMJ Clinic')
+  if (webTmj.has(r.number)) set.add('TMJ Treatment')
   return LABEL_ORDER.filter((l) => set.has(l))
 }
 
@@ -132,6 +183,9 @@ const EXCLUDED_PRIMARY = /^(25|29|30|31|32|33|34|38)/
  */
 const EXCLUDED_NAME =
   /\b(school|schools|isd|school district|public schools|academy|nursing|senior|assisted living|memory care|transitional care|homes?|manor|home care|homecare|home health|in[- ]home|at home|house ?calls?|mobile|hospice|staffing|travel|billing|pharmacy|medical supply|supplies|equipment|dme|aegis|optage|augustana|animal|equine|veterinary|paws|canine)\b/i
+
+/** The University of Minnesota School of Dentistry runs the state's TMD clinic: a school that IS a door. */
+const notAClinic = (name: string) => EXCLUDED_NAME.test(name.replace(/school of dentistry/i, ''))
 
 /** Hospital, or general medicine: a system whose branches are not all specialist clinics. */
 const HEALTH_SYSTEM = /^(282N|207Q00000X|207R00000X|208D00000X)/
@@ -244,7 +298,72 @@ export interface ClinicRow {
   countySource: 'census' | 'zcta' | 'city' | ''
   lat: number | null
   lng: number | null
+  /**
+   * Individual TMJ (orofacial pain) specialists and oral surgeons registered
+   * at this building with this phone, by name. Only individuals whose own
+   * entry was updated since RECENT_SINCE: a name from 2015 is often someone
+   * who has left.
+   */
+  orofacial: string[]
+  surgeons: string[]
+  /** From the web check (dental groups only). Empty when the row was not checked. */
+  website: string
+  webCheck: WebStatus | ''
+  webNote: string
+  /** The practice's own site offers TMJ treatment; null when there was no site to read. */
+  treatsTmj: boolean | null
+  /** Not in the registry under a TMJ name or code: found on the web. */
+  source: 'registry' | 'web'
 }
+
+export type WebStatus = 'Confirmed' | 'Moved' | 'Closed' | 'Unverified'
+
+/** One row's web check, keyed by `${first NPI}|${ZIP}` — what `rowKey` returns. */
+export interface WebCheck {
+  status: WebStatus
+  /** The practice presents TMJ / jaw pain treatment as a service of its own. */
+  tmj: boolean | null
+  website: string
+  /** The name on the door, when it differs from the registry's. */
+  practice?: string
+  /** The phone the practice gives today. The registry's is often an old one. */
+  phone?: string
+  /** Who the web says practises there, replacing the registry's names: Mayo's registered TMJ dentist has left. */
+  specialists?: string[]
+  /**
+   * The only groups the row belongs in. The University's School of Dentistry
+   * registers PT and oral surgery under the same NPI as its TMD clinic; the
+   * row the web check found is the TMD clinic.
+   */
+  only?: Group[]
+  /**
+   * Why the row is not what its registry code says: a family dentist that
+   * registered an oral-surgery code, a clinic that stopped offering it. The
+   * row leaves the TMJ and Oral Surgery groups.
+   */
+  exclude?: string
+  /** Where it is now, for a practice that moved: street, city, ZIP. */
+  moved?: { street: string; suite?: string; city: string; zip: string; phone?: string }
+  note?: string
+}
+
+/** A TMJ practice the web found that the registry does not name as one. */
+export interface WebFind {
+  name: string
+  street: string
+  suite?: string
+  city: string
+  zip: string
+  phone: string
+  website: string
+  /** When it IS in the registry, under a general-dentistry code: its NPI, so the row is that record. */
+  npi?: string
+  /** The TMJ dentist who practises there, when the site names one. */
+  dentist?: string
+  note?: string
+}
+
+export const rowKey = (npi: string, zip: string) => `${npi}|${zip.slice(0, 5)}`
 
 interface Draft {
   key: string
@@ -260,6 +379,10 @@ interface Draft {
   phones: string[]
   npis: string[]
   updated: string
+  source: 'registry' | 'web'
+  orofacial?: string[]
+  surgeons?: string[]
+  check?: WebCheck
 }
 
 const rejects = new Map<string, string[]>()
@@ -300,7 +423,20 @@ function orgLocations(r: NppesRecord): Address[] {
  * DBA that names this location's city is used, or else the legal name.
  */
 /** "7TH AVENUE CHIROPRACTIC" comes out of titleCaseOrg as "7TH Avenue"; ordinals go lower. */
-const tidyName = (s: string) => s.replace(/\b(\d+)(ST|ND|RD|TH)\b/g, (_, n, suffix) => n + suffix.toLowerCase())
+const tidyName = (s: string) =>
+  s
+    .replace(/\b(\d+)(ST|ND|RD|TH)\b/g, (_, n, suffix) => n + suffix.toLowerCase())
+    .replace(/\b(tmj|tmd|oms)\b/gi, (w) => w.toUpperCase())
+    .replace(/\bHealthpartners\b/g, 'HealthPartners')
+
+/** "JACK BOTROS" + "D.D.S., M.S." -> "Jack Botros, DDS, MS": an individual specialist, as the sheet names one. */
+function personName(r: NppesRecord): string {
+  const name = titleCaseOrg(`${r.basic.first_name ?? ''} ${r.basic.last_name ?? ''}`)
+  const cred = (r.basic.credential ?? '').replace(/\./g, '').replace(/\s*,\s*/g, ', ').trim().toUpperCase()
+  return cred ? `${name}, ${cred}` : name
+}
+
+const digitsOf = (phone: string | undefined) => (phone ?? '').replace(/\D/g, '').slice(-10)
 
 function displayName(r: NppesRecord, city: string): string {
   const legal = r.basic.organization_name ?? ''
@@ -319,6 +455,12 @@ function displayName(r: NppesRecord, city: string): string {
  */
 function streetFromLine(raw: string): string {
   const line = raw.trim()
+  // "6-440 MOOS HEALTH SCIENCES TOWER, 515 DELAWARE ST. SE": a room number
+  // first, then the street. "33-57 HARRISON ST" has no second number and stays.
+  if (/^\d+-\d+\s+[A-Za-z]/.test(line)) {
+    const m = /\b(\d{1,6}\s+[A-Za-z].*)$/.exec(line.replace(/^\d+-\d+\s+/, ''))
+    if (m) return m[1]
+  }
   if (/^\d/.test(line)) return line
   if (/^one\s/i.test(line)) return line.replace(/^one\s/i, '1 ')
   const m = /\b(\d{1,6}\s+[A-Za-z].*)$/.exec(line)
@@ -541,11 +683,31 @@ function platformMatcher(rows: PlatformClinic[]) {
 // ---- main ------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const records = JSON.parse(readFileSync(RAW, 'utf8')) as NppesRecord[]
+  const byNpi = new Map<string, NppesRecord>()
+  for (const file of [RAW, TMJ_RAW]) {
+    if (!existsSync(file)) continue
+    for (const r of JSON.parse(readFileSync(file, 'utf8')) as NppesRecord[]) byNpi.set(r.number, r)
+  }
+  const records = Array.from(byNpi.values())
   console.log(`${records.length} registry records.`)
+
+  // `tmjNpis`, not every check with `tmj: true`: most oral surgeons list TMJ
+  // surgery, and filing them all under TMJ would bury the specialists. For
+  // them it is a column of the Oral Surgery sheet instead.
+  const web: { checks: Record<string, WebCheck>; finds: WebFind[]; tmjNpis: string[] } = existsSync(TMJ_WEB)
+    ? JSON.parse(readFileSync(TMJ_WEB, 'utf8'))
+    : { checks: {}, finds: [], tmjNpis: [] }
+  for (const n of web.tmjNpis) webTmj.add(n)
 
   // Individuals, counted per building and per label.
   const providersAt = new Map<string, Map<string, Set<string>>>()
+  /**
+   * Recently updated TMJ specialists and oral surgeons, by building and the
+   * phone they answer. Same building AND same phone is the same practice; a
+   * medical office building like Southdale's holds a dozen dental practices,
+   * so the building alone would hand the specialty to all of them.
+   */
+  const specialistsAt = new Map<string, { label: string; phone: string; name: string; npi: string }[]>()
   for (const r of records) {
     if (r.enumeration_type !== 'NPI-1' || (r.basic.status && r.basic.status !== 'A')) continue
     const labels = labelsOf(r)
@@ -558,11 +720,34 @@ async function main(): Promise<void> {
         if (!m.has(l)) m.set(l, new Set())
         m.get(l)!.add(r.number)
       }
+      if ((r.basic.last_updated ?? '') < RECENT_SINCE) continue
+      const b = buildingKey(streetFromLine(loc.address_1 ?? ''), (loc.postal_code ?? '').slice(0, 5))
+      for (const label of labels.filter((l) => l === 'Orofacial Pain' || l === 'Oral & Maxillofacial Surgery')) {
+        if (!specialistsAt.has(b)) specialistsAt.set(b, [])
+        specialistsAt.get(b)!.push({ label, phone: digitsOf(loc.telephone_number), name: personName(r), npi: r.number })
+      }
     }
+  }
+  const specialistsHere = (building: string, phones: string[], label: string) => {
+    const want = new Set(phones.map(digitsOf))
+    return (specialistsAt.get(building) ?? []).filter((s) => s.label === label && want.has(s.phone))
   }
 
   // Organisations, one draft per (name, building).
   const drafts = new Map<string, Draft>()
+  const addDraft = (d: Omit<Draft, 'key'>) => {
+    const key = `${nameKey(d.name)}|${d.building}`
+    const prior = drafts.get(key)
+    if (!prior) {
+      drafts.set(key, { ...d, key })
+      return
+    }
+    d.labels.forEach((l) => prior.labels.add(l))
+    d.primaryLabels.forEach((l) => prior.primaryLabels.add(l))
+    prior.phones.push(...d.phones)
+    for (const n of d.npis) if (!prior.npis.includes(n)) prior.npis.push(n)
+    if (d.updated > prior.updated) prior.updated = d.updated
+  }
   let orgs = 0
   for (const r of records) {
     if (r.enumeration_type !== 'NPI-2') continue
@@ -581,16 +766,21 @@ async function main(): Promise<void> {
         continue
       }
     }
-    if (!labels.length) {
-      reject('no taxonomy in the four groups', `${tag}: ${r.taxonomies.map((t) => t.code).join(' ')}`)
+    // A dental practice with no TMJ code or name of its own can still be where
+    // a TMJ specialist works; that is decided per location, below.
+    const dental = isDental(r)
+    if (!labels.length && !dental) {
+      reject('no taxonomy in the groups', `${tag}: ${r.taxonomies.map((t) => t.code).join(' ')}`)
       continue
     }
     const primary = r.taxonomies.find((t) => t.primary) ?? r.taxonomies[0]
-    if (primary && EXCLUDED_PRIMARY.test(primary.code)) {
+    // Dental sleep practices register as suppliers of the oral appliance they
+    // make (332B). One the web found treating TMJ is still a clinic.
+    if (primary && EXCLUDED_PRIMARY.test(primary.code) && !webTmj.has(r.number)) {
       reject('agency, facility or supplier (primary taxonomy)', `${tag}: ${primary.code} ${primary.desc}`)
       continue
     }
-    if (EXCLUDED_NAME.test(legalName)) {
+    if (notAClinic(legalName)) {
       reject('not a clinic (name)', tag)
       continue
     }
@@ -601,6 +791,9 @@ async function main(): Promise<void> {
     }
     const mainPhone = r.location?.telephone_number ?? ''
     const primaryLabels = new Set(primary ? labelsFor(primary.code, primary.desc ?? '') : [])
+    // The name is what the business says it is: a TMJ clinic registered under
+    // a generic code files under TMJ first.
+    if (labels.includes('TMJ Clinic')) primaryLabels.add('TMJ Clinic')
     const updated = r.basic.last_updated ?? r.basic.enumeration_date ?? ''
 
     for (const loc of locations) {
@@ -608,7 +801,18 @@ async function main(): Promise<void> {
       const line2 = (loc.address_2 ?? '').trim()
       const name = displayName(r, loc.city ?? '')
       const where = `${name} (${r.number}) @ ${line1} ${line2}, ${loc.city}`
-      if (EXCLUDED_NAME.test(name)) {
+      const zip5 = (loc.postal_code ?? '').slice(0, 5)
+      const building = buildingKey(line1, zip5)
+      let here = labels
+      if (dental && !here.includes('Orofacial Pain')) {
+        const ofp = specialistsHere(building, [loc.telephone_number || mainPhone], 'Orofacial Pain')
+        if (ofp.length) here = LABEL_ORDER.filter((l) => l === 'Orofacial Pain' || here.includes(l))
+      }
+      if (!here.length) {
+        reject('dental practice with no TMJ code, name or specialist', where)
+        continue
+      }
+      if (notAClinic(name)) {
         reject('not a clinic (name)', where)
         continue
       }
@@ -625,32 +829,19 @@ async function main(): Promise<void> {
         reject('no phone', where)
         continue
       }
-      const zip5 = (loc.postal_code ?? '').slice(0, 5)
-      const building = buildingKey(line1, zip5)
       const providerCount = new Set(
-        labels.flatMap((l) => Array.from(providersAt.get(building)?.get(l) ?? []))
+        here.flatMap((l) => Array.from(providersAt.get(building)?.get(l) ?? []))
       ).size
       if (/\b(apt|apartment)\b/i.test(`${line1} ${line2}`) && providerCount < 2) {
         reject('home address (apartment, fewer than 2 providers)', where)
         continue
       }
-      const key = `${nameKey(name)}|${building}`
-      const d = drafts.get(key)
-      if (d) {
-        labels.forEach((l) => d.labels.add(l))
-        primaryLabels.forEach((l) => d.primaryLabels.add(l))
-        d.phones.push(phone)
-        if (!d.npis.includes(r.number)) d.npis.push(r.number)
-        if (updated > d.updated) d.updated = updated
-        continue
-      }
-      drafts.set(key, {
-        key,
+      addDraft({
         building,
         name,
         legalName,
-        labels: new Set(labels),
-        primaryLabels,
+        labels: new Set(here),
+        primaryLabels: new Set(primaryLabels),
         line1,
         line2,
         city: loc.city ?? '',
@@ -658,10 +849,173 @@ async function main(): Promise<void> {
         phones: [phone],
         npis: [r.number],
         updated,
+        source: 'registry',
       })
     }
   }
   console.log(`${orgs} organisations -> ${drafts.size} clinic locations after gates and dedup.`)
+
+  // A TMJ specialist whose practice is not in the registry as a TMJ clinic
+  // gets a row of their own: there are two dozen in the state, and each is the
+  // person the list exists to find. The web check names the practice.
+  //
+  // A TMJ clinic in the same building is enough to fold them in, phone or not:
+  // the University's TMD clinic answers on one number and its faculty
+  // registered another.
+  const isTmjDraft = (d: Draft) => d.labels.has('Orofacial Pain') || d.labels.has('TMJ Clinic')
+  const tmjHere = (building: string, phone: string) =>
+    Array.from(drafts.values()).some(
+      (d) => d.building === building && (isTmjDraft(d) || d.phones.some((p) => digitsOf(p) === phone))
+    )
+  for (const r of records) {
+    if (r.enumeration_type !== 'NPI-1' || (r.basic.status && r.basic.status !== 'A')) continue
+    if (!r.taxonomies.some((t) => t.code === '1223X2210X')) continue
+    for (const loc of mnLocations(r)) {
+      const line1 = streetFromLine(loc.address_1 ?? '')
+      const line2 = (loc.address_2 ?? '').trim()
+      const zip5 = (loc.postal_code ?? '').slice(0, 5)
+      const building = buildingKey(line1, zip5)
+      const name = personName(r)
+      const phone = formatPhone(loc.telephone_number ?? '')
+      const where = `${name} (${r.number}) @ ${line1} ${line2}, ${loc.city}`
+      if (tmjHere(building, digitsOf(phone))) continue
+      if (!/^\d/.test(line1) || !phone) {
+        reject('TMJ specialist with no usable practice address', where)
+        continue
+      }
+      addDraft({
+        building,
+        name,
+        legalName: name,
+        labels: new Set(['Orofacial Pain']),
+        primaryLabels: new Set(['Orofacial Pain']),
+        line1,
+        line2,
+        city: loc.city ?? '',
+        zip5,
+        phones: [phone],
+        npis: [r.number],
+        updated: r.basic.last_updated ?? r.basic.enumeration_date ?? '',
+        source: 'registry',
+      })
+    }
+  }
+
+  // TMJ practices the web found where the registry has no row: not in it at
+  // all, or a branch of a record whose row is elsewhere. The Facial Pain
+  // Center's Blaine, Minnetonka and Woodbury offices are practice locations of
+  // its Roseville NPI, whose branches `orgLocations` does not take (it has no
+  // TMJ code to judge them by).
+  for (const f of web.finds) {
+    const zip5 = f.zip.slice(0, 5)
+    if (f.npi && Array.from(drafts.values()).some((d) => d.npis.includes(f.npi!) && d.zip5 === zip5)) continue
+    const line1 = f.street
+    const record = f.npi ? byNpi.get(f.npi) : undefined
+    addDraft({
+      building: buildingKey(line1, f.zip),
+      name: f.name,
+      legalName: record ? tidyName(titleCaseOrg(record.basic.organization_name ?? '')) : f.name,
+      labels: new Set(['TMJ Treatment']),
+      primaryLabels: new Set(['TMJ Treatment']),
+      line1,
+      line2: f.suite ?? '',
+      city: f.city,
+      zip5,
+      phones: [formatPhone(f.phone)],
+      npis: record ? [record.number] : [],
+      updated: record?.basic.last_updated ?? '',
+      source: record ? 'registry' : 'web',
+      check: {
+        status: 'Confirmed',
+        tmj: true,
+        website: f.website,
+        note: f.note,
+        ...(f.dentist ? { specialists: f.dentist.split('; ') } : {}),
+      },
+    })
+  }
+
+  // Who works there, then what the web check found — before anything is
+  // geocoded, because a practice that moved is geocoded where it is now.
+  for (const d of Array.from(drafts.values())) {
+    const strict = (label: string) => specialistsHere(d.building, d.phones, label)
+    const all = (label: string) => (specialistsAt.get(d.building) ?? []).filter((s) => s.label === label)
+    const names = (xs: { name: string }[]) => Array.from(new Set(xs.map((x) => x.name))).sort()
+    // Same building is enough for a clinic that is TMJ by its own code or name;
+    // anything else must share the phone. Surgeons always must: Southdale holds
+    // three oral-surgery practices.
+    d.orofacial = d.labels.has('Orofacial Pain') || d.labels.has('TMJ Clinic')
+      ? names(isTmjDraft(d) && d.source === 'registry' ? all('Orofacial Pain') : strict('Orofacial Pain'))
+      : []
+    d.surgeons = d.labels.has('Oral & Maxillofacial Surgery') ? names(strict('Oral & Maxillofacial Surgery')) : []
+
+    const check = d.check ?? (d.npis.length ? web.checks[rowKey(d.npis[0], d.zip5)] : undefined)
+    if (!check) continue
+    d.check = check
+    if (check.status === 'Closed') {
+      reject('closed (web check)', `${d.name} (${d.npis.join(', ')}) @ ${d.line1}, ${d.city}${check.note ? ` — ${check.note}` : ''}`)
+      drafts.delete(d.key)
+      continue
+    }
+    if (check.exclude) {
+      for (const l of Array.from(d.labels)) if (DENTAL_GROUPS.includes(LABEL_GROUP[l])) d.labels.delete(l)
+      reject('not TMJ or oral surgery after all (web check)', `${d.name} (${d.npis.join(', ')}) @ ${d.line1}, ${d.city} — ${check.exclude}`)
+      if (!d.labels.size) {
+        drafts.delete(d.key)
+        continue
+      }
+      delete d.check
+      continue
+    }
+    if (check.practice) d.name = check.practice
+    if (check.specialists) d.orofacial = check.specialists
+    if (check.only) {
+      for (const l of Array.from(d.labels)) if (!check.only.includes(LABEL_GROUP[l])) d.labels.delete(l)
+      for (const l of Array.from(d.primaryLabels)) if (!d.labels.has(l)) d.primaryLabels.delete(l)
+    }
+    if (formatPhone(check.phone ?? '')) d.phones = [formatPhone(check.phone!)]
+    if (check.status === 'Moved' && check.moved) {
+      const m = check.moved
+      d.line1 = m.street
+      d.line2 = m.suite ?? ''
+      d.city = m.city
+      d.zip5 = m.zip.slice(0, 5)
+      d.building = buildingKey(m.street, d.zip5)
+      if (formatPhone(m.phone ?? '')) d.phones = [formatPhone(m.phone!)]
+    }
+  }
+
+  // A practice that moved can land on a row it already has: Associated OMS
+  // left Fridley for its Coon Rapids office, which is a row of its own. Same
+  // building and the same phone or web page is one practice. The row seen open
+  // where the registry has it is the one kept.
+  //
+  // The page, not the domain: HealthPartners runs a TMD clinic and a dental
+  // specialty center in one Lake Elmo building, both on healthpartners.com.
+  const page = (url: string) =>
+    url.split('//').pop()!.split(/[?#]/)[0].replace(/^www\./, '').replace(/\/+$/, '').toLowerCase()
+  const checked = Array.from(drafts.values())
+    .filter((d) => d.check)
+    .sort((a, b) => Number(a.check!.status === 'Moved') - Number(b.check!.status === 'Moved'))
+  const kept = new Map<string, Draft>()
+  for (const d of checked) {
+    const ids = [`${d.building}|${digitsOf(d.phones[0])}`]
+    if (d.check!.website) ids.push(`${d.building}|${page(d.check!.website)}`)
+    const into = ids.map((id) => kept.get(id)).find(Boolean)
+    if (!into) {
+      for (const id of ids) kept.set(id, d)
+      continue
+    }
+    d.labels.forEach((l) => into.labels.add(l))
+    d.primaryLabels.forEach((l) => into.primaryLabels.add(l))
+    for (const n of d.npis) if (!into.npis.includes(n)) into.npis.push(n)
+    into.orofacial = Array.from(new Set([...(into.orofacial ?? []), ...(d.orofacial ?? [])])).sort()
+    into.surgeons = Array.from(new Set([...(into.surgeons ?? []), ...(d.surgeons ?? [])])).sort()
+    if (d.updated > into.updated) into.updated = d.updated
+    if (into.check!.tmj === null) into.check!.tmj = d.check!.tmj
+    reject('same practice as another row once the web check moved it', `${d.name} (${d.npis.join(', ')}) -> ${into.name} @ ${into.line1}, ${into.city}`)
+    drafts.delete(d.key)
+  }
 
   // County.
   const countyNames = readCountyNames()
@@ -702,8 +1056,11 @@ async function main(): Promise<void> {
   const rows: ClinicRow[] = list.map((d) => {
     const labels = LABEL_ORDER.filter((l) => d.labels.has(l))
     const groups = GROUPS.filter((g) => labels.some((l) => LABEL_GROUP[l] === g))
+    // A dental school or clinic whose primary code is no group's ("Clinic/Center,
+    // Dental") files under TMJ when it is in TMJ, not under the PT it also lists.
     const primaryGroup =
-      GROUPS.find((g) => Array.from(d.primaryLabels).some((l) => LABEL_GROUP[l] === g)) ?? groups[0]
+      GROUPS.find((g) => Array.from(d.primaryLabels).some((l) => LABEL_GROUP[l] === g)) ??
+      (groups.includes('TMJ Specialists') ? 'TMJ Specialists' : groups[0])
     const { street, suite } = splitSuite(d.line1, d.line2)
     const city = tidyCity(d.city)
     const hit = cache[addressId(d.line1, d.city, d.zip5)]
@@ -720,8 +1077,11 @@ async function main(): Promise<void> {
         countySource = 'city'
       }
     }
+    // A clinic in TMJ by its name or the web has no TMJ code to count by; its
+    // providers are the orofacial-pain specialists in the building.
+    const counted = groups.includes('TMJ Specialists') ? [...labels, 'Orofacial Pain'] : labels
     const providers = new Set(
-      labels.flatMap((l) => Array.from(providersAt.get(d.building)?.get(l) ?? []))
+      counted.flatMap((l) => Array.from(providersAt.get(d.building)?.get(l) ?? []))
     ).size
     const phoneCounts = new Map<string, number>()
     for (const p of d.phones) phoneCounts.set(p, (phoneCounts.get(p) ?? 0) + 1)
@@ -752,9 +1112,17 @@ async function main(): Promise<void> {
       census: OFFLINE && !hit ? 'skipped' : hit?.match ?? 'skipped',
       countySource,
       updated: d.updated,
-      recent: d.updated >= RECENT_SINCE,
+      // Seen open on the web is better evidence than a registry date.
+      recent: d.check?.status === 'Confirmed' || (d.check?.status === 'Moved' && !!d.check.moved) || d.updated >= RECENT_SINCE,
       lat: hit?.lat ?? null,
       lng: hit?.lng ?? null,
+      orofacial: d.orofacial ?? [],
+      surgeons: d.surgeons ?? [],
+      website: d.check?.website ?? '',
+      webCheck: d.check?.status ?? '',
+      webNote: d.check?.note ?? '',
+      treatsTmj: d.check?.tmj ?? null,
+      source: d.source,
     }
   })
 
@@ -808,6 +1176,16 @@ function report(rows: ClinicRow[], platformCount: number | null, countyNames: Ma
   }
   push('', '## By specialty', '', '| Specialty | Clinics |', '|---|---:|')
   for (const [s, n] of count(rows.flatMap((r) => r.specialties.map((x) => ({ x }))), (o) => o.x)) push(`| ${s} | ${n} |`)
+
+  const dental = rows.filter((r) => r.groups.some((g) => DENTAL_GROUPS.includes(g)))
+  push('', '## TMJ and oral surgery (added 2026-10-19)', '')
+  push(`- Web check: ${count(dental, (r) => r.webCheck || 'not checked').map(([s, n]) => `${s} ${n}`).join(', ')}.`)
+  push(`- From the web, not the registry: ${dental.filter((r) => r.source === 'web').length}.`)
+  push(`- Closed per the web check, left out: ${rejects.get('closed (web check)')?.length ?? 0}.`, '')
+  push('| TMJ Specialists | City | Tier | Web | Specialists |', '|---|---|---|---|---|')
+  for (const r of dental.filter((x) => x.groups.includes('TMJ Specialists'))) {
+    push(`| ${r.name} | ${r.city} | ${r.recent ? 'main' : 'older'} | ${r.webCheck || '—'} | ${r.orofacial.join('; ')} |`)
+  }
 
   push('', '## By region', '', '| Region | Clinics |', '|---|---:|')
   for (const [r, n] of count(rows, (r) => r.region || '(unknown)')) push(`| ${r} | ${n} |`)

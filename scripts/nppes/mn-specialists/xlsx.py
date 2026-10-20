@@ -26,7 +26,10 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 ROOT = Path(__file__).resolve().parents[3]
 DATA = ROOT / "data" / "nppes" / "mn-specialists"
 
-GROUPS = ["Injury Physicians", "Chiropractic", "Physical Therapy", "Imaging"]
+GROUPS = ["Injury Physicians", "Chiropractic", "Physical Therapy", "Imaging", "TMJ Specialists", "Oral Surgery"]
+# Added 2026-10-19 from scripts/nppes/mn-tmj/, and checked on the web row by row.
+TMJ, OMS = "TMJ Specialists", "Oral Surgery"
+DENTAL = [TMJ, OMS]
 # build.ts marks a row `recent` when its registry entry was updated since this year.
 RECENT_YEAR = 2022
 GROUP_NOTE = {
@@ -34,6 +37,8 @@ GROUP_NOTE = {
     "Chiropractic": "Chiropractic clinics",
     "Physical Therapy": "Physical therapy clinics",
     "Imaging": "Radiology and MRI centers",
+    TMJ: "TMJ and orofacial pain specialists and clinics",
+    OMS: "Oral and maxillofacial surgeons (TMJ and jaw surgery)",
 }
 REGIONS = [
     "Twin Cities Metro",
@@ -63,11 +68,54 @@ COLUMNS = [
     ("On Xpert Connect", 11, lambda r: "Yes" if r["onPlatform"] else "No"),
     ("Registry Updated", 11, lambda r: registry_date(r["updated"])),
     ("Legal Name", 46, lambda r: r["legalName"]),
-    ("NPI", 12, lambda r: r["npis"][0]),
+    # A practice found on the web, not in the registry, has none.
+    ("NPI", 12, lambda r: r["npis"][0] if r["npis"] else None),
     ("Map", 8, None),
     ("NPPES Record", 10, None),
 ]
-COL = {name: get_column_letter(i + 1) for i, (name, _, _) in enumerate(COLUMNS)}
+
+
+def letters(columns):
+    return {name: get_column_letter(i + 1) for i, (name, _, _) in enumerate(columns)}
+
+
+COL = letters(COLUMNS)
+
+
+def columns_for(group):
+    """
+    The TMJ and Oral Surgery sheets carry what the web check found: who
+    practises there, the website, whether the clinic was seen open, and for a
+    surgeon whether the practice treats TMJ. The other sheets were never
+    checked row by row, and an empty Website column on 2,900 rows would read as
+    missing data. Every other sheet keeps COLUMNS, so COL is right for them.
+    """
+    if group not in DENTAL:
+        return COLUMNS
+    cols = list(COLUMNS)
+    names = (
+        ("TMJ Specialists Here", 34, lambda r: "; ".join(r["orofacial"]))
+        if group == TMJ
+        else ("Oral Surgeons Here", 34, lambda r: "; ".join(r["surgeons"]))
+    )
+    cols.insert(cols.index(next(c for c in cols if c[0] == "Specialties")) + 1, names)
+    web = [
+        ("Website", 26, None),
+        ("Web Check", 12, lambda r: WEB_CHECK.get(r["webCheck"], "Not checked")),
+    ]
+    if group == OMS:
+        web.append(("Treats TMJ", 9, lambda r: {True: "Yes", False: "No"}.get(r["treatsTmj"], "")))
+    at = cols.index(next(c for c in cols if c[0] == "Phone")) + 1
+    cols[at:at] = web
+    return cols
+
+
+# What the web check found, as the sheet says it.
+WEB_CHECK = {
+    "Confirmed": "Confirmed",
+    "Moved": "New address",
+    "Unverified": "Unverified",
+}
 
 FONT = "Arial"
 NAVY = "1F3A5F"
@@ -97,9 +145,17 @@ def maps_url(r):
     return "https://www.google.com/maps/search/?api=1&query=" + quote_plus(q)
 
 
-def clinic_sheet(wb, title, rows, table_name):
+def website_label(url):
+    """'https://www.mnheadneckpain.com/locations/plymouth/' -> 'mnheadneckpain.com'."""
+    host = url.split("//", 1)[-1].split("/", 1)[0]
+    return host[4:] if host.startswith("www.") else host
+
+
+def clinic_sheet(wb, title, rows, table_name, group=None):
     ws = wb.create_sheet(title)
-    for i, (header, width, _) in enumerate(COLUMNS, start=1):
+    columns = columns_for(group)
+    col = letters(columns)
+    for i, (header, width, _) in enumerate(columns, start=1):
         c = ws.cell(row=1, column=i, value=header)
         c.font = HEAD
         c.fill = HEAD_FILL
@@ -108,16 +164,25 @@ def clinic_sheet(wb, title, rows, table_name):
     ws.row_dimensions[1].height = 30
 
     for n, r in enumerate(rows, start=2):
-        for i, (header, _, get) in enumerate(COLUMNS, start=1):
+        for i, (header, _, get) in enumerate(columns, start=1):
             c = ws.cell(row=n, column=i)
             if header == "Map":
                 c.value = "Map"
                 c.hyperlink = maps_url(r)
                 c.font = LINK
             elif header == "NPPES Record":
-                c.value = "Record"
-                c.hyperlink = f"https://npiregistry.cms.hhs.gov/provider-view/{r['npis'][0]}"
-                c.font = LINK
+                if r["npis"]:
+                    c.value = "Record"
+                    c.hyperlink = f"https://npiregistry.cms.hhs.gov/provider-view/{r['npis'][0]}"
+                    c.font = LINK
+                else:
+                    c.value = "Web"
+                    c.font = TEXT
+            elif header == "Website":
+                if r["website"]:
+                    c.value = website_label(r["website"])
+                    c.hyperlink = r["website"]
+                    c.font = LINK
             else:
                 c.value = get(r)
                 c.font = TEXT
@@ -125,21 +190,31 @@ def clinic_sheet(wb, title, rows, table_name):
                 c.number_format = "@"
             if header == "Registry Updated":
                 c.number_format = "mmm yyyy"
-            if header in ("Providers at Address", "On Xpert Connect", "Registry Updated", "ZIP", "Map", "NPPES Record"):
+            if header in ("Providers at Address", "On Xpert Connect", "Registry Updated", "ZIP", "Map", "NPPES Record", "Web Check", "Treats TMJ"):
                 c.alignment = Alignment(horizontal="center")
 
     last = len(rows) + 1
-    ref = f"A1:{get_column_letter(len(COLUMNS))}{last}"
+    ref = f"A1:{get_column_letter(len(columns))}{last}"
     table = Table(displayName=table_name, ref=ref)
     table.tableStyleInfo = TableStyleInfo(
         name="TableStyleLight9", showRowStripes=True, showColumnStripes=False
     )
     ws.add_table(table)
-    on = COL["On Xpert Connect"]
+    on = col["On Xpert Connect"]
     ws.conditional_formatting.add(
         f"{on}2:{on}{last}",
         FormulaRule(formula=[f'${on}2="Yes"'], fill=YES_FILL),
     )
+    if "Web Check" in col:
+        wc = col["Web Check"]
+        ws.conditional_formatting.add(
+            f"{wc}2:{wc}{last}",
+            FormulaRule(formula=[f'${wc}2="Confirmed"'], fill=YES_FILL),
+        )
+        ws.conditional_formatting.add(
+            f"{wc}2:{wc}{last}",
+            FormulaRule(formula=[f'${wc}2="New address"'], fill=PatternFill("solid", fgColor="FFF2CC")),
+        )
     ws.freeze_panes = "B2"
     ws.sheet_view.zoomScale = 100
     ws.page_setup.orientation = "landscape"
@@ -150,13 +225,14 @@ def clinic_sheet(wb, title, rows, table_name):
     return ws
 
 
-def summary_sheet(wb, rows, counties, pulled):
+def summary_sheet(wb, rows, counties, pulled, tmj_pulled):
     ws = wb.active
     ws.title = "Summary"
     ws.sheet_view.showGridLines = False
-    widths = {"A": 30, "B": 14, "C": 14, "D": 14, "E": 14, "F": 14, "G": 14, "H": 14}
-    for col, w in widths.items():
-        ws.column_dimensions[col].width = w
+    ws.column_dimensions["A"].width = 30
+    # County, Region, the groups, Total, Older entries: the widest table.
+    for i in range(2, len(GROUPS) + 5):
+        ws.column_dimensions[get_column_letter(i)].width = 13
 
     all_ = "'All Clinics'"
     grp = f"{all_}!${COL['Specialty Group']}:${COL['Specialty Group']}"
@@ -169,11 +245,12 @@ def summary_sheet(wb, rows, counties, pulled):
     ws["A1"].font = TITLE
     ws["A2"] = (
         f"Every organization registered in the federal NPI Registry (CMS) under these specialties "
-        f"with a Minnesota practice address, its own name and a phone number. Pulled {pulled}."
+        f"with a Minnesota practice address, its own name and a phone number. Pulled {pulled}. "
+        f"TMJ specialists and oral surgeons added {tmj_pulled}, each one checked on the web."
     )
     ws["A2"].font = SUBTITLE
     ws["A2"].alignment = Alignment(wrap_text=True, vertical="top")
-    ws.merge_cells("A2:H2")
+    ws.merge_cells("A2:J2")
     ws.row_dimensions[2].height = 28
 
     ws["A4"] = f"=COUNTA({name})-1"
@@ -196,7 +273,7 @@ def summary_sheet(wb, rows, counties, pulled):
     )
     ws["A6"].font = Font(name=FONT, size=10, italic=True, color="9C5700")
     ws["A6"].alignment = Alignment(wrap_text=True, vertical="top")
-    ws.merge_cells("A6:H6")
+    ws.merge_cells("A6:J6")
     ws.row_dimensions[6].height = 28
 
     def header(row, labels):
@@ -223,20 +300,21 @@ def summary_sheet(wb, rows, counties, pulled):
     ws.cell(row=r, column=1, value="By specialty group").font = BOLD
     r += 1
     header(r, ["Group", "Clinics", "Not on Xpert Connect", "Older entries", "What it includes"])
-    ws.merge_cells(start_row=r, start_column=5, end_row=r, end_column=8)
+    ws.merge_cells(start_row=r, start_column=5, end_row=r, end_column=10)
     main_col = f"'Older Entries'!${COL['Specialty Group']}:${COL['Specialty Group']}"
     also_col = f"'Older Entries'!${COL['Also In']}:${COL['Also In']}"
     for g in GROUPS:
         r += 1
         sheet = f"'{g}'"
+        on = letters(columns_for(g))["On Xpert Connect"]
         cell(r, 1, g, font=BOLD)
         cell(r, 2, f"=COUNTA({sheet}!$A:$A)-1")
-        cell(r, 3, f'=COUNTIF({sheet}!${COL["On Xpert Connect"]}:${COL["On Xpert Connect"]},"No")')
+        cell(r, 3, f'=COUNTIF({sheet}!${on}:${on},"No")')
         # Same membership rule as the group sheets: main group, or listed under Also In.
         cell(r, 4, f'=COUNTIF({main_col},"{g}")+COUNTIF({also_col},"*{g}*")')
         note = ws.cell(row=r, column=5, value=GROUP_NOTE[g])
         note.font = Font(name=FONT, size=9, color="595959")
-        ws.merge_cells(start_row=r, start_column=5, end_row=r, end_column=8)
+        ws.merge_cells(start_row=r, start_column=5, end_row=r, end_column=10)
     r += 1
     foot = ws.cell(
         row=r,
@@ -251,15 +329,16 @@ def summary_sheet(wb, rows, counties, pulled):
     r += 1
     header(r, ["Region"] + GROUPS + ["Total"])
     first = r + 1
+    last_group = get_column_letter(len(GROUPS) + 1)
     for region in REGIONS:
         r += 1
         cell(r, 1, region, font=BOLD)
         for i, g in enumerate(GROUPS, start=2):
             cell(r, i, f'=COUNTIFS({reg},$A{r},{grp},"{g}")')
-        cell(r, 6, f"=SUM(B{r}:E{r})", font=BOLD)
+        cell(r, len(GROUPS) + 2, f"=SUM(B{r}:{last_group}{r})", font=BOLD)
     r += 1
     cell(r, 1, "Total", font=BOLD)
-    for i in range(2, 7):
+    for i in range(2, len(GROUPS) + 3):
         col = get_column_letter(i)
         cell(r, i, f"=SUM({col}{first}:{col}{r - 1})", font=BOLD)
 
@@ -277,14 +356,14 @@ def summary_sheet(wb, rows, counties, pulled):
         c.font = Font(name=FONT, size=9, color="595959")
         for i, g in enumerate(GROUPS, start=3):
             cell(r, i, f'=COUNTIFS({cty},$A{r},{grp},"{g}")')
-        cell(r, 7, f"=SUM(C{r}:F{r})", font=BOLD)
-        cell(r, 8, f"=COUNTIF('Older Entries'!${COL['County']}:${COL['County']},$A{r})")
+        cell(r, len(GROUPS) + 3, f"=SUM(C{r}:{get_column_letter(len(GROUPS) + 2)}{r})", font=BOLD)
+        cell(r, len(GROUPS) + 4, f"=COUNTIF('Older Entries'!${COL['County']}:${COL['County']},$A{r})")
     # The region column is wider than the numbers in the county table.
     ws.column_dimensions["B"].width = 22
     ws.freeze_panes = "A8"
 
 
-def about_sheet(wb, rows, verification, pulled):
+def about_sheet(wb, rows, verification, pulled, tmj_pulled, tmj_summary):
     ws = wb.create_sheet("About")
     ws.sheet_view.showGridLines = False
     ws.column_dimensions["A"].width = 120
@@ -321,11 +400,48 @@ def about_sheet(wb, rows, verification, pulled):
         lines.append((f"{g}: {GROUP_NOTE[g]}.", TEXT))
     lines += [
         ("", None),
+        (f"TMJ Specialists and Oral Surgery (added {tmj_pulled})", BOLD),
+        (
+            "TMJ Specialists: dentists registered in Orofacial Pain, the dental specialty for TMJ disorders; clinics whose "
+            "name says TMJ, TMD or facial pain; and dental practices found on the web that make TMJ a focus, in their name, "
+            "as a headline service, or through orofacial-pain board certification or training. A specialist whose practice "
+            "is not registered as a TMJ clinic is listed under the practice the web check found, or under their own name.",
+            TEXT,
+        ),
+        (
+            "To find TMJ practices the registry does not label as TMJ, the whole state was searched on the web: the Twin "
+            "Cities and its suburbs, more than 50 Greater Minnesota cities and towns, the regional health systems "
+            "(Essentia, Sanford, CentraCare, Mayo Clinic Health System, Gundersen and others), and the member directories "
+            "of the American Board of Orofacial Pain, the American Academy of Orofacial Pain and the American Academy of "
+            "Craniofacial Pain. Outside the Twin Cities, Rochester and St. Cloud, few dentists make TMJ a focus.",
+            TEXT,
+        ),
+        (
+            "Oral Surgery: oral and maxillofacial surgeons, who operate on the jaw joint and treat jaw and facial injuries. "
+            "Treats TMJ says whether the practice's own website offers TMJ treatment.",
+            TEXT,
+        ),
+        (
+            f"Every clinic in these two groups was looked up on the web in {tmj_pulled.split(' ')[0]} {tmj_pulled.split(' ')[-1]}. "
+            "Website is the clinic's own site. Web Check: Confirmed means it was seen operating at the address shown; "
+            "New address means it moved and the address shown is the new one; Unverified means it could not be confirmed "
+            "either way. Clinics found closed were removed, and clinics confirmed open are on the main list even when "
+            "their registry entry is older.",
+            TEXT,
+        ),
+        (
+            "TMJ Specialists Here and Oral Surgeons Here name the individual specialists registered at that address with "
+            "the clinic's phone number, whose own registry entry has been updated since "
+            f"{RECENT_YEAR}.",
+            TEXT,
+        ),
+        ("", None),
         ("Left out on purpose", BOLD),
         (
             "Home-care, in-home and mobile services; therapy provided inside nursing homes and senior communities; "
             "school districts; hospice; equipment suppliers; animal chiropractic; radiologist groups that only read scans "
-            "and see no patients; addresses that are apartments or PO boxes.",
+            "and see no patients; addresses that are apartments or PO boxes; general dentists who only list TMJ among "
+            "many other services.",
             TEXT,
         ),
         (
@@ -342,14 +458,22 @@ def about_sheet(wb, rows, verification, pulled):
         ("Map opens the address in Google Maps. NPPES Record opens the clinic's entry in the federal registry.", TEXT),
         ("", None),
         ("Limits", BOLD),
-        ("The registry has no website or email for clinics, so those are not included.", TEXT),
+        (
+            "The registry has no website or email for clinics. Websites are included only for TMJ and Oral Surgery, "
+            "where each clinic was looked up; there are no emails.",
+            TEXT,
+        ),
         (
             "Clinics update their own registry entries. A clinic that moved or closed may still show its old address until it updates.",
             TEXT,
         ),
     ]
+    if verification or tmj_summary:
+        lines += [("", None), ("Spot check", BOLD)]
     if verification:
-        lines += [("", None), ("Spot check", BOLD), (verification, TEXT)]
+        lines.append((verification, TEXT))
+    if tmj_summary:
+        lines.append((tmj_summary, TEXT))
     for i, (text, font) in enumerate(lines, start=1):
         c = ws.cell(row=i, column=1, value=text)
         if font:
@@ -365,6 +489,7 @@ def about_sheet(wb, rows, verification, pulled):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pulled", default="September 24, 2026")
+    ap.add_argument("--tmj-pulled", default="October 19, 2026")
     ap.add_argument("--out", default=str(ROOT / "docs" / "Minnesota Specialist Clinics - 2026-09.xlsx"))
     args = ap.parse_args()
 
@@ -385,13 +510,32 @@ def main():
     recent = [r for r in rows if r["recent"]]
     older = [r for r in rows if not r["recent"]]
 
+    # The TMJ web check, in one sentence. Closed clinics are not rows any more,
+    # so they are counted from web.json.
+    tmj_summary = None
+    dental = [r for r in rows if any(g in DENTAL for g in r["groups"])]
+    checked = [r for r in dental if r["webCheck"]]
+    web_path = ROOT / "data" / "nppes" / "mn-tmj" / "web.json"
+    if checked and web_path.exists():
+        # Only the registry rows: a sleep practice that closed was never a TMJ row.
+        candidates = json.loads((web_path.parent / "web" / "candidates.json").read_text(encoding="utf-8"))
+        keys = {c["key"] for c in candidates}
+        checks = json.loads(web_path.read_text(encoding="utf-8"))["checks"]
+        closed = sum(1 for k, c in checks.items() if k in keys and c["status"] == "Closed")
+        by = Counter(r["webCheck"] for r in checked)
+        tmj_summary = (
+            f"TMJ and oral surgery: {len(checked) + closed} clinics looked up on the web in {args.tmj_pulled.split(' ')[0]} "
+            f"{args.tmj_pulled.split(' ')[-1]}. {by['Confirmed']} were confirmed at their address, {by['Moved']} had moved "
+            f"(the new address is shown), {by['Unverified']} could not be confirmed, and {closed} had closed and were removed."
+        )
+
     wb = Workbook()
-    summary_sheet(wb, recent, counties, args.pulled)
+    summary_sheet(wb, recent, counties, args.pulled, args.tmj_pulled)
     clinic_sheet(wb, "All Clinics", recent, "AllClinics")
     for g in GROUPS:
-        clinic_sheet(wb, g, [r for r in recent if g in r["groups"]], g.replace(" ", ""))
+        clinic_sheet(wb, g, [r for r in recent if g in r["groups"]], g.replace(" ", ""), group=g)
     clinic_sheet(wb, "Older Entries", older, "OlderEntries")
-    about_sheet(wb, rows, verification, args.pulled)
+    about_sheet(wb, rows, verification, args.pulled, args.tmj_pulled, tmj_summary)
     wb.calculation.fullCalcOnLoad = True
     wb.active = 0
 

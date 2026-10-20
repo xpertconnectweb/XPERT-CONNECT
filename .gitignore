@@ -107,6 +107,10 @@ data/nppes/raw-byzip/
 data/nppes/mn-specialists/raw.json
 data/nppes/mn-specialists/_index.json
 data/nppes/mn-specialists/census/
+# And for the TMJ list (scripts/nppes/mn-tmj/), which reuses that census cache.
+data/nppes/mn-tmj/raw.json
+data/nppes/mn-tmj/_index.json
+data/nppes/mn-tmj/census/
 
 # Before/after evidence from scripts/ux/shoot.ts. Regenerable, and a PNG per
 # state per viewport is not something history needs to carry.

@@ -49,12 +49,18 @@ export interface RawRecord {
 }
 
 export interface Query {
+  /** Empty to search by `organizationName` alone. */
   taxonomy: string
   state: string
   enumeration: Enumeration
   city?: string
   /** Exact 5-digit ZIP, or a prefix of at least two digits ending in `*`. */
   postalCode?: string
+  /**
+   * An organisation's legal name or DBA. Takes a trailing wildcard ("TMD*")
+   * but not a leading one, so it finds names that START with a word.
+   */
+  organizationName?: string
 }
 
 export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -62,13 +68,14 @@ export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve
 export function apiUrl(query: Query, skip: number): string {
   const params = new URLSearchParams({
     version: '2.1',
-    taxonomy_description: query.taxonomy,
     state: query.state,
     address_purpose: 'LOCATION',
     enumeration_type: query.enumeration,
     limit: String(PAGE),
     skip: String(skip),
   })
+  if (query.taxonomy) params.set('taxonomy_description', query.taxonomy)
+  if (query.organizationName) params.set('organization_name', query.organizationName)
   if (query.city) params.set('city', query.city)
   if (query.postalCode) params.set('postal_code', query.postalCode)
   return `https://npiregistry.cms.hhs.gov/api/?${params.toString()}`
