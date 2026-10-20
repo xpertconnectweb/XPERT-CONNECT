@@ -64,14 +64,14 @@ COLUMNS = [
     ("Region", 22, lambda r: r["region"]),
     ("ZIP", 8, lambda r: r["zip"]),
     ("Phone", 15, lambda r: r["phone"]),
-    ("Providers at Address", 11, lambda r: r["providers"]),
-    ("On Xpert Connect", 11, lambda r: "Yes" if r["onPlatform"] else "No"),
-    ("Registry Updated", 11, lambda r: registry_date(r["updated"])),
+    ("Providers at Address", 16, lambda r: r["providers"]),
+    ("On Xpert Connect", 14, lambda r: "Yes" if r["onPlatform"] else "No"),
+    ("Registry Updated", 14, lambda r: registry_date(r["updated"])),
     ("Legal Name", 46, lambda r: r["legalName"]),
     # A practice found on the web, not in the registry, has none.
     ("NPI", 12, lambda r: r["npis"][0] if r["npis"] else None),
-    ("Map", 8, None),
-    ("NPPES Record", 10, None),
+    ("Map", 10, None),
+    ("NPPES Record", 12, None),
 ]
 
 
@@ -104,7 +104,7 @@ def columns_for(group):
         ("Web Check", 12, lambda r: WEB_CHECK.get(r["webCheck"], "Not checked")),
     ]
     if group == OMS:
-        web.append(("Treats TMJ", 9, lambda r: {True: "Yes", False: "No"}.get(r["treatsTmj"], "")))
+        web.append(("Treats TMJ", 11, lambda r: {True: "Yes", False: "No"}.get(r["treatsTmj"], "")))
     at = cols.index(next(c for c in cols if c[0] == "Phone")) + 1
     cols[at:at] = web
     return cols
@@ -486,12 +486,202 @@ def about_sheet(wb, rows, verification, pulled, tmj_pulled, tmj_summary):
     ws.row_dimensions[1].height = 30
 
 
+TMJ_TAB, OMS_TAB = "TMJ Clinics", "Oral Surgeons (TMJ)"
+
+
+def tmj_summary_sheet(wb, tmj_pulled):
+    """The TMJ edition's front page: two headline numbers and the regions."""
+    ws = wb.active
+    ws.title = "Summary"
+    ws.sheet_view.showGridLines = False
+    ws.column_dimensions["A"].width = 30
+    for c in "BCDE":
+        ws.column_dimensions[c].width = 16
+
+    tmj, oms = f"'{TMJ_TAB}'", f"'{OMS_TAB}'"
+    tcol, ocol = letters(columns_for(TMJ)), letters(columns_for(OMS))
+
+    ws["A1"] = "Minnesota TMJ Clinics"
+    ws["A1"].font = TITLE
+    ws["A2"] = (
+        "Every TMJ and orofacial-pain clinic in Minnesota we could find: the federal NPI Registry (CMS) plus a "
+        f"statewide web search, each clinic checked on the web. Updated {tmj_pulled}."
+    )
+    ws["A2"].font = SUBTITLE
+    ws["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+    ws.merge_cells("A2:G2")
+    ws.row_dimensions[2].height = 28
+
+    ws["A4"] = f"=COUNTA({tmj}!$A:$A)-1"
+    ws["A4"].font = BIG
+    ws["A4"].alignment = Alignment(horizontal="left")
+    ws["A5"] = "TMJ clinics across Minnesota"
+    ws["A5"].font = BOLD
+    on = tcol["On Xpert Connect"]
+    ws["C4"] = f'=COUNTIF({tmj}!${on}:${on},"No")'
+    ws["C4"].font = BIG
+    ws["C4"].alignment = Alignment(horizontal="left")
+    ws.merge_cells("C4:E4")
+    ws["C5"] = "of them are not on Xpert Connect yet"
+    ws["C5"].font = BOLD
+    ws["A6"] = (
+        f"=\"Plus \"&(COUNTA({oms}!$A:$A)-1)&\" oral and maxillofacial surgery practices whose own website offers TMJ "
+        f"treatment, on the '{OMS_TAB}' sheet.\""
+    )
+    ws["A6"].font = Font(name=FONT, size=10, italic=True, color="595959")
+    ws["A6"].alignment = Alignment(wrap_text=True, vertical="top")
+    ws.merge_cells("A6:G6")
+    ws.row_dimensions[6].height = 28
+
+    r = 8
+    ws.cell(row=r, column=1, value="By region").font = BOLD
+    r += 1
+    for i, label in enumerate(["Region", "TMJ clinics", "Not on Xpert Connect", "Oral surgeons (TMJ)"], start=1):
+        c = ws.cell(row=r, column=i, value=label)
+        c.font = HEAD
+        c.fill = HEAD_FILL
+        c.border = BOX
+        c.alignment = Alignment(horizontal="left" if i == 1 else "center", vertical="center", wrap_text=True)
+    ws.row_dimensions[r].height = 30
+    treg, oreg = tcol["Region"], ocol["Region"]
+    first = r + 1
+    for region in REGIONS:
+        r += 1
+        values = [
+            region,
+            f"=COUNTIF({tmj}!${treg}:${treg},$A{r})",
+            f'=COUNTIFS({tmj}!${treg}:${treg},$A{r},{tmj}!${on}:${on},"No")',
+            f"=COUNTIF({oms}!${oreg}:${oreg},$A{r})",
+        ]
+        for i, v in enumerate(values, start=1):
+            c = ws.cell(row=r, column=i, value=v)
+            c.font = BOLD if i == 1 else TEXT
+            c.border = BOX
+            if i > 1:
+                c.alignment = Alignment(horizontal="center")
+    r += 1
+    for i in range(1, 5):
+        col = get_column_letter(i)
+        c = ws.cell(row=r, column=i, value="Total" if i == 1 else f"=SUM({col}{first}:{col}{r - 1})")
+        c.font = BOLD
+        c.border = BOX
+        if i > 1:
+            c.alignment = Alignment(horizontal="center")
+    ws.freeze_panes = "A8"
+
+
+def tmj_about_sheet(wb, tmj_pulled, tmj_summary):
+    ws = wb.create_sheet("About")
+    ws.sheet_view.showGridLines = False
+    ws.column_dimensions["A"].width = 120
+    lines = [
+        ("Minnesota TMJ Clinics: how this list was made", TITLE),
+        ("", None),
+        ("What is in it", BOLD),
+        (
+            f"{TMJ_TAB}: dentists registered in Orofacial Pain, the dental specialty for TMJ disorders; clinics whose name "
+            "says TMJ, TMD or facial pain; and dental practices found on the web that make TMJ a focus, in their name, as a "
+            "headline service, or through orofacial-pain board certification or training.",
+            TEXT,
+        ),
+        (
+            f"{OMS_TAB}: oral and maxillofacial surgery practices, which operate on the jaw joint, whose own website "
+            "offers TMJ treatment. Surgeons whose website does not mention TMJ are left out.",
+            TEXT,
+        ),
+        ("", None),
+        ("Sources", BOLD),
+        (
+            "NPPES, the federal NPI Registry run by CMS (npiregistry.cms.hhs.gov), searched for the whole state ZIP code by "
+            "ZIP code. Every healthcare provider that bills in the US is registered there.",
+            TEXT,
+        ),
+        (
+            "A statewide web search for TMJ practices the registry does not label as TMJ: the Twin Cities and its suburbs, "
+            "more than 50 Greater Minnesota cities and towns, the regional health systems (Essentia, Sanford, CentraCare, "
+            "Mayo Clinic Health System, Gundersen and others), and the member directories of the American Board of "
+            "Orofacial Pain, the American Academy of Orofacial Pain and the American Academy of Craniofacial Pain. Outside "
+            "the Twin Cities, Rochester and St. Cloud, few dentists make TMJ a focus.",
+            TEXT,
+        ),
+        ("", None),
+        ("Web check", BOLD),
+        (
+            f"Every clinic was looked up on the web in {tmj_pulled.split(' ')[0]} {tmj_pulled.split(' ')[-1]}. Website is "
+            "the clinic's own site. Web Check: Confirmed means it was seen operating at the address shown; New address means "
+            "it moved and the address shown is the new one; Unverified means it could not be confirmed either way. Clinics "
+            "found closed were removed.",
+            TEXT,
+        ),
+        (
+            f"The Older Entries sheet holds clinics whose registry entry has not been updated since before {RECENT_YEAR} "
+            "and that the web check could not confirm. Call before relying on one.",
+            TEXT,
+        ),
+        ("", None),
+        ("Columns", BOLD),
+        (
+            "TMJ Specialists Here and Oral Surgeons Here name the individual specialists registered at that address with the "
+            f"clinic's phone number, whose own registry entry has been updated since {RECENT_YEAR}.",
+            TEXT,
+        ),
+        ("Also In: the clinic also appears in that group of the full Minnesota specialist list.", TEXT),
+        ("Providers at Address: individual specialists registered at that building (0 = none registered there individually).", TEXT),
+        ("On Xpert Connect: Yes if the clinic, or its health system at the same address, is already in the Xpert Connect directory.", TEXT),
+        ("Registry Updated: when the clinic last updated its federal registry entry.", TEXT),
+        ("Map opens the address in Google Maps. NPPES Record opens the clinic's entry in the federal registry.", TEXT),
+        ("", None),
+        ("Left out on purpose", BOLD),
+        ("General dentists who only list TMJ among many other services.", TEXT),
+    ]
+    if tmj_summary:
+        lines += [("", None), ("Spot check", BOLD), (tmj_summary, TEXT)]
+    for i, (text, font) in enumerate(lines, start=1):
+        c = ws.cell(row=i, column=1, value=text)
+        if font:
+            c.font = font
+        c.alignment = Alignment(wrap_text=True, vertical="top")
+        if font is TEXT:
+            ws.row_dimensions[i].height = 14 * max(1, -(-len(text) // 105))
+    ws.row_dimensions[1].height = 30
+
+
+def tmj_workbook(rows, out, tmj_pulled, tmj_summary):
+    """
+    The TMJ edition, for a client who wants only TMJ: the TMJ group, plus the
+    oral surgeons whose own website offers TMJ treatment on a sheet of their
+    own. Same rows and columns as those sheets of the full workbook.
+    """
+    tmj = [r for r in rows if TMJ in r["groups"]]
+    oms = [r for r in rows if OMS in r["groups"] and TMJ not in r["groups"] and r["treatsTmj"] is True]
+    main_tmj = [r for r in tmj if r["recent"]]
+    main_oms = [r for r in oms if r["recent"]]
+    older = [r for r in tmj + oms if not r["recent"]]
+
+    wb = Workbook()
+    tmj_summary_sheet(wb, tmj_pulled)
+    clinic_sheet(wb, TMJ_TAB, main_tmj, "TMJClinics", group=TMJ)
+    clinic_sheet(wb, OMS_TAB, main_oms, "OralSurgeonsTMJ", group=OMS)
+    if older:
+        clinic_sheet(wb, "Older Entries", older, "OlderEntries", group=TMJ)
+    tmj_about_sheet(wb, tmj_pulled, tmj_summary)
+    wb.calculation.fullCalcOnLoad = True
+    wb.active = 0
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    wb.save(out)
+    print(f"{len(main_tmj)} TMJ clinics, {len(main_oms)} oral surgeons who treat TMJ (+{len(older)} older) -> {out}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pulled", default="September 24, 2026")
     ap.add_argument("--tmj-pulled", default="October 19, 2026")
-    ap.add_argument("--out", default=str(ROOT / "docs" / "Minnesota Specialist Clinics - 2026-09.xlsx"))
+    ap.add_argument("--tmj-only", action="store_true", help="write the TMJ edition instead of the full list")
+    ap.add_argument("--out", default=None)
     args = ap.parse_args()
+    default_out = "Minnesota TMJ Clinics.xlsx" if args.tmj_only else "Minnesota Specialist Clinics - 2026-09.xlsx"
+    args.out = args.out or str(ROOT / "docs" / default_out)
 
     rows = json.loads((DATA / "clinics.json").read_text(encoding="utf-8"))
     counties = {}
@@ -528,6 +718,10 @@ def main():
             f"{args.tmj_pulled.split(' ')[-1]}. {by['Confirmed']} were confirmed at their address, {by['Moved']} had moved "
             f"(the new address is shown), {by['Unverified']} could not be confirmed, and {closed} had closed and were removed."
         )
+
+    if args.tmj_only:
+        tmj_workbook(rows, Path(args.out), args.tmj_pulled, tmj_summary)
+        return
 
     wb = Workbook()
     summary_sheet(wb, recent, counties, args.pulled, args.tmj_pulled)

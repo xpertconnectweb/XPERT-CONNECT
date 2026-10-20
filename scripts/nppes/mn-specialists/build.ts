@@ -602,6 +602,7 @@ interface PlatformClinic {
   city: string | null
   state: string | null
   zip_code: string | null
+  phone: string | null
 }
 
 async function readPlatform(): Promise<PlatformClinic[]> {
@@ -616,7 +617,7 @@ async function readPlatform(): Promise<PlatformClinic[]> {
   for (let from = 0; ; from += 1000) {
     const { data, error } = await supabase
       .from('clinics')
-      .select('id, name, address, street, city, state, zip_code')
+      .select('id, name, address, street, city, state, zip_code, phone')
       .order('id')
       .range(from, from + 999)
     if (error) throw new Error(`Could not read clinics: ${error.message}`)
@@ -634,7 +635,10 @@ const GENERIC = new Set(
     'services service group associates physicians physician specialists specialty chiropractic ' +
     'chiropractor physical therapy therapist rehab rehabilitation sports spine orthopedic orthopedics ' +
     'orthopaedic orthopaedics pain management imaging radiology mri neurology neurosurgery wellness ' +
-    'family institute minnesota mn inc llc pa pc ltd pllc one'
+    'family institute minnesota mn inc llc pa pc ltd pllc one ' +
+    // 'for' once paired a chiropractor with a TMJ centre in the same building.
+    'for to with by dental dentistry oral surgery surgical maxillofacial facial orofacial tmj tmd ' +
+    'sleep treatment'
   ).split(' ')
 )
 /** The city is not distinctive: "PDR Burnsville" is not "Burnsville Physical Therapy". */
@@ -648,32 +652,55 @@ const distinctive = (name: string, city: string) => {
  * of its name ("Summit" in "Summit Orthopedics Physical Therapy"), or has the
  * same name in the same ZIP. Same building alone is not enough: a medical
  * office building holds a dozen unrelated practices.
+ *
+ * Failing those, the same phone in the same town, when the building or a
+ * distinctive word also agrees, or when the platform has no street to compare
+ * ("NovaCare Rehabilitation, Clearwater, MN"). That catches a clinic the
+ * platform files under its parent ("Allina Health System" for a neurosurgery
+ * practice) or at a newer address. Phone and town alone are not enough: some
+ * platform rows carry another practice's number.
  */
 function platformMatcher(rows: PlatformClinic[]) {
   const mn = rows.filter((r) => r.state === 'MN' || /,\s*MN\b/.test(r.address ?? ''))
+  const town = (s: string) => fold(s).replace(/^saint\s+/, 'st ')
   const byBuilding = new Map<string, PlatformClinic[]>()
   const byNameZip = new Map<string, PlatformClinic>()
+  const byPhone = new Map<string, { r: PlatformClinic; zip: string; city: string; building: string }[]>()
   for (const r of mn) {
     const zip = (r.zip_code ?? /\b(\d{5})(?:-\d{4})?\s*$/.exec(r.address ?? '')?.[1] ?? '').slice(0, 5)
-    const street = r.street ?? (r.address ?? '').split(',')[0] ?? ''
-    if (zip && street) {
-      const k = buildingKey(street, zip)
-      if (!byBuilding.has(k)) byBuilding.set(k, [])
-      byBuilding.get(k)!.push(r)
+    // "Clearwater, MN" is a town with no street, not a street.
+    const street = r.street ?? (/^\d/.test(r.address ?? '') ? (r.address ?? '').split(',')[0] : '')
+    const building = zip && street ? buildingKey(street, zip) : ''
+    if (building) {
+      if (!byBuilding.has(building)) byBuilding.set(building, [])
+      byBuilding.get(building)!.push(r)
     }
     if (zip) byNameZip.set(`${nameKey(r.name)}|${zip}`, r)
+    const phone = digitsOf(r.phone ?? undefined)
+    const city = town(r.city ?? /([^,]+),\s*MN\b/.exec(r.address ?? '')?.[1] ?? '')
+    if (phone.length === 10) {
+      if (!byPhone.has(phone)) byPhone.set(phone, [])
+      byPhone.get(phone)!.push({ r, zip, city, building })
+    }
   }
   return {
     count: mn.length,
-    find(d: { name: string; legalName: string; building: string; zip5: string; city: string }) {
+    find(d: { name: string; legalName: string; building: string; zip5: string; city: string; phones: string[] }) {
       const exact = byNameZip.get(`${nameKey(d.name)}|${d.zip5}`) ?? byNameZip.get(`${nameKey(d.legalName)}|${d.zip5}`)
       if (exact) return exact
       const words = new Set([
         ...Array.from(distinctive(d.name, d.city)),
         ...Array.from(distinctive(d.legalName, d.city)),
       ])
+      const shares = (r: PlatformClinic) => Array.from(distinctive(r.name, d.city)).some((w) => words.has(w))
       for (const r of byBuilding.get(d.building) ?? []) {
-        if (Array.from(distinctive(r.name, d.city)).some((w) => words.has(w))) return r
+        if (shares(r)) return r
+      }
+      for (const phone of Array.from(new Set(d.phones.map((p) => digitsOf(p))))) {
+        for (const p of byPhone.get(phone) ?? []) {
+          const sameTown = p.zip === d.zip5 || (p.city !== '' && p.city === town(d.city))
+          if (sameTown && (p.building === d.building || p.building === '' || shares(p.r))) return p.r
+        }
       }
       return null
     },
@@ -1092,6 +1119,7 @@ async function main(): Promise<void> {
       building: d.building,
       zip5: d.zip5,
       city: d.city,
+      phones: d.phones,
     })
     return {
       name: d.name,

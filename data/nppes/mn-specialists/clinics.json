@@ -1604,7 +1604,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 757-2220",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1467563510",
+   "name": "OMS Specialists"
+  },
   "npis": [
    "1467563510"
   ],
@@ -1752,7 +1755,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 636-2016",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1407325830",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1407325830"
   ],
@@ -2225,7 +2231,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 421-6271",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1649043662",
+   "name": "Associated Oral & Maxillofacial Surgeons (Associated OMS)"
+  },
   "npis": [
    "1649043662",
    "1962242719",
@@ -2591,7 +2600,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 427-1137",
   "providers": 5,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1275351413",
+   "name": "Allina Health System"
+  },
   "npis": [
    "1386690543"
   ],
@@ -2627,7 +2639,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 427-1137",
   "providers": 5,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1275351413",
+   "name": "Allina Health System"
+  },
   "npis": [
    "1922241884"
   ],
@@ -6751,7 +6766,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 442-5448",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1770694812",
+   "name": "OMS Specialists"
+  },
   "npis": [
    "1770694812"
   ],
@@ -10090,7 +10108,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 892-6222",
   "providers": 4,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1255715181",
+   "name": "Minnesota Head and Neck Pain Clinic, PA"
+  },
   "npis": [
    "1255715181"
   ],
@@ -11010,7 +11031,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 926-3858",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1821473927",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1821473927"
   ],
@@ -12817,7 +12841,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 968-5201",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-617",
+   "name": "Summit Orthopedics Physical Therapy"
+  },
   "npis": [
    "1568843621"
   ],
@@ -13726,7 +13753,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 437-3262",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1083792279",
+   "name": "Twin Cities Oral & Maxillofacial Surgery PA."
+  },
   "npis": [
    "1083792279"
   ],
@@ -18626,7 +18656,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 926-3858",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1043839574",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1043839574"
   ],
@@ -21165,7 +21198,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 975-0605",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1720206428",
+   "name": "Oral and Maxillofacial Surgical Consultants PA"
+  },
   "npis": [
    "1720206428",
    "1316165012"
@@ -22327,7 +22363,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 452-9151",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1063122976",
+   "name": "EOS Expert Oral Surgery"
+  },
   "npis": [
    "1063122976"
   ],
@@ -22473,7 +22512,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 942-9600",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1841353992",
+   "name": "Gallagher Dentistry & Facial Pain Center"
+  },
   "npis": [
    "1841353992"
   ],
@@ -26356,7 +26398,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 835-5003",
   "providers": 9,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1619049921",
+   "name": "Oral and Maxillofacial Surgical Consultants PA"
+  },
   "npis": [
    "1619049921"
   ],
@@ -26430,7 +26475,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 920-4333",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1881815322",
+   "name": "Mark C Engasser M D P A"
+  },
   "npis": [
    "1568532190"
   ],
@@ -27417,7 +27465,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 931-9961",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1225201213",
+   "name": "Twin Cities TMJ & Facial Pain Clinic"
+  },
   "npis": [
    "1225201213"
   ],
@@ -28691,7 +28742,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 588-0661",
   "providers": 30,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1407427610",
+   "name": "US Neurosurgery Associates, PLLC"
+  },
   "npis": [
    "1992739247"
   ],
@@ -29171,7 +29225,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 762-6549",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1306513023",
+   "name": "Zoya's Orofacial Pain and Dental Sleep Remedies PLLC"
+  },
   "npis": [
    "1306513023"
   ],
@@ -30082,7 +30139,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 416-9990",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1649043662-55369",
+   "name": "Associated Oral & Maxillofacial Surgeons"
+  },
   "npis": [
    "1649043662"
   ],
@@ -30626,7 +30686,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 542-8888",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1477838530",
+   "name": "Minnesota Bone and Joint Specialists, LTD"
+  },
   "npis": [
    "1730112053"
   ],
@@ -31170,7 +31233,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 494-8825",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1902917057",
+   "name": "OMS Specialists"
+  },
   "npis": [
    "1902917057"
   ],
@@ -34762,7 +34828,10 @@
   "region": "Twin Cities Metro",
   "phone": "(612) 873-6963",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1902850738",
+   "name": "Hennepin Healthcare Dental & Oral Surgery"
+  },
   "npis": [
    "1902850738",
    "1730752254"
@@ -35883,7 +35952,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 232-3900",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "w-542975b18c",
+   "name": "M Health Fairview Neurosurgery Clinic Minneapolis"
+  },
   "npis": [],
   "census": "Match",
   "countySource": "census",
@@ -37263,7 +37335,10 @@
   "region": "Twin Cities Metro",
   "phone": "(612) 339-2041",
   "providers": 7,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-513",
+   "name": "NovaCare Rehabilitation – Minneapolis"
+  },
   "npis": [
    "1396754206"
   ],
@@ -38781,7 +38856,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 926-3858",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1083762041",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1043839574",
    "1083762041"
@@ -39252,7 +39330,10 @@
   "region": "Twin Cities Metro",
   "phone": "(612) 626-6529",
   "providers": 24,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1457448615",
+   "name": "University of Minnesota TMD, Orofacial Pain & Dental Sleep Medicine Clinic"
+  },
   "npis": [
    "1164763629",
    "1447429402"
@@ -39290,7 +39371,10 @@
   "region": "Twin Cities Metro",
   "phone": "(612) 626-0140",
   "providers": 9,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1457448615",
+   "name": "University of Minnesota TMD, Orofacial Pain & Dental Sleep Medicine Clinic"
+  },
   "npis": [
    "1457448615",
    "1841469897"
@@ -40241,7 +40325,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 935-8420",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1679620801",
+   "name": "Facial Designs, P.A."
+  },
   "npis": [
    "1679620801",
    "1982371456",
@@ -40611,7 +40698,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 236-7610",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1891137220",
+   "name": "Interventional Pain Center, PLLC."
+  },
   "npis": [
    "1568863405"
   ],
@@ -40935,7 +41025,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 236-7610",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1891137220",
+   "name": "Interventional Pain Center, PLLC."
+  },
   "npis": [
    "1982943320"
   ],
@@ -40971,7 +41064,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 236-7610",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1891137220",
+   "name": "Interventional Pain Center, PLLC."
+  },
   "npis": [
    "1528457868"
   ],
@@ -41301,7 +41397,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 926-3858",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1407325830-55305",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1407325830"
   ],
@@ -43384,7 +43483,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 577-2484",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1871975607",
+   "name": "Minnesota Head and Neck Pain Clinic, PA"
+  },
   "npis": [
    "1871975607"
   ],
@@ -43425,7 +43527,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 559-7688",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1417034661",
+   "name": "Minnesota Maxillofacial and Oral Consultants"
+  },
   "npis": [
    "1417034661"
   ],
@@ -47044,7 +47149,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 853-9120",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1699272427",
+   "name": "HealthPartners Dental Clinic St. Louis Park"
+  },
   "npis": [
    "1699272427"
   ],
@@ -48639,7 +48747,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 475-2266",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1265650956",
+   "name": "Oral and Maxillofacial Surgical Consultants PA"
+  },
   "npis": [
    "1265650956"
   ],
@@ -49253,7 +49364,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 691-8827",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1508160060",
+   "name": "OMS Specialists"
+  },
   "npis": [
    "1508160060"
   ],
@@ -51167,7 +51281,10 @@
   "region": "Twin Cities Metro",
   "phone": "(612) 788-9246",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1982634010",
+   "name": "OMS Specialists"
+  },
   "npis": [
    "1982634010"
   ],
@@ -51275,7 +51392,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 482-0065",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1497814032",
+   "name": "Momenta Oral & Maxillofacial Surgery"
+  },
   "npis": [
    "1497814032"
   ],
@@ -52511,7 +52631,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 636-2016",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1104201284",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1407325830",
    "1104201284"
@@ -56288,7 +56411,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 254-7373",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1952042053",
+   "name": "HealthPartners St. Paul (Wabasha) Dental Clinic"
+  },
   "npis": [
    "1952042053"
   ],
@@ -57532,7 +57658,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 642-1013",
   "providers": 4,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1285757864",
+   "name": "Minnesota Craniofacial Center for TMJ & Sleep Treatment"
+  },
   "npis": [
    "1285757864"
   ],
@@ -57571,7 +57700,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 332-7474",
   "providers": 4,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1104850155",
+   "name": "Minnesota Head and Neck Pain Clinic, PA"
+  },
   "npis": [
    "1104850155"
   ],
@@ -58807,7 +58939,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 287-8781",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1275767865",
+   "name": "Kevin L. Stevenson, MD., PA."
+  },
   "npis": [
    "1407130453"
   ],
@@ -58843,7 +58978,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 287-8781",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1275767865",
+   "name": "Kevin L. Stevenson, MD., PA."
+  },
   "npis": [
    "1962705111"
   ],
@@ -59206,7 +59344,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 645-6429",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1043870645",
+   "name": "St. Paul Oral Surgery"
+  },
   "npis": [
    "1043870645",
    "1548218910"
@@ -59315,7 +59456,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 968-5420",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1366221491",
+   "name": "Allina Health System"
+  },
   "npis": [
    "1306137468"
   ],
@@ -63730,7 +63874,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 452-9151",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1003983701",
+   "name": "EOS Oral Surgery"
+  },
   "npis": [
    "1063122976",
    "1003983701"
@@ -64273,7 +64420,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 894-2545",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "w-94dc41836a",
+   "name": "TMJ & Sleep Therapy Centre of St. Paul (at Smiles of Distinction Dentistry)"
+  },
   "npis": [],
   "census": "Match",
   "countySource": "census",
@@ -64561,7 +64711,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 452-9151",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1063122976-55379",
+   "name": "EOS: Expert Oral Surgery"
+  },
   "npis": [
    "1063122976"
   ],
@@ -65068,7 +65221,10 @@
   "region": "Twin Cities Metro",
   "phone": "(952) 926-3858",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1043839574-55379",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1043839574"
   ],
@@ -65472,7 +65628,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 274-1092",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1649043662-55330",
+   "name": "Associated Oral & Maxillofacial Surgeons (Elk River)"
+  },
   "npis": [
    "1649043662"
   ],
@@ -67059,7 +67218,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 464-6988",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1588094171",
+   "name": "Ross Orthodontics (Dr. Gregory Ross)"
+  },
   "npis": [
    "1588094171"
   ],
@@ -67276,7 +67438,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 523-9950",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1811288269",
+   "name": "HealthPartners TMD Lake Elmo"
+  },
   "npis": [
    "1093261190",
    "1225629017"
@@ -67317,7 +67482,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 523-9951",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1811288269",
+   "name": "HealthPartners TMD Lake Elmo"
+  },
   "npis": [
    "1811288269",
    "1962698340"
@@ -68905,7 +69073,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 439-8840",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1598243990",
+   "name": "Carlson Dental Group"
+  },
   "npis": [
    "1598243990"
   ],
@@ -69853,7 +70024,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 233-2141",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1508058322",
+   "name": "The Oral Surgery Center"
+  },
   "npis": [
    "1508058322"
   ],
@@ -71089,7 +71263,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 332-7474",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1710854369",
+   "name": "Minnesota Head and Neck Pain Clinic, PA"
+  },
   "npis": [
    "1710854369"
   ],
@@ -71905,7 +72082,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 636-2016",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1407325830-55125",
+   "name": "The Facial Pain Center"
+  },
   "npis": [
    "1407325830"
   ],
@@ -71943,7 +72123,10 @@
   "region": "Twin Cities Metro",
   "phone": "(651) 233-2140",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1104864529",
+   "name": "The Oral Surgery Center"
+  },
   "npis": [
    "1104864529"
   ],
@@ -72891,7 +73074,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 682-3410",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1649043662-55313",
+   "name": "Associated Oral & Maxillofacial Surgeons"
+  },
   "npis": [
    "1649043662"
   ],
@@ -73071,7 +73257,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 682-9796",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1871663831",
+   "name": "Hanson Dental"
+  },
   "npis": [
    "1871663831"
   ],
@@ -74116,7 +74305,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 271-6770",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1649043662-55362",
+   "name": "Associated Oral & Maxillofacial Surgeons (Associated OMS)"
+  },
   "npis": [
    "1649043662"
   ],
@@ -74701,7 +74893,10 @@
   "region": "Twin Cities Metro",
   "phone": "(763) 972-0440",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1386312411",
+   "name": "MN Center for Dental Care"
+  },
   "npis": [
    "1386312411"
   ],
@@ -77784,7 +77979,10 @@
   "region": "Central Minnesota",
   "phone": "(320) 558-6661",
   "providers": 2,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-471",
+   "name": "NovaCare Rehabilitation"
+  },
   "npis": [
    "1295557692"
   ],
@@ -78507,7 +78705,10 @@
   "region": "Central Minnesota",
   "phone": "(320) 257-9555",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1386723575",
+   "name": "Minnesota Oral & Facial Surgery"
+  },
   "npis": [
    "1386723575",
    "1194363275",
@@ -79526,7 +79727,10 @@
   "region": "Central Minnesota",
   "phone": "(320) 252-3611",
   "providers": 11,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1598710477",
+   "name": "Centrasota Oral Surgeons"
+  },
   "npis": [
    "1598710477"
   ],
@@ -80040,7 +80244,10 @@
   "region": "Central Minnesota",
   "phone": "(763) 233-7252",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1003316852",
+   "name": "Minnesota Head & Neck Pain Clinic"
+  },
   "npis": [
    "1003316852"
   ],
@@ -81846,7 +82053,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 333-8811",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-441",
+   "name": "Explore Chiropractic / Massage Therapy"
+  },
   "npis": [
    "1073810552"
   ],
@@ -82136,7 +82346,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 333-8811",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-441",
+   "name": "Explore Chiropractic / Massage Therapy"
+  },
   "npis": [
    "1538353669"
   ],
@@ -82244,7 +82457,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 333-8811",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-441",
+   "name": "Explore Chiropractic / Massage Therapy"
+  },
   "npis": [
    "1821499864"
   ],
@@ -82787,7 +83003,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 333-8811",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-441",
+   "name": "Explore Chiropractic / Massage Therapy"
+  },
   "npis": [
    "1437770864"
   ],
@@ -84597,7 +84816,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 829-1728",
   "providers": 4,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1942382379",
+   "name": "Oral and Maxillofacial Surgery Associates, LTD"
+  },
   "npis": [
    "1942382379"
   ],
@@ -85863,7 +86085,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 326-0349",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1679668529",
+   "name": "Blue Water Oral and Facial Surgery"
+  },
   "npis": [
    "1679668529"
   ],
@@ -86556,7 +86781,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 326-3300",
   "providers": 5,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-528",
+   "name": "Radtke Physical Therapy"
+  },
   "npis": [
    "1235176108"
   ],
@@ -86628,7 +86856,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 326-3300",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-528",
+   "name": "Radtke Physical Therapy"
+  },
   "npis": [
    "1083610091"
   ],
@@ -87096,7 +87327,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 834-2586",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-551",
+   "name": "Bodies In Balance PT & Massage"
+  },
   "npis": [
    "1700082484"
   ],
@@ -87724,7 +87958,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 722-1854",
   "providers": 6,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1104911056",
+   "name": "Blue Water Oral and Facial Surgery"
+  },
   "npis": [
    "1104911056"
   ],
@@ -88667,7 +88904,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 722-8377",
   "providers": 6,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1457401820",
+   "name": "Northern Oral Surgery & Implant Center"
+  },
   "npis": [
    "1457401820"
   ],
@@ -90217,7 +90457,10 @@
   "region": "Northeast Minnesota",
   "phone": "(218) 741-0894",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1417042367",
+   "name": "Blue Water Oral and Facial Surgery"
+  },
   "npis": [
    "1417042367"
   ],
@@ -93418,7 +93661,10 @@
   "region": "West Central Minnesota",
   "phone": "(320) 763-5505",
   "providers": 3,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-493",
+   "name": "Northwest Rehabilitation"
+  },
   "npis": [
    "1184700924"
   ],
@@ -94471,7 +94717,10 @@
   "region": "West Central Minnesota",
   "phone": "(218) 736-5627",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1033723309",
+   "name": "Riverfront Dental"
+  },
   "npis": [
    "1033723309"
   ],
@@ -96202,7 +96451,10 @@
   "region": "South Central Minnesota",
   "phone": "(507) 387-3249",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1780108209",
+   "name": "Hyland Dental"
+  },
   "npis": [
    "1780108209"
   ],
@@ -96786,7 +97038,10 @@
   "region": "South Central Minnesota",
   "phone": "(507) 344-8698",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1659492312",
+   "name": "Southeastern Minnesota Oral & Maxillofacial Surgery Associates, PLLC"
+  },
   "npis": [
    "1659492312"
   ],
@@ -102713,7 +102968,10 @@
   "region": "Southeast Minnesota",
   "phone": "(507) 288-1101",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1003702408",
+   "name": "Honor Dental"
+  },
   "npis": [
    "1003702408"
   ],
@@ -103332,7 +103590,10 @@
   "region": "Southeast Minnesota",
   "phone": "(507) 701-1127",
   "providers": 0,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1255928917",
+   "name": "Respira"
+  },
   "npis": [
    "1255928917"
   ],
@@ -103586,7 +103847,10 @@
   "region": "Southeast Minnesota",
   "phone": "(507) 281-5000",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "n-1659492312-55901",
+   "name": "Southeastern Minnesota Oral & Maxillofacial Surgery Associates, PLLC"
+  },
   "npis": [
    "1659492312"
   ],
@@ -106765,7 +107029,10 @@
   "region": "Southwest Minnesota",
   "phone": "(320) 269-8877",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-464",
+   "name": "CCM Health Rehabilitation Services"
+  },
   "npis": [
    "1861713059"
   ],
@@ -109053,7 +109320,10 @@
   "region": "Southwest Minnesota",
   "phone": "(507) 522-5717",
   "providers": 1,
-  "onPlatform": null,
+  "onPlatform": {
+   "id": "c-611",
+   "name": "re+active WELLness Physical Therapy"
+  },
   "npis": [
    "1033826003"
   ],

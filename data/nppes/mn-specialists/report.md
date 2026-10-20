@@ -199,7 +199,7 @@ Counties with none: Lake of the Woods, Mahnomen.
 - Census geocoder: Match 2778, No_Match 234, Tie 22.
 - Rows with no phone: 0; no ZIP: 0; no county: 0.
 - Duplicate (name, building) pairs: 0.
-- Already on Xpert Connect: 109 (of 362 MN clinics on the platform); new: 2925.
+- Already on Xpert Connect: 199 (of 426 MN clinics on the platform); new: 2835.
 
 ## Buildings with the most rows
 
