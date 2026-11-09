@@ -15,6 +15,7 @@ const quickLinks = [
 
 const serviceLinks = [
   { href: '/directory', label: 'Lawyers Directory' },
+  { href: '/body-shops', label: 'Body Shops Directory' },
   { href: '/#services', label: 'Legal Services' },
   { href: '/#services', label: 'Medical Clinics' },
   { href: '/#services', label: 'Real Estate' },

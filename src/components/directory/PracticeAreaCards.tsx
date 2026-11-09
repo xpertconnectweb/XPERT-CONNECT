@@ -1,5 +1,6 @@
 'use client'
 
+import type { ComponentType } from 'react'
 import { metaFor } from './area-meta'
 
 /**
@@ -10,6 +11,9 @@ import { metaFor } from './area-meta'
  * identical control. Markup is unchanged from that original, including
  * `data-testid="practice-area-card"` and the `aria-pressed` toggle that
  * e2e/specs/directory/browse-and-filter.spec.ts asserts on.
+ *
+ * The Body Shops Directory renders the same grid for its kinds of shop
+ * (independent, or which chain), passing its own icons and noun.
  */
 export function PracticeAreaCards({
   areas,
@@ -17,19 +21,23 @@ export function PracticeAreaCards({
   selected,
   onSelect,
   className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3',
+  noun = { one: 'firm', many: 'firms' },
+  meta = metaFor,
 }: {
   areas: string[]
   counts: Map<string, number>
   selected: string
   onSelect: (area: string) => void
   className?: string
+  noun?: { one: string; many: string }
+  meta?: (area: string) => { icon: ComponentType<{ className?: string }>; accent: string }
 }) {
   if (areas.length === 0) return null
 
   return (
     <div className={className}>
       {areas.map((a) => {
-        const { icon: Icon, accent } = metaFor(a)
+        const { icon: Icon, accent } = meta(a)
         const count = counts.get(a) ?? 0
         const isSelected = selected === a
         return (
@@ -52,7 +60,7 @@ export function PracticeAreaCards({
             </span>
             <span className="font-semibold text-sm text-gray-900 leading-tight">{a}</span>
             <span className="text-[11px] font-medium text-gray-400">
-              {count} {count === 1 ? 'firm' : 'firms'}
+              {count} {count === 1 ? noun.one : noun.many}
             </span>
           </button>
         )

@@ -76,6 +76,12 @@ export interface UseSmartSearchOptions<T> {
   anchor?: readonly [number, number] | null
   /** Labels the entity group; the directory says "Firms", the map "Providers". */
   entityHeading?: string
+  /**
+   * The grey line under an entity suggestion. Defaults to "Attorney" or
+   * "Clinic" from the document type. The Body Shops Directory indexes its
+   * shops through the lawyer adapter, so it says what they are here.
+   */
+  entitySublabel?: (source: T) => string | undefined
   categoryHeading?: string
   /** Disable geocoding where a map is not involved (directory, specialists). */
   places?: boolean
@@ -169,6 +175,7 @@ export function useSmartSearch<T>({
   query,
   anchor = null,
   entityHeading = 'Providers',
+  entitySublabel,
   categoryHeading = 'Specialties',
   places = true,
   indexStatus = 'ok',
@@ -249,7 +256,11 @@ export function useSmartSearch<T>({
         id: `ent-${hit.doc.id}`,
         kind: 'entity' as const,
         label: name,
-        sublabel: hit.doc.type === 'lawyer' ? 'Attorney' : 'Clinic',
+        sublabel: entitySublabel
+          ? entitySublabel(hit.doc.source)
+          : hit.doc.type === 'lawyer'
+            ? 'Attorney'
+            : 'Clinic',
         meta: Number.isFinite(hit.distance) ? `${hit.distance.toFixed(1)} mi` : undefined,
         // Coordinates travel with the suggestion so choosing it never depends
         // on the chooser being able to find the record again. See the comment
@@ -263,7 +274,7 @@ export function useSmartSearch<T>({
         },
       }
     })
-  }, [active, index, trimmed, anchor])
+  }, [active, index, trimmed, anchor, entitySublabel])
 
   const localityItems = useMemo<Suggestion[]>(() => {
     if (!active || !placeMatcher) return []

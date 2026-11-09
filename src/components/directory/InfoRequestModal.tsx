@@ -8,6 +8,13 @@ import { safeHttpUrl } from '@/lib/security/url'
 interface InfoRequestModalProps {
   firm: { id: string; name: string }
   onClose: () => void
+  /**
+   * Where the form posts. The lawyers directory's route by default; the
+   * Body Shops Directory passes its own, which answers in the same shape.
+   */
+  inquiryUrl?: string
+  /** "firm" or "shop", for the one sentence that names what this is. */
+  noun?: string
 }
 
 /**
@@ -21,7 +28,12 @@ interface InfoRequestModalProps {
  * Same shell as ClinicReferralFormModal — backdrop click and Escape
  * close it, body scroll is locked while it is open.
  */
-export function InfoRequestModal({ firm, onClose }: InfoRequestModalProps) {
+export function InfoRequestModal({
+  firm,
+  onClose,
+  inquiryUrl = `/api/public/lawyers/${encodeURIComponent(firm.id)}/inquiry`,
+  noun = 'firm',
+}: InfoRequestModalProps) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', company: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +59,7 @@ export function InfoRequestModal({ firm, onClose }: InfoRequestModalProps) {
     setError('')
     setLoading(true)
     try {
-      const res = await fetch(`/api/public/lawyers/${encodeURIComponent(firm.id)}/inquiry`, {
+      const res = await fetch(inquiryUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -145,7 +157,7 @@ export function InfoRequestModal({ firm, onClose }: InfoRequestModalProps) {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <p className="text-sm text-gray-500">
-                Leave your details to see this firm&rsquo;s contact information.
+                Leave your details to see this {noun}&rsquo;s contact information.
               </p>
 
               {error && (

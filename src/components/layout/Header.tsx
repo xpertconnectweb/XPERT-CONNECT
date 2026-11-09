@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { Phone, Menu, X, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
   { href: '/directory', label: 'Lawyers Directory' },
+  { href: '/body-shops', label: 'Body Shops' },
   { href: '/#about', label: 'About Us' },
   { href: '/#services', label: 'Services' },
   { href: '/#how-it-works', label: 'How It Works' },
@@ -17,6 +19,15 @@ const navLinks = [
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
+  /**
+   * Transparent with white text only over the home page's dark hero.
+   * Every other page in this layout (/directory, /body-shops, /privacy…)
+   * opens on a light background, where the transparent header was white
+   * on near-white and the menu could not be seen until the visitor
+   * scrolled.
+   */
+  const pathname = usePathname()
+  const solid = isScrolled || pathname !== '/'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const ticking = useRef(false)
 
@@ -54,7 +65,7 @@ export function Header() {
     <header
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-        isScrolled
+        solid
           ? 'bg-white shadow-lg shadow-black/5'
           : 'bg-transparent'
       )}
@@ -80,22 +91,22 @@ export function Header() {
               height={512}
               className={cn(
                 'h-10 lg:h-12 w-auto transition-all duration-300',
-                !isScrolled && 'brightness-0 invert'
+                !solid && 'brightness-0 invert'
               )}
               priority
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:block justify-self-center" aria-label="Primary">
-            <ul className="flex items-center justify-center gap-1 lg:translate-x-20">
+          <nav className="hidden xl:block justify-self-center" aria-label="Primary">
+            <ul className="flex items-center justify-center gap-0.5">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className={cn(
                       'px-4 py-2 font-heading text-sm font-medium transition-all duration-300 rounded-lg',
-                      isScrolled
+                      solid
                         ? 'text-gray-700 hover:text-gold hover:bg-gold/5'
                         : 'text-white/90 hover:text-white hover:bg-white/10'
                     )}
@@ -113,7 +124,7 @@ export function Header() {
               href="/professionals/login"
               className={cn(
                 'hidden md:flex items-center gap-2 rounded-full px-4 py-2.5 font-heading text-sm font-medium transition-all duration-300',
-                isScrolled
+                solid
                   ? 'text-navy hover:text-gold hover:bg-gold/5'
                   : 'text-white/90 hover:text-white hover:bg-white/10'
               )}
@@ -127,7 +138,7 @@ export function Header() {
               href="tel:+18449737866"
               className={cn(
                 'hidden md:flex items-center gap-2.5 rounded-full px-6 py-3 font-heading text-sm font-bold transition-all duration-300',
-                isScrolled
+                solid
                   ? 'bg-gold text-navy-dark hover:bg-gold-dark hover:text-white shadow-lg shadow-gold/25'
                   : 'bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20'
               )}
@@ -140,8 +151,8 @@ export function Header() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-lg lg:hidden transition-colors',
-                isScrolled ? 'text-navy' : 'text-white'
+                'flex h-10 w-10 items-center justify-center rounded-lg xl:hidden transition-colors',
+                solid ? 'text-navy' : 'text-white'
               )}
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
@@ -161,7 +172,7 @@ export function Header() {
       <div
         id="mobile-menu"
         className={cn(
-          'absolute left-0 right-0 top-20 bg-white shadow-xl transition-all duration-300 lg:hidden rounded-b-2xl overflow-hidden',
+          'absolute left-0 right-0 top-20 lg:top-24 bg-white shadow-xl transition-all duration-300 xl:hidden rounded-b-2xl overflow-hidden',
           isMobileMenuOpen
             ? 'opacity-100 visible translate-y-0'
             : 'opacity-0 invisible -translate-y-4'

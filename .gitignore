@@ -125,3 +125,7 @@ scripts/.purge-backup-*.json
 .claude/settings.local.json
 cookies.txt
 data/users.json
+
+# FDACS registration export: emails and owners' names (body-shop list)
+data/bodyshops/fdacs/
+data/bodyshops/sitecheck.json

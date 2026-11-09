@@ -1,6 +1,7 @@
 import { COMPANY_DOMAIN } from '@/lib/constants'
 import { countyLabel } from '@/lib/counties'
 import type { DirectoryContact } from '@/types/professionals'
+import type { BodyShopContact } from '@/types/body-shops'
 import {
   sendEmail, escapeHtml, INTERNAL_EMAIL,
   wrapInLayout, logoBar, headerBannerWithBadge, detailsCard, ctaButton, footer,
@@ -62,6 +63,59 @@ export function directoryInquiryEmail(
       </div>
 
       ${footer('Internal automated notification from the public lawyers directory.')}
+    `),
+  })
+}
+
+/**
+ * The lead from the Body Shops Directory's "Get information" form.
+ *
+ * The lawyers email above, reworded. Internal only: the visitor has already
+ * been shown the shop's contact details, and the same lead is a row in
+ * /admin/contacts.
+ */
+export function bodyShopInquiryEmail(
+  visitor: DirectoryInquiry,
+  shop: BodyShopContact & { city: string; county: string; state: string; kind: string }
+) {
+  const safe = {
+    name: escapeHtml(visitor.name),
+    email: escapeHtml(visitor.email),
+    phone: escapeHtml(visitor.phone),
+    shop: escapeHtml(shop.name),
+  }
+  const place = [shop.city, shop.county ? countyLabel(shop.county) : '', shop.state]
+    .filter(Boolean)
+    .join(', ')
+
+  return sendEmail({
+    to: INTERNAL_EMAIL,
+    subject: `Body shop lead: ${safe.name} asked about ${safe.shop}`,
+    html: wrapInLayout(`
+      ${logoBar()}
+      ${headerBannerWithBadge('New Body Shop Lead', 'Someone requested a body shop&rsquo;s information', 'linear-gradient(135deg,#1e3a5f 0%,#2c5282 50%,#3b6cb5 100%)', 'Internal')}
+
+      <div style="padding:36px 32px;">
+        ${detailsCard('Visitor', 'linear-gradient(135deg,#1e3a5f 0%,#2c5282 100%)', [
+          { label: 'Name', value: safe.name },
+          { label: 'Phone', value: `<a href="tel:${safe.phone}" style="color:#2c5282;text-decoration:none;">${safe.phone}</a>` },
+          { label: 'Email', value: `<a href="mailto:${safe.email}" style="color:#2c5282;text-decoration:none;">${safe.email}</a>` },
+        ])}
+
+        ${detailsCard('Body shop requested', 'linear-gradient(135deg,#92400e 0%,#b45309 100%)', [
+          { label: 'Shop', value: safe.shop },
+          { label: 'Type', value: escapeHtml(shop.kind) },
+          ...(place ? [{ label: 'Location', value: escapeHtml(place) }] : []),
+          { label: 'Shop phone', value: escapeHtml(shop.phone) },
+          ...(shop.website ? [{ label: 'Website', value: escapeHtml(shop.website) }] : []),
+          { label: 'Address', value: escapeHtml(shop.address) },
+          { label: 'Directory id', value: escapeHtml(shop.id) },
+        ])}
+
+        ${ctaButton('View in Admin Dashboard', `${COMPANY_DOMAIN}/admin/contacts`, 'linear-gradient(135deg,#1e3a5f 0%,#2c5282 100%)', 'rgba(44,82,130,0.35)')}
+      </div>
+
+      ${footer('Internal automated notification from the public body shops directory.')}
     `),
   })
 }

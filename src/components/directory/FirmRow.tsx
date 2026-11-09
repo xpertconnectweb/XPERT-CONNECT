@@ -1,5 +1,6 @@
 'use client'
 
+import type { ComponentType } from 'react'
 import { Scale, MapPin, Phone, Copy, Check, Globe, Star, Info } from 'lucide-react'
 import { countyLabel } from '@/lib/counties'
 import { safeHttpUrl } from '@/lib/security/url'
@@ -49,8 +50,14 @@ export function FirmRow({
   onCopy,
   onRequestInfo,
   featured = false,
+  icon: Icon = Scale,
+  testId = 'attorney-row',
 }: {
   firm: FirmRowData
+  /** The row's badge. The Body Shops Directory passes a car. */
+  icon?: ComponentType<{ className?: string }>
+  /** `attorney-row` is what the lawyers' e2e specs select on, so it stays the default. */
+  testId?: string
   showAvailability?: boolean
   copied?: boolean
   onCopy?: (firm: FirmRowData) => void
@@ -86,14 +93,14 @@ export function FirmRow({
 
   return (
     <li
-      data-testid="attorney-row"
+      data-testid={testId}
       data-featured={featured ? 'true' : undefined}
       className={`flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 transition-colors ${
         featured ? 'bg-gold/[0.06] hover:bg-gold/10' : 'hover:bg-gray-50/50'
       }`}
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-navy-light text-gold">
-        <Scale className="h-5 w-5" aria-hidden="true" />
+        <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
 
       <div className="flex-1 min-w-0">

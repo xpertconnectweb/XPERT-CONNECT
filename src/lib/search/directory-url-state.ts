@@ -26,6 +26,12 @@ export interface DirectoryUrlState {
   area?: string
   /** Bare county, the storage convention — "Manatee", not "Manatee County". */
   county?: string
+  /**
+   * Two-letter state. Only the Body Shops Directory sets it: it covers
+   * Florida and Minnesota, which share county names (both have a Lake, a
+   * Polk and a Washington), so a county means nothing without one.
+   */
+  state?: string
   sort?: DirectorySort
   /** How many rows were expanded, so Back returns to the same scroll depth. */
   show?: number
@@ -66,6 +72,9 @@ export function parseDirectoryUrlState(
   const county = clean(params.get('county'))
   if (county) state.county = county
 
+  const st = clean(params.get('state'))?.toUpperCase()
+  if (st && /^[A-Z]{2}$/.test(st)) state.state = st
+
   const sort = clean(params.get('sort'))
   if (sort && (SORTS as readonly string[]).includes(sort)) {
     state.sort = sort as DirectorySort
@@ -86,6 +95,7 @@ export function toDirectoryUrlParams(state: DirectoryUrlState): URLSearchParams 
   if (state.q?.trim()) params.set('q', state.q.trim())
   if (state.area) params.set('area', state.area)
   if (state.county) params.set('county', state.county)
+  if (state.state) params.set('state', state.state)
   // Relevance is the default; writing it would put a parameter in every
   // URL that says nothing.
   if (state.sort && state.sort !== 'relevance') params.set('sort', state.sort)
